@@ -1,0 +1,393 @@
+{% extends "base/base.html" %}
+
+{% load i18n %}
+{% load networks %}
+{% load submit %}
+{% load validation %}
+
+{% block js %}
+
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/json2.js"></script>
+
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.passStrengthener.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.bubblepopup.v2.3.1.min.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.metadata.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.form.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.validate.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery-plugins/jquery.jsonSuggest-dev.js"></script>
+
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.networkIcon.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.loading.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.tagContainer.js"></script>
+
+<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
+
+<!-- Facebook Button -->
+<div id="fb-root"></div>
+<!-- Facebook Button -->
+
+{% endblock %}
+
+{% block jquery %}
+
+	// Delete element from list using GenericComponentData
+	function deleteFromList(element, oArg) {
+		var idElementDel = $(element).attr('id');
+		var idElement = idElementDel.replace('_del','');
+		var list = idElement.split('_');
+		var idContainer = 'id_' + list[1];
+		var idContainerData = idContainer + '_data';
+		var index = list[list.length-1];
+		$('#' + idElement).remove();
+		var obj = new GenericComponentData(idContainerData);
+		obj.deleteData(index);
+		if (oArg.callBack) {
+			oArg.callBack(oArg);
+		}
+	}
+	
+	// Add Tag
+	function doAddTag( oArg ) {
+		var text = $('#' + oArg.idText).attr('value');
+		var obj = new GenericComponentData(oArg.idData);
+		var size = obj.getSize();
+		var idTag = oArg.idContainer + '_' + size;
+		var idTagClick = oArg.idContainer + '_click_' + size;
+		var idTagDel = oArg.idContainer + '_del_' + size;
+		var hasElement = obj.hasElement(text);
+		var validate = false;
+		if (text != '' && size < 10 && hasElement == false) {
+			validate = true;
+		}
+		//alert(validate);
+		if (validate == true) {
+			var sHtml = '<div id="' + idTag + '" class="tag"><div id="' + idTagClick + '" class="tagTextAdd">' + text + '</div><div class="tagSep">&nbsp;</div><div id="' + idTagDel + '" class="tagDel">X</div></div>';
+			$('#' + oArg.idContainer).append(sHtml);
+			var tagObj = new Object();
+			tagObj.id = size;
+			tagObj.text = text;
+			obj.addDataEnd(tagObj);
+			$('#' + oArg.idText).attr('value', '');
+			$('#' + oArg.idText).focus();
+			// Delete
+			$('#' + idTagDel).click(function() {
+				deleteFromList($(this), oArg);
+			});
+		}
+	}
+	// Handle add tag
+	function handleAddTag( oArg ) {
+		$("#id_organizationGroupTags").keypress(function(e) {
+			if (e.which == 13) {
+				doAddTag( oArg );
+			}
+		});	
+		$("#BtAddTag").click(function() {
+			doAddTag( oArg );
+		});
+	}
+	
+	function setAjaxSuggestView() {
+		$('#id_formAjax').attr('action', '/jxSuggestList');
+	}
+
+	function setAjaxView() {
+		$('#id_formAjax').attr('action', '/jxJSON');
+	}
+	
+	// Create new ajax object
+	function newAjaxObject() {
+		var oArg = new Object();
+		oArg.jsonDataList = new Array();
+		return oArg;
+	}
+	
+	// Create new ajax request
+	function newAjaxRequest( oArg, method, argsTuple, argsDict ) {
+		var list = new Array();
+		list[0] = method;
+		list[1] = argsTuple;
+		list[2] = argsDict;
+		var index = oArg.jsonDataList.push(list);
+		$('#id_formAjax_jsonData').attr('value', JSON.stringify(oArg));
+	}
+
+	// Send Ajax JSON Request	
+	function sendAjaxJSONRequest() {
+		$('#id_formAjax').ajaxSubmit({
+			dataType: 'json',
+			async: false,
+			timeout: 2000,
+			success: function(responseMap, status) {
+				if (responseMap && responseMap.status && responseMap.response) {
+					statusCode = responseMap['status'];
+					if (statusCode == 'OK') {
+						results = responseMap.response;
+					}
+				}
+			},
+			error: function (data, status, e) {
+				//alert('ERROR : ' + status);
+				results = new Array()				
+			}
+		});
+		return results;
+	}
+
+	
+	
+
+	// Start jquery code
+    var formId = "Form1";
+    doShowPasswordStrength('id_ximpiaId', 'id_password', 'id_' + formId + '_Submit');
+    doBindBubbles();
+        
+    // Form1
+    doBindSubmitForm(formId);
+    
+    // reloadCaptcha
+    doReloadCaptcha();
+    
+    // Social Network Icons
+    $(".Icon").mouseover(function() {
+        $(this).fadeTo("fast", 0.70);
+    });
+    $(".Icon").mouseout(function() {
+        $(this).fadeTo("fast", 1.00);
+    });
+
+	// Facebook logic
+    var fbAppId = $("#id_facebookAppId").attr('value');
+    FB.init({appId: fbAppId, status: true, cookie: true, xfbml: true});
+  	FB.Event.subscribe('auth.sessionChange', function(response) {
+    	if (response.session) {
+    		// A user has logged in, and a new cookie has been saved			
+			
+			var facebookList = JSON.parse($("#id_facebookIcon_data").attr('value'));
+			facebookList[1].token = response.session.access_token;
+			$("#id_facebookIcon_data").attr('value', JSON.stringify(facebookList));
+			
+			// Hide passwords
+			$("#id_showPassword").css('display','none');
+			$("#id_password").css('display','none');
+			$("#id_passwordVerify").css('display','none');
+			$("#id_password").removeClass('required');
+			$("#id_passwordVerify").removeClass('required');
+			// Get profile
+			FB.api('/me', function(responseProfile) {
+				// Fillout fields in form
+				$("#id_firstName").attr('value', responseProfile.first_name);
+				$("#id_lastName").attr('value', responseProfile.last_name);
+				$("#id_email").attr('value', responseProfile.email);
+				$("#id_ximpiaId").attr('value', responseProfile.first_name.toLowerCase() + '.' + responseProfile.last_name.toLowerCase());
+				var locationName = responseProfile.location.name;
+				var locationFields = locationName.split(',');
+				$("#id_city").attr('value', locationFields[0].trim());
+				var locale = responseProfile.locale;
+				$("#id_country").attr('value', locale.split('_')[1].toLowerCase());
+				$("#id_facebookIcon").xpSocialNetworkIcon('changeStatusOK');
+			});			
+    	} else {
+    		// The user has logged out, and the cookie has been cleared
+			//alert('Out....');
+    	}
+	});
+
+	// Suggest for job title and organization group
+	$('#id_jobTitle').jsonSuggest(JSON.parse($('#id_jobTitle_data').attr('value')), {maxHeight: 200, minCharacters:3});
+	$('#id_organizationGroup').jsonSuggest(JSON.parse($('#id_organizationGroup_data').attr('value')), {maxHeight: 200, minCharacters:3});
+	
+	// Remote Suggest Tags				
+	$('#id_organizationGroupTags').jsonSuggest(function(text, wildCard, caseSensitive, notCharacter) {
+		var results = new Array();
+		var oArg = newAjaxObject();
+		newAjaxRequest(oArg, 'DbTag.searchPublicTags', [text], {});		
+		setAjaxSuggestView();		
+		//setAjaxView();
+		// Send form using ajax
+		results = sendAjaxJSONRequest();		
+		return results;		
+	}, {maxHeight: 200, minCharacters: 3, ajaxResults: true});
+
+	// Tag Container
+	function doAfterDeleteTag( oArg ) {
+		$('#' + oArg.idText).focus();
+	}	
+	handleAddTag({
+					idText: 'id_organizationGroupTags', 
+					idContainer: 'id_groupTags', 
+					idData: 'id_groupTags_data',
+					callBack: doAfterDeleteTag
+					});	
+
+	// Social Network Icons	
+	$(".AuthIcon").xpSocialNetworkIcon();
+	$(".AuthIcon").click(function() {
+	   $(this).xpSocialNetworkIcon('click');
+	});
+
+{% endblock %}
+
+{% block title %}Ximpia - {% trans "Organization Signup" %}{% endblock %}
+
+{% block app %}
+
+    <div id="app_Site" style="width: 100%; border: 0px solid" >
+	
+	<table id="SearchPadding"><tr><td style="width: 700px; padding-left: 30px;">
+	
+	{% if show_message %}
+	<div id="ErrorMessage" style="background-color:#DDDDDD; padding:20px"><b>Message</b></div>
+	{% endif %}
+
+    <h3>XimpiaId</h3>
+    
+    You can authenticate with password or sign up with Facebook. In the case of Facebook auth you will not need to validate your email.<br/><br />
+    
+    <table cellspacing="0" cellpadding="0"><tr><td style="vertical-align:top;">
+    <div class="FormBlock">
+    <label for="id_ximpiaId">XimpiaId: {{form.ximpiaId}} <br />
+    <div id="id_showPassword">
+    {% if not auth.facebook %}
+    <label for="id_password">{% trans "Password" %}: {{form.password}} <br/>
+    <label for="id_passwordVerify">{% trans "Password Verify" %}: {{form.passwordVerify}} <br />
+    {% endif %}
+    </div>
+    </div>
+    </td>
+
+    <td style="width: 50px"></td>
+    <td style="background-color:#000000; width: 1px"> <img src="{{settings.MEDIA_URL}}images/blank.png" /></td>
+    <td style="width: 50px"></td>   
+	
+    <td style="vertical-align:top;">
+    
+    <div id="id_socialNetworkSignupButtonsZone">
+        
+        <div id="id_fbLoginButton">
+            <fb:login-button perms="{{settings.FACEBOOK_SCOPE}}" show_faces="true"></fb:login-button>
+        </div>              
+    
+    </div>  
+        
+    </td>
+    
+    </tr></table>
+
+	<div id="UserData">	
+	
+	<h3>{% trans "You" %}</h3>
+	
+    <div id="Info" class="FormBlock">
+    <table border="0"><tr><td style="vertical-align: top">
+    <label for="id_firstName">{% trans "First Name" %}: {{form.firstName}}<br />
+    <label for="id_lastName">{% trans "Last Name" %}: {{form.lastName}}<br />
+    <label for="id_email">Email: {{form.email}}<br />
+
+    </td>
+    <td style="vertical-align: top; padding-left: 50px">
+    <label for="id_city">{% trans "City" %}: {{form.city}}<br />
+    <label for="id_country">{% trans "Country" %}: {{form.country}}<br />       
+    </td>
+    </tr>
+	</table>
+    
+    </div>
+	
+	<h3>{% trans "Your Organization And You" %}</h3>
+	<div id="OrgYouInfo" class="FormBlock">
+		 <label for="id_jobTitle">{% trans "Job Title" %}: {{form.jobTitle}}<br />
+		 <label for="id_organizationGroup">{% trans "Group You Manage" %}: {{form.organizationGroup}}<br />
+		 
+		 <table border="0">
+		 	<tr>
+		 		<td>
+		 			<label for="id_organizationGroupTags">{% trans "Group Tags" %}: {{form.organizationGroupTags}}
+				</td><td>		 
+		 <input id="BtAddTag" type="button" value="Add" />
+		 </td><td valign="bottom" >
+		 	
+		 <div id="id_groupTags" class="tagContainer">
+		 </div>
+		 
+		 </td></tr></table>
+		 
+	</div>
+	
+	<h3>{% trans "Your Organization" %}</h3>
+	
+	<div id="OrgInfo" class="FormBlock">
+		<table border="0"><tr><td style="vertical-align: top">
+		<label for="id_account">{% trans "Account" %}: {{form.account}}<br />				
+		<label for="id_organizationName">{% trans "Organization Name" %}: {{form.organizationName}}<br />
+		<label for="id_organizationDomain">{% trans "Domain" %}: {{form.organizationDomain}}<br />
+		<label for="id_organizationCity">{% trans "City" %}: {{form.organizationCity}}<br />
+		<label for="id_organizationCountry">{% trans "Country" %}: {{form.organizationCountry}}<br />
+		<label for="id_description">{% trans "Description" %}:<br/> {{form.description}}<br />
+        </td>
+        <td style="vertical-align: top; padding-left: 50px">
+        <label for="id_organizationIndustry">{% trans "Industry" %}: {{form.organizationIndustry}}<br />
+		</td></tr></table>
+	</div>	
+		
+    <h3>{% trans "Your Networks" %}</h3>
+    <div id="SocialNetworks" class="FormBlock">
+        You can also link your user to your professional networks.
+    <table>
+        <tr>
+          <td>
+            {% socialNetworkIcon "facebook" auth %}         
+          </td>
+          <td>
+            {% socialNetworkIcon "linkedin" auth %}
+          </td>
+          <td>
+            {% socialNetworkIcon "twitter" auth %}
+          </td>       
+        </tr>
+    </table>
+	
+	And for your organization:<br/>
+    <table>
+        <tr>
+          <td>
+            {% socialNetworkIcon "twitter" auth %}
+          </td>       
+        </tr>
+    </table>
+    
+    </div>
+	
+    {% if showInvitation %}
+    <h3>{% trans "Invitation" %}</h3>
+    <div id="Invitation" class="FormBlock">
+        <label for="id_invitationCode">{% trans "Invitation Code" %}: {{form.invitationCode}}
+    </div>
+    {% endif %}
+    
+    {% if not showInvitation %}
+    <h3>{% trans "Validation" %}</h3>
+    {% captcha %}
+    {% endif %}
+	
+    <br />
+    {% submitDefault "Form1" %} 
+    <br /><br />
+	
+	</td>
+		
+	</tr>
+	</table>
+    
+    </div>
+    <!-- End app_MyApp -->
+
+{% endblock %}
+
+{% block forms %}
+
+<form id="id_formAjax" action="/DontKnow" method="post">
+	<input id="id_formAjax_jsonData" type="hidden" name="jsonData" value="" />
+</form>
+
+{% endblock %}

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+{% load i18n %}
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<title>Authorization for {{service|capfirst}}</title>
+
+<link href="/site_media/css/main.css" rel="stylesheet" type="text/css" />
+{% block css %}
+{% endblock %}
+
+</head>
+
+<body>
+
+<form id="Form1" action="">
+
+<input type="hidden" id="id_status" name="status" value ="{{status}}" />
+<input type="hidden" id="id_token" name="token" value ="{{token}}" />
+<input type="hidden" id="id_tokenSecret" name="tokenSecret" value ="{{tokenSecret}}" />
+<input type="hidden" id="id_service" name="service" value ="{{service}}" />
+
+</form>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.networkIcon.js"></script>
+
+<script language="JavaScript">
+    
+jQuery(document).ready(function($){
+
+	var sTokens = JSON.stringify([$('#id_token').attr('value'),$('#id_tokenSecret').attr('value')]);
+	var sId = 'id_' + $('#id_service').attr('value') + 'Icon_data';
+	var sData = $('#' + sId, window.opener.document).attr('value');
+	var service = $('#id_service').attr('value');
+	var status = $('#id_status').attr('value');
+	var data = JSON.parse(sData);
+	data[1].status = $('#id_status').attr('value')
+	data[1].token = $('#id_token').attr('value')
+	data[1].tokenSecret = $('#id_tokenSecret').attr('value')
+	var sDataNew = JSON.stringify(data)
+	$('#' + sId, window.opener.document).attr('value', sDataNew);
+		
+    var sId = "id_" + service + "Icon";
+    var sIdStatus = 'id_' + service + 'Status';
+	if (status == 'OK') {
+        $("#" + sIdStatus, window.opener.document).addClass('IconStatusOK');
+        $("#" + sIdStatus, window.opener.document).removeClass('IconStatusERROR');
+        $("#" + sId, window.opener.document).unbind('mouseover');
+        $("#" + sId, window.opener.document).unbind('mouseout');
+        $("#" + sId, window.opener.document).unbind('click');
+        $("#" + sId, window.opener.document).removeClass('Icon');
+        $("#" + sId, window.opener.document).addClass('IconUsed');
+        $("#" + sIdStatus, window.opener.document).css('visibility', 'visible');
+	} else {
+        $("#" + sIdStatus, window.opener.document).addClass('IconStatusERROR');
+        $("#" + sIdStatus, window.opener.document).removeClass('IconStatusOK');
+        $("#" + sIdStatus, window.opener.document).css('visibility', 'visible');
+	}
+	window.close();
+	
+});
+</script>
+
+</body>
+</html>

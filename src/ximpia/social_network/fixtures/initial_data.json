@@ -1,0 +1,357 @@
+[
+  {
+    "model": "social_network.Invitation",
+	"pk": 1,
+	"fields": {
+	   "fromUser": 1,
+	   "invitationCode": "AAAAAAAAAA",
+	   "number": 1
+	}
+  },
+  {
+    "model": "auth.Group",
+    "pk": 1,
+    "fields": {
+      "name": "Users"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 2,
+    "fields": {
+      "name": "OrganizationUsers"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 3,
+    "fields": {
+      "name": "Community Managers"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 101,
+    "fields": {
+      "name": "Accounting"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 102,
+    "fields": {
+      "name": "Airlines/Aviation"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 103,
+    "fields": {
+      "name": "Alternative Dispute Resolution"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 104,
+    "fields": {
+      "name": "Alternative Medicine"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 105,
+    "fields": {
+      "name": "Animation"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 106,
+    "fields": {
+      "name": "Apparel & Fashion"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 107,
+    "fields": {
+      "name": "Architecture & Planning"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 108,
+    "fields": {
+      "name": "Arts and Crafts"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 109,
+    "fields": {
+      "name": "Automotive"
+    }
+  },
+  {
+    "model": "auth.Group",
+    "pk": 110,
+    "fields": {
+      "name": "Aviation & Aerospace"
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 1,
+    "fields": {
+	"mode": "net",
+	"name": "twitter",
+	"value": "Twitter",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 2,
+    "fields": {
+	"mode": "net",
+	"name": "facebook",
+	"value": "Facebook",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 3,
+    "fields": {
+	"mode": "net",
+	"name": "linkedin",
+	"value": "LinkedIn",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 4,
+    "fields": {
+	"mode": "status",
+	"name": "ok",
+	"value": "Ok",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 5,
+    "fields": {
+	"mode": "status",
+	"name": "blocked",
+	"value": "Blocked",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.UserParam",
+    "pk": 6,
+    "fields": {
+	"mode": "status",
+	"name": "unblocked",
+	"value": "UnBlocked",
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.SocialNetwork",
+    "pk": 1,
+    "fields": {
+	"type": 1,
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.SocialNetwork",
+    "pk": 2,
+    "fields": {
+	"type": 2,
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.SocialNetwork",
+    "pk": 3,
+    "fields": {
+	"type": 3,
+	"userCreateId": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 1,
+    "fields": {
+      "group": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 2,
+    "fields": {
+      "group": 2
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 3,
+    "fields": {
+      "group": 3
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 101,
+    "fields": {
+      "group": 101,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 102,
+    "fields": {
+      "group": 102,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 103,
+    "fields": {
+      "group": 103,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 104,
+    "fields": {
+      "group": 104,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 105,
+    "fields": {
+      "group": 105,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 106,
+    "fields": {
+      "group": 106,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 107,
+    "fields": {
+      "group": 107,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 108,
+    "fields": {
+      "group": 108,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 109,
+    "fields": {
+      "group": 109,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.GroupSocial",
+    "pk": 110,
+    "fields": {
+      "group": 110,
+	  "isIndustry": 1
+    }
+  },
+  {
+    "model": "social_network.TagType",
+    "pk": 1,
+    "fields": {"type": "General"}
+  },
+  {
+    "model": "social_network.TagType",
+    "pk": 2,
+    "fields": {"type": "Ximpia"}
+  },
+  {
+    "model": "social_network.Tag",
+	"pk": 1,
+	"fields": {"name": "Internet", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 2,
+    "fields": {"name": "Lost in space", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 3,
+    "fields": {"name": "Servers", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 4,
+    "fields": {"name": "Speakers", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 5,
+    "fields": {"name": "Internet Games", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 6,
+    "fields": {"name": "Ideas", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 7,
+    "fields": {"name": "Research Work", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 8,
+    "fields": {"name": "Social Networks", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 9,
+    "fields": {"name": "Print Jobs", "type": 1}
+  },
+  {
+    "model": "social_network.Tag",
+    "pk": 10,
+    "fields": {"name": "Networking", "type": 1}
+  },
+  {
+    "model": "social_network.MasterValue",
+    "pk": 1,
+    "fields": {"name" : "SN.COMMTYPE-EMAIL", "value": "email", "type": "SN.COMMTYPE"}
+  },
+  {
+    "model": "social_network.MasterValue",
+    "pk": 2,
+    "fields": {"name" : "SN.COMMTYPE-SMS", "value": "sms", "type": "SN.COMMTYPE"}
+  }
+]
