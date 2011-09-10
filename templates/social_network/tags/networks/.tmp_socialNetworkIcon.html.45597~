@@ -1,3 +1,0 @@
-<div id="id_{{networkName}}IconBlock">
-    <img id="id_{{networkName}}Icon" src="{{settings.MEDIA_URL}}images/blank.png" class="Icon {{networkName|capfirst}}Icon AuthIcon" />
-</div>

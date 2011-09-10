@@ -1,9 +1,7 @@
 {% extends "base/base.html" %}
 
 {% load i18n %}
-{% load networks %}
-{% load form %}
-{% load validation %}
+{% load socialNetworkTags %}
 
 {% block form %}<form id="id_Form1" action="" method="post">{% endblock %}
 
@@ -299,7 +297,7 @@
 {% endcomment %}
 		
 	<br />
-	{% submitDefault "{idForm: 'id_Form1'}" %}	
+	{% signupButtonBar "{idForm: 'id_Form1'}" %}	
 	<br /><br />
 	
 	
