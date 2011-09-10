@@ -169,7 +169,7 @@ class UserSignupForm(XBaseForm):
 	# Fields
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', tabindex=1, label='XimpiaId')
 	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True, tabindex=2, 
-		help_text = _('Must provide a strong password to submit form. Allowed characters are letters, numbers and _ | . | $ | % | &'))
+		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
 					label= _('Password Verify'), tabindex=3)
 	email = XpEmailField(_dbUser, '_dbUser.email', tabindex=6, label='Email')

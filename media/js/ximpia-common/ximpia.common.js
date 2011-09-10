@@ -14,44 +14,59 @@
     
   }
 
-    function doShowPasswordStrength(userId, passwordId, submitId) {
-        // Password Strength
-        $("#" + passwordId).passStrengthener({
-                    userid: "#" + userId,
-                    strengthCallback:function(score, strength)
-                        {                       
-                            if(strength == 'good' || strength == 'strong')
-                            {
-                                $("#" + submitId).removeAttr('disabled');
-                            }
-                            else
-                            {
-                                $("#" + submitId).attr('disabled', 'disabled')
-                            }
-                        }
-                });         
-    }
-        
+	/**
+	 * Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
+	 * and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
+	 * the message of nor validating.
+	 */
+	function doShowPasswordStrength(userId, passwordId, submitId) {
+        	// Password Strength
+        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
+        	$("#" + passwordId).passStrengthener({
+			userid: "#" + userId,
+			strengthCallback:function(score, strength) {                       
+				if(strength == 'good' || strength == 'strong') {
+					$("#" + submitId).xpPageButton('enable', doBindSubmitButton);
+				} else {
+					$("#" + submitId).xpPageButton('disable');
+				}
+			}
+		});         
+	}
+    
+	/**
+	* callback method for submit signup click.
+	*/
+	function doBindSubmitButton() {
+		var btObjStr = $(this).attr('data-xp-obj');
+		var btObj = {};
+		if (btObjStr) {
+			btObj = JSON.parse(btObjStr);
+		}
+		var formId = btObj.form;
+		var isValid = $("#" + formId).valid();
+		var idImg = formId + '_Submit_Status';
+		var idTxt = formId + '_Submit_Text';
+		if (isValid == true) {
+			// OK
+			$("#" + formId).submit();
+		} else {
+			// Format errors
+			$("#" + idImg).addClass('AjaxButtonERROR');
+			$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
+		}
+	}
+
+	/**        
+	 * Bind signup submit button. Binds the click event of button, shows waiting icon, sends data through AJAX
+	 */
     function doBindSubmitForm(formId, callbackFunction) {
-        $("a.button[data-xp-js='submit']").click(function() {
-            var isValid = $("#" + formId).valid();
-            var idImg = 'id_' + formId + '_Submit_Status';
-            var idTxt = 'id_' + formId + '_Submit_Text';
-            if (isValid == true) {
-                // OK
-                $("#" + formId).submit();
-            } else {
-                // Format errors
-                $("#" + idImg).addClass('AjaxButtonERROR');
-                $("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
-            }
-        });
+    	$("a.button[data-xp-js='submit']").click(doBindSubmitButton);
         $("#" + formId).validate({
             submitHandler: function(form) {
-            	
                 // Submit form
-                var idImg = 'id_' + form.id + '_Submit_Status';
-                var idTxt = 'id_' + form.id + '_Submit_Text';               
+                var idImg = form.id + '_Submit_Status';
+                var idTxt = form.id + '_Submit_Text';               
                 $("#" + idImg).xpLoadingSmallIcon();
                 $("#" + idImg).xpLoadingSmallIcon('wait');
                 $("#" + idTxt).text('');
@@ -69,14 +84,8 @@
                             // Put all fields inside form valid that are now errors
                             $(".error").addClass('valid').removeClass("error");
                             // Disable button
-                            //$("#id_" + form.id + '_Submit').attr('disabled', 'disabled')
-                            $("#id_" + form.id + '_Submit').unbind('click');
-                            //$("#id_" + form.id + '_Submit').unbind('mouseenter').unbind('mouseleave');
-			    //$("#id_" + form.id + '_Submit').removeClass('button-hover');
-			    //$("#id_" + form.id + '_Submit').removeClass('button-blue-hover');
-                            $("#id_" + form.id + '_Submit').addClass('button-blue-disabled');
-                            $("#id_" + form.id + '_Submit').css('cursor', 'default');
-                            $("#id_" + form.id + '_Submit').unbind('mouseenter mouseleave');
+                            $("[data-xp-js='submit']").xpPageButton('disable');
+                            
                             // Change look to clicked
                             if ($("#" + 'id_msgSubmit_Form1').attr('value')) {
                                 showPopUp('id_msgSubmit_Form1');

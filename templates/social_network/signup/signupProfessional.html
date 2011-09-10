@@ -5,7 +5,7 @@
 {% load form %}
 {% load validation %}
 
-{% block form %}<form id="Form1" action="" method="post">{% endblock %}
+{% block form %}<form id="id_Form1" action="" method="post">{% endblock %}
 
 {% block js %}
 
@@ -20,6 +20,7 @@
 
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.networkIcon.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.loading.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.pageButton.js"></script>
 
 <!--<script type="text/javascript" src="{{settings.MEDIA_URL}}js/json.js"></script>-->
 
@@ -62,8 +63,8 @@
 
 {% block jquery %}
 
-	var formId = "Form1";
-	doShowPasswordStrength('id_ximpiaId', 'id_password', 'id_' + formId + '_Submit');
+	var formId = "id_Form1";
+	doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');
 	doBindBubbles();
 		
 	// Form1
@@ -167,13 +168,24 @@
 	   $(this).xpSocialNetworkIcon('click');
 	});
 	
-	$("[data-xp-js='submit']").hover(function() {
-		$(this).addClass('button-blue-hover');
+	$("[data-xp-js='submit']").xpPageButton();
+	$("[data-xp-js='submit']").xpPageButton('render');
+	
+	/*$("[data-xp-js='submit']").hover(function() {
+		$(this).addClass('buttonBlue-hover');
 		$(this).addClass('button-hover');
 	}, function() {		
-		$(this).removeClass('button-blue-hover');
+		$(this).removeClass('buttonBlue-hover');
 		$(this).removeClass('button-hover');
+	});*/
+	
+	/*$("[data-xp-js='submit']").click(function() {
+		$(this).addClass('buttonBlue-active');
 	});
+	
+	$("[data-xp-js='submit']").mouseup(function() {
+		$(this).removeClass('buttonBlue-active');
+	});*/
 		
 {% endblock %}
 
@@ -287,7 +299,7 @@
 {% endcomment %}
 		
 	<br />
-	{% submitDefault "Form1" %}	
+	{% submitDefault "{idForm: 'id_Form1'}" %}	
 	<br /><br />
 	
 	
