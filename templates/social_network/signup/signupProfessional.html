@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load socialNetworkTags %}
 
-{% block form %}<form id="id_Form1" action="" method="post">{% endblock %}
+{% block form %}<form id="id_Form1" action="doSome" method="post">{% endblock %}
 
 {% block js %}
 
@@ -191,74 +191,42 @@
 
 {% block app %}
 
-    <div id="app_Site" style="width: 100%; border: 0px solid" >
-	
-	<table id="SearchPadding"><tr><td style="width: 700px; padding-left: 30px;">
+    <div id="app_Site" class="app">
 	
 	{% if show_message %}
 	<div id="ErrorMessage" style="background-color:#DDDDDD; padding:20px"><b>Message</b></div>
 	{% endif %}
 
 	<h3>XimpiaId</h3>
-	
-	In the case of Facebook login you will not need to validate your email.<br/><br />
-	
-	<table cellspacing="0" cellpadding="0"><tr><td style="vertical-align:top;">
-	<div class="FormBlock">
-		
-	{% field "ximpiaId" form.ximpiaId "{"info": true}" %} <br/>
-
+	In the case of Facebook login you will not need to validate your email.<br/>
+	<div class="formBlock">
+	{% field "ximpiaId" form.ximpiaId "{"info": true, "tabindex": 1}" %} <br/>
 	<div id="id_showPassword">
-	{% if not auth.facebook %}
-	
-	{% field "password" form.password "{"info": true}" %} <br/>
-	{% field "passwordVerify" form.passwordVerify %} <br/>	
-	
+	{% if not auth.facebook %}	
+	{% field "password" form.password "{"info": true, "tabindex": 2}" %} <br/>
+	{% field "passwordVerify" form.passwordVerify "{"tabindex": 3}" %} <br/>	
 	{% endif %}
 	</div>
 	</div>
-	</td>
+	<div class="vLineSep"><img src="{{settings.MEDIA_URL}}images/blank.png" alt=" " /></div>
+	<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 20px">		
+		<div id="id_fbLoginButton"><fb:login-button perms="{{settings.FACEBOOK_SCOPE}}" show_faces="true"></fb:login-button></div>
+	</div>
 
-    <td style="width: 50px"></td>
-	<td style="background-color:#000000; width: 1px"> <img src="{{settings.MEDIA_URL}}images/blank.png" /></td>
-	<td style="width: 50px"></td>	
-	<td style="vertical-align:top;">
-	
-	<div id="id_socialNetworkSignupButtonsZone">
-		
-		<div id="id_fbLoginButton">
-			<fb:login-button perms="{{settings.FACEBOOK_SCOPE}}" show_faces="true"></fb:login-button>
-		</div>				
-	
-	</div>	
-		
-	</td>
-	
-	</tr></table>
-
-	<div id="UserData">	
-	
+	<div id="id_userData" style=" clear: both; padding-top: 5px">	
 	<h3>{% trans "About You" %}</h3>
-	
-	<div id="Info" class="FormBlock">
-	<table border="0"><tr><td style="vertical-align: top">
-	
-	{% field "firstName" form.firstName %} <br/>
-	{% field "email" form.email %} <br/>
-	{% field "country" form.country %} <br/>
-			
-	</td>
-	<td style="vertical-align: top; padding-left: 50px">
-	
-	{% field "lastName" form.lastName %} <br/>
-	{% field "city" form.city %} <br/>
-		
-	</td>
-	</tr></table>	
-	
+	<div id="id_info" class="formBlock" style="margin-top: 0px">
+	<div class="frmLeft">
+	{% field "firstName" form.firstName "{"tabindex": 4}" %} <br/>
+	{% field "email" form.email "{"tabindex": 6}" %} <br/>
+	{% field "country" form.country "{"tabindex": 8}" %} <br/>
+	</div>	
+	<div class="frmRight">
+	{% field "lastName" form.lastName "{"tabindex": 5}" %} <br/>
+	{% field "city" form.city "{"tabindex": 7}" %} <br/>
 	</div>
-	
-	</div>
+	</div><!-- Info -->	
+	</div><!-- UserData -->
 
 {% comment %}
     <h3>{% trans "Your Networks" %}</h3>
@@ -295,18 +263,9 @@
 	{% endif %}
 
 {% endcomment %}
-		
-	<br />
-	{% signupButtonBar "{idForm: 'id_Form1'}" %}	
-	<br /><br />
+
+	{% signupButtonBar "{idForm: 'id_Form1'}" %}
 	
-	
-	</td>
-		
-	</tr>
-	</table>
-	
-    
     </div>
     <!-- End app_MyApp -->
 

@@ -287,9 +287,6 @@ class SignupBusiness(Common):
 			lang = self._ctx['lang']
 			email = form.d('email')
 			sUser = form.d('ximpiaId')
-			
-			print 'Messages : ', XmlMessage.objects.all()
-			
 			if not bFacebookLogin:
 				# User/Password, we need to validate email address
 				subsDict = {	'host': settings.MAIL_HOST, 'name': form.d('firstName'),
@@ -343,12 +340,7 @@ class SignupBusiness(Common):
 				# Email Administrator to validate account
 				xmlMessage = XmlMessage.objects.get(name='Msg/SocialNetwork/Signup/AdminNotify/', lang='en').body
 				subject, message = ut_email.getMessage(xmlMessage)
-				message = string.Template(message).substitute(
-													linkedin=formDict['linkedInProfile'], 
-													account=str(formDict['account']),
-													organizationName=formDict['organizationName'],
-													organizationGroup=formDict['organizationGroup'],
-													name= formDict['firstName'] + ' ' + formDict['lastName'])
+				message = string.Template(message).substitute()
 				# send mail
 				send_mail(subject, message, settings.WEBMASTER_EMAIL, [settings.WEBMASTER_EMAIL])
 				#staticContent(request, 'login', message=_('Your account has been activated'))
@@ -370,6 +362,7 @@ class SignupBusiness(Common):
 		else:
 			# Activation code is not same => We show original form with message
 			resultDict = getResultERROR([])
+		print 'resultDict : ', resultDict
 		return resultDict
 	def _getNetworkProfile(self, form, bFacebookLogin):
 		"""Doc."""

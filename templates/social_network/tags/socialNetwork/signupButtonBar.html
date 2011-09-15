@@ -1,18 +1,19 @@
 {% load i18n %}
 {% load socialNetworkTags %}
-<div id="buttonBarBottom" class="BtBar" style="border: 0px solid; width: 800px; background: #eeeeee ">
-<table style=" width: 100%" border="0"><tr>
-<td width="66%">
-	<!-- Button Left -->
-	<a id="{{idButton}}" href="#" class="button buttonBlue" data-xp-js="submit" data-xp-obj='{"form": "{{obj.idForm}}","btMethod": ""}' onclick="return false;">
-    		<span>{% trans "Signup" %}</span>
-	</a>
-   
-   	{% loadingSmall idButton %}
-   
-</td>
-<td width="33%" style="text-align: right;">
-    	<!-- Button Right -->
-</td>
-</tr></table>
+<div id="id_buttonBarBottom" class="btBar">
+
+<div style="float: left">
+<!-- Button Left -->
+<a id="{{idButton}}" href="#" class="button buttonBlue" data-xp-js="submit" 
+	data-xp-obj='{"form": "{{obj.idForm}}","btMethod": ""}' onclick="return false;">
+<span>{% trans "Signup" %}</span></a>   
+{% loadingSmall idButton %}
+
+</div>
+
+<div style="float: left">
+<!-- Button Right -->
+
+</div>
+
 </div>

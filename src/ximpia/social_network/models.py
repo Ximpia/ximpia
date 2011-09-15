@@ -123,10 +123,7 @@ class SocialNetworkUserSocial(models.Model):
 		verbose_name_plural = "Social Networks for User"
 
 class UserSocial(BaseModel):
-	"""Model for UserSocial
-	FK : User
-	MN: Groups
-	SocialChannel"""
+	"""Model for UserSocial"""
 	user = models.ForeignKey(UserSys, 
 				verbose_name = _('User'), help_text = _('User'))
 	groups = models.ManyToManyField('GroupSocial',
@@ -224,7 +221,7 @@ class GroupSocial(BaseModel):
 				verbose_name = _('Social Group'), help_text = _('Group is a social group'))
 	isOrgGroup = models.BooleanField(default=False,
 				verbose_name = _('Organization Group'), help_text = _('Group belongs to organization'))
-	account = models.ForeignKey('Organization', null=True, blank=True,
+	account = models.ForeignKey('Organization', 'account', null=True, blank=True,
 				verbose_name = _('Account'), help_text = _('Account name'))
 	isPublic = models.BooleanField(default=True,
 				verbose_name = _('Public'), help_text = _('Group is public'))
@@ -364,7 +361,7 @@ class GroupStream(BaseModel):
 	postId = models.BigIntegerField(verbose_name = _('Post Id'), help_text = _('Post identification'))
 	user = models.ForeignKey(UserSocial,
 				verbose_name = _('User'), help_text = _('User'))
-	account = models.ForeignKey('Organization', null=True, blank=True, related_name='group_stream_account',
+	account = models.ForeignKey('Organization', 'account', null=True, blank=True, related_name='group_stream_account',
 				verbose_name = _('Account'), help_text = _('Account name'))
 	group = models.ForeignKey(GroupSys, null=True, blank=True,
 				verbose_name = _('Group'), help_text = _('Group'))
@@ -509,6 +506,25 @@ class ProfileDetail(BaseModel):
 		verbose_name = _('Profile Detail')
 		verbose_name_plural = _("Profiles Detail")
 
+class Profile(BaseModel):
+	"""User profiles for social network and applications. Profile name allows visibility options in web pages"""
+	app = models.ForeignKey('Application', null=True, blank=True,
+				verbose_name = _('Application'), help_text = _('Application attached to profile. If none selected, applies to whole system'))
+	name = models.CharField(max_length=20, db_index=True,
+				verbose_name = _('Name'), help_text = _('Profile name'))
+	account = models.ForeignKey('Organization', 'account', null=True, blank=True,
+				verbose_name = _('Organization'), help_text=_('Organization attached to profile'))
+	group = models.ForeignKey('GroupSocial', null=True, blank=True,
+				verbose_name = _('Group'), help_text=_('Department or group attached to profile'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'SN_PROFILE'
+		unique_together = (('name','account','group'),)
+		verbose_name = _('Profile')
+		verbose_name_plural = _("Profiles")
+	
+
 class UserProfile(BaseModel):
 	"""Profile for users"""
 	userAccount = models.ForeignKey('UserAccount', unique=True,
@@ -548,9 +564,9 @@ class UserProfile(BaseModel):
 	def __unicode__(self):
 		return str(self.userAccount)
 	class Meta:
-		db_table = 'SN_PROFILE'
-		verbose_name = _('Profile')
-		verbose_name_plural = _("Profiles")
+		db_table = 'SN_USER_PROFILE'
+		verbose_name = _('User Profile')
+		verbose_name_plural = _("User Profiles")
 
 class Organization(BaseModel):
 	"""Organization Model"""
@@ -936,12 +952,7 @@ class Invitation(BaseModel):
 				verbose_name = _('Contact'), help_text = _('Invitation for contact'))
 	invitationCode = models.CharField(max_length=10, unique=True,
 				verbose_name = _('Inivitation Code'), help_text = _('Invitation Code'))
-	email = models.EmailField(null=True, blank=True,
-				verbose_name = _('Email'), help_text = _('Email'))
-	mobile = models.CharField(max_length=15, null=True, blank=True,
-				verbose_name = _('Mobile Phone'), help_text = _('Mobile Phone'))
-	contactMethod = models.CharField(max_length=15, choices=Choices.MSG_MEDIA, null=True, blank=True,
-				verbose_name = _('Contact Method'), help_text = _('Contact Method for invitation'))
+	email = models.EmailField(unique=True, verbose_name = _('Email'), help_text = _('Email attached to invitation'))
 	status = models.CharField(max_length=10, choices=Choices.INVITATION_STATUS, default=Constants.PENDING,
 				verbose_name = _('Status'), help_text = _('Invitation status : pending, used.'))
 	number = models.PositiveSmallIntegerField(default=1,
@@ -950,8 +961,10 @@ class Invitation(BaseModel):
 				verbose_name = _('Affiliate'), help_text = _('Affiliate'))
 	message = models.CharField(max_length=200, null=True, blank=True,
 				verbose_name = _('Message'), help_text = _('Message'))
-	type = models.CharField(max_length=15, choices=Choices.INVITATION_TYPE, default=Choices.INVITATION_TYPE_ORDINARY,
-				verbose_name = _('Type'), help_text = _('Invitation Type : Ordinary, promotion.'))
+	accType = models.CharField(max_length=15, choices=Choices.INVITATION_ACC_TYPE, default=Choices.INVITATION_ACC_TYPE_USER,
+				verbose_name = _('Account Type'), help_text = _('Invitation Account Type'))
+	payType = models.CharField(max_length=15, choices=Choices.INVITATION_PAY_TYPE, default=Choices.INVITATION_PAY_TYPE_FREE,
+				verbose_name = _('Payment Type'), help_text = _('Invitation Pay Type'))
 	domain = models.CharField(max_length=100, null=True, blank=True,
 				verbose_name = _('Domain'), help_text = _('Domain'))
 	def __unicode__(self):
@@ -1120,8 +1133,6 @@ class SignupData(BaseModel):
 	user = models.CharField(max_length=30, unique=True,
 			verbose_name = _('User'), help_text = _('User'))
 	activationCode = models.PositiveSmallIntegerField(verbose_name = _('Activation Code'), help_text = _('Activation code'))
-	invitationType = models.CharField(max_length=15, choices=Choices.INVITATION_TYPE, default=Choices.INVITATION_TYPE_ORDINARY,
-			verbose_name = _('Invitation Type'), help_text = _('Type of invitation'))
 	data = models.TextField(verbose_name = _('Data'), help_text = _('Data'))
 	def __unicode__(self):
 		return str(self.user)

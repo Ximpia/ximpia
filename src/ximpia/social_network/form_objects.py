@@ -10,6 +10,8 @@ from django.utils.encoding import force_unicode
 
 from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
 
+from ximpia.util.basic_types import DictUtil
+
 from validators import validateUserId, validateEmail, validateTxtField, validatePassword 
 
 # =====================================================================================
@@ -219,7 +221,7 @@ class XpBaseCharField(CharField):
 			if argsDict['jsReq'] == True:
 				#argsDict['widget'].attrs['data-xp-val'] += ' required'
 				self._updateAttrs(argsDict['widget'].attrs, 'data-xp-val', 'required')
-		print 'attrs : ', argsDict['label'], argsDict['widget'].attrs
+		#print 'attrs : ', argsDict['label'], argsDict['widget'].attrs
 		# tabindex
 		if argsDict.has_key('tabindex'):
 			argsDict['widget'].attrs['tabindex'] = str(argsDict['tabindex'])
@@ -231,6 +233,8 @@ class XpBaseCharField(CharField):
 			del argsDict['jsReq']
 		if argsDict.has_key('tabindex'):
 			del argsDict['tabindex']
+		if argsDict.has_key('attrs'):
+			del argsDict['attrs']
 		super(XpBaseCharField, self).__init__(**argsDict)
 	def _doInstanceInit(self, instance, insField):
 		"""Set instance and instanceName and instanceFieldName"""
@@ -257,6 +261,17 @@ class XpBaseCharField(CharField):
 			jsReq = req
 		tuple = (req, jsReq)
 		return tuple
+	def _doAttrs(self, argsDict, attrDict):
+		"""Process form attrs with field attribute dictionary for widget
+		@param argsDict: 
+		@param attrDict: 
+		@return: dict"""
+		dict = {}
+		if argsDict.has_key('attrs'):
+			dict = DictUtil.addDicts([argsDict['attrs'], attrDict])
+		else:
+			dict = attrDict
+		return dict
 
 class XpCharField(XpBaseCharField):
 	"""CharField"""
@@ -267,10 +282,12 @@ class XpCharField(XpBaseCharField):
 		argsDict['max_length'] = max if max != None else fieldMaxLength
 		argsDict['min_length'] = min if min != None else None
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq) 
-		classStr = 'SmallMust' if req == True else 'Small' 
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'maxlength': str(argsDict['max_length'])})
+		
 		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpTextInputWidget(attrs={	'class': classStr,
-									'maxlength': str(argsDict['max_length'])})
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpCharField, self).__init__(**argsDict)
 
 class XpUserField(XpBaseCharField):
@@ -282,11 +299,12 @@ class XpUserField(XpBaseCharField):
 		argsDict['max_length'] = max if max != None else fieldMaxLength
 		argsDict['min_length'] = min if min != None else None
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
-		classStr = 'SmallMust' if req == True else 'Small'
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'data-xp-val': 'ximpiaId',
+							'maxlength': str(argsDict['max_length'])})
 		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpTextInputWidget(attrs={	'class': classStr,
-									'data-xp-val': 'ximpiaId',
-									'maxlength': str(argsDict['max_length'])})
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpUserField, self).__init__(**argsDict)
 
 class XpEmailField(XpBaseCharField):
@@ -298,11 +316,12 @@ class XpEmailField(XpBaseCharField):
 		argsDict['max_length'] = max if max != None else fieldMaxLength
 		argsDict['min_length'] = min if min != None else None
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
-		classStr = 'SmallMust' if req == True else 'Small'
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'data-xp-val': 'email',
+							'maxlength': str(argsDict['max_length'])})
 		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpTextInputWidget(attrs={	'class': classStr,
-									'data-xp-val': 'email',
-									'maxlength': str(argsDict['max_length'])})
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpEmailField, self).__init__(**argsDict)
 
 class XpPasswordField(XpBaseCharField):
@@ -314,22 +333,34 @@ class XpPasswordField(XpBaseCharField):
 		argsDict['max_length'] = max if max != None else fieldMaxLength
 		argsDict['min_length'] = min if min != None else None
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
-		classStr = 'SmallMust' if req == True else 'Small'
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'data-xp-val': 'password',
+							'maxlength': str(argsDict['max_length'])})
 		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpPasswordWidget(attrs={	'class': classStr,
-									'data-xp-val': 'password',
-									'maxlength': str(argsDict['max_length'])})
+			argsDict['widget'] = XpPasswordWidget(attrs=attrDict)
 		super(XpPasswordField, self).__init__(**argsDict)
 
 class XpChoiceField(ChoiceField):
 	"""ChoiceField"""
+	def _doAttrs(self, argsDict, attrDict):
+		"""Process form attrs with field attribute dictionary for widget
+		@param argsDict: 
+		@param attrDict: 
+		@return: dict"""
+		dict = {}
+		if argsDict.has_key('attrs'):
+			dict = DictUtil.addDicts([argsDict['attrs'], attrDict])
+		else:
+			dict = attrDict
+		return dict
 	def __init__(self, instance, insField, req=True, init='', choices=None, **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
 			self.instanceName = instanceName
 			self.instanceFieldName = instanceFieldName
 			self.instance = instance
-		classStr = 'SmallMust' if req == True else 'Small'
+		classStr = 'fieldMust' if req == True else 'field'
 		xpVal = 'required' if req == True else ''
 		argsDict['required'] = req
 		if instance != None:
@@ -339,9 +370,10 @@ class XpChoiceField(ChoiceField):
 				argsDict['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text if instance else argsDict['help_text']
 			argsDict['initial'] = init if init != '' else eval('instance' + '.' + self.instanceFieldName)
 		argsDict['choices'] = choices if choices != None else None		
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'data-xp-val': xpVal})
 		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpSelectWidget(attrs={	'class': classStr,
-									'data-xp-val': xpVal})
+			argsDict['widget'] = XpSelectWidget(attrs=attrDict)
 		# tabindex
 		if argsDict.has_key('tabindex'):
 			argsDict['widget'].attrs['tabindex'] = str(argsDict['tabindex'])
@@ -357,13 +389,24 @@ class XpChoiceField(ChoiceField):
 
 class XpMultiField(MultipleChoiceField):
 	"""Cimpia Multiple Choice Field"""
+	def _doAttrs(self, argsDict, attrDict):
+		"""Process form attrs with field attribute dictionary for widget
+		@param argsDict: 
+		@param attrDict: 
+		@return: dict"""
+		dict = {}
+		if argsDict.has_key('attrs'):
+			dict = DictUtil.addDicts([argsDict['attrs'], attrDict])
+		else:
+			dict = attrDict
+		return dict
 	def __init__(self, instance, insField, req=True, init=[], choices=None, **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
 			self.instanceName = instanceName
 			self.instanceFieldName = instanceFieldName
 			self.instance = instance
-		classStr = 'SmallMust' if req == True else 'Small'
+		classStr = 'fieldMust' if req == True else 'field'
 		xpVal = 'required' if req == True else ''
 		#classStr = 'SmallMust' if req == True else 'Small'
 		argsDict['required'] = req
@@ -381,9 +424,10 @@ class XpMultiField(MultipleChoiceField):
 		else:
 			argsDict['initial'] = init
 		argsDict['choices'] = choices if choices != None else None
-		if not argsDict.has_key('widget'):
-			argsDict['widget'] = XpMultipleWidget(attrs={'class': classStr, 'data-xp-val': xpVal, 'size': '10', 
+		attrDict = self._doAttrs(argsDict, {'class': classStr, 'data-xp-val': xpVal, 'size': '10', 
 							'style': 'vertical-align:top; margin-top: 10px'})
+		if not argsDict.has_key('widget'):
+			argsDict['widget'] = XpMultipleWidget(attrs=attrDict)
 		# jsVal
 		if argsDict.has_key('jsVal'):
 			for jsValidation in argsDict['jsVal']:

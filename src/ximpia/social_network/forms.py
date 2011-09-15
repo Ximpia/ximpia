@@ -28,7 +28,7 @@ from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, X
 from ximpia.social_network.form_objects import XpUserField
 from ximpia.util.js import Form as _jsf
 
-from ximpia.social_network.validators import validateCaptcha
+from validators import validateCaptcha
 
 class XBaseForm(forms.Form):
 	ERROR_INVALID = 'invalid'
@@ -167,17 +167,17 @@ class UserSignupForm(XBaseForm):
 	_dbAddress = Address()
 	_dbInvitation = Invitation()
 	# Fields
-	ximpiaId = XpUserField(_dbUser, '_dbUser.username', tabindex=1, label='XimpiaId')
-	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True, tabindex=2, 
+	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
+	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True,  
 		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
-					label= _('Password Verify'), tabindex=3)
-	email = XpEmailField(_dbUser, '_dbUser.email', tabindex=6, label='Email')
-	firstName = XpCharField(_dbUser, '_dbUser.first_name', tabindex=4)
-	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False, tabindex=5)
+					label= _('Password Verify'))
+	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'disabled': 'disabled'})
+	firstName = XpCharField(_dbUser, '_dbUser.first_name')
+	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
 	#industry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], label=_('Industries'), help_text=_('Industries'))
-	city = XpCharField(_dbAddress, '_dbAddress.city', req=False, tabindex=7)
-	country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='', tabindex=8)
+	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
+	country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
 	invitationCode = forms.CharField(widget=XpHiddenWidget)
 	twitterIcon_data = XpSocialIconField(network='twitter', version=1)
@@ -190,7 +190,7 @@ class UserSignupForm(XBaseForm):
 									'affiliateId': -1}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
 		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha']]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))	
 			
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		"""Build initial values for form"""
@@ -202,7 +202,7 @@ class UserSignupForm(XBaseForm):
 		if len(snProfileDict) != 0:
 			self.user.firstName = snProfileDict['first_name']
 			self.user.lastName = snProfileDict['last_name']
-			self.user.email = snProfileDict['email']
+			#self.user.email = snProfileDict['email']
 			self.user.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
 			locationName = snProfileDict['location']['name']
 			locationFields = locationName.split(',')

@@ -393,12 +393,29 @@ class Choices(object):
 				('word', 'Word')
 				)
 	# INVITATION TYPE
-	INVITATION_TYPE_ORDINARY = 'ordinary'
+	"""INVITATION_TYPE_ORDINARY = 'ordinary'
 	INVITATION_TYPE_PROMOTION = 'promotion'
 	INVITATION_TYPE = (
 				(INVITATION_TYPE_ORDINARY, _('Ordinary')),
 				(INVITATION_TYPE_PROMOTION, _('Promotion'))
+				)"""
+	# INVITATION_ACC_TYPE
+	INVITATION_ACC_TYPE_USER = 'user'
+	INVITATION_ACC_TYPE_ORG = 'organization'
+	INVITATION_ACC_TYPE = (
+				(INVITATION_ACC_TYPE_USER, _('User')),
+				(INVITATION_ACC_TYPE_ORG, _('Organization'))
 				)
+				
+	# INVITATION_PAY_TYPE
+	INVITATION_PAY_TYPE_FREE = 'free'
+	INVITATION_PAY_TYPE_PAY = 'pay'
+	INVITATION_PAY_TYPE_PROMOTION = 'promotion'
+	INVITATION_PAY_TYPE = (
+				(INVITATION_PAY_TYPE_FREE, _('Free')),
+				(INVITATION_PAY_TYPE_PAY, _('Pay')),
+				(INVITATION_PAY_TYPE_PROMOTION, _('Promotion'))
+			)
 	# ACCOUNT_TYPE
 	ACCOUNT_TYPE_ORDINARY = 'ordinary'
 	ACCOUNT_TYPE_PROMOTION = 'promotion'

@@ -13,7 +13,7 @@ def doJsonObj(dict, jsonObjStr, default={}):
 			list = jsonObj.keys()
 			for key in list:
 				if jsonObj.has_key(key):
-					dict['obj'][key] = str(jsonObj[key])
+					dict['obj'][key] = jsonObj[key]
 				else:
 					dict['obj'] = default
 		except ValueError:
@@ -34,11 +34,13 @@ def signupButtonBar(context, jsonObjStr=''):
 def field(context, fieldName, fieldInstance, jsonObjStr=''):
 	"""Field with Label and form object. Supports info tool tip from data model."""
 	dict = {}
-	#obj = {'info': 'False'}
 	dict['settings'] = context['settings']
 	doJsonObj(dict, jsonObjStr, default={'info': 'False'})
 	dict['fieldInstance'] = fieldInstance
 	dict['fieldName'] = fieldName
+	if dict['obj'].has_key('tabindex'):
+		fieldInstance.field.widget.attrs['tabindex'] = dict['obj']['tabindex']
+		print fieldInstance
 	return dict
 
 @register.inclusion_tag('social_network/tags/socialNetwork/loadingSmall.html', takes_context=True)

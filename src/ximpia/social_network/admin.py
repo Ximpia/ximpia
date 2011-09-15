@@ -7,7 +7,7 @@ from models import UserProfile, ProfileDetail, Organization, OrganizationGroup, 
 from models import Skill, SkillUserAccount, SkillGroup, Industry, AddressOrganization, SocialNetworkOrganization, TaxType, TaxOrganization
 from models import TaxUserAccount, SocialNetworkOrganizationGroup, UserAccountRelation, UserAccountContract, Invitation, Affiliate
 from models import TagUserTotal, LinkUserTotal, SubscriptionDaily, Subscription, SubscriptionItemMonth, Application, Contact, ContactDetail, MasterValue
-from models import Notification, XmlMessage
+from models import Notification, XmlMessage, Profile
 
 from django.contrib import admin
 
@@ -226,7 +226,7 @@ class VersionAdmin(admin.ModelAdmin):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
-class ProfileAdmin(admin.ModelAdmin):
+class UserProfileAdmin(admin.ModelAdmin):
 	list_display = ('id','userAccount',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
@@ -356,7 +356,9 @@ class UserAccountContractAdmin(admin.ModelAdmin):
 		obj.save()
 
 class InvitationAdmin(admin.ModelAdmin):
-	list_display = ('id','fromUser','invitationCode','status',)
+	list_display = ('id','fromUser','invitationCode','status','accType','payType','domain','affiliate',)
+	list_filter = ('accType','payType','affiliate','status')
+	search_fields = ('domain','message')
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -466,6 +468,13 @@ class MasterValueAdmin(admin.ModelAdmin):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
+class ProfileAdmin(admin.ModelAdmin):
+	list_display = ('name','app','account','group')
+	list_filter = ('app',)
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
+
 ########################################################################################
 
 admin.site.register(Comment, CommentAdmin)
@@ -480,12 +489,13 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(UserParam, UserParamAdmin)
 admin.site.register(UserSocial, UserSocialAdmin)
 admin.site.register(GroupSocial, GroupSocialAdmin)
+admin.site.register(Profile, ProfileAdmin)
 
 admin.site.register(SocialNetworkUserSocial, SocialNetworkUserSocialAdmin)
 admin.site.register(UserDetail, UserDetailAdmin)
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Version, VersionAdmin)
-admin.site.register(UserProfile, ProfileAdmin)
+admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(ProfileDetail, ProfileDetailAdmin)
 #admin.site.register(AddressType, AddressTypeAdmin)
 admin.site.register(Organization, OrganizationAdmin)

@@ -32,13 +32,24 @@ input.SmallMust, select.SmallMust, textarea.SmallMust {
     background-color:#FFFF99;
 }
 
+input.fieldMust, select.fieldMust, textarea.fieldMust {
+    background-color:#FFFF99;
+}
+
+input.fieldOpt, select.fieldOpt, textarea.fieldOpt {
+    background-color:#ffffff;
+}
+
 input.Small, select.Small, textarea.Small {
 	background-color:#ffffff;
 }
 
-.FormBlock {
+.formBlock {
 	padding-left:30px; 
 	line-height:35px;
+	margin-top: 20px;
+	float: left; 
+	border: 0px solid
 }
 
 .FormBlock input {
@@ -61,6 +72,10 @@ input.Small, input.SmallMust {
     padding-left: 5px;
 }
 
+input.field, input.fieldMust {
+    padding-left: 5px;
+}
+
 .ShortcutStart {
 	color: #dddddd;
 	font-size: 90%;
@@ -69,10 +84,16 @@ input.Small, input.SmallMust {
 div#Wrapper {
 	text-align: left;
 	width: 870px;
-	margin: 0px 0px;
+	margin-left: auto;
+	margin-right: auto;
 	padding: 0px;
 	top: 0px;
 	border: solid 0px;
+}
+
+.app {
+	border: 0px solid;
+	padding: 15px;
 }
 
 div#Header {
@@ -89,7 +110,7 @@ div#Header {
 	font-weight: bold;
 	font-size: 12pt;
 	margin-right: 10px;
-	border: solid 2px color #000;
+	border: solid 2px #000;
 }
 
 .ButtonTiny {
@@ -99,7 +120,7 @@ div#Header {
 	font-weight: bold;
 	font-size: 10pt;
 	margin-right: 10px;
-	border: solid 2px color #000;
+	border: solid 2px #000;
 }
 
 .Test {
@@ -121,7 +142,7 @@ div#Header {
 
 .clearfloat {
 	font-size: 1px;
-	line-height:0;
+	line-height:1px;
 	clear: both;
 	height: 0;
 }
@@ -255,7 +276,7 @@ img#TecorLogo {
 
 div#Footer {
 	float: inherit;
-	margin-top:4px;
+	margin-top:10px;
 	padding: 5px 0px;
 	width: 870px;
 	line-height:15px;
@@ -818,4 +839,41 @@ div.tagDel {
 
 .buttonBlue-disabled {
 	background: #4477a1; 
+}
+
+/* *************/
+/* Form Layout */
+/* *************/
+
+
+.vLineSep {
+	background-color:#000000; 
+	width: 1px; 
+	float: left; 
+	margin: 20px 50px 0px 50px; 
+	height: 80px;
+}
+
+/* Left Column */
+.frmLeft {
+	float: left;
+}
+
+/* Right Column */
+.frmRight {
+	float: left; 
+	margin-left: 50px;
+}
+
+/* Button Bar */
+.btBar {
+	width: 800px; 
+	background: #eeeeee; 
+	clear: both; 
+	position: relative; 
+	top: 10px; 
+	margin-bottom: 20px;
+	border: 0px solid; 
+	height: 38px; 
+	padding: 5px;
 }

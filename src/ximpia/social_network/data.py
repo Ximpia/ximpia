@@ -273,7 +273,8 @@ class AccountDAO(CommonDAO):
 		facebookIcon_data = getDataDict(f)['facebookIcon_data']
 		linkedinIcon_data = getDataDict(f)['linkedinIcon_data']
 		# fields data
-		fields = json.loads(getDataDict(f)['fields'])		
+		fields = json.loads(getDataDict(f)['params'])
+		print 'fields : ', fields		
 		userGroupList = fields['userGroups']
 		profiles = fields['profiles']
 		affiliateId = fields['affiliateId']
@@ -718,7 +719,7 @@ class UserDAO(CommonDAO):
 		numberInvitationsLeft = numberMaxInvitations-numberInvitationsUsed
 		return numberInvitationsLeft
 
-	def invite(self, user, email, mobile, contactId, contactMethod, account, type=Choices.INVITATION_TYPE_ORDINARY):
+	def invite(self, user, email, mobile, contactId, contactMethod, account, type=Choices.INVITATION_PAY_TYPE_FREE):
 		"""Invite other user to ximpia
 		@return: invitation : Invitation"""
 		fromAccount = None

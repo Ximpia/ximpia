@@ -104,24 +104,23 @@ class UnicodeType:
 		
 
 class DictUtil:
-	
-	def __init__(self):
-		pass
-	
-	def addDicts(self, DictList):
+		
+	@staticmethod
+	def addDicts(dictList):
+		"""Add dictionaries"""
 		i = 0
-		Dict = {}
-		while i != len(DictList):
-			DictTemp = DictList[i]
-			ListTemp = DictTemp.keys()
+		dict = {}
+		while i != len(dictList):
+			dictTemp = dictList[i]
+			listTemp = dictTemp.keys()
 			j = 0
-			while j != len(ListTemp):
-				key = ListTemp[j]
-				value = DictTemp[key]
-				Dict[key] = value
+			while j != len(listTemp):
+				key = listTemp[j]
+				value = dictTemp[key]
+				dict[key] = value
 				j = j + 1
 			i = i + 1
-		return Dict
+		return dict
 
 class DbDate:
 

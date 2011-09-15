@@ -1,11 +1,9 @@
 {% extends "base/base.html" %}
 
 {% load i18n %}
-{% load networks %}
-{% load submit %}
-{% load validation %}
+{% load socialNetworkTags %}
 
-{% block form %}<form id="Form1" action="" method="post">{% endblock %}
+{% block form %}<form id="Form1" action="doSome" method="post">{% endblock %}
 
 {% block js %}
 
@@ -208,7 +206,8 @@
         <label for="id_organizationIndustry">{% trans "Industry" %}: {{form.organizationIndustry}}<br />
 		</td></tr></table>
 	</div>	
-		
+
+{% comment %}
     <h3>{% trans "Your Networks" %}</h3>
     <div id="SocialNetworks" class="FormBlock">
         You can also link your user to your professional networks.
@@ -236,7 +235,9 @@
     </table>
     
     </div>
-	
+{% endcomment %}
+
+{% comment %}	
     {% if showInvitation %}
     <h3>{% trans "Invitation" %}</h3>
     <div id="Invitation" class="FormBlock">
@@ -248,10 +249,9 @@
     <h3>{% trans "Validation" %}</h3>
     {% captcha %}
     {% endif %}
+{% endcomment %}
 	
-    <br />
-    {% submitDefault "Form1" %} 
-    <br /><br />
+    {% signupButtonBar "{idForm: 'id_Form1'}" %}
 	
 	</td>
 		

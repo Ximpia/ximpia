@@ -28,60 +28,65 @@
 {% block form %}<form id="Form1" action="">{% endblock %}
 {% csrf_token %}
 
-<table width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" >
+<div id="Wrapper">
 
-<div id="Wrapper" >
-
+<header>
     <div id="Header" >
     
     <div id="Logo">
+    	<!-- ******** Logo now should be CSS based !!!!  ************ -->
     {% if request.user.is_authenticated %}
-    <img id="LogoImg" src="/site_media/images/blank.png" /> <br/>
-	<img id="BetaImg" src="/site_media/images/blank.png" />
+    <img id="LogoImg" src="/site_media/images/blank.png" alt="{% trans "Logo" %}" /> <br/>
+	<img id="BetaImg" src="/site_media/images/blank.png" alt="{% trans "Beta" %}" />
 	{% else %}
-	<a href="/"><img id="LogoImg" src="/site_media/images/blank.png" /> <br/>
-	<img id="BetaImg" src="/site_media/images/blank.png" /></a>
+	<a href="/"><img id="LogoImg" src="/site_media/images/blank.png" alt=" " /> <br/>
+	<img id="BetaImg" src="/site_media/images/blank.png" alt=" " /></a>
 	{% endif %}
     
     </div>
     
+    <nav>
     <div id="IconMenu">
     	{% if user.is_authenticated %}
 
         <!--<img src="/site_media/images/home_60.png" title="Home" />
-        <img src="/site_media/images/users_two_60.png" title="Contacts" />
-        <img src="/site_media/images/globe_60.png" title="Links" />
-        <img src="/site_media/images/folder_full_60.png" title="Files" />
-        <img src="/site_media/images/lightbulb_60.png" title="Help" />
-        <img src="/site_media/images/spanner_60.png" title="Settings" />
-        <img src="/site_media/images/logout_60.png" title="Logout" />-->
+        <img src="/site_media/images/users_two_60.png" title="Contacts" alt="Contacts" />
+        <img src="/site_media/images/globe_60.png" title="Links" alt="Links" />
+        <img src="/site_media/images/folder_full_60.png" title="Files" alt="Files" />
+        <img src="/site_media/images/lightbulb_60.png" title="Help" alt="Help" />
+        <img src="/site_media/images/spanner_60.png" title="Settings" alt="Settings" />
+        <img src="/site_media/images/logout_60.png" title="Logout" alt="Logout" />-->
 		
-		<img src="/site_media/images/add_60.png" title="Signup" />
-		<img src="/site_media/images/users_two_60.png" title="Friends" />
-		<img src="/site_media/images/paper_content_60.png" title="About Us" />
-		<img src="/site_media/images/mail_add_60.png" title="Contact Us" />
-		<img src="/site_media/images/lock_60.png" title="Privacy" />
-        <img src="/site_media/images/go_60.png" title="Login" />
+		<img src="/site_media/images/add_60.png" title="Signup" alt="Signup" />
+		<img src="/site_media/images/users_two_60.png" title="Friends" alt="Friends" />
+		<img src="/site_media/images/paper_content_60.png" title="About Us" alt="About Us" />
+		<img src="/site_media/images/mail_add_60.png" title="Contact Us" alt="Contact Us" />
+		<img src="/site_media/images/lock_60.png" title="Privacy" alt="Privacy" />
+        <img src="/site_media/images/go_60.png" title="Login" alt="Login" />
 		
 		{% else %}
 		
-        <!--<a href="/"><img src="/site_media/images/home_60.png" title="Home" /></a>-->
-		<img src="/site_media/images/add_60.png" title="Signup" />
-		<img src="/site_media/images/users_two_60.png" title="Friends" />
-		<img src="/site_media/images/paper_content_60.png" title="About Us" />
-		<img src="/site_media/images/mail_add_60.png" title="Contact Us" />
-		<img src="/site_media/images/lock_60.png" title="Privacy" />
-        <img src="/site_media/images/go_60.png" title="Login" />
+        <!--<a href="/"><img src="/site_media/images/home_60.png" title="Home" alt="Home" /></a>-->
+		<img src="/site_media/images/add_60.png" title="Signup" alt="Signup" />
+		<img src="/site_media/images/users_two_60.png" title="Friends" at="Friends" />
+		<img src="/site_media/images/paper_content_60.png" title="About Us" alt="About Us" />
+		<img src="/site_media/images/mail_add_60.png" title="Contact Us" alt="Contact Us" />
+		<img src="/site_media/images/lock_60.png" title="Privacy" alt="Privacy" />
+        <img src="/site_media/images/go_60.png" title="Login" alt="Login" />
 		
 		{% endif %}
     </div>
+    </nav>
     
     </div>
     <!-- End Header -->
-    
+
+</header>
+
+<nav>    
 	{% if bar %}
-    <div id="HeaderBar" style="margin-top:2px;">    
-    <table style="border:0px solid; position:relative; left: -128px" width="100%">
+    <div id="HeaderBar" style="margin-top:2px">    
+    <table style="border:4px solid; position:relative; left: -128px" width="100%">
     <tr>
     <td>
         <!-- Icons Here -->
@@ -94,7 +99,9 @@
     </div>
     <!-- End HeaderBar -->
 	{% endif %}
-    
+
+</nav>
+
     <div id="Apps" style="border:solid 1px #ddd; margin-top:10px" >
     
 	{% block app %}
@@ -103,24 +110,23 @@
     </div>
     <!-- End Apps -->
     
-    <br class="clearfloat"/>
-
-    <div id="Footer">
-        <div id="FooterText">
-        <table width="100%"><tr><td style="width: 100px">
-        &copy; 2011 &nbsp;<a href="http://www.tecor.com"><img id="TecorLogo" src="http://ximpia-test.s3.amazonaws.com/images/blank.gif" alt="Tecor Communications S.L." title="Tecor Communications S.L." /></a>
-        </td><td>
-        <!--<a href="/es/quienesSomos.html">Quienes Somos</a> | <a href="/es/apoyos.html">Nuestros Apoyos</a> | <a href="/robi/">Robi, El Robot</a> | <a href="/es/contacto.html">Contacta</a> | 
-        <a href="/es/contract/privacy.html">Privacidad</a> | --><a href="http://twitter.com/ximpia" target="site">@ximpia</a>
-        </td></tr></table>
-        </div>
-    </div>
+    <!--<br class="clearfloat"/>-->
+    
+    <footer>
+	<div id="Footer">
+        	<div id="FooterText">
+        	<div  style=" float: left;; margin-left: 10px; margin-top: -5px">&copy; 2011 &nbsp;<a href="http://www.tecor.com"><img id="TecorLogo" 
+        		src="http://ximpia-test.s3.amazonaws.com/images/blank.gif" 
+        		alt="Tecor Communications S.L." title="Tecor Communications S.L." /></a>
+        	</div>
+        	<div><span><a href="http://twitter.com/ximpia" target="site">@ximpia</a></span></div>
+        	</div>
+    	</div>    	
+    </footer>
     
 </div>
 
 <br/>
-
-</td></tr></table>
 
 <!-- START POPUP MESSAGE -->
 <div class="Pops">
@@ -169,7 +175,7 @@
 {% block js %}
 {% endblock %}
 
-<script language="JavaScript">
+<script>
 	
 jQuery(document).ready(function($){
 
@@ -186,6 +192,9 @@ jQuery(document).ready(function($){
     // ...and apply...
     $('#IconMenu').jqDock(dockOptions);  
 	
+	// *************************
+	// *** jQuery VALIDATORS ***
+	// *************************
 	//jQuery.validator.messages.required = "";
 	// Ximpia Generic Validations
 	jQuery.validator.addMethod("ximpiaId", function(value, element) {
