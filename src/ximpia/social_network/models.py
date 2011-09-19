@@ -130,6 +130,8 @@ class UserSocial(BaseModel):
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	socialChannel = models.CharField(max_length=20, default=Constants.USER,
 				verbose_name = _('Social Channel'), help_text = _('Social Channel'))
+	profiles = models.ManyToManyField('Profile',
+				verbose_name = _('Profiles'), help_text=_('Profiles for user'))
 	def __unicode__(self):
 		return str(self.user.username) + '-' + str(self.socialChannel)
 	def getGroupById(self, groupId):
@@ -522,8 +524,7 @@ class Profile(BaseModel):
 		db_table = 'SN_PROFILE'
 		unique_together = (('name','account','group'),)
 		verbose_name = _('Profile')
-		verbose_name_plural = _("Profiles")
-	
+		verbose_name_plural = _("Profiles")	
 
 class UserProfile(BaseModel):
 	"""Profile for users"""

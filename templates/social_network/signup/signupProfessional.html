@@ -4,11 +4,16 @@
 {% load socialNetworkTags %}
 
 {% block form %}<form id="id_Form1" action="doSome" method="post">{% endblock %}
+	
+{% block css %}
+<link href="{{settings.MEDIA_URL}}css/ximpia.qtip.css" rel="stylesheet" type="text/css" />
+{% endblock %}
 
 {% block js %}
 
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.passStrengthener.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.bubblepopup.js"></script>
 
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.metadata.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.form.js"></script>
@@ -19,6 +24,7 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.networkIcon.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.loading.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/ximpia-plugins/ximpia.qtip.js"></script>
 
 <!--<script type="text/javascript" src="{{settings.MEDIA_URL}}js/json.js"></script>-->
 
@@ -169,21 +175,11 @@
 	$("[data-xp-js='submit']").xpPageButton();
 	$("[data-xp-js='submit']").xpPageButton('render');
 	
-	/*$("[data-xp-js='submit']").hover(function() {
-		$(this).addClass('buttonBlue-hover');
-		$(this).addClass('button-hover');
-	}, function() {		
-		$(this).removeClass('buttonBlue-hover');
-		$(this).removeClass('button-hover');
-	});*/
-	
-	/*$("[data-xp-js='submit']").click(function() {
-		$(this).addClass('buttonBlue-active');
-	});
-	
-	$("[data-xp-js='submit']").mouseup(function() {
-		$(this).removeClass('buttonBlue-active');
-	});*/
+	//$("label.info[title]").qtip();
+
+	// Geo loc for city and country	
+	var gmaps = XpGoogleMaps();
+	gmaps.insertCityCountry("id_city", "id_country");
 		
 {% endblock %}
 

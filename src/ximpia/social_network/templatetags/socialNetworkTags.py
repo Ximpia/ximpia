@@ -40,7 +40,8 @@ def field(context, fieldName, fieldInstance, jsonObjStr=''):
 	dict['fieldName'] = fieldName
 	if dict['obj'].has_key('tabindex'):
 		fieldInstance.field.widget.attrs['tabindex'] = dict['obj']['tabindex']
-		print fieldInstance
+	print fieldInstance
+	print dict
 	return dict
 
 @register.inclusion_tag('social_network/tags/socialNetwork/loadingSmall.html', takes_context=True)

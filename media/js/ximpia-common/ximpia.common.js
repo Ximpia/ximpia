@@ -1,142 +1,66 @@
 
-  function getValue(id, key) {
-    var array = eval($("#" + id).attr('value'));
-    var value = '';
-    for (var i=0; i<array.length; i++) {
-        var list = array[i];
-        if (list[0] == key) {
-            value = list[1];
-        }
-    }
-    return value;
-  }
-  function hasKey(id, key) {
-    
-  }
+ximpia = ximpia || {};
+ximpia.common = ximpia.common || {};
+ximpia.visual = ximpia.visual || {};
+ximpia.site = ximpia.site || {};
 
-	/**
-	 * Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
-	 * and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
-	 * the message of nor validating.
-	 */
-	function doShowPasswordStrength(userId, passwordId, submitId) {
-        	// Password Strength
-        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
-        	$("#" + passwordId).passStrengthener({
-			userid: "#" + userId,
-			strengthCallback:function(score, strength) {                       
-				if(strength == 'good' || strength == 'strong') {
-					$("#" + submitId).xpPageButton('enable', doBindSubmitButton);
-				} else {
-					$("#" + submitId).xpPageButton('disable');
-				}
-			}
-		});         
-	}
-    
-	/**
-	* callback method for submit signup click.
-	*/
-	function doBindSubmitButton() {
-		var btObjStr = $(this).attr('data-xp-obj');
-		var btObj = {};
-		if (btObjStr) {
-			btObj = JSON.parse(btObjStr);
-		}
-		var formId = btObj.form;
-		var isValid = $("#" + formId).valid();
-		var idImg = formId + '_Submit_Status';
-		var idTxt = formId + '_Submit_Text';
-		if (isValid == true) {
-			// OK
-			$("#" + formId).submit();
-		} else {
-			// Format errors
-			$("#" + idImg).addClass('AjaxButtonERROR');
-			$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
+ximpia.common.List = {};
+ximpia.common.List.getValue = (function(id, key) {
+	var array = eval($("#" + id).attr('value'));
+	var value = '';
+	for (var i=0; i<array.length; i++) {
+		var list = array[i];
+		if (list[0] == key) {
+			value = list[1];
 		}
 	}
+	return value;
+});
+ximpia.common.List.hasKey = (function(id, key) {	
+});
 
-	/**        
-	 * Bind signup submit button. Binds the click event of button, shows waiting icon, sends data through AJAX
-	 */
-    function doBindSubmitForm(formId, callbackFunction) {
-    	$("a.button[data-xp-js='submit']").click(doBindSubmitButton);
-        $("#" + formId).validate({
-            submitHandler: function(form) {
-                // Submit form
-                var idImg = form.id + '_Submit_Status';
-                var idTxt = form.id + '_Submit_Text';               
-                $("#" + idImg).xpLoadingSmallIcon();
-                $("#" + idImg).xpLoadingSmallIcon('wait');
-                $("#" + idTxt).text('');
-                $(form).ajaxSubmit({
-                    dataType: 'json',
-                    success: function(response, status) {
-                        var responseMap = eval(response);
-                        statusCode = responseMap['status'];
-                        if (statusCode.indexOf('.') != -1) {
-                            statusCode = statusCode.split('.')[0]
-                        }
-                        if (statusCode == 'OK') {
-                            $("#" + idImg).xpLoadingSmallIcon('ok');
-                            $("#" + idTxt).text($("#id_msg_ok").attr('value'));
-                            // Put all fields inside form valid that are now errors
-                            $(".error").addClass('valid').removeClass("error");
-                            // Disable button
-                            $("[data-xp-js='submit']").xpPageButton('disable');
-                            
-                            // Change look to clicked
-                            if ($("#" + 'id_msgSubmit_Form1').attr('value')) {
-                                showPopUp('id_msgSubmit_Form1');
-                            } else {
-                                callbackFunction();
-                            }                       
-                        } else {
-                            $("#" + idImg).xpLoadingSmallIcon('error');
-                            $("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
-                            // Integrate showMessage, popUp, etc...
-                            var list = responseMap['errors'];
-                            message = '<ul>'
-                            for (var i=0; i<list.length; i++) {
-                                var errorId = list[i][0];
-                                var errorMessage = list[i][1];
-                                //alert(errorId);
-                                $("#" + errorId).removeClass("valid");
-                                $("#" + errorId).addClass("error");
-                                message = message + '<li>' + errorMessage + '</li>';
-                            }
-                            message = message + '</ul>';
-                            // Show error Message in pop up
-                            showPopUp({
-                                title: 'Errors Found',
-                                message: message,
-                            });
-                        }
-                    },
-                    error: function (data, status, e) {
-                        alert(data + ' ' + status + ' ' + e);
-                        $("#" + idImg).xpLoadingSmallIcon('errorWithPopUp');
-                        showPopUp({
-                            title: 'System Error',
-                            message: 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks',
-                            height: 50
-                        });
-                    }
-                });
-            },
-            errorPlacement: function(error, element) {
-                element.next("img table").after(error);
-            }
-        });         
-    }
-    
-    function showRemoteError() {
-        showPopUp('MessageERROR');
-    }
-        
-    //function showMessage(sTitle, sMessage, sButtons, sEffectIn, sEffectOut, bFadeBackground, iWidth, iHeight, functionShow) {
-    function showMessage(messageOptions) {
+/*
+ximpia.common.ClassType10 = function() {
+	var _attr = {
+		priv: {
+			_var1 : 9,
+			_doSomething: (function() {
+				var a = 3;
+				alert('No soy lo que crees');
+				console.log('Holaaa')
+			})
+		},
+		pub: {
+			MY_CONSTANT : 18726,
+			myMethod1: (function() {
+				alert('myMethod!!!' + _attr.priv.var1);
+				var d = 2;
+				var j = "Hola";
+				console.log('myMethod1...');
+				_attr.priv._doSomething();
+			})
+		}
+	};
+	return _attr.pub;
+};
+/**
+ * XpClassTypeNew.HO_KO_LOST
+ * @type {Number}
+ */
+/*ximpia.common.ClassType10.HO_KO_LOST = 40;*/
+
+
+ximpia.common.Window = {};
+/**
+ * Show Remote Error Window
+ */
+ximpia.common.Window.showRemoteError = (function() {
+	showPopUp('MessageERROR');
+});
+/**
+ * Show Message Window
+ */
+ximpia.common.Window.showMessage = (function(messageOptions) {
         var sTitle = '';
         var sMessage = '';
         var sButtons = 'MsgCPClose:' + eval($("#id_buttonConstants").attr('value'))['close'];
@@ -231,10 +155,12 @@
         }
         if (functionShow) {
             functionShow($(this));
-        }
-    }
-
-    function clickMsgOk(bFadeBackground, functionName) {
+        }	
+});
+/**
+ * Click Ok Button
+ */
+ximpia.common.Window.clickMsgOk = (function(bFadeBackground, functionName) {
         bFadeOut = checkFadeOut();
         if (!bFadeOut) {
             bFadeBackground = false;
@@ -245,11 +171,12 @@
         }
         if (functionName) {
             functionName();
-        }
-    }
-
-    // Pop Up Message. It is used for Ajax actions, like OK Message, Error messages, etc...
-    function showPopUp(key) {
+        }	
+});
+/**
+ * Show Pop Up. It is used for Ajax actions, like OK Message, Error messages, etc...
+ */
+ximpia.common.Window.showPopUp = (function(key) {
         if (typeof key == 'string') {
             var sId = key;
             var messageOptions = new Object();
@@ -317,170 +244,413 @@
                     window.location = sUrl;
                 });
             }
-        }
-   }
-   
-    function checkFadeOut() {
+        }	
+});
+/**
+ * Check Fade Out
+ */
+ximpia.common.Window.checkFadeOut = (function() {
         if (jQuery.browser.msie) {
             bCheck = false;
         }
         else {
             bCheck = true;
         }
-        return bCheck
-    }
-    
-    function checkIE6() {
+        return bCheck	
+});
+
+ximpia.common.Browser = {};
+/**
+ * Check Internet Explorer IE6
+ */
+ximpia.common.Browser.checkIE6 = (function() {
         if (jQuery.browser.msie && jQuery.browser.version.substr(0,3)=='6.0') {
             bIE6 = true;
         }
         else {
             bIE6 = false;
         }
-        return bIE6;
-    }
-
-    function checkIE() {
+        return bIE6;	
+});
+/**
+ * Check Internet Explorer
+ */
+ximpia.common.Browser.checkIE = (function() {
         if (jQuery.browser.msie) {
             bIE = true;
         }
         else {
             bIE = false;
         }
-        return bIE
-    }
-    
-    function doReloadCaptcha() {
-        $("#id_ImgRefreshCaptcha").click(function() {
-            // reload captcha
-            $.get('/reloadCaptcha');
-            // Show image
-            var kk = Math.random();
-            $("#id_ImgCaptcha").attr('src', '/captcha/captcha.png?code=' + kk);
-        });
-    }
-    
-    function doBindBubbles() {    	
-        var bubbleOptions = {position : 'left', 
-                        innerHtmlStyle: {color:'black', 'text-align':'left', 'font-size': '10pt', 'width': '200px', 'line-height' : '1.2em'},
-                        themeName:  'blue',
-                        themePath:  '/site_media/images/jquerybubblepopup-theme',
-			alwaysVisible: true,
-			closingDelay: 0,
-        };
-        $('label.info').CreateBubblePopup(bubbleOptions);
-        $('label.info').mouseover(function() {
-		$(this).css('cursor', 'help');
-		$.metadata.setType("attr", "data-xp-obj");
-		var data = $(this).metadata();
-		if (data.msg) {
-			$(this).SetBubblePopupInnerHtml(data.msg, true);
+        return bIE	
+});
+
+ximpia.common.Form = function() {
+	var _attr = {
+		priv: {},
+		pub: {
+			/**
+			* callback method for submit signup click.
+			*/
+			doSubmitButton: function() {
+				var btObjStr = $(this).attr('data-xp-obj');
+				var btObj = {};
+				if (btObjStr) {
+					btObj = JSON.parse(btObjStr);
+				}
+				var formId = btObj.form;
+				var isValid = $("#" + formId).valid();
+				var idImg = formId + '_Submit_Status';
+				var idTxt = formId + '_Submit_Text';
+				if (isValid == true) {
+					// OK
+					$("#" + formId).submit();
+				} else {
+					// Format errors
+					$("#" + idImg).addClass('AjaxButtonERROR');
+					$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
+				}				
+			},
+			/**        
+	 		* Bind signup submit button. Binds the click event of button, shows waiting icon, sends data through AJAX
+	 		*/
+			doBindSubmitForm: function(formId, callbackFunction) {
+    				$("a.button[data-xp-js='submit']").click(doBindSubmitButton);
+        			$("#" + formId).validate({
+            			submitHandler: function(form) {
+                			// Submit form
+                			var idImg = form.id + '_Submit_Status';
+                			var idTxt = form.id + '_Submit_Text';               
+                			$("#" + idImg).xpLoadingSmallIcon();
+                			$("#" + idImg).xpLoadingSmallIcon('wait');
+                			$("#" + idTxt).text('');
+                			$(form).ajaxSubmit({
+                    			dataType: 'json',
+                    			success: function(response, status) {
+                        			var responseMap = eval(response);
+                        			statusCode = responseMap['status'];
+                        			if (statusCode.indexOf('.') != -1) {
+                            				statusCode = statusCode.split('.')[0]
+                        			}
+                        			if (statusCode == 'OK') {
+                            				$("#" + idImg).xpLoadingSmallIcon('ok');
+                            				$("#" + idTxt).text($("#id_msg_ok").attr('value'));
+                            				// Put all fields inside form valid that are now errors
+                            				$(".error").addClass('valid').removeClass("error");
+                            				// Disable button
+                            				$("[data-xp-js='submit']").xpPageButton('disable');
+                            				// Change look to clicked
+                            				if ($("#" + 'id_msgSubmit_Form1').attr('value')) {
+                                				showPopUp('id_msgSubmit_Form1');
+                            				} else {
+                                				callbackFunction();
+                            				}                       
+                        			} else {
+                            				$("#" + idImg).xpLoadingSmallIcon('error');
+                            				$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
+                            				// Integrate showMessage, popUp, etc...
+                            				var list = responseMap['errors'];
+                            				message = '<ul>'
+                            				for (var i=0; i<list.length; i++) {
+                                				var errorId = list[i][0];
+                                				var errorMessage = list[i][1];
+                                				//alert(errorId);
+                                				$("#" + errorId).removeClass("valid");
+                                				$("#" + errorId).addClass("error");
+                                				message = message + '<li>' + errorMessage + '</li>';
+                            				}
+                            				message = message + '</ul>';
+                            				// Show error Message in pop up
+                            				showPopUp({
+                                				title: 'Errors Found',
+                                				message: message,
+                            				});
+                        			}
+                    			},
+                    			error: function (data, status, e) {
+                        			alert(data + ' ' + status + ' ' + e);
+                        			$("#" + idImg).xpLoadingSmallIcon('errorWithPopUp');
+                        			showPopUp({
+                            				title: 'System Error',
+                            				message: 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks',
+                            				height: 50
+                        			});
+                    			}
+                			});
+            			},
+            			errorPlacement: function(error, element) {
+                			element.next("img table").after(error);
+            			}
+        			});				
+			},
+			doReloadCaptcha: function() {
+			        $("#id_ImgRefreshCaptcha").click(function() {
+            			// reload captcha
+            			$.get('/reloadCaptcha');
+            			// Show image
+            			var kk = Math.random();
+            			$("#id_ImgCaptcha").attr('src', '/captcha/captcha.png?code=' + kk);
+        			});
+			},
+			/**
+			 * Tooltip for form labels
+			 */
+			doBindBubbles: function() {
+       				$("label.info").mouseover(function() {
+      					$(this).css('cursor', 'help');
+       				});
+       				$("label.info").qtip({
+       					content: {
+       						attr: 'data-xp-title'
+       					},
+       					events: {
+       						focus: function(event, api) {
+       						}
+       					},
+       					style: {
+	       					width: 200,
+       						classes: 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+       					}
+       				});
+			}
 		}
-        });
-        /*$('input.Small').focus(function() {
-            var name = $(this).attr('name');
-            var textId = 'id_msg_' + name;
-            var bubleText = $('#' + textId).attr('value');
-            $('#' + 'id_img_' + name).SetBubblePopupInnerHtml(bubleText, true);
-            $('#' + 'id_img_' + name).ShowBubblePopup();
-        });
-        $('input.Small').blur(function() {
-            var name = $(this).attr('name');
-            $('#' + 'id_img_' + name).HideBubblePopup();
-        });*/       
-    }
+	}
+	return _attr.pub;
+}
 
-    // ***********************************************************************
-    //     VISUAL COMPONENTS DATA
-    // **********************************************************************
+ximpia.common.Ajax = {};
 
-    // SocialNetworkIconData visual component data methods  
-    function SocialNetworkIconData(id) {
-        this.id = id;
-        var inputData = $("#" + this.id).attr('value');
-        this.dataDictList = JSON.parse(inputData);
-        this.getDataDictList = function() {
-            return this.dataDictList
-        }
-        this.getData = function() {
-            return this.dataDictList[1]
-        }
-        this.getConfig = function() {
-            return this.dataDictList[0]
-        }
-        this.getToken = function() {
-            return this.dataDictList[1].token
-        }
-        this.setToken = function(token) {
-            this.dataDictList[1].token = token;
-            $("#" + this.id).attr('value',JSON.stringify(dataDictList))
-        }
-    }
+ximpia.common.GoogleMaps = function() {
+	var _attr = {
+		priv:  {},
+		pub:  {
+			init: function() {},
+			insertCityCountry: function(idCity, idCountry) {
+  				var data = {};
+				if (navigator.geolocation) {
+	  				navigator.geolocation.getCurrentPosition(function(position) {
+  						var loc = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+  						geocoder = new google.maps.Geocoder();
+  						geocoder.geocode({'latLng': loc}, function(results, status) {
+							var city = "";
+  							var countryCode = "";
+  							var list =  results[0].address_components;
+  							for (var i=0; i<list.length; i++) {
+	  							var fields = list[i].types;
+  								for (var j=0; j<fields.length; j++) {
+	  								if (fields[j] == "locality") {
+  										city = list[i].long_name;
+  										$("#" + idCity).attr('value', city);
+  									} else if (fields[j] == "country") {
+	  									countryCode = list[i].short_name.toLowerCase();
+  										$("#" + idCountry + " :selected").removeAttr('selected');
+  										$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
+  									}
+  								}		  					
+  							}
+  						});
+		  			});
+				}
+			}
+		}
+	}
+	return _attr.pub;
+};
+
+ximpia.visual.SocialNetworkIconData = function() {
+	var _attr = {
+		priv: {
+			id: null,
+			inputData: null,
+			dataDictList: null
+		},
+		pub: {
+			/**
+			 * Constructor
+			 */
+			init:(function(id) {
+				_attr.priv.id = id
+				_attr.priv.inputData = $("#" + this.id).attr('value');
+				_attr.priv.dataDictList = JSON.parse(_attr.priv.inputData);
+			}),
+			/**
+			 * Get list of data
+			 */
+			getDataDictList: function() {
+				return _attr.priv.dataDictList
+			},
+			/**
+			 * Get data
+			 */
+			getData: function() {
+				return _attr.priv.dataDictList[1]
+			},
+			/**
+			 * Get configuration
+			 */
+			getConfig: function() {
+				return _attr.priv.dataDictList[0]
+			},
+			/**
+			 * Get token
+			 */
+			getToken: function() {
+				return _attr.priv.dataDictList[1].token
+			},
+			/**
+			 * Set token
+			 */
+			setToken: function(token) {
+				_attr.priv.dataDictList[1].token = token;
+			}
+		}
+	}
+	return _attr.pub;
+}
+
+ximpia.visual.GenericComponentData = function() {
+	var _attr = {
+		priv: {
+			id: null,
+			inputData: null,
+			dataDictList: null
+		},
+		pub: {
+			/**
+			 * Constructor
+			 */
+			init: function(id) {
+				_attr.priv.id = id
+				_attr.priv.inputData = $("#" + this.id).attr('value');
+				_attr.priv.dataDictList = JSON.parse(_attr.priv.inputData);
+			},
+			/**
+			 * 
+			 */
+			getDataDictList: function() {
+				return _attr.priv.dataDictList;
+			},
+			/**
+			 * 
+			 */
+			getDataList: function() {
+				return _attr.priv.dataDictList[1].data;
+			},
+			/**
+			 * 
+			 */
+			getDataListPaging: function(page, numberPages) {
+				var size = _attr.pub.getSize();
+				// TODO
+			},
+			/**
+			 * 
+			 */
+			setDataList: function(array) {
+				_attr.priv.dataDictList[1].data = array;
+			},
+			/**
+			 * 
+			 */
+			addDataEnd: function(obj) {
+            			var size = _attr.priv.dataDictList[1].data.push(obj);
+            			$("#" + _attr.priv.id).attr('value', JSON.stringify(_attr.priv.dataDictList));
+			},
+			/**
+			 * 
+			 */
+			writeData: function(obj, i) {
+            			_attr.priv.dataDictList[1].data[i] = obj;
+            			$("#" + _attr.priv.id).attr('value', JSON.stringify(_attr.priv.dataDictList));
+			},
+			/**
+			 * 
+			 */
+			getSize: function() {
+				return _attr.priv.dataDictList[1].data.length;
+			},
+			/**
+			 * Object has element by text?
+			 */
+			hasElement: function(searchText) {
+            			var array = _attr.priv.getDataList();
+            			var hasElement = false;
+            			for (var i = 0; i< array.length; i++) {
+                			if (array[i].text == searchText) {
+                    				hasElement = true;
+                			}
+            			}
+            			return hasElement;
+			},
+			/**
+			 * Object has element by name?
+			 */
+			hasElementByName: function(searchText) {
+            			var array = _attr.priv.getDataList();
+            			var hasElement = false;
+            			for (var i = 0; i< array.length; i++) {
+                			if (array[i].name == searchText) {
+                    				hasElement = true;
+                			}
+            			}
+            			return hasElement;
+			},
+			/**
+			 * Delete data from object
+			 */
+			deleteData: function(i) {
+            			var newArray = [];
+            			var array = _attr.pub.getDataList();
+            			for (var j=0; j<array.length; j++) {
+                			if (i != j) {
+                    				newArray.push(array[j]);
+                			}
+            			}
+            			_attr.pub.setDataList(newArray);
+            			$("#" + _attr.priv.id).attr('value', JSON.stringify(_attr.priv.dataDictList));
+			},
+			/**
+			 * 
+			 */
+			getConfigDict: function() {
+				return _attr.priv.dataDictList[0];
+			}
+		}
+	}
+	return _attr.pub;
+}
+
+ximpia.site.Signup = function() {
+	var _attr = {
+		priv: {},
+		pub: {
+			/**
+	 		* Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
+	 		* and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
+	 		* the message of nor validating.
+	 		*/
+			doShowPasswordStrength: function(userId, passwordId, submitId) {
+	        		// Password Strength
+		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
+		        	$("#" + passwordId).passStrengthener({
+					userid: "#" + userId,
+					strengthCallback:function(score, strength) {                       
+						if(strength == 'good' || strength == 'strong') {
+							$("#" + submitId).xpPageButton('enable', doBindSubmitButton);
+						} else {
+							$("#" + submitId).xpPageButton('disable');
+						}
+					}
+				});
+			}
+		}
+	}
+	return _attr.pub;
+}
+
+// =============================================================================
     
-    // GenericComponentData
-    function GenericComponentData(id) {
-        this.id = id;
-        var inputData = $("#" + this.id).attr('value');
-        this.dataDictList = JSON.parse(inputData);
-        this.getDataDictList = function() {
-            return this.dataDictList
-        }
-        this.getDataList = function() {
-            return this.dataDictList[1].data;
-        }
-        this.getDataListPaging = function(page, numberPages) {
-            var size = this.getSize();
-            // TODO
-        }
-        this.setDataList = function(array) {
-            this.dataDictList[1].data = array;
-        }
-        this.addDataEnd = function(obj) {
-            var size = this.dataDictList[1].data.push(obj);
-            $("#" + this.id).attr('value', JSON.stringify(this.dataDictList));
-        }
-        this.writeData = function(obj, i) {
-            this.dataDictList[1].data[i] = obj;
-            $("#" + this.id).attr('value', JSON.stringify(this.dataDictList));
-        }
-        this.getSize = function() {
-            return this.dataDictList[1].data.length;
-        }
-        this.hasElement = function(searchText) {
-            var array = this.getDataList();
-            var hasElement = false;
-            for (var i = 0; i< array.length; i++) {
-                if (array[i].text == searchText) {
-                    hasElement = true;
-                }
-            }
-            return hasElement;
-        }
-        this.hasElementByName = function(searchText) {
-            var array = this.getDataList();
-            var hasElement = false;
-            for (var i = 0; i< array.length; i++) {
-                if (array[i].name == searchText) {
-                    hasElement = true;
-                }
-            }
-            return hasElement;
-        }
-        this.deleteData = function(i) {
-            var newArray = new Array();
-            var array = this.getDataList();
-            for (var j=0; j<array.length; j++) {
-                if (i != j) {
-                    newArray.push(array[j]);
-                }
-            }
-            this.setDataList(newArray);
-            $("#" + this.id).attr('value', JSON.stringify(this.dataDictList));
-        }
-        this.getConfigDict = function() {
-            return this.dataDictList[0];
-        }
-    }
+
 
     function fadeIcons() {
         $(".Icon").mouseover(function() {
