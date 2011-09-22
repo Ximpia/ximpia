@@ -29,15 +29,15 @@ urlpatterns = patterns('',
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
     
     # signupUser
-    (r'^signupUser/(?P<invitationCode>\w+)$', 'social_network.views.signup'),
-    (r'^signupUser$', 'social_network.views.signup'),
+    (r'^signup/(?P<invitationCode>\w+)$', 'social_network.views.signup'),
+    (r'^signup$', 'social_network.views.signup'),
     
     # signupOrganization
-    (r'^signupOrganization/(?P<invitationCode>\w+)$', 'social_network.views.signupOrganization'),
-    (r'^signupOrganization$', 'social_network.views.signupOrganization'),
+    #(r'^signupOrganization/(?P<invitationCode>\w+)$', 'social_network.views.signupOrganization'),
+    #(r'^signupOrganization$', 'social_network.views.signupOrganization'),
     
     # activateUser
-    (r'^activateUser/(?P<user>.*)/(?P<activationCode>[0-9]+)$', 'social_network.views.activateAccount'),
+    #(r'^activateUser/(?P<user>.*)/(?P<activationCode>[0-9]+)$', 'social_network.views.activateAccount'),
 
     # Reload captcha
     (r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),

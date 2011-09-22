@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load socialNetworkTags %}
 
-{% block form %}<form id="id_Form1" action="doSome" method="post">{% endblock %}
+{% block form %}<form id="id_Form1" action="" method="post">{% endblock %}
 	
 {% block css %}
 <link href="{{settings.MEDIA_URL}}css/ximpia.qtip.css" rel="stylesheet" type="text/css" />
@@ -67,120 +67,11 @@
 
 {% block jquery %}
 
-	var formId = "id_Form1";
-	doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');
-	doBindBubbles();
-		
-	// Form1
-	doBindSubmitForm(formId);
-	
-    // reloadCaptcha
-    doReloadCaptcha();
-	
-	// fadeIcons	
-	fadeIcons();
-	
-	function processSnLogin() {	
-		// Click on Facebook or LinkedIn button
-		$(".SnLogin").click(function() {
-			var sId = $(this).attr('id');
-			if (sId == 'id_facebookLogin') {
-				// Facebook
-				FB.login(function(response) {
-	  				if (response.session) {
-						$("#id_facebookToken").attr('value', response.session.access_token);
-						//alert(response.session.access_token);
-    					if (response.perms) {
-	      					// user is logged in and granted some permissions.
-      						// perms is a comma separated list of granted permissions
-							$("#id_fbLoginButton").css('display', 'block');
-							$("#id_mixLoginButton").css('display', 'none');
-							FB.XFBML.parse();
-							// Hide passwords
-							$("#id_showPassword").css('display','none');
-							// Get profile
-							FB.api('/me', function(responseProfile) {
-								// Fillout fields in form
-								$("#id_firstName").attr('value', responseProfile.first_name);
-								$("#id_lastName").attr('value', responseProfile.last_name);
-								$("#id_email").attr('value', responseProfile.email);
-								$("#id_ximpiaId").attr('value', responseProfile.first_name.toLowerCase() + '.' + responseProfile.last_name.toLowerCase());
-								var locationName = responseProfile.location.name;
-								var locationFields = locationName.split(',');
-								$("#id_city").attr('value', locationFields[0].trim());
-								var locale = responseProfile.locale;
-								$("#id_country").attr('value', locale.split('_')[1].toLowerCase());
-								$("#id_facebookIcon").xpSocialNetworkIcon('changeStatusOK');
-							});
-    					} else {
-	      					// user is logged in, but did not grant any permissions
-							// Fillout fields in form
-    					}
-  					} else {
-	    				// user is not logged in
-  					}
-				}, {perms:'email,user_birthday'});
-			}
-			else if (sId == 'id_linkedInLogin') {
-				// LinkedIn
-				//IN.UI.Authorize().place();
-				alert('LinkedIn');
-			}
-		});
-	}
+	// Just call a method for the bindings of the page
+	var obj = ximpia.site.Signup();
+	console.log(obj)
+	obj.doProfessionalBind();
 
-	var fbAppId = $("#id_facebookAppId").attr('value');
-	FB.init({appId: fbAppId, status: true, cookie: true, xfbml: true});
-  	FB.Event.subscribe('auth.sessionChange', function(response) {
-    	if (response.session) {
-    		// A user has logged in, and a new cookie has been saved			
-			
-			var facebookList = JSON.parse($("#id_facebookIcon_data").attr('value'));
-			facebookList[1].token = response.session.access_token;
-			$("#id_facebookIcon_data").attr('value', JSON.stringify(facebookList));
-			
-			// Hide passwords
-			$("#id_showPassword").css('display','none');
-			$("#id_password").css('display','none');
-			$("#id_passwordVerify").css('display','none');
-			$("#id_password").removeClass('required');
-			$("#id_passwordVerify").removeClass('required');
-			// Get profile
-			FB.api('/me', function(responseProfile) {
-				// Fillout fields in form
-				$("#id_firstName").attr('value', responseProfile.first_name);
-				$("#id_lastName").attr('value', responseProfile.last_name);
-				$("#id_email").attr('value', responseProfile.email);
-				$("#id_ximpiaId").attr('value', responseProfile.first_name.toLowerCase() + '.' + responseProfile.last_name.toLowerCase());
-				var locationName = responseProfile.location.name;
-				var locationFields = locationName.split(',');
-				$("#id_city").attr('value', locationFields[0].trim());
-				var locale = responseProfile.locale;
-				$("#id_country").attr('value', locale.split('_')[1].toLowerCase());
-				$("#id_facebookIcon").xpSocialNetworkIcon('changeStatusOK');
-			});			
-    	} else {
-    		// The user has logged out, and the cookie has been cleared
-			//alert('Out....');
-    	}
-	});
-
-	//processSnLogin();
-	
-	$(".AuthIcon").xpSocialNetworkIcon();
-	$(".AuthIcon").click(function() {
-	   $(this).xpSocialNetworkIcon('click');
-	});
-	
-	$("[data-xp-js='submit']").xpPageButton();
-	$("[data-xp-js='submit']").xpPageButton('render');
-	
-	//$("label.info[title]").qtip();
-
-	// Geo loc for city and country	
-	var gmaps = XpGoogleMaps();
-	gmaps.insertCityCountry("id_city", "id_country");
-		
 {% endblock %}
 
 {% block title %}Ximpia - {% trans "Signup" %}{% endblock %}
@@ -194,15 +85,14 @@
 	{% endif %}
 
 	<h3>XimpiaId</h3>
-	In the case of Facebook login you will not need to validate your email.<br/>
-	<div class="formBlock">
-	{% field "ximpiaId" form.ximpiaId "{"info": true, "tabindex": 1}" %} <br/>
-	<div id="id_showPassword">
-	{% if not auth.facebook %}	
-	{% field "password" form.password "{"info": true, "tabindex": 2}" %} <br/>
-	{% field "passwordVerify" form.passwordVerify "{"tabindex": 3}" %} <br/>	
-	{% endif %}
-	</div>
+	<div class="formBlock" style="margin-top: 0px">
+		{% field "ximpiaId" form.ximpiaId "{"info": true, "tabindex": 1}" %} <br/>
+		<div id="id_showPassword">
+			{% if not auth.facebook %}	
+				{% field "password" form.password "{"info": true, "tabindex": 2}" %} <br/>
+				{% field "passwordVerify" form.passwordVerify "{"tabindex": 3}" %} <br/>	
+			{% endif %}
+		</div>
 	</div>
 	<div class="vLineSep"><img src="{{settings.MEDIA_URL}}images/blank.png" alt=" " /></div>
 	<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 20px">		
@@ -210,55 +100,19 @@
 	</div>
 
 	<div id="id_userData" style=" clear: both; padding-top: 5px">	
-	<h3>{% trans "About You" %}</h3>
-	<div id="id_info" class="formBlock" style="margin-top: 0px">
-	<div class="frmLeft">
-	{% field "firstName" form.firstName "{"tabindex": 4}" %} <br/>
-	{% field "email" form.email "{"tabindex": 6}" %} <br/>
-	{% field "country" form.country "{"tabindex": 8}" %} <br/>
-	</div>	
-	<div class="frmRight">
-	{% field "lastName" form.lastName "{"tabindex": 5}" %} <br/>
-	{% field "city" form.city "{"tabindex": 7}" %} <br/>
-	</div>
-	</div><!-- Info -->	
+		<h3>{% trans "About You" %}</h3>
+		<div id="id_info" class="formBlock" style="margin-top: 0px">
+			<div class="frmLeft">
+				{% field "firstName" form.firstName "{"tabindex": 4}" %} <br/>
+				{% field "email" form.email "{"tabindex": 6}" %} <br/>
+				{% field "country" form.country "{"tabindex": 8}" %} <br/>
+			</div>	
+			<div class="frmRight">
+				{% field "lastName" form.lastName "{"tabindex": 5}" %} <br/>
+				{% field "city" form.city "{"tabindex": 7}" %} <br/>
+			</div>
+		</div><!-- Info -->	
 	</div><!-- UserData -->
-
-{% comment %}
-    <h3>{% trans "Your Networks" %}</h3>
-    <div id="SocialNetworks" class="FormBlock">
-    	You can also link your account to your other networks.
-	<table>
-		<tr>
-          <td>
-			{% socialNetworkIcon "facebook" auth %}
-          </td>
-          <td>
-			{% socialNetworkIcon "linkedin" auth %}
-          </td>
-		  <td>
-			{% socialNetworkIcon "twitter" auth %}
-		  </td>		  
-		</tr>
-	</table>
-	
-    </div>
-{% endcomment %}
-
-{% comment %}
-	{% if showInvitation %}
-	<h3>{% trans "Invitation" %}</h3>
-	<div id="Invitation" class="FormBlock">
-		<label for="id_invitationCode">{% trans "Invitation Code" %}: {{form.invitationCode}}
-	</div>
-	{% endif %}
-	
-	{% if not showInvitation %}
-	<h3>{% trans "Validation" %}</h3>
-	{% captcha %}
-	{% endif %}
-
-{% endcomment %}
 
 	{% signupButtonBar "{idForm: 'id_Form1'}" %}
 	

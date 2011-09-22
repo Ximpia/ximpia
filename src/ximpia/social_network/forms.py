@@ -35,18 +35,19 @@ class XBaseForm(forms.Form):
 	_request = None
 	_ctx = None
 	_db = {}
+	#cleaned_data = None
 	entryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	copyEntryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=json.dumps(False))
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	pkFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
-	errors = {}
+	#errors = {}
 	def __init__(self, *argsTuple, **argsDict): 
 		"""Constructor for base form container"""
 		if argsDict.has_key('ctx'):
 			self._ctx = argsDict['ctx']
-		self.errors = {}
+		#self.errors = {}
 		#self.errors['invalid'] = []
 		if argsDict.has_key('instances'):
 			dict = argsDict['instances']
@@ -102,14 +103,9 @@ class XBaseForm(forms.Form):
 		@param tupleList: Like ('password','passwordVerify')"""
 		for tuple in tupleList:
 			field1 = eval("self.fields['" + tuple[0] + "']")
-			#field1Value = self.data[tuple[0]]
 			field2 = eval("self.fields['" + tuple[1] + "']")
-			#field1Value = self.data[tuple[1]]
-			#field1Value = self.d(tuple[0])
-			#field2Value = self.d(tuple[1])			
 			field1Value = self.data[tuple[0]]
 			field2Value = self.data[tuple[1]]
-			
 			if field1Value != field2Value:
 				if not self.errors.has_key('id_' + tuple[0]):
 					self.errors['id_' + tuple[0]] = []
@@ -146,18 +142,13 @@ class XBaseForm(forms.Form):
 		value = ''
 		if self.cleaned_data.has_key(name):
 			value = self.cleaned_data[name]
-		return value
-	def is_valid(self):
-		"""Checks if form is valid. Does a full clean of form."""
-		super(XBaseForm, self).full_clean()
-		bForm = super(XBaseForm, self).is_valid()
-		print 'Call super'
-		return bForm
+		return value	
 	def _xpClean(self):
 		"""Cleans form. Raises ValidationError in case errors found. Returns cleaned_data"""
 		if self.hasInvalidErrors():
 			raise ValidationError('Form Clean Validation Error')
-		return self.cleaned_data
+		"""print 'self.cleaned_data : ', self.cleaned_data
+		return self.cleaned_data"""
 
 class UserSignupForm(XBaseForm):
 	# Instances 
@@ -172,7 +163,7 @@ class UserSignupForm(XBaseForm):
 		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
 					label= _('Password Verify'))
-	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'disabled': 'disabled'})
+	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'readonly': 'readonly'})
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
 	#industry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], label=_('Industries'), help_text=_('Industries'))
@@ -200,24 +191,25 @@ class UserSignupForm(XBaseForm):
 		# affiliateId
 		self.putParam('affiliateId', affiliateId)
 		if len(snProfileDict) != 0:
-			self.user.firstName = snProfileDict['first_name']
-			self.user.lastName = snProfileDict['last_name']
+			self._dbUser.firstName = snProfileDict['first_name']
+			self._dbUser.lastName = snProfileDict['last_name']
 			#self.user.email = snProfileDict['email']
-			self.user.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
+			self._dbUser.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
 			locationName = snProfileDict['location']['name']
 			locationFields = locationName.split(',')
-			self.address.city = locationFields[0].strip()
+			self._dbAddress.city = locationFields[0].strip()
 			locale = snProfileDict['locale']
-			self.address.country = locale.split('_')[1].lower()
+			self._dbAddress.country = locale.split('_')[1].lower()
 			fbIcon = SocialNetwork('facebook', 2)
 			fbIcon.setToken(fbAccessToken)
 			self.initial['facebookIcon_data'] = fbIcon.getS()
 
-	def clean(self):
+	def cleanxxx(self):
 		"""Clean form: validate same password and captcha when implemented"""
 		self._validateSameFields([('password','passwordVerify')])		
 		#self._validateSignupCaptcha()
-		return self._xpClean()
+		self._xpClean()
+		return self.cleaned_data
 
 
 class OrganizationSignupForm(XBaseForm):

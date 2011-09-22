@@ -19,6 +19,7 @@ from django.utils.translation import ugettext as _
 from models import Invitation, context, Context, XpTemplate, getResultOK
 from choices import Choices
 import forms
+from constants import Constants
 
 #from ximpia import util
 from ximpia.util.http import Request
@@ -319,7 +320,8 @@ def checkCaptcha(request, value):
 	return jsonCheck
 
 @Context
-@XpTemplate({'user': 'social_network/signup/signupProfessional.html'})
+@XpTemplate({	'user': 'social_network/signup/signupProfessional.html',
+		'org': 'social_network/signup/signupOrganization.html'})
 def signup(request, invitationCode=None, **argsDict):
 	"""Sign up professional account"""
 	# init
@@ -331,48 +333,59 @@ def signup(request, invitationCode=None, **argsDict):
 	ctx['auth'] = {'facebook': False}		
 	if ctx['cookies'].has_key(settings.FACEBOOK_APP_COOKIE):
 		ctx['auth']['facebook'] = True
-		bFacebookLogin = True	
+		bFacebookLogin = True
+	signup = SignupBusiness(ctx)
 	if request.method == 'POST':
 		# POST
-		ctx['form'] = forms.UserSignupForm(ctx['post'])
-		ctx['captcha'] = Captcha(request).get()
-		bForm = ctx['form'].is_valid()
-		signup = SignupBusiness(ctx)
-		if bForm == True:
-			result = signup.doProfessional(bFacebookLogin)
+		#signup.doPost()
+		print 'account ??? : ', ctx['post'].has_key('account')
+		if ctx['post'].has_key('account'):
+			# organization
+			pass
 		else:
-			result = signup.buildJSONResult(signup.getErrorResultDict(ctx['form'].errors))
+			# user
+			ctx['form'] = forms.UserSignupForm(ctx['post'])
+			ctx['captcha'] = Captcha(request).get()
+			#ctx['form'].full_clean()
+			bForm = ctx['form'].is_valid()
+			#print 'bForm : ', bForm, ctx['form'].errors, ctx['form']._errors
+			signup = SignupBusiness(ctx)
+			if bForm == True:
+				result = signup.doProfessional(bFacebookLogin)
+			else:
+				result = signup.buildJSONResult(signup.getErrorResultDict(ctx['form'].errors))
+			print result
 	else:
+		#signup.doGet()
 		try:
 			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
 			print 'affiliateId : ', affiliateId
-			invitation = dbUser.getInvitation(invitationCode)
-			if settings.PRIVATE_BETA == True and affiliateId == -1 and invitation:
-				ctx['showInvitation'] = True
-			else:
-				ctx['showInvitation'] = False
-			# Create Captcha Object
-			Captcha(request).create()
-			# Facebook
-			profileDict = {}
-			fbAccessToken = ''
-			if bFacebookLogin:
-				fbUserDict = facebook.get_user_from_cookie(request.COOKIES, settings.FACEBOOK_APP_ID, settings.FACE_APP_SECRET)
-				fbAccessToken = fbUserDict['access_token']
-				graph = facebook.GraphAPI(fbAccessToken)
-				try:
-					profileDict = graph.get_object("me");				
-					ctx['auth']['facebook'] = True
-				except facebook.GraphAPIError:
-					pass
+			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
+			print 'accType : ', invitation.accType
 			if invitation.accType == Choices.INVITATION_ACC_TYPE_USER:
+				# Facebook
+				profileDict = {}
+				fbAccessToken = ''
+				if bFacebookLogin:
+					fbUserDict = facebook.get_user_from_cookie(request.COOKIES, settings.FACEBOOK_APP_ID, settings.FACE_APP_SECRET)
+					fbAccessToken = fbUserDict['access_token']
+					graph = facebook.GraphAPI(fbAccessToken)
+					try:
+						profileDict = graph.get_object("me");				
+						ctx['auth']['facebook'] = True
+					except facebook.GraphAPIError:
+						pass
 				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
 				ctx['form'].buildInitial(invitation, profileDict, fbAccessToken, affiliateId)
 				ctx['affiliateId'] = affiliateId
 				result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
 			else:
 				# Organization
-				pass
+				print 'Organization...'
+				profileDict = {}
+				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
+				ctx['affiliateId'] = affiliateId
+				result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
 		except Invitation.DoesNotExist:
 			raise Http404
 	return result

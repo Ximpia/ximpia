@@ -276,43 +276,21 @@ class SignupBusiness(Common):
 		"""Signup professional user"""
 		# Validation
 		invitation = self._valSignup.getInvitation(self._dbUser)
-		#self._valSignup.validateCaptcha()
 		self._valSignup.validateSameUser()
 		self._valSignup.validateSameEmail(self._dbUser)
 		self._errorDict = self._valSignup.getErrors()
 		# Business
 		if self.isBusinessOK():
-			activationCode = random.randint(1,9999)
 			form = self._ctx['form']
-			lang = self._ctx['lang']
-			email = form.d('email')
-			sUser = form.d('ximpiaId')
-			if not bFacebookLogin:
-				# User/Password, we need to validate email address
-				subsDict = {	'host': settings.MAIL_HOST, 'name': form.d('firstName'),
-						'user': str(sUser), 'lang': self._ctx['lang'],
-						'activationCode': str(activationCode)}
-				EmailBusiness.send('Msg/SocialNetwork/Signup/Professional/', subsDict, [email], lang)
+			# Signup
 			form = self._getNetworkProfile(form, bFacebookLogin)		
-			# Show Result
-			if bFacebookLogin == False:
-				# User / Password				
-				# Write Signup Data to DB
-				print 'form.cleaned_data : ', form.cleaned_data
-				signupData = self._dbUser.writeSignupData(sUser, activationCode, invitation, form.cleaned_data)
-				# Build html output for ok message
-				htmlOut = ''
-				resultDict = getResultOK([htmlOut])
-			else:
-				# Facebook Login
-				# In case facebook, no need to activate account. Create account directly
-				self._dbAccount.doSignup(form)
-				# Change status of invitation to used
-				invitation = self._dbUser.changeInvitationUsed(invitation)
-				resultDict = getResultOK([], status='OK.create')
+			self._dbAccount.doSignup(form)
+			invitation = self._dbUser.changeInvitationUsed(invitation)
+			resultDict = getResultOK([], status='OK.create')			
 			# login and show control panel if login from facebook
 			# Redirect
 			result = self.buildJSONResult(resultDict)
+			print result
 		else:
 			# Errors
 			result = self.buildJSONResult(self.getErrorResultDict(self._errorDict))

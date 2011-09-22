@@ -1,5 +1,5 @@
 
-ximpia = ximpia || {};
+var ximpia = ximpia || {};
 ximpia.common = ximpia.common || {};
 ximpia.visual = ximpia.visual || {};
 ximpia.site = ximpia.site || {};
@@ -55,7 +55,7 @@ ximpia.common.Window = {};
  * Show Remote Error Window
  */
 ximpia.common.Window.showRemoteError = (function() {
-	showPopUp('MessageERROR');
+	ximpia.common.Window.showPopUp('MessageERROR');
 });
 /**
  * Show Message Window
@@ -79,7 +79,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         if (messageOptions.width) iWidth = messageOptions.width;
         if (messageOptions.height) iHeight = messageOptions.height;
         if (messageOptions.functionShow) functionShow = messageOptions.functionShow;
-        bFadeOut = checkFadeOut();
+        bFadeOut = ximpia.common.Window.checkFadeOut();
         if (!bFadeOut) {
             bFadeBackground = false;
         }
@@ -151,7 +151,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
             $("div.PopMessage").fadeOut(iEffectOutTime);
         }
         if (bFadeBackground) {
-            $("#Wrapper").fadeTo("fast", 0.60);
+            $("#Wrapper").fadeTo("fast", 0.50);
         }
         if (functionShow) {
             functionShow($(this));
@@ -161,7 +161,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
  * Click Ok Button
  */
 ximpia.common.Window.clickMsgOk = (function(bFadeBackground, functionName) {
-        bFadeOut = checkFadeOut();
+        bFadeOut = ximpia.common.Window.checkFadeOut();
         if (!bFadeOut) {
             bFadeBackground = false;
         }
@@ -219,14 +219,14 @@ ximpia.common.Window.showPopUp = (function(key) {
                 bFadeOut = false;
             }
         }
-        bIE = checkIE();
+        bIE = ximpia.common.Browser.checkIE();
         if (bIE) {
             bFadeOut = false;
         }
         // This is to prevent fadeouts in popups since Internet Explorer does not show frame border
         sFadeOut = '';
-        var closeValue = getValue('id_buttonConstants', 'close');
-        showMessage({
+        var closeValue = ximpia.common.List.getValue('id_buttonConstants', 'close');
+        ximpia.common.Window.showMessage({
             title: sTitle,
             message: sMessage,
             buttons: 'MsgOk:' + closeValue,
@@ -236,7 +236,7 @@ ximpia.common.Window.showPopUp = (function(key) {
         });
         //showMessage(sTitle, sMessage, 'MsgOk:OK', 'fadeIn,1000', sFadeOut, bFadeOut);
         if (sFadeOut == '') {
-            $("#MsgOk").click(function() {clickMsgOk(bFadeOut, functionName)});
+            $("#MsgOk").click(function() {ximpia.common.Window.clickMsgOk(bFadeOut, functionName)});
         }
         if (sUrl) {
             if (sUrl != '') {
@@ -315,7 +315,7 @@ ximpia.common.Form = function() {
 	 		* Bind signup submit button. Binds the click event of button, shows waiting icon, sends data through AJAX
 	 		*/
 			doBindSubmitForm: function(formId, callbackFunction) {
-    				$("a.button[data-xp-js='submit']").click(doBindSubmitButton);
+    				$("a.button[data-xp-js='submit']").click(_attr.pub.doSubmitButton);
         			$("#" + formId).validate({
             			submitHandler: function(form) {
                 			// Submit form
@@ -341,7 +341,7 @@ ximpia.common.Form = function() {
                             				$("[data-xp-js='submit']").xpPageButton('disable');
                             				// Change look to clicked
                             				if ($("#" + 'id_msgSubmit_Form1').attr('value')) {
-                                				showPopUp('id_msgSubmit_Form1');
+                                				ximpia.common.Window.showPopUp('id_msgSubmit_Form1');
                             				} else {
                                 				callbackFunction();
                             				}                       
@@ -351,26 +351,31 @@ ximpia.common.Form = function() {
                             				// Integrate showMessage, popUp, etc...
                             				var list = responseMap['errors'];
                             				message = '<ul>'
+                            				var errorName = "";
+                            				var errorId = "";
                             				for (var i=0; i<list.length; i++) {
-                                				var errorId = list[i][0];
+                                				//var errorId = list[i][0];
+                                				errorName = list[i][0];
+                                				errorId = "id_" + errorName; 
                                 				var errorMessage = list[i][1];
                                 				//alert(errorId);
                                 				$("#" + errorId).removeClass("valid");
                                 				$("#" + errorId).addClass("error");
-                                				message = message + '<li>' + errorMessage + '</li>';
+                                				message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
                             				}
                             				message = message + '</ul>';
                             				// Show error Message in pop up
-                            				showPopUp({
+                            				ximpia.common.Window.showPopUp({
                                 				title: 'Errors Found',
                                 				message: message,
                             				});
                         			}
                     			},
                     			error: function (data, status, e) {
-                        			alert(data + ' ' + status + ' ' + e);
+                        			//alert(data + ' ' + status + ' ' + e);
+                        			console.log(data + ' ' + status + ' ' + e);
                         			$("#" + idImg).xpLoadingSmallIcon('errorWithPopUp');
-                        			showPopUp({
+                        			ximpia.common.Window.showPopUp({
                             				title: 'System Error',
                             				message: 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks',
                             				height: 50
@@ -419,6 +424,61 @@ ximpia.common.Form = function() {
 }
 
 ximpia.common.Ajax = {};
+/**
+ * Set suggest ajax view
+ */
+ximpia.common.Ajax.setAjaxSuggestView = (function() {
+	$('#id_formAjax').attr('action', '/jxSuggestList');
+});
+/**
+ * Set ajax view
+ */
+ximpia.common.Ajax.setAjaxView = (function() {
+	$('#id_formAjax').attr('action', '/jxJSON');
+});
+/**
+ * @returns {Object} Create new ajax object
+ */
+ximpia.common.Ajax.newAjaxObject = (function() {
+        var oArg = new Object();
+        oArg.jsonDataList = new Array();
+        return oArg;
+});
+/**
+ * New Ajax request
+ */
+ximpia.common.Ajax.newAjaxRequest = (function(oArg, method, argsTuple, argsDict) {
+	var list = new Array();
+        list[0] = method;
+        list[1] = argsTuple;
+        list[2] = argsDict;
+        var index = oArg.jsonDataList.push(list);
+        $('#id_formAjax_jsonData').attr('value', JSON.stringify(oArg));
+});
+/**
+ * Send Ajax JSON Request
+ */
+ximpia.common.Ajax.sendAjaxJSONRequest = (function() {
+        $('#id_formAjax').ajaxSubmit({
+            dataType: 'json',
+            async: false,
+            timeout: 2000,
+            success: function(responseMap, status) {
+                if (responseMap && responseMap.status && responseMap.response) {
+                    statusCode = responseMap['status'];
+                    if (statusCode == 'OK') {
+                        results = responseMap.response;
+                    }
+                }
+            },
+            error: function (data, status, e) {
+                alert('ERROR : ' + status);
+                results = new Array()               
+            }
+        });
+        return results;
+});
+
 
 ximpia.common.GoogleMaps = function() {
 	var _attr = {
@@ -456,6 +516,21 @@ ximpia.common.GoogleMaps = function() {
 	}
 	return _attr.pub;
 };
+
+
+ximpia.visual.Icon = {};
+/**
+ * bind icons fade effect
+ */
+ximpia.visual.Icon.bindFadeIcons = (function(className) {
+	// .icon
+	$("." + className).mouseover(function() {
+		$(this).fadeTo("fast", 0.70);
+	}).mouseout(function() {
+		$(this).fadeTo("fast", 1.00);
+	});	
+});
+
 
 ximpia.visual.SocialNetworkIconData = function() {
 	var _attr = {
@@ -619,50 +694,10 @@ ximpia.visual.GenericComponentData = function() {
 	}
 	return _attr.pub;
 }
-
-ximpia.site.Signup = function() {
-	var _attr = {
-		priv: {},
-		pub: {
-			/**
-	 		* Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
-	 		* and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
-	 		* the message of nor validating.
-	 		*/
-			doShowPasswordStrength: function(userId, passwordId, submitId) {
-	        		// Password Strength
-		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
-		        	$("#" + passwordId).passStrengthener({
-					userid: "#" + userId,
-					strengthCallback:function(score, strength) {                       
-						if(strength == 'good' || strength == 'strong') {
-							$("#" + submitId).xpPageButton('enable', doBindSubmitButton);
-						} else {
-							$("#" + submitId).xpPageButton('disable');
-						}
-					}
-				});
-			}
-		}
-	}
-	return _attr.pub;
-}
-
-// =============================================================================
-    
-
-
-    function fadeIcons() {
-        $(".Icon").mouseover(function() {
-            $(this).fadeTo("fast", 0.70);
-        });
-        $(".Icon").mouseout(function() {
-            $(this).fadeTo("fast", 1.00);
-        });
-    }
-
-    // Delete element from list using GenericComponentData
-    function deleteFromList(element, oArg) {
+/**
+ * deleteFromList using Generic Component Data. static method
+ */
+ximpia.visual.GenericComponentData.deleteFromList = function(element, oArg) {
         var idElementDel = $(element).attr('id');
         var idElement = idElementDel.replace('_del','');
         var list = idElement.split('_');
@@ -674,52 +709,139 @@ ximpia.site.Signup = function() {
         obj.deleteData(index);
         if (oArg.callBack) {
             oArg.callBack(oArg);
-        }
-    }
+        }	
+}
 
-    function setAjaxSuggestView() {
-        $('#id_formAjax').attr('action', '/jxSuggestList');
-    }
-
-    function setAjaxView() {
-        $('#id_formAjax').attr('action', '/jxJSON');
-    }
-    
-    // Create new ajax object
-    function newAjaxObject() {
-        var oArg = new Object();
-        oArg.jsonDataList = new Array();
-        return oArg;
-    }
-    
-    // Create new ajax request
-    function newAjaxRequest( oArg, method, argsTuple, argsDict ) {
-        var list = new Array();
-        list[0] = method;
-        list[1] = argsTuple;
-        list[2] = argsDict;
-        var index = oArg.jsonDataList.push(list);
-        $('#id_formAjax_jsonData').attr('value', JSON.stringify(oArg));
-    }
-
-    // Send Ajax JSON Request   
-    function sendAjaxJSONRequest() {
-        $('#id_formAjax').ajaxSubmit({
-            dataType: 'json',
-            async: false,
-            timeout: 2000,
-            success: function(responseMap, status) {
-                if (responseMap && responseMap.status && responseMap.response) {
-                    statusCode = responseMap['status'];
-                    if (statusCode == 'OK') {
-                        results = responseMap.response;
-                    }
-                }
-            },
-            error: function (data, status, e) {
-                alert('ERROR : ' + status);
-                results = new Array()               
-            }
-        });
-        return results;
-    }
+ximpia.site.Signup = function() {
+	var _attr = {
+		priv: {
+			/**
+	 		* Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
+	 		* and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
+	 		* the message of nor validating.
+	 		*/
+			doShowPasswordStrength: (function(userId, passwordId, submitId) {
+	        		// Password Strength
+		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
+		        	$("#" + passwordId).passStrengthener({
+					userid: "#" + userId,
+					strengthCallback:function(score, strength) {
+						console.log('strength : ' + strength)                       
+						if(strength == 'good' || strength == 'strong') {
+							$("#" + submitId).xpPageButton('enable', ximpia.common.Form().doSubmitButton);
+						} else {
+							$("#" + submitId).xpPageButton('disable');
+						}
+					}
+				});
+			})
+		},
+		pub: {
+			doProfessionalBind: (function() {
+				var formId = "id_Form1";
+				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');
+				var oForm = ximpia.common.Form();
+				oForm.doBindBubbles();
+				oForm.doBindSubmitForm(formId);
+    				oForm.doReloadCaptcha();
+				// fadeIcons
+				ximpia.visual.Icon.bindFadeIcons(".icon");
+				function processSnLogin() {	
+					// Click on Facebook or LinkedIn button
+					$(".SnLogin").click(function() {
+						var sId = $(this).attr('id');
+						if (sId == 'id_facebookLogin') {
+							// Facebook
+							FB.login(function(response) {
+	  							if (response.session) {
+									$("#id_facebookToken").attr('value', response.session.access_token);
+									//alert(response.session.access_token);
+    								if (response.perms) {
+	      								// user is logged in and granted some permissions.
+      									// perms is a comma separated list of granted permissions
+									$("#id_fbLoginButton").css('display', 'block');
+									$("#id_mixLoginButton").css('display', 'none');
+									FB.XFBML.parse();
+									// Hide passwords
+									$("#id_showPassword").css('display','none');
+									// Get profile
+									FB.api('/me', function(responseProfile) {
+										// Fillout fields in form
+										$("#id_firstName").attr('value', responseProfile.first_name);
+										$("#id_lastName").attr('value', responseProfile.last_name);
+										$("#id_email").attr('value', responseProfile.email);
+										$("#id_ximpiaId").attr('value', responseProfile.first_name.toLowerCase() + '.' + responseProfile.last_name.toLowerCase());
+										var locationName = responseProfile.location.name;
+										var locationFields = locationName.split(',');
+										$("#id_city").attr('value', locationFields[0].trim());
+										var locale = responseProfile.locale;
+										$("#id_country").attr('value', locale.split('_')[1].toLowerCase());
+										$("#id_facebookIcon").xpSocialNetworkIcon('changeStatusOK');
+									});
+    								} else {
+	      								// user is logged in, but did not grant any permissions
+									// Fillout fields in form
+    								}
+  								} else {
+	    								// user is not logged in
+  								}
+							}, {perms:'email,user_birthday'});
+						}
+						else if (sId == 'id_linkedInLogin') {
+							// LinkedIn
+							//IN.UI.Authorize().place();
+							alert('LinkedIn');
+						}
+					});
+				}
+				var fbAppId = $("#id_facebookAppId").attr('value');
+				FB.init({appId: fbAppId, status: true, cookie: true, xfbml: true});
+  				FB.Event.subscribe('auth.sessionChange', function(response) {
+    					if (response.session) {
+    						// A user has logged in, and a new cookie has been saved			
+						var facebookList = JSON.parse($("#id_facebookIcon_data").attr('value'));
+						facebookList[1].token = response.session.access_token;
+						$("#id_facebookIcon_data").attr('value', JSON.stringify(facebookList));
+						// Hide passwords
+						$("#id_showPassword").css('display','none');
+						$("#id_password").css('display','none');
+						$("#id_passwordVerify").css('display','none');
+						$("#id_password").removeClass('required');
+						$("#id_passwordVerify").removeClass('required');
+						// Get profile
+						FB.api('/me', function(responseProfile) {
+							// Fillout fields in form
+							$("#id_firstName").attr('value', responseProfile.first_name);
+							$("#id_lastName").attr('value', responseProfile.last_name);
+							$("#id_email").attr('value', responseProfile.email);
+							$("#id_ximpiaId").attr('value', responseProfile.first_name.toLowerCase() + '.' + responseProfile.last_name.toLowerCase());
+							var locationName = responseProfile.location.name;
+							var locationFields = locationName.split(',');
+							$("#id_city").attr('value', locationFields[0].trim());
+							var locale = responseProfile.locale;
+							$("#id_country").attr('value', locale.split('_')[1].toLowerCase());
+							$("#id_facebookIcon").xpSocialNetworkIcon('changeStatusOK');
+						});			
+    					} else {
+    						// The user has logged out, and the cookie has been cleared
+						//alert('Out....');
+    					}
+				});
+				//processSnLogin();
+				/*$(".AuthIcon").xpSocialNetworkIcon();
+				$(".AuthIcon").click(function() {
+	   				$(this).xpSocialNetworkIcon('click');
+				});*/
+				$("[data-xp-js='submit']").xpPageButton();
+				$("[data-xp-js='submit']").xpPageButton('render');
+				// Geo loc for city and country	
+				var oGoogleMaps = ximpia.common.GoogleMaps();
+				oGoogleMaps.insertCityCountry("id_city", "id_country");
+			}),
+			doOrganizationBind: (function() {
+				
+			})
+		}
+	}
+	return _attr.pub;
+}
