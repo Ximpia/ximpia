@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!--<link rel="shortcut icon" href="http://localhost:8000/images/favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="http://localhost:8000/images/favicon.png">
+<link rel="apple-touch-icon" href="http://localhost:8000/images/favicon.png" type="image/png" />
+
+<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://blog.buscaplus.com/feed/"  />
+<link rel="alternate" type="text/xml" title="RSS .92" href="http://blog.buscaplus.com/feed/rss/"  />
+<link rel="alternate" type="application/atom+xml" title="Atom 0.3" href="http://blog.buscaplus.com/feed/atom/" />-->
+
+<title>Ximpia - Signup</title>
+
+<link rel="stylesheet" href="http://localhost:8000/site_media/jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
+<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
+
+<link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />
+
+
+</head>
+
+<body>
+
+<form id="id_Form1" action="" method="post">
+<div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>
+
+<div id="Wrapper">
+
+<header>
+<div id="Header" >
+    
+<div id="Logo">
+<!-- ******** Logo now should be CSS based !!!!  ************ -->
+    
+<a href="http://localhost:8000/"><img id="LogoImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /> <br/>
+<img id="BetaImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /></a>	
+    
+</div>
+    
+<nav>
+<div id="IconMenu">    	
+
+<!--<img src="http://localhost:8000/site_media/images/home_60.png" title="Home" />
+<img src="http://localhost:8000/site_media/images/users_two_60.png" title="Contacts" alt="Contacts" />
+<img src="http://localhost:8000/site_media/images/globe_60.png" title="Links" alt="Links" />
+<img src="http://localhost:8000/site_media/images/folder_full_60.png" title="Files" alt="Files" />
+<img src="http://localhost:8000/site_media/images/lightbulb_60.png" title="Help" alt="Help" />
+<img src="http://localhost:8000/site_media/images/spanner_60.png" title="Settings" alt="Settings" />
+<img src="http://localhost:8000/site_media/images/logout_60.png" title="Logout" alt="Logout" />-->
+		
+<img src="http://localhost:8000/site_media/images/add_60.png" title="Signup" alt="Signup" />
+<img src="http://localhost:8000/site_media/images/users_two_60.png" title="Friends" alt="Friends" />
+<img src="http://localhost:8000/site_media/images/paper_content_60.png" title="About Us" alt="About Us" />
+<img src="http://localhost:8000/site_media/images/mail_add_60.png" title="Contact Us" alt="Contact Us" />
+<img src="http://localhost:8000/site_media/images/lock_60.png" title="Privacy" alt="Privacy" />
+<img src="http://localhost:8000/site_media/images/go_60.png" title="Login" alt="Login" />		
+		
+</div>
+</nav>
+    
+</div>
+<!-- End Header -->
+
+</header>
+
+<nav>
+
+</nav>
+
+<div id="Apps" style="border:solid 1px #ddd; margin-top:10px" >
+    
+<div id="app_Site" class="app">
+	
+<h3>XimpiaId</h3>
+<div class="formBlock" style="margin-top: 0px">
+
+<!-- XimpiaId -->
+<label for="id_ximpiaId" class="info" data-xp-title="Required. 30 Characters Or Fewer. Letters, Numbers And @/./+/-/_ Characters">XimpiaId</label>: 
+<input data-xp-val="ximpiaId required" name="ximpiaId" maxlength="30" id="id_ximpiaId" type="text" class="fieldMust" tabindex="1" />
+
+<br/>
+<div id="id_showPassword">				
+
+<!-- Password -->				
+<label for="id_password" class="info" data-xp-title="Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &amp;">Password</label>: 
+<input data-xp-val="password required" name="password" maxlength="128" id="id_password" type="password" class="field" tabindex="2" />
+
+<br/>
+
+<!-- Password Verify -->
+<label for="id_passwordVerify">Password Verify</label>: 
+<input data-xp-val="password {equalTo: &#39;#id_password&#39;} required" name="passwordVerify" maxlength="128" id="id_passwordVerify" type="password" class="field" tabindex="3" />
+
+<br/>	
+			
+</div>
+</div>
+<div class="vLineSep"><img src="http://localhost:8000/site_media/images/blank.png" alt=" " /></div>
+<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 20px">		
+<div id="id_fbLoginButton"><fb:login-button perms="email,user_birthday" show_faces="true"></fb:login-button></div>
+</div>
+
+<div id="id_userData" style=" clear: both; padding-top: 5px">	
+
+<h3>About You</h3>
+
+<div id="id_info" class="formBlock" style="margin-top: 0px">
+
+<div class="frmLeft">
+
+<!-- First Name -->				
+<label for="id_firstName">First Name</label>: 
+<input data-xp-val="required" name="firstName" maxlength="30" id="id_firstName" type="text" class="fieldMust" tabindex="4" />
+
+<br/>
+
+<!-- Email -->
+<label for="id_email">Email</label>: 
+<input readonly="readonly" data-xp-val="email required" name="email" maxlength="75" id="id_email" type="text" class="fieldMust" value="jorge_alegre@yahoo.es" tabindex="6" />
+
+<br/>
+
+<!-- Country -->				
+<label for="id_country">Country</label>: 
+<select id="id_country" data-xp-val="" class="field" name="country" tabindex="8">
+<option value="" selected="selected"></option>
+<option value="fr">France</option>
+<option value="es">Spain</option>
+<option value="us">United States</option>
+</select>
+
+<br/>
+</div>	
+<div class="frmRight">
+
+<!-- Last Name -->
+<label for="id_lastName">Last Name</label>: 
+<input name="lastName" maxlength="30" id="id_lastName" type="text" class="field" tabindex="5" />
+
+<br/>
+
+<!-- City -->				
+<label for="id_city">City</label>: 
+<input name="city" maxlength="20" id="id_city" type="text" class="field" tabindex="7" />
+
+<br/>
+</div>
+</div><!-- Info -->	
+</div><!-- UserData -->
+
+
+<div id="id_buttonBarBottom" class="btBar">
+<div style="float: left">
+<!-- Button Left -->
+<a id="id_Form1_Submit" href="#" class="button buttonBlue" data-xp-js="submit" 
+	data-xp-obj='{"form": "id_Form1","btMethod": ""}' onclick="return false;">
+<span>Signup</span></a>   
+<img id="id_Form1_Submit_Status" src="http://localhost:8000/site_media/images/blank.png" class="AjaxButton" alt=" " />
+<span id="id_Form1_Submit_Text"></span>
+</div>
+<div style="float: left">
+<!-- Button Right -->
+</div>
+</div>
+
+
+	
+</div>
+<!-- End app_MyApp --> 
+    
+</div>
+<!-- End Apps -->
+    
+<footer>
+<div id="Footer">
+<div id="FooterText">
+<div  style=" float: left;; margin-left: 10px; margin-top: -5px">&copy; 2011 &nbsp;<a href="http://www.tecor.com"><img id="TecorLogo" 
+        		src="http://ximpia-test.s3.amazonaws.com/images/blank.gif" 
+        		alt="Tecor Communications S.L." title="Tecor Communications S.L." /></a>
+</div>
+<div><span><a href="http://twitter.com/ximpia" target="site">@ximpia</a></span></div>
+</div>
+</div>    	
+</footer>
+    
+</div>
+
+<br/>
+
+<!-- START POPUP MESSAGE -->
+<div class="Pops">
+<div id="PopMessage" class="PopMessage">
+<div id="PopMsgWrapper">
+<div class="MsgTitle"></div>
+<div class="MsgText"></div>
+<div class="MsgButtons"></div>
+</div>
+<br class="clearfloat" />
+</div>
+<!--[if lte IE 6.5]><iframe></iframe><![endif]-->
+</div>
+<!-- END POPUP MESSAGE -->
+
+<p id="Variables">
+	
+	<input type="hidden" id="id_ERR_GEN_VALIDATION" name="ERR_GEN_VALIDATION" value="Error validating your data. Check errors marked in red" />
+	<input type="hidden" id="id_siteMedia" name="siteMedia" value="http://localhost:8000/site_media/" />
+	<input type="hidden" id="id_buttonConstants" name="buttonConstants" value="[['close','Close']]" />
+	<input type="hidden" id="id_facebookAppId" name="facebookAppId" value="180219935334975" />	
+
+
+    
+    <input type="hidden" name="entryFields" value="{}" id="id_entryFields" />
+	
+
+    
+    <input type="hidden" name="copyEntryFields" value="false" id="id_copyEntryFields" />
+	
+
+    
+    <input type="hidden" name="params" value="{&quot;userGroups&quot;: [&quot;1&quot;], &quot;affiliateId&quot;: -1, &quot;profiles&quot;: &quot;&quot;}" id="id_params" />
+	
+
+    
+    <input type="hidden" name="pkFields" value="{}" id="id_pkFields" />
+	
+
+    
+    <input type="hidden" name="errorMessages" value="{&quot;ERR_invitationCode&quot;: &quot;Error in validating invitation code. Ximpia is invitation-only, you must have a valid invitation code from another user&quot;, &quot;ERR_email&quot;: &quot;An user with same email address already exists. Please select another email&quot;, &quot;ERR_captcha&quot;: &quot;Error in validation image. You can reload image to display another image.&quot;, &quot;ERR_ximpiaId&quot;: &quot;An user with same ximpiaId already exists. Please choose another id for your ximpia account&quot;}" id="id_errorMessages" />
+	
+
+    
+    <input type="hidden" name="okMessages" value="{&quot;OK_SN_SIGNUP&quot;: &quot;Your signup has been received, check your email&quot;}" id="id_okMessages" />
+	
+    
+    <input type="hidden" name="invitationCode" value="AAAAAAAAAA" id="id_invitationCode" />
+	
+
+    
+    <input type="hidden" name="twitterIcon_data" value="[{&quot;windowUrl&quot;: &quot;/oauth/twitter&quot;, &quot;oauthVersion&quot;: &quot;1.0&quot;}, {&quot;status&quot;: &quot;&quot;, &quot;tokenSecret&quot;: &quot;&quot;, &quot;token&quot;: &quot;&quot;}]" id="id_twitterIcon_data" />
+	
+
+    
+    <input type="hidden" name="facebookIcon_data" value="[{&quot;windowUrl&quot;: [&quot;https://graph.facebook.com/oauth/authorize?client_id=180219935334975&amp;display=popup&amp;redirect_uri=http://localhost:8000/oauth2/facebook&amp;scope=email,user_birthday&quot;, &quot;&quot;], &quot;oauthVersion&quot;: &quot;2.0&quot;}, {&quot;status&quot;: &quot;&quot;, &quot;tokenSecret&quot;: &quot;&quot;, &quot;token&quot;: &quot;&quot;}]" id="id_facebookIcon_data" />
+	
+
+    
+    <input type="hidden" name="linkedinIcon_data" value="[{&quot;windowUrl&quot;: &quot;/oauth/linkedid&quot;, &quot;oauthVersion&quot;: &quot;1.0&quot;}, {&quot;status&quot;: &quot;&quot;, &quot;tokenSecret&quot;: &quot;&quot;, &quot;token&quot;: &quot;&quot;}]" id="id_linkedinIcon_data" />
+	
+
+
+
+
+</p>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jqDock.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-common/ximpia.common.js"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.passStrengthener.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.metadata.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.form.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.validate.js"></script>
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jsonSuggest.js"></script>-->
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.networkIcon.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.loading.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.qtip.js"></script>
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->
+<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
+<!--<script type="text/javascript" src="http://platform.linkedin.com/in.js">
+  api_key: UqqNxkAHjuhRzW4PMdyq2H-_MqWyFTDmTtTOfa6TiIX_Nu73_f7YdWNtI__yUnl5
+  onLoad: onLinkedInLoad
+  authorize: true
+</script>-->
+<!--
+<script type="text/javascript">  
+  // 2. Runs when the JavaScript framework is loaded
+  function onLinkedInLoad() {
+    IN.Event.on(IN, "auth", onLinkedInAuth);
+  }
+
+  // 2. Runs when the viewer has authenticated
+  function onLinkedInAuth() {
+    IN.API.Profile("me").result(displayProfiles);
+  }
+
+  // 2. Runs when the Profile() API call returns successfully
+  function displayProfiles(profiles) {
+    member = profiles.values[0];
+    //document.getElementById("profiles").innerHTML = 
+    //  "<p id=\"" + member.id + "\">Hello " +  member.firstName + " " + member.lastName + "</p>";
+  }
+</script>
+-->
+<!-- x-webkit-speech -->
+<!-- Facebook Button -->
+<div id="fb-root"></div>
+<!-- Facebook Button -->
+<script>
+	
+jQuery(document).ready(function($){
+
+    // set up the options to be used for jqDock...  
+    var labelTransform = function(labelText, optionIndex){ //scope (this) is the #menu element
+		rtn = "<div class='jqDockLabelNew' style='position: relative'>" + labelText + "</div>";
+        return rtn;
+      },
+    dockOptions = { align: 'top' // horizontal menu, with expansion DOWN from a fixed TOP edge
+        , labels: true  // add labels (defaults to 'br')
+        , size: 45
+	   ,setLabel: labelTransform
+    };
+    // ...and apply...
+    $('#IconMenu').jqDock(dockOptions);  
+	
+	// *************************
+	// *** jQuery VALIDATORS ***
+	// *************************
+	//jQuery.validator.messages.required = "";
+	// Ximpia Generic Validations
+	jQuery.validator.addMethod("ximpiaId", function(value, element) {
+		return this.optional(element) || /^[a-zA-Z0-9_.@+-]+$/i.test(value);
+	}, "mensaje");
+	jQuery.validator.addMethod("password", function(value, element) {
+		return this.optional(element) || /^[a-zA-Z0-9$#!&%]+$/i.test(value);
+	}, "mensaje");
+
+	// Just call a method for the bindings of the page
+	var obj = ximpia.site.Signup();
+	console.log(obj)
+	obj.doProfessionalBind();
+	
+	console.log("invitationCode: " + ximpia.common.Browser.fetchParamByName("i"));
+});
+
+</script>
+
+</form>
+
+<form id="id_formAjax" action="http://localhost:8000/DontKnow" method="post">
+	<input id="id_formAjax_jsonData" type="hidden" name="jsonData" value="" />
+<div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>
+</form>
+
+</body>
+</html>
