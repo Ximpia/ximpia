@@ -330,10 +330,10 @@ def signup(request, invitationCode=None, **argsDict):
 	dbUser = UserDAO(ctx)
 	# start
 	bFacebookLogin = False
-	ctx['auth'] = {'facebook': False}		
+	"""ctx['auth'] = {'facebook': False}
 	if ctx['cookies'].has_key(settings.FACEBOOK_APP_COOKIE):
 		ctx['auth']['facebook'] = True
-		bFacebookLogin = True
+		bFacebookLogin = True"""
 	signup = SignupBusiness(ctx)
 	if request.method == 'POST':
 		# POST
@@ -364,9 +364,10 @@ def signup(request, invitationCode=None, **argsDict):
 			print 'accType : ', invitation.accType
 			if invitation.accType == Choices.INVITATION_ACC_TYPE_USER:
 				# Facebook
+				# Facebook should be Icons
 				profileDict = {}
 				fbAccessToken = ''
-				if bFacebookLogin:
+				"""if bFacebookLogin:
 					fbUserDict = facebook.get_user_from_cookie(request.COOKIES, settings.FACEBOOK_APP_ID, settings.FACE_APP_SECRET)
 					fbAccessToken = fbUserDict['access_token']
 					graph = facebook.GraphAPI(fbAccessToken)
@@ -374,11 +375,15 @@ def signup(request, invitationCode=None, **argsDict):
 						profileDict = graph.get_object("me");				
 						ctx['auth']['facebook'] = True
 					except facebook.GraphAPIError:
-						pass
+						pass"""
 				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
 				ctx['form'].buildInitial(invitation, profileDict, fbAccessToken, affiliateId)
-				ctx['affiliateId'] = affiliateId
-				result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
+				jsData = {'forms': {}, 'data': {}}
+				ctx['form']._getJsData(jsData)
+				jsData['affiliateId'] = affiliateId
+				#print jsData
+				result = signup.buildJSONResult(jsData)
+				#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
 			else:
 				# Organization
 				print 'Organization...'

@@ -26,6 +26,7 @@ class XpInputWidget(Widget):
 	input_type = None # Subclasses must define this.
 	show_info = False
 	hasInfo = False
+	_element = 'input'
 	def __init__(self, attrs={}, hasInfo = False):
 		super(XpInputWidget, self).__init__(attrs)
 		self.hasInfo = hasInfo
@@ -46,12 +47,14 @@ class XpInputWidget(Widget):
 		return html
 
 class XpTextInputWidget(XpInputWidget):
+	_element = 'input'
 	input_type = 'text'
 	def __init__(self, attrs=None, hasInfo=False):
 		super(XpTextInputWidget, self).__init__(attrs, hasInfo)
 
 class XpHiddenWidget(XpInputWidget):
 	input_type = 'hidden'
+	_element = 'input'
 	is_hidden = True
 
 class XpMultipleHiddenWidget(XpHiddenWidget):
@@ -59,6 +62,7 @@ class XpMultipleHiddenWidget(XpHiddenWidget):
 	A widget that handles <input type="hidden"> for fields that have a list
 	of values.
 	"""
+	_element = 'input'
 	def __init__(self, attrs=None, choices=()):
 		super(XpMultipleHiddenWidget, self).__init__(attrs)
 		# choices can be any iterable
@@ -82,6 +86,7 @@ class XpMultipleHiddenWidget(XpHiddenWidget):
 		return data.get(name, None)
 
 class XpPasswordWidget(XpInputWidget):
+	_element = 'input'
 	input_type = 'password'
 	def __init__(self, attrs=None, render_value=True, hasInfo=False):
 		super(XpPasswordWidget, self).__init__(attrs, hasInfo)
@@ -91,6 +96,7 @@ class XpPasswordWidget(XpInputWidget):
 		return super(XpPasswordWidget, self).render(name, value, attrs)
 
 class XpTextareaWidget(Widget):
+	_element = 'textarea'
 	def __init__(self, attrs=None):
 		# The 'rows' and 'cols' attributes are required for HTML correctness.
 		super(XpTextareaWidget, self).__init__(attrs)
@@ -105,6 +111,7 @@ class XpTextareaWidget(Widget):
 			conditional_escape(force_unicode(value))))
 
 class XpSelectWidget(Widget):
+	_element = 'select'
 	show_info = False
 	def __init__(self, attrs=None, choices=(), hasInfo=False):
 		super(XpSelectWidget, self).__init__(attrs)
@@ -145,6 +152,7 @@ class XpSelectWidget(Widget):
 		return u'\n'.join(output)
 
 class XpMultipleWidget(XpSelectWidget):
+	_element = 'select'
 	show_info = False
 	def render(self, name, value, attrs=None, choices=()):
 		if value is None: value = []

@@ -284,6 +284,19 @@ ximpia.common.Browser.checkIE = (function() {
         }
         return bIE	
 });
+/*
+ * Get url parameter value by name
+ */
+ximpia.common.Browser.fetchParamByName = (function(name) {
+	  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regexS = "[\\?&]"+name+"=([^&#]*)";
+	  var regex = new RegExp( regexS );
+	  var results = regex.exec( window.location.href );
+	  if( results == null )
+	  	return "";
+	  else
+	  	return results[1];
+});
 
 ximpia.common.Form = function() {
 	var _attr = {

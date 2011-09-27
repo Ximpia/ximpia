@@ -94,6 +94,7 @@ div#Wrapper {
 .app {
 	border: 0px solid;
 	padding: 15px;
+	visibility: hidden;
 }
 
 div#Header {
@@ -275,7 +276,7 @@ img#TecorLogo {
 	z-index: 200000;
 }
 
-div#Footer {
+div#id_footerContent {
 	float: inherit;
 	margin-top:10px;
 	padding: 5px 0px;
@@ -285,7 +286,7 @@ div#Footer {
 	background-color: #fafafa;
 }
 
-div#FooterText{
+div#id_footerText{
 	float: inherit;
 	border: solid 0px;
 	text-align:center;
@@ -293,7 +294,7 @@ div#FooterText{
 	width: 100%;
 }
 
-div#FooterText #FooterLinks{
+div#id_footerText #FooterLinks{
 	float: left;
 	border: solid 0px;
 	text-align:center;
@@ -562,6 +563,15 @@ img.AjaxButtonERROR {
     background: url(../images/error_16.png) 4px 4px no-repeat;
 }
 
+img.loadBig {
+	background: url(../images/loading_big.gif) 4px 4px no-repeat;
+	width: 235px;
+	height: 235px;
+	position: absolute;
+	top: 140px;
+	left: 400px;  
+}
+
 span.AjaxButton {
     border: 0px solid; 
     font-size: 80%; 
@@ -756,7 +766,7 @@ div.tagDel {
 {
     margin: 2px 5px;
     text-decoration: none;
-    font: bold 1.1em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
+    font: bold 0.9em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
     display: inline-block;
     text-align: center;
     color: #fff;
@@ -842,6 +852,203 @@ div.tagDel {
 	background: #4477a1; 
 }
 
+.buttonIcon
+{
+	display: inline-block;
+	white-space: nowrap;
+	background-color: #ccc;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ccc));
+	background-image: -webkit-linear-gradient(top, #eee, #ccc);
+	background-image: -moz-linear-gradient(top, #eee, #ccc);
+	background-image: -ms-linear-gradient(top, #eee, #ccc);
+	background-image: -o-linear-gradient(top, #eee, #ccc);
+	background-image: linear-gradient(top, #eee, #ccc);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#eeeeee', EndColorStr='#cccccc');
+	border: 1px solid #777;
+	padding: 0 1.5em;
+	margin: 0.5em;
+	font: bold 1em/2em Arial, Helvetica;
+	text-decoration: none;
+	color: #333;
+	text-shadow: 0 1px 0 rgba(255,255,255,.8);
+	-moz-border-radius: .2em;
+	-webkit-border-radius: .2em;
+	border-radius: .2em;
+	-moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+	-webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+	box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+}
+
+.buttonIcon-hover, .buttonIcon:hover
+{
+	background-color: #ddd;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
+	background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
+	background-image: -moz-linear-gradient(top, #fafafa, #ddd);
+	background-image: -ms-linear-gradient(top, #fafafa, #ddd);
+	background-image: -o-linear-gradient(top, #fafafa, #ddd);
+	background-image: linear-gradient(top, #fafafa, #ddd);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#fafafa', EndColorStr='#dddddd');
+}
+
+.buttonIcon-active, .buttonIcon:active
+{
+	-moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+	-webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+	box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+	position: relative;
+	top: 1px;
+}
+
+.buttonIcon:focus
+{
+	outline: 0;
+	background: #fafafa;
+}    
+
+.buttonIcon:before
+{
+	background: #ccc;
+	background: rgba(0,0,0,.1);
+	float: left;
+	width: 1em;
+	text-align: center;
+	font-size: 1.5em;
+	margin: 0 1em 0 -1em;
+	padding: 0 .2em;
+	-moz-box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+	-webkit-box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+	box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+	-moz-border-radius: .15em 0 0 .15em;
+	-webkit-border-radius: .15em 0 0 .15em;
+	border-radius: .15em 0 0 .15em;
+        pointer-events: none;
+}
+
+.buttonIcon[disabled], .buttonIcon[disabled]:hover, .buttonIcon.disabled, .buttonIcon.disabled:hover, .buttonIcon-disabled
+{
+	background: #eee;
+	color: #aaa;
+	border-color: #aaa;
+	cursor: default;
+	text-shadow: none;
+	position: static;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+/* Social media buttons */	
+.tw, .fb,
+.tw:hover, .fb:hover
+{
+        background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,.5)), to(rgba(255,255,255,0)));
+        background-image: -webkit-linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
+        background-image: -moz-linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
+        background-image: -ms-linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
+        background-image: -o-linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
+        background-image: linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
+}
+
+.tw, .tw:focus
+{
+	  background-color: #88E1E6;
+	  font: bold 0.8em/2em Arial, Helvetica;
+}
+	
+.fb, .fb:focus
+{
+	  background-color: #3C5A98;
+	  color: #fff;	  
+	  text-shadow: 0 1px 0 rgba(0,0,0,.4);
+	  font: bold 0.8em/2em Arial, Helvetica;		
+}
+
+.tw:hover
+{
+	  background-color: #b1f0f3;
+}
+	
+.fb:hover
+{
+	  background-color: #879bc3; 
+}
+	
+.tw:before
+{
+        content: "t";
+        background: #91cfd3;
+        background: rgba(0,0,0,.1);		
+		color: #fff;
+		font-family: verdana;
+		text-shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+    
+.fb:before
+{
+        content: "f";
+        background: #4467ac;
+        background: rgba(0,0,0,.1);		
+		color: #fff;	
+		text-shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+
+
+/* Hexadecimal entities for the icons */
+
+.add:before
+{
+	content: "\271A";
+}
+
+.edit:before
+{
+	content: "\270E";
+}
+
+.delete:before
+{
+	content: "\2718";
+}
+
+.save:before
+{
+	content: "\2714";
+}
+
+.email:before
+{
+	content: "\2709";
+}
+
+.like:before
+{
+	content: "\2764";
+}
+
+.next:before
+{
+	content: "\279C";
+}
+
+.star:before
+{
+	content: "\2605";
+}
+
+.spark:before
+{
+	content: "\2737";
+}
+
+.play:before
+{
+	content: "\25B6";
+}
+
+
+
+
 /* *************/
 /* Form Layout */
 /* *************/
@@ -851,7 +1058,7 @@ div.tagDel {
 	background-color:#000000; 
 	width: 1px; 
 	float: left; 
-	margin: 20px 50px 0px 50px; 
+	margin: 0px 50px 0px 50px; 
 	height: 80px;
 }
 
@@ -872,7 +1079,7 @@ div.tagDel {
 	background: #eeeeee; 
 	clear: both; 
 	position: relative; 
-	top: 10px; 
+	top: 15px; 
 	margin-bottom: 20px;
 	border: 0px solid; 
 	height: 38px; 

@@ -42,6 +42,10 @@ class XBaseForm(forms.Form):
 	pkFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
+	ERR_GEN_VALIDATION = forms.CharField(widget=XpHiddenWidget, initial= _('Error validating your data. Check errors marked in red'))
+	siteMedia = forms.CharField(widget=XpHiddenWidget, initial= settings.MEDIA_URL)
+	buttonConstants = forms.CharField(widget=XpHiddenWidget, initial= "[['close',_('Close')]]")
+	facebookAppId = forms.CharField(widget=XpHiddenWidget, initial= settings.FACEBOOK_APP_ID)
 	#errors = {}
 	def __init__(self, *argsTuple, **argsDict): 
 		"""Constructor for base form container"""
@@ -149,8 +153,28 @@ class XBaseForm(forms.Form):
 			raise ValidationError('Form Clean Validation Error')
 		"""print 'self.cleaned_data : ', self.cleaned_data
 		return self.cleaned_data"""
+	def _getJsData(self, jsData):
+		"""Get javascript json data for this form"""
+		jsData['forms'][self._XP_FORM_ID] = {}
+		fieldsDict = self.fields
+		for field in fieldsDict:
+			oField = fieldsDict[field]
+			attrs = oField.widget.attrs
+			try:
+				attrs['type'] = oField.widget.input_type
+			except AttributeError:
+				pass
+			attrs['element'] = oField.widget._element
+			if attrs['element'] == 'select':
+				attrs['choices'] = oField.choices
+			attrs['name'] = field
+			attrs['label'] = oField.label
+			attrs['help_text'] = oField.help_text
+			attrs['value'] = oField.initial
+			jsData['forms'][self._XP_FORM_ID][field] = attrs
 
 class UserSignupForm(XBaseForm):
+	_XP_FORM_ID = 'signup'
 	# Instances 
 	_dbUser = User()
 	_dbUserSocial = UserSocial()
