@@ -20,7 +20,7 @@ from ximpia.settings_visual import SuggestBox, GenericComponent
 #from yacaptcha.models import Captcha
 
 from django.contrib.auth.models import User, Group
-from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract
+from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract, getResultOK, getResultERROR
 
 #from validators import *
 from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
@@ -44,7 +44,7 @@ class XBaseForm(forms.Form):
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
 	ERR_GEN_VALIDATION = forms.CharField(widget=XpHiddenWidget, initial= _('Error validating your data. Check errors marked in red'))
 	siteMedia = forms.CharField(widget=XpHiddenWidget, initial= settings.MEDIA_URL)
-	buttonConstants = forms.CharField(widget=XpHiddenWidget, initial= "[['close',_('Close')]]")
+	buttonConstants = forms.CharField(widget=XpHiddenWidget, initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = forms.CharField(widget=XpHiddenWidget, initial= settings.FACEBOOK_APP_ID)
 	#errors = {}
 	def __init__(self, *argsTuple, **argsDict): 
@@ -155,7 +155,8 @@ class XBaseForm(forms.Form):
 		return self.cleaned_data"""
 	def _getJsData(self, jsData):
 		"""Get javascript json data for this form"""
-		jsData['forms'][self._XP_FORM_ID] = {}
+		jsData['response']['form_' + self._XP_FORM_ID] = {}
+		#print 'self.initial : ', self.initial
 		fieldsDict = self.fields
 		for field in fieldsDict:
 			oField = fieldsDict[field]
@@ -171,7 +172,7 @@ class XBaseForm(forms.Form):
 			attrs['label'] = oField.label
 			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
-			jsData['forms'][self._XP_FORM_ID][field] = attrs
+			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
 
 class UserSignupForm(XBaseForm):
 	_XP_FORM_ID = 'signup'
@@ -211,7 +212,8 @@ class UserSignupForm(XBaseForm):
 		"""Build initial values for form"""
 		#self.initial = {}
 		#self.putParam('userGroups', [KSignup.USER_GROUP_ID])
-		self.initial['invitationCode'] = invitation.invitationCode
+		#self.initial['invitationCode'] = invitation.invitationCode
+		self.fields['invitationCode'].initial = invitation.invitationCode
 		# affiliateId
 		self.putParam('affiliateId', affiliateId)
 		if len(snProfileDict) != 0:

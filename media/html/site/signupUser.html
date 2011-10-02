@@ -4,83 +4,66 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
 <title>Ximpia - Signup</title>
-
 <link rel="stylesheet" href="http://localhost:8000/site_media/jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
 <link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
-<link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />
-
+<link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
 </head>
 
 <body>
 
+<!-- Only one form??? -->
+
 <form id="id_Form1" action="" method="post">
-<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>
+
+<!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
 
 <div id="Wrapper">
 
-<!--
-<header id="id_header">
-</header>
--->
-
-<header id="id_header">
-<div id="Header" >    
-<div id="Logo">
-<a href="http://localhost:8000/"><img id="LogoImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /> <br/>
-<img id="BetaImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /></a>	
-</div>
-<nav>
-<div id="IconMenu">    	
-<img src="http://localhost:8000/site_media/images/add_60.png" title="Signup" alt="Signup" />
-<img src="http://localhost:8000/site_media/images/users_two_60.png" title="Friends" alt="Friends" />
-<img src="http://localhost:8000/site_media/images/paper_content_60.png" title="About Us" alt="About Us" />
-<img src="http://localhost:8000/site_media/images/mail_add_60.png" title="Contact Us" alt="Contact Us" />
-<img src="http://localhost:8000/site_media/images/lock_60.png" title="Privacy" alt="Privacy" />
-<img src="http://localhost:8000/site_media/images/go_60.png" title="Login" alt="Login" />		
-</div>
-</nav>    
-</div>
-<!-- End Header -->
+<header id="id_header" >
 </header>
 
-<nav id="id_navBar">
+<nav id="id_navBar" >
 </nav>
+
+<section id="id_sect_loading" >
+</section>
 
 <div id="id_apps" style="border:solid 1px #ddd; margin-top:10px" >
     
-<div id="id_app_site" class="app">
-	
+<section id="id_app_site" class="app">
+
+<section id="id_sect_signupUser" class="sectionApp">
+
 <h3>XimpiaId</h3>
 <div class="formBlock" style="margin-top: 0px">
 
 <!-- XimpiaId -->
-<label for="id_ximpiaId" class="info" ></label>: <input id="id_ximpiaId" name="ximpiaId" tabindex="1" />
+<label for="id_ximpiaId" class="info" ></label>: <input id="id_ximpiaId" tabindex="1" />
 
 <br/>
 <div id="id_showPassword">
 
 <!-- Password -->	
-<label for="id_password" class="info"></label>: <input id="id_password" name="password" type="password" tabindex="2" />
+<label for="id_password" class="info"></label>: <input id="id_password" type="password" tabindex="2" />
 
 <br/>
 
 <!-- Password Verify -->
-<label for="id_passwordVerify"></label>: <input id="id_passwordVerify" name="passwordVerify" type="password" tabindex="3" />
+<label for="id_passwordVerify"></label>: <input id="id_passwordVerify" type="password" tabindex="3" />
 
 <br/>	
 			
 </div>
 </div>
 <div class="vLineSep"><img src="http://localhost:8000/site_media/images/blank.png" alt=" " /></div>
-<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 0px">
-<a href="#" class="buttonIcon fb" onclick="return false;">Facebook</a>
-<br/>
-<a href="#" class="buttonIcon tw" onclick="return false;">Twitter</a>
+<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 0px;">
+<a id="id_bt_fb" href="#" class="buttonIcon fb" onclick="return false;">Facebook</a>
+<a id="id_bt_tw" href="#" class="buttonIcon tw" onclick="return false;">Twitter</a><br/>
+<a id="id_bt_li" href="#" class="buttonIcon in" onclick="return false;">Linkedin</a>
 </div>
 
-<div id="id_userData" style=" clear: both; padding-top: 5px">	
+<div id="id_userData" style=" clear: both; padding-top: 5px">
 
 <h3>About You</h3>
 
@@ -89,43 +72,34 @@
 <div class="frmLeft">
 
 <!-- First Name -->				
-<label for="id_firstName"></label>: <input id="id_firstName" name="firstName" tabindex="4" />
+<label for="id_firstName"></label>: <input id="id_firstName" tabindex="4" />
 
 <br/>
 
 <!-- Email -->
-<label for="id_email"></label>: <input type="email" name="email" id="id_email" tabindex="6" readonly="readonly" />
+<label for="id_email"></label>: <input type="email" id="id_email" tabindex="6" readonly="readonly" />
 
 <br/>
 
 <!-- Country -->				
-<label for="id_country"></label>: 
-<select id="id_country" name="country" tabindex="8">
-</select>
+<label for="id_country"></label>: <select id="id_country" tabindex="8" ></select>
 
 <br/>
 </div>	
 <div class="frmRight">
 
 <!-- Last Name -->
-<label for="id_lastName"></label>: <input id="id_lastName" name="lastName" tabindex="5" />
+<label for="id_lastName"></label>: <input id="id_lastName" tabindex="5" />
 
 <br/>
 
 <!-- City -->				
-<label for="id_city"></label>: <input id="id_city" name="city" tabindex="7" />
+<label for="id_city"></label>: <input id="id_city" tabindex="7" />
 
 <br/>
 </div>
 </div><!-- Info -->	
 </div><!-- UserData -->
-
-
-<!--
-Javascript generated controls. javascript will inject html into object
-<div id="id_buttonBarBottom" class="btBar">
-</div>
--->
 
 <div id="id_buttonBarBottom" class="btBar">
 <div style="float: left">
@@ -143,60 +117,34 @@ Javascript generated controls. javascript will inject html into object
 </div>
 </div>
 	
-</div>
+</section> <!-- section id_signupUser -->
+
+</section>
 <!-- End app_MyApp --> 
     
 </div>
 <!-- End Apps -->
 
-<!--
 <footer id="id_footer">
-</footer>
--->
-    
-<footer id="id_footer">
-<div id="id_footerContent">
-<div id="id_footerText">
-<div  style=" float: left;; margin-left: 10px; margin-top: -5px">&copy; 2011 &nbsp;<a href="http://www.tecor.com"><img id="TecorLogo" 
-        		src="http://ximpia-test.s3.amazonaws.com/images/blank.gif" 
-        		alt="Tecor Communications S.L." title="Tecor Communications S.L." /></a>
-</div>
-<div><span><a href="http://twitter.com/ximpia" target="site">@ximpia</a></span></div>
-</div>
-</div>    	
 </footer>
     
 </div>
 
 <br/>
 
-<!-- Write by javascript -->
-<!-- START POPUP MESSAGE -->
-<div class="Pops">
-<div id="PopMessage" class="PopMessage">
-<div id="PopMsgWrapper">
-<div class="MsgTitle"></div>
-<div class="MsgText"></div>
-<div class="MsgButtons"></div>
-</div>
-<br class="clearfloat" />
-</div>
-<!--[if lte IE 6.5]><iframe></iframe><![endif]-->
-</div>
-<!-- END POPUP MESSAGE -->
-
-<p id="id_variables">
-	
+<!-- Variables -->
+<p id="id_variables" >
 </p>
 
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
 <script type="text/javascript" src="http://localhost:8000/site_media/js/jquery/jquery-1.6.min.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.metadata.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jqDock.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-common/ximpia.common.js"></script>
-<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>-->
-<script type="text/javascript" src="http://localhost:8000/site_media/js/google_maps.js"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/google_maps.js"></script>-->
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.passStrengthener.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.metadata.js"></script>
+
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.form.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.validate.js"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jsonSuggest.js"></script>-->
@@ -205,141 +153,23 @@ Javascript generated controls. javascript will inject html into object
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.pageButton.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.qtip.js"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->
-<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
-<!--<script type="text/javascript" src="http://platform.linkedin.com/in.js">
-  api_key: UqqNxkAHjuhRzW4PMdyq2H-_MqWyFTDmTtTOfa6TiIX_Nu73_f7YdWNtI__yUnl5
-  onLoad: onLinkedInLoad
-  authorize: true
-</script>-->
-<!--
-<script type="text/javascript">  
-  // 2. Runs when the JavaScript framework is loaded
-  function onLinkedInLoad() {
-    IN.Event.on(IN, "auth", onLinkedInAuth);
-  }
-
-  // 2. Runs when the viewer has authenticated
-  function onLinkedInAuth() {
-    IN.API.Profile("me").result(displayProfiles);
-  }
-
-  // 2. Runs when the Profile() API call returns successfully
-  function displayProfiles(profiles) {
-    member = profiles.values[0];
-    //document.getElementById("profiles").innerHTML = 
-    //  "<p id=\"" + member.id + "\">Hello " +  member.firstName + " " + member.lastName + "</p>";
-  }
-</script>
--->
+<!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
 <!-- x-webkit-speech -->
-<!-- Facebook Button -->
-<div id="fb-root"></div>
-<!-- Facebook Button -->
-<script>
-	
-jQuery(document).ready(function($){
-	
-	var loadingHtml = "<img id=\"id_loadBig\" src=\"http://localhost:8000/site_media/images/blank.png\" alt\" \" class='loadBig'  />";
-	$("body").before(loadingHtml);
 
-    // set up the options to be used for jqDock...  
-    var labelTransform = function(labelText, optionIndex){ //scope (this) is the #menu element
-		rtn = "<div class='jqDockLabelNew' style='position: relative'>" + labelText + "</div>";
-        return rtn;
-      },
-    dockOptions = { align: 'top' // horizontal menu, with expansion DOWN from a fixed TOP edge
-        , labels: true  // add labels (defaults to 'br')
-        , size: 45
-	   ,setLabel: labelTransform
-    };
-    // ...and apply...
-    $('#IconMenu').jqDock(dockOptions);  
-	
-	// *************************
-	// *** jQuery VALIDATORS ***
-	// *************************
-	//jQuery.validator.messages.required = "";
-	// Ximpia Generic Validations
-	jQuery.validator.addMethod("ximpiaId", function(value, element) {
-		return this.optional(element) || /^[a-zA-Z0-9_.@+-]+$/i.test(value);
-	}, "mensaje");
-	jQuery.validator.addMethod("password", function(value, element) {
-		return this.optional(element) || /^[a-zA-Z0-9$#!&%]+$/i.test(value);
-	}, "mensaje");
-	
+<script>	
+jQuery(document).ready(function($){	
+	ximpia.common.Page.init();
 	var invitationCode = ximpia.common.Browser.fetchParamByName("i");
-	var formId = "signup";
-	$.getJSON('http://localhost:8000/signup/' + invitationCode, function(data) {
-		//console.log(data)
-		$("#id_loadBig").fadeOut('fast');
-		$("#id_app_site").css('visibility', 'visible');
-		// forms
-		var dataForm = data.forms[formId];
-		//console.log('dataForm : ' + dataForm);
-		for (var key in dataForm) {
-			//console.log(key);
-			var objId = $("#id_" + key).attr('id');
-			var keyAttrs = dataForm[key];
-			var element = keyAttrs.element;
-			if (element == 'input') {
-				if (objId == null && keyAttrs.type == "hidden") {
-					$("#id_variables").append("<input type=\"hidden\" id=\"id_" + key + "\" name=\"" + 
-						key + "\" value=\"" + keyAttrs.value + "\"/>");
-				}
-				for (keyAttr in keyAttrs) {
-					if (keyAttrs[keyAttr] != null && keyAttr != "type") {					
-						if (keyAttr == 'label' && keyAttrs.label != '') {
-							$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
-						} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
-							//console.log('help_text : ' + keyAttrs.help_text);
-							$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
-						} else {
-							//console.log('attr || ' + keyAttr + ' : ' + keyAttrs[keyAttr]);
-							$("#id_" + key).attr(keyAttr, keyAttrs[keyAttr]);
-						}
-					}
-				}
-			} else if (element == 'select') {
-				// label and help_text
-				//console.log(keyAttrs);
-				for (keyAttr in keyAttrs) {
-					if (keyAttrs[keyAttr] != null && keyAttr != "type") {					
-						if (keyAttr == 'label' && keyAttrs.label != '') {
-							$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
-						} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
-							//console.log('help_text : ' + keyAttrs.help_text);
-							$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
-						} else if (keyAttr == 'choices') {
-							for (choiceIndex in keyAttrs.choices) {
-								$("#id_" + key).append("<option value=\"" + keyAttrs.choices[choiceIndex][0] 
-								+ "\">" + keyAttrs.choices[choiceIndex][1] + "</option>");
-							}
-							
-						} 
-					}
-				}
-			}
-
-		}
-		//console.log('id_variables : ' + $("#id_variables").html());
-		
-		
-		// Just call a method for the bindings of the page
-		var obj = ximpia.site.Signup();
-		obj.doProfessionalBind();
-		
-	}).error(function(jqXHR, textStatus, errorThrown) {
-		// Error happened ?????????????
-		$("#id_loadBig").fadeOut('fast');
-		/*console.log(jqXHR);
-		console.log("jqXHR : " + jqXHR);
-		console.log("textStatus : " + textStatus);
-		console.log("errorThrown : " + errorThrown);
-		console.log('done!!!');*/
-	});
-	
+	var sp = ximpia.common.Path.getServer();
+	$("#id_Form1").attr('action', sp + 'signup/' + invitationCode);	
+	var signup = ximpia.site.Signup();
+	var pageJx = ximpia.common.PageAjax();
+	pageJx.init({	path: sp + 'signup/' + invitationCode, 
+			callback: signup.doProfessionalBind, 
+			formId: "form_signup",
+			sectionId: "id_sect_signupUser"});
+	pageJx.doForm();	
 });
-
 </script>
 
 </form>

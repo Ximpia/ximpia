@@ -4,6 +4,7 @@ import urlparse
 import simplejson as json
 import httplib2
 import types
+import time
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest, HttpResponseServerError, HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404, render_to_response
@@ -363,31 +364,22 @@ def signup(request, invitationCode=None, **argsDict):
 			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
 			print 'accType : ', invitation.accType
 			if invitation.accType == Choices.INVITATION_ACC_TYPE_USER:
-				# Facebook
-				# Facebook should be Icons
-				profileDict = {}
-				fbAccessToken = ''
-				"""if bFacebookLogin:
-					fbUserDict = facebook.get_user_from_cookie(request.COOKIES, settings.FACEBOOK_APP_ID, settings.FACE_APP_SECRET)
-					fbAccessToken = fbUserDict['access_token']
-					graph = facebook.GraphAPI(fbAccessToken)
-					try:
-						profileDict = graph.get_object("me");				
-						ctx['auth']['facebook'] = True
-					except facebook.GraphAPIError:
-						pass"""
 				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-				ctx['form'].buildInitial(invitation, profileDict, fbAccessToken, affiliateId)
-				jsData = {'forms': {}, 'data': {}}
+				ctx['form'].buildInitial(invitation, {}, '', affiliateId)
+				jsData = getResultOK({})
+				#print 'jsData : ', jsData
 				ctx['form']._getJsData(jsData)
-				jsData['affiliateId'] = affiliateId
+				# TODO: entryFields ????
+				jsData['response']['affiliateId'] = affiliateId
 				#print jsData
+				#print invitationCode, jsData['forms']['signup']['invitationCode']
 				result = signup.buildJSONResult(jsData)
 				#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
+				#time.sleep(1)
+				print result
 			else:
 				# Organization
 				print 'Organization...'
-				profileDict = {}
 				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
 				ctx['affiliateId'] = affiliateId
 				result = render_to_response(tmplDict['org'], RequestContext(request, ctx))

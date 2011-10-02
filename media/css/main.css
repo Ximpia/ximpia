@@ -94,15 +94,37 @@ div#Wrapper {
 .app {
 	border: 0px solid;
 	padding: 15px;
+	/*visibility: hidden;*/
+}
+
+.sectionApp {
 	visibility: hidden;
 }
 
-div#Header {
+#id_sect_loading {
+	position: absolute; 
+	border: 0px solid #000; 
+	visibility: visible; 
+	top: 80px; 
+	width: 870px; 
+	margin-left: auto;
+	height: 300px; 
+	background: url(../images/loading_big.gif) no-repeat center center; 
+}
+
+header {
 	width:870px; 
 	height: 68px;
 	border: 1px solid #ccc;
 	background-color: #fafafa;
 }
+
+/*div#Header {
+	width:870px; 
+	height: 68px;
+	border: 1px solid #ccc;
+	background-color: #fafafa;
+}*/
 
 .Button {
 	height: 35px;
@@ -175,8 +197,10 @@ div.PopMessage {
 	position:absolute;
 	border: solid 0px;
 	width: 450px;
-	background: #ccc;
-	border-radius: 6px;
+	/*background: transparent #ccc;*/
+	border-radius: 20px;
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
 	*zoom:1;
 	*background:none;
 	*filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#4d000000,endColorstr=#4d000000);
@@ -200,8 +224,11 @@ div.PopMessage div.MsgTitle {
 	/*background: #D50A09;*/
 	background: #5db5d8;
 	color: #fff;
-	padding: 7px 20px;
+	/*padding: 7px 20px;*/
 	font-weight: bold;
+	height: 40px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
 }
 
 div.PopMessage div.MsgText {
@@ -220,6 +247,8 @@ div.PopMessage div.MsgButtons {
 	background: #f5f5f5;
 	text-align:right;
 	padding: 5px 7px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
 }
 
 .popMessageOk {
@@ -276,14 +305,20 @@ img#TecorLogo {
 	z-index: 200000;
 }
 
+footer {
+	background-color: #fafafa;
+	width: 870px;
+	line-height:15px;
+}
+
 div#id_footerContent {
 	float: inherit;
 	margin-top:10px;
 	padding: 5px 0px;
-	width: 870px;
-	line-height:15px;
+	/*width: 870px;*/
+	/*line-height:15px;*/
 	border: 1px solid #ccc; 
-	background-color: #fafafa;
+	/*background-color: #fafafa;*/
 }
 
 div#id_footerText{
@@ -572,6 +607,19 @@ img.loadBig {
 	left: 400px;  
 }
 
+div.loadError {
+	position: absolute;
+	top: 140px;
+	left: 270px;
+	font-size: 2em;
+	width: 700px;
+	background-color: #eee;
+	padding: 15px;
+	border-radius: 20px;
+	border: 2px solid;
+	box-shadow: 10px 10px 5px #888888;
+}
+
 span.AjaxButton {
     border: 0px solid; 
     font-size: 80%; 
@@ -766,7 +814,7 @@ div.tagDel {
 {
     margin: 2px 5px;
     text-decoration: none;
-    font: bold 0.9em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
+    font: bold 1.0em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
     display: inline-block;
     text-align: center;
     color: #fff;
@@ -879,6 +927,17 @@ div.tagDel {
 	box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
 }
 
+.btPop {
+	font: bold 0.8em/2em Arial, Helvetica;
+}
+
+.btX {
+	font: bold 1.0em/1.3em Arial, Helvetica;
+	padding: 4px;
+	margin: 0;
+	border-top-right-radius: 10px; 
+}
+
 .buttonIcon-hover, .buttonIcon:hover
 {
 	background-color: #ddd;
@@ -940,7 +999,7 @@ div.tagDel {
 
 /* Social media buttons */	
 .tw, .fb,
-.tw:hover, .fb:hover
+.tw:hover, .fb:hover, .in, .in:hover
 {
         background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,.5)), to(rgba(255,255,255,0)));
         background-image: -webkit-linear-gradient(top, rgba(255,255,255,.5), rgba(255,255,255,0));
@@ -964,6 +1023,13 @@ div.tagDel {
 	  font: bold 0.8em/2em Arial, Helvetica;		
 }
 
+.in, .in:focus {
+	  background-color: #ddd;
+	  color: #000;	  
+	  text-shadow: 0 1px 0 rgba(0,0,0,.4);
+	  font: bold 0.8em/2em Arial, Helvetica;		
+}
+
 .tw:hover
 {
 	  background-color: #b1f0f3;
@@ -972,6 +1038,11 @@ div.tagDel {
 .fb:hover
 {
 	  background-color: #879bc3; 
+}
+
+.in:hover
+{
+	  background-color: #ccc; 
 }
 	
 .tw:before
@@ -991,6 +1062,16 @@ div.tagDel {
         background: rgba(0,0,0,.1);		
 		color: #fff;	
 		text-shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+
+.in:before
+{
+        content: "in";
+        background: #3C5A98;
+        color: #fff;
+        /*background: rgba(0,0,0,.1);		
+		color: #fff;	
+		text-shadow: 0 1px 0 rgba(0,0,0,.4);*/
 }
 
 
@@ -1059,7 +1140,7 @@ div.tagDel {
 	width: 1px; 
 	float: left; 
 	margin: 0px 50px 0px 50px; 
-	height: 80px;
+	height: 110px;
 }
 
 /* Left Column */
@@ -1084,4 +1165,10 @@ div.tagDel {
 	border: 0px solid; 
 	height: 38px; 
 	padding: 5px;
+}
+
+.warning {
+	background: url(../images/warning_48.png) 0px 0px no-repeat;
+	width: 48px;
+	height: 48px;
 }

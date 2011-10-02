@@ -74,7 +74,11 @@ class Common(object):
 		list = []
 		for key in keyList:
 			message = errorDict[key]
-			list.append((key, message))
+			index = key.find('id_')
+			if index == -1:
+				list.append(('id_' + key, message))
+			else:
+				list.append((key, message))
 		self._resultDict = getResultERROR(list)
 		return self._resultDict
 

@@ -1331,9 +1331,9 @@ class ContactDetail(BaseModel):
 		return address
 	def __unicode__(self):
 		if self.nickName != None:
-			return str(self.name) + ' - ' + str(self.nickName)
+			return self.name + ' - ' + self.nickName
 		else:
-			return str(self.name)
+			return self.name
 	class Meta:
 		db_table = 'SN_CONTACT_DETAIL'
 		verbose_name = _('Contact Detail')
@@ -1671,15 +1671,15 @@ class ContextObj(object):
 	userSocial = property(_getUserSocial, _setUserSocial)
 	socialChannel = property(_getSocialChannel, _setSocialChannel)
 
-def getResultOK(resultList, status='OK'):
+def getResultOK(dataDict, status='OK'):
 	"""Build result dict for OK status. resultList is a list of objects or content to show in client"""
 	resultDict = {}
 	resultDict['status'] = status
-	resultDict['response'] = resultList
+	resultDict['response'] = dataDict
 	resultDict['errors'] = []
 	return resultDict
 
-def getResultERROR(errorList, response=''):
+def getResultERROR(errorList, response={}):
 	"""Build result dict for errors. status ir "ERROR" and response empty as default. "errors" has the errorList attribute"""
 	resultDict = {}
 	resultDict['status'] = 'ERROR'

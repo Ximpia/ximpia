@@ -12,7 +12,8 @@ def validateStr(value):
 
 def validateTxtField(value):
 	"""Validate a text field"""
-	regexObj = re.compile("^(\w*)\s?(\s?\w+)*$", re.L)
+	#regexObj = re.compile("^(\w*)\s?(\s?\w+)*$", re.L)
+	regexObj = re.compile('\w+', re.L)
 	obj = RegexValidator(regexObj, _('Validation error. Text field expected.'))
 	obj.__call__(value)
 

@@ -1,4 +1,3 @@
-
 var ximpia = ximpia || {};
 ximpia.common = ximpia.common || {};
 ximpia.visual = ximpia.visual || {};
@@ -6,6 +5,7 @@ ximpia.site = ximpia.site || {};
 
 ximpia.common.List = {};
 ximpia.common.List.getValue = (function(id, key) {
+	console.log('value : ' + $("#" + id).attr('value'));
 	var array = eval($("#" + id).attr('value'));
 	var value = '';
 	for (var i=0; i<array.length; i++) {
@@ -61,6 +61,7 @@ ximpia.common.Window.showRemoteError = (function() {
  * Show Message Window
  */
 ximpia.common.Window.showMessage = (function(messageOptions) {
+	ximpia.common.Window.createPopHtml();
         var sTitle = '';
         var sMessage = '';
         var sButtons = 'MsgCPClose:' + eval($("#id_buttonConstants").attr('value'))['close'];
@@ -70,6 +71,10 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         var iWidth = null;
         var iHeight = null;
         functionShow = null;
+        console.log('Will do...');
+        //var htmlPage = "<!-- START POPUP MESSAGE --><div class=\"Pops\"><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div><!-- END POPUP MESSAGE -->";
+        //console.log(htmlPage);
+        //$("body").before(htmlPage);
         if (messageOptions.title) sTitle = messageOptions.title;
         if (messageOptions.message) sMessage = messageOptions.message;
         if (messageOptions.buttons) sButtons = messageOptions.buttons;
@@ -124,7 +129,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
             }
         }
         iTop = iTopPosition + iTopOffset;
-        $("div.MsgTitle").text(sTitle);
+        $("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + sTitle + '</div>');
         $("div.MsgText").html(sMessage);
         //$("#PopMsgWrapper .MsgText").html(sMessage);
         ButtonList = sButtons.split(',');
@@ -133,23 +138,26 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
             Fields = ButtonList[i].split(':');
             sButtonId = Fields[0];
             sButtonText = Fields[1];
-            $("div.MsgButtons").append('<input type="button" id="' + sButtonId + '" value="' + sButtonText + '" class="Button"/>');
+            buttonBefore = Fields[2];
+            $("div.MsgButtons").append('<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>');
         }
         EffectInList = sEffectIn.split(',');
         sEffectInTxt = EffectInList[0];
         iEffectInTime = parseInt(EffectInList[1]);
         EffectOutList = sEffectOut.split(',');
         sEffectOutTxt = EffectOutList[0];
-        iEffectOutTime = parseInt(EffectOutList[1]);
-        if (sEffectInTxt == 'fadeIn') {
+        iEffectOutTime = parseInt(EffectOutList[1]);        
+        $("div.PopMessage").fadeIn('fast');        
+        /*if (sEffectInTxt == 'fadeIn') {
             $("div.PopMessage").fadeIn(iEffectInTime);
-        }   
+        }*/   
         $("div.Pops").css('left', iLeft + 'px');
         $("div.Pops").css('top', iTop + 'px');
         $("div.Pops").css('visibility','visible');
-        if (sEffectOutTxt == 'fadeOut') {
+        //$("div.PopMessage").fadeOut('slow');
+        /*if (sEffectOutTxt == 'fadeOut') {
             $("div.PopMessage").fadeOut(iEffectOutTime);
-        }
+        }*/
         if (bFadeBackground) {
             $("#Wrapper").fadeTo("fast", 0.50);
         }
@@ -162,21 +170,33 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
  */
 ximpia.common.Window.clickMsgOk = (function(bFadeBackground, functionName) {
         bFadeOut = ximpia.common.Window.checkFadeOut();
-        if (!bFadeOut) {
-            bFadeBackground = false;
-        }
-        $(".Pops").css('left','-2000px');
+        $("div.PopMessage").fadeOut('fast');
         if (bFadeBackground) {
             $("#Wrapper").fadeTo("fast", 1.0);
         }
+        //$(".Pops").css('left','-2000px');
         if (functionName) {
             functionName();
-        }	
+        }
+	if (!bFadeOut) {
+            bFadeBackground = false;
+        }
+        $("#id_pops").remove()
+});
+/**
+ * Construct PopUp html
+ */
+ximpia.common.Window.createPopHtml = (function() {
+	if (!$("#id_pops").length) {
+		var htmlPage = "<div id=\"id_pops\" class=\"Pops\" ><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px\"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div>";
+		$("body").append(htmlPage);
+	}
 });
 /**
  * Show Pop Up. It is used for Ajax actions, like OK Message, Error messages, etc...
  */
 ximpia.common.Window.showPopUp = (function(key) {
+	ximpia.common.Window.createPopHtml();
         if (typeof key == 'string') {
             var sId = key;
             var messageOptions = new Object();
@@ -191,6 +211,7 @@ ximpia.common.Window.showPopUp = (function(key) {
         var sMessage = '';
         var iHeight = null;
         functionName = null;
+        console.log('sId : ' + sId);
         if (sId.length != 0) {
             var popUpData = eval($("#" + sId).attr('value'));
             sTitle = popUpData[0];
@@ -229,18 +250,22 @@ ximpia.common.Window.showPopUp = (function(key) {
         ximpia.common.Window.showMessage({
             title: sTitle,
             message: sMessage,
-            buttons: 'MsgOk:' + closeValue,
+            buttons: 'id_msgClose:' + closeValue + ':delete',
             effectIn: 'fadeIn,1000',
             effectOut: sFadeOut,
             fadeBackground: bFadeOut
         });
         //showMessage(sTitle, sMessage, 'MsgOk:OK', 'fadeIn,1000', sFadeOut, bFadeOut);
         if (sFadeOut == '') {
-            $("#MsgOk").click(function() {ximpia.common.Window.clickMsgOk(bFadeOut, functionName)});
+            $("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(bFadeOut, functionName)});
+            $("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(bFadeOut, functionName)});
         }
         if (sUrl) {
             if (sUrl != '') {
-                $("#MsgOk").click(function() {
+                $("#id_msgClose").click(function() {
+                    window.location = sUrl;
+                });
+                $("#id_btX").click(function() {
                     window.location = sUrl;
                 });
             }
@@ -257,6 +282,56 @@ ximpia.common.Window.checkFadeOut = (function() {
             bCheck = true;
         }
         return bCheck	
+});
+
+ximpia.common.Page = {};
+/**
+ * Init page
+ */
+ximpia.common.Page.init = (function() {
+	// Insert basic tags	
+	var basicTags = ximpia.common.BasicTags();
+	basicTags.pageTags();	
+		
+	// set up the options to be used for jqDock...  
+	var labelTransform = function(labelText, optionIndex){ //scope (this) is the #menu element
+		rtn = "<div class='jqDockLabelNew' style='position: relative'>" + labelText + "</div>";
+        	return rtn;
+      	},
+    	dockOptions = { align: 'top' // horizontal menu, with expansion DOWN from a fixed TOP edge
+	        , labels: true  // add labels (defaults to 'br')
+	        , size: 45
+	   	,setLabel: labelTransform
+    	};
+    	// ...and apply...
+    	$('#IconMenu').jqDock(dockOptions);
+	// *************************
+	// *** jQuery VALIDATORS ***
+	// *************************
+	//jQuery.validator.messages.required = "";
+	// Ximpia Generic Validations
+	jQuery.validator.addMethod("ximpiaId", function(value, element) {
+		return this.optional(element) || /^[a-zA-Z0-9_.@+-]+$/i.test(value);
+	}, "mensaje");
+	jQuery.validator.addMethod("password", function(value, element) {
+		return this.optional(element) || /^[a-zA-Z0-9$#!&%]+$/i.test(value);
+	}, "mensaje");	
+});
+
+ximpia.common.Path = {}
+/**
+ * Get site media path
+ */
+ximpia.common.Path.getSiteMedia = (function() {
+	var siteMedia = "http://localhost:8000/site_media/";
+	return siteMedia;
+});
+/**
+ * Get server path
+ */
+ximpia.common.Path.getServer = (function() {
+	var server = "http://localhost:8000/";
+	return server;
 });
 
 ximpia.common.Browser = {};
@@ -297,6 +372,123 @@ ximpia.common.Browser.fetchParamByName = (function(name) {
 	  else
 	  	return results[1];
 });
+
+
+ximpia.common.BasicTags = function() {
+	var _attr = {
+		priv: {
+			/**
+			 * header tag
+			 */
+			head: function() {
+				console.log('head...');
+				$.metadata.setType("attr", "data-xp");
+				var htmlI = $("head").html();
+				var sm = ximpia.common.Path.getSiteMedia();
+				var contentLength = $("head meta").length;
+				if (contentLength < 1) {
+					var attrs = $("head").metadata();
+					htmlI = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+					htmlI += "<title>" + attrs.title + "</title>";
+					htmlI += "<link rel=\"stylesheet\" href=\"" + sm + "jQueryThemes/start/jquery-ui-1.8.9.custom.css\" type=\"text/css\" />";
+					htmlI += "<link href=\"" + sm + "css/main.css\" rel=\"stylesheet\" type=\"text/css\" />";
+					htmlI += "<link href=\"" + sm + "css/ximpia.qtip.css\" rel=\"stylesheet\" type=\"text/css\" />";
+					$("head").html(htmlI);
+				}
+			},
+			/**
+			 * header tag
+			 */
+			header: function() {
+				console.log('header...');
+				/**
+				 * <div id="Header" >
+<div id="Logo">
+<a href="http://localhost:8000/"><img id="LogoImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /> <br/>
+<img id="BetaImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /></a>	
+</div>
+<nav>
+<div id="IconMenu">    	
+<img src="http://localhost:8000/site_media/images/add_60.png" title="Signup" alt="Signup" />
+<img src="http://localhost:8000/site_media/images/users_two_60.png" title="Friends" alt="Friends" />
+<img src="http://localhost:8000/site_media/images/paper_content_60.png" title="About Us" alt="About Us" />
+<img src="http://localhost:8000/site_media/images/mail_add_60.png" title="Contact Us" alt="Contact Us" />
+<img src="http://localhost:8000/site_media/images/lock_60.png" title="Privacy" alt="Privacy" />
+<img src="http://localhost:8000/site_media/images/go_60.png" title="Login" alt="Login" />		
+</div>
+</nav>
+</div>
+<!-- End Header -->
+				 */
+				var htmlI = $("header").html();
+				var sm = ximpia.common.Path.getSiteMedia();
+				var contentLength = $("header div").length;
+				if (contentLength < 1) {
+					htmlI = "<div id=\"Header\" >";
+					htmlI += "<div id=\"Logo\">";
+					htmlI += "<a href=\"http://localhost:8000/\"><img id=\"LogoImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /> <br/>";
+					htmlI += "<img id=\"BetaImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /></a>";
+					htmlI += "</div>";
+					htmlI += "<nav>";
+					htmlI += "<div id=\"IconMenu\">";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/add_60.png\" title=\"Signup\" alt=\"Signup\" />";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/users_two_60.png\" title=\"Friends\" alt=\"Friends\" />";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/paper_content_60.png\" title=\"About Us\" alt=\"About Us\" />";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/mail_add_60.png\" title=\"Contact Us\" alt=\"Contact Us\" />";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/lock_60.png\" title=\"Privacy\" alt=\"Privacy\" />";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/go_60.png\" title=\"Login\" alt=\"Login\" />";
+					htmlI += "</div>";
+					htmlI += "</nav>";
+					htmlI += "</div>";
+					$("header").html(htmlI);
+				}
+			},
+			/**
+			 * footer tag
+			 */
+			footer: function() {
+				console.log('footer...');
+				/**
+				 * <div id="id_footerContent">
+<div id="id_footerText">
+<div  style=" float: left;; margin-left: 10px; margin-top: -5px">&copy; 2011 &nbsp;<a href="http://www.tecor.com"><img id="TecorLogo" 
+        		src="http://ximpia-test.s3.amazonaws.com/images/blank.gif" 
+        		alt="Tecor Communications S.L." title="Tecor Communications S.L." /></a>
+</div>
+<div><span><a href="http://twitter.com/ximpia" target="site">@ximpia</a></span></div>
+</div>
+</div>
+				 */
+				var htmlI = $("footer").html();
+				var sm = ximpia.common.Path.getSiteMedia();
+				var contentLength = $("footer div").length;
+				if (contentLength < 1) {
+					htmlI = "<div id=\"id_footerContent\">";
+					htmlI += "<div id=\"id_footerText\">";
+					htmlI += "<div  style=\" float: left;; margin-left: 10px; margin-top: -5px\">&copy; 2011 &nbsp;<a href=\"http://www.tecor.com\"><img id=\"TecorLogo\"";
+					htmlI += "src=\"http://ximpia-test.s3.amazonaws.com/images/blank.gif\"";
+					htmlI += "alt=\"Tecor Communications S.L.\" title=\"Tecor Communications S.L.\" /></a>";
+					htmlI += "</div>";
+					htmlI += "<div><span><a href=\"http://twitter.com/ximpia\" target=\"site\">@ximpia</a></span></div>";
+					htmlI += "</div>";
+					htmlI += "</div>";
+					$("footer").html(htmlI);
+				}
+			}
+		},
+		pub: {
+			/**
+			 * Insert page tags : head, header and footer
+			 */
+			pageTags: function() {
+				//_attr.priv.head();
+				_attr.priv.header();
+				_attr.priv.footer();
+			}
+		}
+	}
+	return _attr.pub;
+}
 
 ximpia.common.Form = function() {
 	var _attr = {
@@ -345,6 +537,7 @@ ximpia.common.Form = function() {
                         			if (statusCode.indexOf('.') != -1) {
                             				statusCode = statusCode.split('.')[0]
                         			}
+                        			console.log('statusCode : ' + statusCode);
                         			if (statusCode == 'OK') {
                             				$("#" + idImg).xpLoadingSmallIcon('ok');
                             				$("#" + idTxt).text($("#id_msg_ok").attr('value'));
@@ -356,7 +549,9 @@ ximpia.common.Form = function() {
                             				if ($("#" + 'id_msgSubmit_Form1').attr('value')) {
                                 				ximpia.common.Window.showPopUp('id_msgSubmit_Form1');
                             				} else {
-                                				callbackFunction();
+                            					if (typeof callbackFunction != 'undefined') {
+                            						callbackFunction();
+                            					}
                             				}                       
                         			} else {
                             				$("#" + idImg).xpLoadingSmallIcon('error');
@@ -368,8 +563,9 @@ ximpia.common.Form = function() {
                             				var errorId = "";
                             				for (var i=0; i<list.length; i++) {
                                 				//var errorId = list[i][0];
-                                				errorName = list[i][0];
-                                				errorId = "id_" + errorName; 
+                                				errorId = list[i][0];
+                                				errorName = $("label[for='" + errorId + "']").text();
+                                				console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
                                 				var errorMessage = list[i][1];
                                 				//alert(errorId);
                                 				$("#" + errorId).removeClass("valid");
@@ -379,7 +575,7 @@ ximpia.common.Form = function() {
                             				message = message + '</ul>';
                             				// Show error Message in pop up
                             				ximpia.common.Window.showPopUp({
-                                				title: 'Errors Found',
+                                				title: 'Validation Errors Found',
                                 				message: message,
                             				});
                         			}
@@ -491,6 +687,91 @@ ximpia.common.Ajax.sendAjaxJSONRequest = (function() {
         });
         return results;
 });
+
+
+ximpia.common.PageAjax = function() {
+	var _attr = {
+		priv: {
+			callback : null,
+			path: "",
+			formId: "",
+			sectionId: ""
+		},
+		pub: {
+			init: function(obj) {
+				_attr.priv.path = obj.path;
+				_attr.priv.callback = obj.callback;
+				_attr.priv.formId = obj.formId;
+				_attr.priv.sectionId = obj.sectionId;
+			},
+			doForm: function() {
+				$.getJSON(_attr.priv.path, function(data) {
+					//console.log(data)
+					// forms
+					var dataForm = data.response[_attr.priv.formId];
+					//console.log('dataForm : ' + dataForm);
+					for (var key in dataForm) {
+						var objId = $("#id_" + key).attr('id');
+						var keyAttrs = dataForm[key];
+						var element = keyAttrs.element;
+						//console.log(key + ' : ' + keyAttrs.value );
+						if (element == 'input') {
+							if (objId == null && keyAttrs.type == "hidden") {
+								$("#id_variables").append("<input type=\"hidden\" id=\"id_" + key + "\" name=\"" + key + "\" value=\"\" />");
+								$("#id_" + key).attr('value', keyAttrs.value);
+							} else {
+								for (keyAttr in keyAttrs) {
+									if (keyAttrs[keyAttr] != null && keyAttr != "type") {					
+										if (keyAttr == 'label' && keyAttrs.label != '') {
+											$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
+										} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
+											//console.log('help_text : ' + keyAttrs.help_text);
+											$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
+										} else {
+											//console.log('attr || ' + keyAttr + ' : ' + keyAttrs[keyAttr]);
+											$("#id_" + key).attr(keyAttr, keyAttrs[keyAttr]);
+										}
+									}
+								}
+							}
+						} else if (element == 'select') {
+							// label and help_text
+							//console.log(keyAttrs);
+							for (keyAttr in keyAttrs) {
+								if (keyAttrs[keyAttr] != null && keyAttr != "type") {					
+									if (keyAttr == 'label' && keyAttrs.label != '') {
+										$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
+									} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
+										//console.log('help_text : ' + keyAttrs.help_text);
+										$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
+									} else if (keyAttr == 'choices') {
+										for (choiceIndex in keyAttrs.choices) {
+											$("#id_" + key).append("<option value=\"" + keyAttrs.choices[choiceIndex][0] 
+											+ "\">" + keyAttrs.choices[choiceIndex][1] + "</option>");
+										}							
+									} 
+								}
+							}
+						}
+					}
+					//console.log('id_variables : ' + $("#id_variables").html());
+					$("#id_sect_loading").fadeOut('fast');
+					$("#" + _attr.priv.sectionId).css('visibility', 'visible');
+					// Just call a method for the bindings of the page
+					//var obj = ximpia.site.Signup();
+					//obj.doProfessionalBind();
+					_attr.priv.callback();
+					//console.log('invitationCode : ' + $("#id_invitationCode").attr('value'));
+				}).error(function(jqXHR, textStatus, errorThrown) {
+					$("#id_loadBig").fadeOut('fast');
+					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
+					$("body").before(html);
+				});
+			}
+		}
+	}
+	return _attr.pub;
+}
 
 
 ximpia.common.GoogleMaps = function() {
@@ -759,7 +1040,7 @@ ximpia.site.Signup = function() {
     				oForm.doReloadCaptcha();
 				// fadeIcons
 				ximpia.visual.Icon.bindFadeIcons(".icon");
-				function processSnLogin() {	
+				/*function processSnLogin() {	
 					// Click on Facebook or LinkedIn button
 					$(".SnLogin").click(function() {
 						var sId = $(this).attr('id');
@@ -839,7 +1120,7 @@ ximpia.site.Signup = function() {
     						// The user has logged out, and the cookie has been cleared
 						//alert('Out....');
     					}
-				});
+				});*/
 				//processSnLogin();
 				/*$(".AuthIcon").xpSocialNetworkIcon();
 				$(".AuthIcon").click(function() {
