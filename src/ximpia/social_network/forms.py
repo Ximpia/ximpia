@@ -2,6 +2,7 @@ import re
 import json
 import types
 
+from django.core import serializers as _s
 from django import forms
 from django.forms import ValidationError
 from django.utils.translation import ugettext as _
@@ -24,7 +25,7 @@ from models import UserSocial, Invitation, Address, ContactDetail, Organization,
 
 #from validators import *
 from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
-	XpChoiceField
+	XpChoiceField, XpTextChoiceField
 from ximpia.social_network.form_objects import XpUserField
 from ximpia.util.js import Form as _jsf
 
@@ -46,13 +47,17 @@ class XBaseForm(forms.Form):
 	siteMedia = forms.CharField(widget=XpHiddenWidget, initial= settings.MEDIA_URL)
 	buttonConstants = forms.CharField(widget=XpHiddenWidget, initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = forms.CharField(widget=XpHiddenWidget, initial= settings.FACEBOOK_APP_ID)
+	objects = forms.CharField(widget=XpHiddenWidget, initial='')
 	#errors = {}
+	_argsDict = {}
 	def __init__(self, *argsTuple, **argsDict): 
 		"""Constructor for base form container"""
+		self._argsDict = argsDict
 		if argsDict.has_key('ctx'):
 			self._ctx = argsDict['ctx']
 		#self.errors = {}
 		#self.errors['invalid'] = []
+		print 'argsDict : ', argsDict
 		if argsDict.has_key('instances'):
 			dict = argsDict['instances']
 			keys = dict.keys()
@@ -71,6 +76,7 @@ class XBaseForm(forms.Form):
 				except AttributeError:
 					pass
 			# Set instance too
+		self._buildObjects()
 		if argsDict.has_key('ctx'):
 			del argsDict['ctx']
 		if argsDict.has_key('dbDict'):
@@ -78,7 +84,17 @@ class XBaseForm(forms.Form):
 		if argsDict.has_key('instances'):
 			del argsDict['instances']
 		self._db = {}
-		super(XBaseForm, self).__init__(*argsTuple, **argsDict)	
+		super(XBaseForm, self).__init__(*argsTuple, **argsDict)
+	def _buildObjects(self):
+		"""Build db instance json objects"""
+		if self._argsDict.has_key('instances'):
+			dict = {}
+			for key in self._argsDict['instances']:
+				# Get json object, parse, serialize fields object
+				jsonObj = _s.serialize("json", [self._argsDict['instances'][key]])
+				obj = json.loads(jsonObj)[0]
+				dict[key] = obj['fields']
+				self.base_fields['objects'].initial = json.dumps(dict)
 	def putParam(self, name, value):
 		"""Adds field to javascript array
 		@param name: 
@@ -203,10 +219,10 @@ class UserSignupForm(XBaseForm):
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
 									'userGroups': [KSignup.USER_GROUP_ID],
-									'affiliateId': -1}))
+									'affiliateId': -1})) 
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
 		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha']]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))	
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
 			
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		"""Build initial values for form"""
@@ -230,7 +246,7 @@ class UserSignupForm(XBaseForm):
 			fbIcon.setToken(fbAccessToken)
 			self.initial['facebookIcon_data'] = fbIcon.getS()
 
-	def cleanxxx(self):
+	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
 		self._validateSameFields([('password','passwordVerify')])		
 		#self._validateSignupCaptcha()
@@ -239,6 +255,7 @@ class UserSignupForm(XBaseForm):
 
 
 class OrganizationSignupForm(XBaseForm):
+	_XP_FORM_ID = 'signupOrg'
 	# Instances
 	_dbUser = User()
 	_dbAddress = Address()
@@ -246,16 +263,17 @@ class OrganizationSignupForm(XBaseForm):
 	_dbGroup = Group()
 	_dbTag = Tag()
 	_dbUserAccountContract = UserAccountContract()
+	_dbInvitation = Invitation()
 	# Fields
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
 	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True, 
 		help_text = _('Must provide a strong password to submit form. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
 					label= _('Password Verify'))
-	email = XpEmailField(_dbUser, '_dbUser.email', label='Email')
+	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email')
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
-	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], label=_('Industries'), help_text=_('Industries'))
+	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), help_text=_('Industries'))
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
 	country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
 	organizationName = XpCharField(_dbOrganization, '_dbOrganization.name')
@@ -265,17 +283,19 @@ class OrganizationSignupForm(XBaseForm):
 	account = XpCharField(_dbOrganization, '_dbOrganization.account')
 	# TextArea
 	description = XpCharField(_dbOrganization, '_dbOrganization.description')
-	organizationGroup = XpCharField(_dbGroup, '_dbGroup.name', label=_('Organization Group'))
+	#organizationGroup = XpCharField(_dbGroup, '_dbGroup.name', label=_('Organization Group'))
 	organizationGroupTags = XpCharField(_dbTag, '_dbTag.name', label=_('Group Tags'))
-	jobTitle = XpCharField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle')
+	jobTitle = XpTextChoiceField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle', choices=Choices.JOB_TITLES)
+	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), choices=Choices.ORG_GROUPS)
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
+	invitationCode = forms.CharField(widget=XpHiddenWidget)
 	
-	orgGroupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
-	orgGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
-	jobTitle_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.JOB_TITLES))
-	organizationGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.ORG_GROUPS))
-	groupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=GenericComponent())
-	groupTagsAjax = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	#orgGroupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	#orgGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	#jobTitle_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.JOB_TITLES))
+	#organizationGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.ORG_GROUPS))
+	#groupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=GenericComponent())
+	#groupTagsAjax = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	
 	# Navigation and Message Fields
 	fields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
@@ -284,17 +304,17 @@ class OrganizationSignupForm(XBaseForm):
 									'affiliateId': -1,
 									'invitationCode': '',
 									'accountType': ''}))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))	
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	
 	def buildInitial(self):
 		pass
 	
 	def clean(self):
+		"""Clean form: validate same password and captcha when implemented"""
 		self._validateSameFields([('password','passwordVerify')])
-		return self._xpClean()
-
-
+		self._xpClean()
+		return self.cleaned_data
 
 
 class AppRegex(object):

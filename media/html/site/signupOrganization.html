@@ -12,8 +12,6 @@
 
 <body>
 
-<!-- Only one form??? -->
-
 <form id="id_Form1" action="" method="post">
 
 <!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
@@ -31,9 +29,9 @@
 
 <div id="id_apps" style="border:solid 1px #ddd; margin-top:10px" >
     
-<section id="id_app_site" class="app">
+<section id="id_app_site" class="app" >
 
-<section id="id_sect_signupUser" class="sectionApp">
+<section id="id_sect_signupUser" class="sectionApp" style="overflow: auto; height: 420px">
 
 <h3>XimpiaId</h3>
 
@@ -64,7 +62,7 @@
 
 <div id="id_userData" style=" clear: both; padding-top: 5px">
 
-<h3>About You</h3>
+<h3>You</h3>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
@@ -79,7 +77,6 @@
 <!-- Country -->				
 <div id="id_country_comp" data-xp-type="basic.select" data-xp="{tabindex: '8'}" ></div>
 
-<br/>
 </div>	
 <div class="frmRight">
 
@@ -92,9 +89,96 @@
 <br/>
 </div>
 </div><!-- Info -->	
+
+<br style="clear: both"/>
+
+<section data-xp-type="condSection">
+
+Holaaa
+	
+</section>
+
+<h3>Your Organization And You</h3>
+
+<div id="id_orgYouInfo" class="formBlock" style="margin-top: 0px">
+
+<!--
+Suggest data can be binded to input object in the Django form:
+data, maxHeight, minCharacters, url
+data-xp="{}"
+-->
+
+<div id="id_jobTitle_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145, suggest: true}" ></div>
+<div id="id_organizationGroup_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145, suggest: true}" ></div>
+<div id="id_organizationGroupTags_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145}" ></div>
+
+<!--
+<label for="id_jobTitle">{% trans "Job Title" %}: {{form.jobTitle}}<br />
+<label for="id_organizationGroup">{% trans "Group You Manage" %}: {{form.organizationGroup}}<br />
+<table border="0">
+<tr>
+<td>
+<label for="id_organizationGroupTags">{% trans "Group Tags" %}: {{form.organizationGroupTags}}
+</td><td>		 
+<input id="BtAddTag" type="button" value="Add" />
+</td><td valign="bottom" >
+<div id="id_groupTags" class="tagContainer">
+</div>
+-->		 
+
+<!--</td></tr></table>-->	 
+
+</div>
+
+<br style="clear: both"/>
+
+<h3>Your Organization</h3>
+
+<div id="id_info" class="formBlock" style="margin-top: 0px">
+
+<!--<table border="0"><tr><td style="vertical-align: top">-->
+	
+<div class="frmLeft">
+
+<div id="id_account_comp" data-xp-type="basic.input" data-xp="{info: true, left: 75}" ></div>
+<div id="id_organizationName_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
+<div id="id_organizationDomain_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
+<div id="id_organizationCity_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
+<div id="id_organizationCountry_comp" data-xp-type="basic.select" data-xp="{left: 75}" ></div>
+<div id="id_descrition_comp" data-xp-type="basic.text" data-xp="{left: 75}" ></div>
+
+</div>
+
+<div class="frmRight">
+
+<div id="id_organizationIndustry_comp" data-xp-type="basic.select" data-xp="{size: 8, style: 'vertical-align:top; margin-top: 10px'}" ></div>
+
+<!--				
+<table><tr><td><label for="id_description"></label>:<br/> {{form.description}}<br />
+</td><td valign="bottom" style="width: 30px"><span id="id_description_counter" class="TextAreaCounter" style=" font-size:90%; position:relative; top: 7px"></span></td></tr></table>
+</td>
+<td style="vertical-align: top; padding-left: 0px">
+<label for="id_organizationIndustry"></label>: {{form.organizationIndustry}}<br />
+-->
+
+</div>
+
+<!--<span id="id_description_counter" class="TextAreaCounter" style=" font-size:90%; position:relative; top: 7px"></span>-->
+
+<!--</td></tr></table>-->
+
+</div>
+
+
 </div><!-- UserData -->
 
-<div id="id_buttonBarBottom" class="btBar">
+
+
+	
+</section> <!-- section id_signupUser -->
+
+<section>
+<div id="id_buttonBarBottom" class="btBar" style="width: 830px; margin-bottom: 5px">
 <div style="float: left">
 <!-- Button Left -->
 <!-- button -->
@@ -108,12 +192,11 @@
 <div style="float: left">
 <!-- Button Right -->
 </div>
-</div>
-	
-</section> <!-- section id_signupUser -->
+</div> 
+</section>
 
 </section>
-<!-- End app_MyApp --> 
+<!-- End app_MyApp -->
     
 </div>
 <!-- End Apps -->
@@ -140,7 +223,7 @@
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.form.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.validate.js"></script>
-<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jsonSuggest.js"></script>-->
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jsonSuggest.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.networkIcon.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.loading.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.pageButton.js"></script>
@@ -154,16 +237,16 @@
 <!-- x-webkit-speech -->
 
 <script>	
-jQuery(document).ready(function($){	
+jQuery(document).ready(function($){
 	ximpia.common.Page.init();		
 	var invitationCode = ximpia.common.Browser.fetchParamByName("i");
 	var path = ximpia.common.Path.getServer() + 'signup/' + invitationCode
-	$("#id_Form1").attr('action', path);	
-	var signup = ximpia.site.Signup();	
+	$("#id_Form1").attr('action', path);
+	var signup = ximpia.site.Signup();
 	var pageJx = ximpia.common.PageAjax();
 	pageJx.init({	path: path, 
-			callback: signup.doProfessionalBind, 
-			formId: "form_signup",
+			callback: signup.doOrganizationBind, 
+			formId: "form_signupOrg",
 			sectionId: "id_sect_signupUser",
 			verbose: true});
 	pageJx.doForm();		

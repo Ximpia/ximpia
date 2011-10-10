@@ -380,9 +380,14 @@ def signup(request, invitationCode=None, **argsDict):
 			else:
 				# Organization
 				print 'Organization...'
-				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-				ctx['affiliateId'] = affiliateId
-				result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
+				#ctx['form'] = forms.OrganizationSignupForm(instances={'dbInvitation': invitation})
+				ctx['form'] = forms.OrganizationSignupForm(instances = {'dbInvitation': invitation})
+				jsData = getResultOK({})
+				ctx['form']._getJsData(jsData)
+				jsData['response']['affiliateId'] = affiliateId
+				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
+				result = signup.buildJSONResult(jsData)
+				print result
 		except Invitation.DoesNotExist:
 			raise Http404
 	return result

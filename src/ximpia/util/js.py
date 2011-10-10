@@ -1,5 +1,5 @@
 import simplejson as json
-
+from django.core import serializers as _s
 
 class Form(object):
 
@@ -29,6 +29,15 @@ class Form(object):
 		"""Doc."""
 		dictStr = json.dumps(dict)
 		return dictStr
+	
+	@staticmethod
+	def encodeObjDict(dict):
+		"""Encode db instance dictionary into json"""
+		dictNew = {}
+		for key in dict:
+			# Get json object, parse, serialize fields object
+			dictNew[key] = _s.serialize("json", [dict[key]])
+		return dictNew
 	
 	@staticmethod
 	def decodeArray(array):

@@ -332,6 +332,33 @@ class XpEmailField(XpBaseCharField):
 			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpEmailField, self).__init__(**argsDict)
 
+class XpTextChoiceField(XpBaseCharField):
+	"""EmailField"""
+	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
+			choices=[], **argsDict):
+		self._doInstanceInit(instance, insField)
+		fieldMaxLength = self._getMaxLength()
+		argsDict['validators'] = []
+		argsDict['max_length'] = max if max != None else fieldMaxLength
+		argsDict['min_length'] = min if min != None else None
+		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'maxlength': str(argsDict['max_length'])})
+		#data, maxHeight, minCharacters, url
+		#$('#id_jobTitle').jsonSuggest({data: $('#id_jobTitle_data').attr('value'), maxHeight: 200, minCharacters:3});
+		#dict = {'id': tupleData[0], 'text': tupleData[1]}
+		suggestList = []
+		for tuple in choices:
+			suggestList.append({'id': tuple[0], 'text': tuple[1]})
+		attrDict['data-xp'] = {	'maxHeight': maxHeight,
+					'minCharacters' : minCharacters,
+					'data': suggestList
+					}
+		if not argsDict.has_key('widget'):
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
+		super(XpTextChoiceField, self).__init__(**argsDict)
+
 class XpPasswordField(XpBaseCharField):
 	"""PasswordField"""
 	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, **argsDict):
@@ -343,6 +370,7 @@ class XpPasswordField(XpBaseCharField):
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
 		classStr = 'fieldMust' if req == True else 'field'
 		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'autocomplete': 'no',
 							'data-xp-val': 'password',
 							'maxlength': str(argsDict['max_length'])})
 		if not argsDict.has_key('widget'):
@@ -408,7 +436,7 @@ class XpMultiField(MultipleChoiceField):
 		else:
 			dict = attrDict
 		return dict
-	def __init__(self, instance, insField, req=True, init=[], choices=None, **argsDict):
+	def __init__(self, instance, insField, req=True, init=[], choices=None, multiple=False, **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
 			self.instanceName = instanceName
@@ -432,9 +460,11 @@ class XpMultiField(MultipleChoiceField):
 		else:
 			argsDict['initial'] = init
 		argsDict['choices'] = choices if choices != None else None
-		attrDict = self._doAttrs(argsDict, {'class': classStr, 'data-xp-val': xpVal, 'size': '10', 
-							'style': 'vertical-align:top; margin-top: 10px'})
+		attrDict = self._doAttrs(argsDict, {'class': classStr, 'data-xp-val': xpVal})
+		if multiple == True:
+			attrDict['multiple'] = 'multiple'
 		if not argsDict.has_key('widget'):
+			print 'attrDict : ', attrDict
 			argsDict['widget'] = XpMultipleWidget(attrs=attrDict)
 		# jsVal
 		if argsDict.has_key('jsVal'):

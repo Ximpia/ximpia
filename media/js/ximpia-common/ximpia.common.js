@@ -19,6 +19,19 @@ ximpia.common.List.getValue = (function(id, key) {
 ximpia.common.List.hasKey = (function(id, key) {	
 });
 
+ximpia.common.ArrayUtil = {};
+ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
+	var exists = false;
+	//console.log(JSON.stringify(array));
+	for (key in array) {
+		//console.log(key + ' ' + array[key] + ' ' + keyTarget);
+		if (array[key] == keyTarget) {
+			exists = true;
+		}
+	}
+	return exists;
+}
+
 /*
 ximpia.common.ClassType10 = function() {
 	var _attr = {
@@ -695,7 +708,10 @@ ximpia.common.PageAjax = function() {
 			callback : null,
 			path: "",
 			formId: "",
-			sectionId: ""
+			sectionId: "",
+			verbose: false,
+			data: {},
+			formData: {}
 		},
 		pub: {
 			init: function(obj) {
@@ -703,9 +719,13 @@ ximpia.common.PageAjax = function() {
 				_attr.priv.callback = obj.callback;
 				_attr.priv.formId = obj.formId;
 				_attr.priv.sectionId = obj.sectionId;
+				_attr.priv.verbose = obj.verbose;
 			},
-			doForm: function() {
+			doFormOld: function() {
 				$.getJSON(_attr.priv.path, function(data) {
+					if (_attr.priv.verbose == true) {
+						console.log(data)
+					}
 					//console.log(data)
 					// forms
 					var dataForm = data.response[_attr.priv.formId];
@@ -763,7 +783,63 @@ ximpia.common.PageAjax = function() {
 					_attr.priv.callback();
 					//console.log('invitationCode : ' + $("#id_invitationCode").attr('value'));
 				}).error(function(jqXHR, textStatus, errorThrown) {
-					$("#id_loadBig").fadeOut('fast');
+					$("#id_sect_loading").fadeOut('fast');
+					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
+					$("body").before(html);
+				});
+			},
+			doSections: function() {
+				// section
+				$.metadata.setType("attr", "data-xp-fields");
+				var objects = $("section[data-xp-class='cond']");
+				for (var i=0; i<objects.length; i++) {
+					var obj = objects[i];
+					var op = $(obj).attr('data-xp-op').toLowerCase();
+					var action = $(obj).attr('data-xp-action').toLowerCase();
+					var fields = $(obj).metadata();
+					var field = "";
+					var name = "";
+					var value = "";
+					var doAction = null;
+					if (op == 'and') {
+						doAction = true;
+						for (name in fields) {
+							value = fields[name];
+							if (value != formData[name].value) {
+								doAction = false;
+							}
+						}
+					} else if (op == 'or') {
+						doAction = false;
+						for (name in fields) {
+							value = fields[name];
+							if (value == formData[name].value) {
+								doAction = true;
+							}
+							
+						}
+					}
+				}
+				console.log('doAction : ' + doAction);				
+			},
+			doFade: function() {
+				$("#id_sect_loading").fadeOut('fast');
+				$("#" + "id_sect_signupUser").css('visibility', 'visible');
+			},
+			doForm: function() {
+				$.getJSON(_attr.priv.path, function(data) {
+					if (_attr.priv.verbose == true) {
+						console.log(data)
+					}
+					//var formData = data.response[_attr.priv.formId];
+					//$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
+					//$("#id_variables").xpObjInput('addHidden', formData);
+					//$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
+					//$("#id_sect_loading").fadeOut('fast');
+					//$("#" + "id_sect_signupUser").css('visibility', 'visible');
+					_attr.priv.callback(data);
+				}).error(function(jqXHR, textStatus, errorThrown) {
+					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
@@ -771,6 +847,13 @@ ximpia.common.PageAjax = function() {
 		}
 	}
 	return _attr.pub;
+}
+/**
+ * Do fade out wait icon and show page
+ */
+ximpia.common.PageAjax.doFade = function() {
+	$("#id_sect_loading").fadeOut('fast');
+	$("#" + "id_sect_signupUser").css('visibility', 'visible');
 }
 
 
@@ -1031,7 +1114,15 @@ ximpia.site.Signup = function() {
 			})
 		},
 		pub: {
-			doProfessionalBind: (function() {
+			doProfessionalBind: (function(data) {
+				// Pre-page : Binding ajax data to form
+				var formData = data.response["form_signup"];
+				$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
+				$("#id_variables").xpObjInput('addHidden', formData);
+				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
+				ximpia.common.PageAjax.doFade();
+				// Conditions
+				// Post-Page : Page logic
 				var formId = "id_Form1";
 				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');
 				var oForm = ximpia.common.Form();
@@ -1132,8 +1223,27 @@ ximpia.site.Signup = function() {
 				var oGoogleMaps = ximpia.common.GoogleMaps();
 				oGoogleMaps.insertCityCountry("id_city", "id_country");
 			}),
-			doOrganizationBind: (function() {
-				
+			doOrganizationBind: (function(data) {
+				console.log('doOrganizationBind()...');
+				var formData = data.response["form_signupOrg"];
+				$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
+				$("#id_variables").xpObjInput('addHidden', formData);
+				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
+				$("[data-xp-type='input.textChoice']").xpObjInput('renderTextChoice', formData);
+				ximpia.common.PageAjax.doFade();
+				var formId = "id_Form1";
+				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');
+				var oForm = ximpia.common.Form();
+				oForm.doBindBubbles();
+				oForm.doBindSubmitForm(formId);
+    				oForm.doReloadCaptcha();
+				// fadeIcons
+				ximpia.visual.Icon.bindFadeIcons(".icon");
+				$("[data-xp-js='submit']").xpPageButton();
+				$("[data-xp-js='submit']").xpPageButton('render');
+				// Geo loc for city and country	
+				var oGoogleMaps = ximpia.common.GoogleMaps();
+				oGoogleMaps.insertCityCountry("id_city", "id_country");
 			})
 		}
 	}

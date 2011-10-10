@@ -99,6 +99,7 @@ div#Wrapper {
 
 .sectionApp {
 	visibility: hidden;
+	/*display: none;*/
 }
 
 #id_sect_loading {
@@ -1171,4 +1172,8 @@ div.tagDel {
 	background: url(../images/warning_48.png) 0px 0px no-repeat;
 	width: 48px;
 	height: 48px;
+}
+
+section[data-xp-type="condSection"] {
+	display: none;
 }
