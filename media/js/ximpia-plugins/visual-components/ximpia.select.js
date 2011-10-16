@@ -34,28 +34,38 @@
 				var attrs = $(element).metadata();
 				var dataAttrs = data[nameInput];
 				var type = 'text';
+				var value = "";
 				if (attrs.hasOwnProperty('type')) {
 					type = attrs.type;
 				}
 				// id, name, type
 				var htmlContent = "";
 				if (attrs.hasOwnProperty('left')) {
-					htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left\"><label for=\"" + idInput + "\"></label>:</div> <select id=\"" + idInput + "\" ></select>";
+					htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div style=\"border: 0px solid; float: left\"><select id=\"" + idInput + "\" data-xp-class=\"combobox\"  ></select></div>";
 				} else {
-					htmlContent = "<label for=\"" + idInput + "\"></label>: <select id=\"" + idInput + "\" ></select>";
+					htmlContent = "<div style=\"float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div style=\"border: 0px solid; float: left; margin-left: 5px \"><select id=\"" + idInput + "\" data-xp-class=\"combobox\" ></select></div>";
 				}
 				$(element).html(htmlContent);				
 				// Input
 				for (attr in dataAttrs) {
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListSelect, attr);
 					if (exists == false) {
-						$("#" + idInput).attr(attr, dataAttrs[attr]);
+						value = dataAttrs[attr];
+						/*if (attr == 'class') {
+							value = value + ' scroll';
+						}
+						console.log(attr + ' - ' + value);*/
+						$("#" + idInput).attr(attr, value);
 					}					
 				}
 				for (attr in attrs) {
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
 					if (exists == false) {
-						$("#" + idInput).attr(attr, attrs[attr]);
+						value = attrs[attr];
+						/*if (attr == 'class') {
+							value = value + 'scroll';
+						}*/
+						$("#" + idInput).attr(attr, value);
 					}					
 				}
 				// Choices

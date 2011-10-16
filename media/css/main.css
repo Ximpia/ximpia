@@ -9,11 +9,21 @@ body {
 	padding: 0;
 	color: #000;
 	line-height: 24px;
+	/*overflow: hidden;*/
 }
 
 a {
 	/*color: #D50A09;*/
 	color: #0000CC;
+}
+
+*:focus {
+	outline-color: #ddd;
+	outline-width: 3px;
+}
+
+section:focus {
+	outline: none;
 }
 
 /*.ComboMust, .Combo {
@@ -52,6 +62,10 @@ input.Small, select.Small, textarea.Small {
 	border: 0px solid
 }
 
+.indent {
+	margin-left: 30px;
+}
+
 .FormBlock input {
 	/*margin-top: 7px;*/
 }
@@ -74,6 +88,22 @@ input.Small, input.SmallMust {
 
 input.field, input.fieldMust {
     padding-left: 5px;
+    border-radius: 5px;
+}
+
+select {
+	padding-left: 5px;
+	margin-left: 5px;
+	border-radius: 6px;
+	/*box-shadow: 0 0 3px 1px #c00;*/
+	/*box-shadow: #ddd 3px 3px 3px;*/
+	box-shadow: #ddd 5px 5px 5px;
+	/*-webkit-box-shadow: #333 3px 3px 4px;*/
+	border: 1px solid #bbb;
+}
+
+input {
+	/*box-shadow: #333 1px 1px 1px;*/
 }
 
 .ShortcutStart {
@@ -93,13 +123,20 @@ div#Wrapper {
 
 .app {
 	border: 0px solid;
-	padding: 15px;
+	/*padding: 15px;*/
 	/*visibility: hidden;*/
+	padding: 0;
 }
 
 .sectionApp {
 	visibility: hidden;
 	/*display: none;*/
+	margin-top: 0px;
+	height: 500px;
+	padding-top: 0px;
+	border: solid 0px;
+	padding-right: 0px;
+	padding-left: 0px;
 }
 
 #id_sect_loading {
@@ -314,11 +351,12 @@ footer {
 
 div#id_footerContent {
 	float: inherit;
-	margin-top:10px;
+	margin-top:5px;
 	padding: 5px 0px;
 	/*width: 870px;*/
 	/*line-height:15px;*/
-	border: 1px solid #ccc; 
+	border: 1px solid #ccc;
+	border-radius: 8px;
 	/*background-color: #fafafa;*/
 }
 
@@ -761,23 +799,25 @@ div.jsonSuggestResults div.resultItem p.extra {
 /**
  * Tag Container
  */
-div.tagContainer {
-	border: 0px solid; 
-	height: 15px;
+div.listContainer {
+	border: 1px solid #bbb; 
+	height: 18px;
 	margin-bottom: 15px;
 	width: 400px;
+	float: left;
+	border-radius: 5px;
 }
-div.tag {
+div.listField {
 	float: left; 
 	margin-left: 5px;
 	margin-top: 5px;
 	border: 1px solid #ccc;
 }
-div.tag:hover, div.tag.sfhover {
+div.listField:hover, div.listField.sfhover {
 	cursor: pointer;
 }
 
-div.tagText, div.tagTextAdd { 
+div.listFieldText, div.listFieldTextAdd { 
 	float: left; 
 	padding: 0px 7px; 
 	background-color: #dddddd; 
@@ -785,20 +825,20 @@ div.tagText, div.tagTextAdd {
 	line-height: 15px; 
 	float: left;
 }
-div.tagText:hover, div.tagText.sfhover, div.tagDel:hover, div.tagDel.sfhover {
+div.listFieldText:hover, listField.listFieldText.sfhover, div.listFieldDel:hover, div.listFieldDel.sfhover {
 	background-color: #000;
 	color: #fff;
 }
-div.tagTextAdd:hover, div.tagTextAdd.sfhover {
+div.listFieldTextAdd:hover, div.listFieldTextAdd.sfhover {
 	cursor: default;
 }
-div.tagSep {
+div.listFieldSep {
 	float: left; 
 	width: 1px; 
 	background-color: #000; 
 	height: 15px;
 }
-div.tagDel {
+div.listFieldDel {
 	float: left; 
 	font-size: 70%;  
 	line-height: 15px; 
@@ -815,7 +855,7 @@ div.tagDel {
 {
     margin: 2px 5px;
     text-decoration: none;
-    font: bold 1.0em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
+    font: bold 0.9em 'Trebuchet MS',Arial, Helvetica; /*Change the em value to scale the button*/
     display: inline-block;
     text-align: center;
     color: #fff;
@@ -925,7 +965,12 @@ div.tagDel {
 	border-radius: .2em;
 	-moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
 	-webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-	box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+	/*box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);*/
+	box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 2px 2px 0 rgba(0,0,0,.3);
+}
+
+.buttonIconSmall {
+	font: bold 0.8em/1.5em Arial, Helvetica;
 }
 
 .btPop {
@@ -1157,15 +1202,16 @@ div.tagDel {
 
 /* Button Bar */
 .btBar {
-	width: 800px; 
+	/*width: 800px;*/ 
 	background: #eeeeee; 
 	clear: both; 
-	position: relative; 
+	/*position: relative; 
 	top: 15px; 
-	margin-bottom: 20px;
+	margin-bottom: 20px;*/
 	border: 0px solid; 
-	height: 38px; 
-	padding: 5px;
+	border-radius: 8px;
+	height: 35px; 
+	padding: 2px;
 }
 
 .warning {
@@ -1176,4 +1222,49 @@ div.tagDel {
 
 section[data-xp-type="condSection"] {
 	display: none;
+}
+
+.jspVerticalBar {
+	width: 8px;
+	background: #fff;
+	height: 400px;
+	border: 0px solid;
+}
+.jspTrack {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 4px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 4px;
+	cursor: pointer;
+}
+.jspTrackPag {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 4px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	cursor: pointer;
+}
+.jspDrag {
+	border-radius: 8px;
+}
+.jspArrow {
+}
+.jspArrowDown {
+	background: #dd6;
+	background: url(../images/scrollArrowDownP.png) no-repeat;
+	border-top: 1px solid;
+	border-bottom-right-radius: 4px;
+}
+.jspArrowUp {
+	background: #dd6;
+	background: url(../images/scrollArrowUpP.png) no-repeat;
+}
+.jspArrow.jspDisabled {
+	/*background: #ccc;*/
+	/*background-color: #ddd;*/
+	background: #eee;
+}
+
+#id_linkTest:after{
+	content: "Holaaa";
 }

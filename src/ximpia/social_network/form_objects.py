@@ -7,6 +7,7 @@ from itertools import chain
 from django.utils.safestring import mark_safe
 from django.utils.datastructures import MultiValueDict, MergeDict
 from django.utils.encoding import force_unicode
+import json
 
 from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
 
@@ -333,9 +334,9 @@ class XpEmailField(XpBaseCharField):
 		super(XpEmailField, self).__init__(**argsDict)
 
 class XpTextChoiceField(XpBaseCharField):
-	"""EmailField"""
+	"""Text Choice Field. Field with autocompletion"""
 	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
-			choices=[], **argsDict):
+			choices=[], dbClass='', params={}, **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = []
@@ -352,9 +353,12 @@ class XpTextChoiceField(XpBaseCharField):
 		for tuple in choices:
 			suggestList.append({'id': tuple[0], 'text': tuple[1]})
 		attrDict['data-xp'] = {	'maxHeight': maxHeight,
-					'minCharacters' : minCharacters,
-					'data': suggestList
+					'minCharacters' : minCharacters
 					}
+		if len(choices) != 0:
+			attrDict['data-xp']['data'] = suggestList
+		if dbClass != '' and len(params) != 0:
+			attrDict['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params) 
 		if not argsDict.has_key('widget'):
 			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpTextChoiceField, self).__init__(**argsDict)

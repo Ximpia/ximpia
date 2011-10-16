@@ -880,8 +880,9 @@ ximpia.common.GoogleMaps = function() {
   										$("#" + idCity).attr('value', city);
   									} else if (fields[j] == "country") {
 	  									countryCode = list[i].short_name.toLowerCase();
-  										$("#" + idCountry + " :selected").removeAttr('selected');
-  										$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
+  										//$("#" + idCountry + " :selected").removeAttr('selected');
+  										//$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
+  										$("#" + idCountry).selectBox('value', countryCode);
   									}
   								}		  					
   							}
@@ -1226,10 +1227,55 @@ ximpia.site.Signup = function() {
 			doOrganizationBind: (function(data) {
 				console.log('doOrganizationBind()...');
 				var formData = data.response["form_signupOrg"];
-				$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
+				$("[data-xp-type='basic.text']").xpObjInput('renderField', formData);
 				$("#id_variables").xpObjInput('addHidden', formData);
 				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
-				$("[data-xp-type='input.textChoice']").xpObjInput('renderTextChoice', formData);
+				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', formData);
+				/*$("select").selectBox({
+						'menuTransition': 'slide',
+						'menuSpeed' : 'fast'
+					});
+				$("a.selectBox").jScrollPane(
+					{
+						showArrows: true,
+						verticalArrowPositions: 'after',
+						arrowButtonSpeed: 90,
+						animateScroll: true,
+						keyboardSpeed: 90,
+						verticalDragMinHeight: 20
+					}
+				);*/
+				/*$(".comboScroll").jScrollPane(
+					{
+						showArrows: true,
+						verticalArrowPositions: 'after',
+						arrowButtonSpeed: 130,
+						animateScroll: true,
+						keyboardSpeed: 100,
+						verticalDragMinHeight: 20
+					}
+				);*/
+				$(".scroll").jScrollPane(
+					{	showArrows: true,
+						verticalArrowPositions: 'after',
+						arrowButtonSpeed: 100,
+						animateScroll: true,
+						keyboardSpeed: 90,
+						keyboardSpeed: 100
+					}
+				);				
+				/*$("a.selectBox").each(function() {
+					if ($(this).find(".jspArrow").length > 0) {
+						$(this).find('.jspTrack').addClass("jspTrackPag");
+					}
+				});*/
+				$(".scroll").each(function() {
+					if ($(this).find(".jspArrow").length > 0) {
+						$(this).find('.jspTrack').addClass("jspTrackPag");
+					}
+				});
+				
+				//$("#id_organizationCountry").selectBox('disable');
 				ximpia.common.PageAjax.doFade();
 				var formId = "id_Form1";
 				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password', formId + '_Submit');

@@ -10,9 +10,9 @@
         // Settings		
         var settings = {
         	excudeListInput: ['type','id','element','help_text','label','left'],
-        	excudeListInputSug: ['type','id','element','help_text','label','left','suggest'],
+        	excudeListInputSug: ['type','id','element','help_text','label','left'],
         	excludeListLabel: ['type','id','element'],
-        	excludeList: ['info','type','left','suggest']
+        	excludeList: ['info','type','left']
         };
 		
         var methods = {
@@ -61,19 +61,23 @@
 					}
 					
 				}
-				// Label				
-				$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
-				if (attrs.info == true) {
-					$("label[for=\"" + idInput + "\"]").addClass("info");
-					// help_text
-					if (dataAttrs.hasOwnProperty('help_text')) {
-						$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
-					}
-				}				
 				//console.log($("#" + idInput));
+				// Label
+				//console.log('dataAttrs');
+				//console.log(dataAttrs);
+				if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label')) {
+					$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+					if (attrs.info == true) {
+						$("label[for=\"" + idInput + "\"]").addClass("info");
+						// help_text
+						if (dataAttrs.hasOwnProperty('help_text')) {
+							$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
+						}
+					}
+				}
 			}
 		},
-		renderTextChoice: function(data) {
+		renderFieldAutoComplete: function(data) {
 			console.log('renderTextChoice...');
 			for (var i=0; i<$(this).length; i++) {
 				//console.log($(this)[i]);
@@ -85,7 +89,7 @@
 				//console.log('attrs...');
 				//console.log(attrs)
 				var dataAttrs = data[nameInput];
-				console.log(dataAttrs);
+				//console.log(dataAttrs);
 				var sugAttrs = {};
 				var type = 'text';
 				if (attrs.hasOwnProperty('type')) {
@@ -101,6 +105,7 @@
 				$(element).html(htmlContent);
 				// Input
 				for (attr in dataAttrs) {
+					//console.log(attr);
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListInputSug, attr);
 					//console.log('attr : ' + attr + ' ' + typeof dataAttrs[attr]);
 					if (exists == false) {
@@ -112,34 +117,38 @@
 					}					
 				}
 				for (attr in attrs) {
+					//console.log(attr);
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
 					if (exists == false) {
 						$("#" + idInput).attr(attr, attrs[attr]);
 					}
 					
 				}
-				// Label				
-				$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
-				if (attrs.info == true) {
-					$("label[for=\"" + idInput + "\"]").addClass("info");
-					// help_text
-					if (dataAttrs.hasOwnProperty('help_text')) {
-						$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
-					}
-				}				
 				//console.log($("#" + idInput));
-				//console.log($("#" + idInput).attr('data-xp'));
-				//$('#id_jobTitle').jsonSuggest({data: $('#id_jobTitle_data').attr('value'), maxHeight: 200, minCharacters:3});
-				if (attrs.hasOwnProperty('suggest')) {
-					//sugAttrs = $("#" + idInput).metadata();
-					sugAttrs = JSON.parse($("#" + idInput).attr('data-xp'));
-					//console.log('sugAttrs');
-					//console.log(sugAttrs.data);
+				// Label				
+				if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label')) {
+					$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+					if (attrs.info == true) {
+						$("label[for=\"" + idInput + "\"]").addClass("info");
+						// help_text
+						if (dataAttrs.hasOwnProperty('help_text')) {
+							$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
+						}
+					}	
+				}
+				sugAttrs = JSON.parse($("#" + idInput).attr('data-xp'));
+				if (sugAttrs.hasOwnProperty('data')) {
 					$("#" + idInput).jsonSuggest({	data: sugAttrs.data, 
-									maxHeight: sugAttrs.maxHeight, 
-									minCharacters: sugAttrs.minCharacters
+								maxHeight: sugAttrs.maxHeight, 
+								minCharacters: sugAttrs.minCharacters
+								});
+				} else {
+					$("#" + idInput).jsonSuggest({	url: sugAttrs.url, 
+								maxHeight: sugAttrs.maxHeight, 
+								minCharacters: sugAttrs.minCharacters
 								});
 				}
+
 			}
 		},
 		disable: function() {

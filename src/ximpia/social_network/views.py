@@ -5,6 +5,7 @@ import simplejson as json
 import httplib2
 import types
 import time
+import imp
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest, HttpResponseServerError, HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404, render_to_response
@@ -18,6 +19,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 from models import Invitation, context, Context, XpTemplate, getResultOK
+from data import *
 from choices import Choices
 import forms
 from constants import Constants
@@ -172,15 +174,14 @@ def jxSuggestList(request, **ArgsDict):
 	# init
 	ctx = ArgsDict['ctx']
 	# Do
-	if request.REQUEST.has_key('action'):
-		action = request.REQUEST['action'];
+	resultList = []
+	if request.REQUEST.has_key('dbClass'):
+		dbClass = request.REQUEST['dbClass'];
 		params = json.loads(request.REQUEST['params']);
 		params[params['text']] = request.REQUEST['search'];
 		del params['text']
-		fields = action.split('.')
-		object = eval(fields[0])(ctx)				
-		list = eval('object.' + fields[1])(*[], **params) 
-		resultList = []
+		object = eval(dbClass)(ctx)				
+		list = eval('object.filter')(*[], **params) 
 		for entity in list:
 			dict = {}
 			dict['id'] = entity.id

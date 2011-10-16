@@ -6,8 +6,12 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Ximpia - Signup</title>
 <link rel="stylesheet" href="http://localhost:8000/site_media/jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
-<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
+<link href="http://localhost:8000/site_media/css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
+
+<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -27,26 +31,26 @@
 <section id="id_sect_loading" >
 </section>
 
-<div id="id_apps" style="border:solid 1px #ddd; margin-top:10px" >
+<div id="id_apps" style="border:solid 1px #ddd; margin-top:5px; border-radius: 8px">
     
 <section id="id_app_site" class="app" >
 
-<section id="id_sect_signupUser" class="sectionApp" style="overflow: auto; height: 420px">
+<section id="id_sect_signupUser" class="sectionApp scroll" tabindex="0" >
 
-<h3>XimpiaId</h3>
+<h3 class="indent">XimpiaId</h3>
 
 <div class="formBlock" style="margin-top: 0px">
 
 <!-- XimpiaId -->
-<div id="id_ximpiaId_comp" data-xp-type="basic.input" data-xp="{info: true, tabindex: '1'}" ></div>
+<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
 
 <div id="id_showPassword">
 
 <!-- Password -->
-<div id="id_password_comp" data-xp-type="basic.input" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
+<div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
 
 <!-- Password Verify -->
-<div id="id_passwordVerify_comp" data-xp-type="basic.input" data-xp="{type: 'password', tabindex: '3'}" ></div>	
+<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>	
 			
 </div>
 
@@ -62,29 +66,53 @@
 
 <div id="id_userData" style=" clear: both; padding-top: 5px">
 
-<h3>You</h3>
+<h3 class="indent">You</h3>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
 <div class="frmLeft">
 
 <!-- First Name -->				
-<div id="id_firstName_comp" data-xp-type="basic.input" data-xp="{tabindex: '4'}" ></div>
+<div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '4'}" ></div>
 
 <!-- Email -->
-<div id="id_email_comp" data-xp-type="basic.input" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
+<div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
 
 <!-- Country -->				
 <div id="id_country_comp" data-xp-type="basic.select" data-xp="{tabindex: '8'}" ></div>
+
+<!--
+<select name="mio">
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+	<option value="kj">Pepito</option>
+</select>
+-->
 
 </div>	
 <div class="frmRight">
 
 <!-- Last Name -->
-<div id="id_lastName_comp" data-xp-type="basic.input" data-xp="{tabindex: '5'}" ></div>
+<div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '5'}" ></div>
 
 <!-- City -->				
-<div id="id_city_comp" data-xp-type="basic.input" data-xp="{tabindex: '7'}" ></div>
+<div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '7'}" ></div>
 
 <br/>
 </div>
@@ -92,47 +120,39 @@
 
 <br style="clear: both"/>
 
-<section data-xp-type="condSection">
-
-Holaaa
-	
-</section>
-
-<h3>Your Organization And You</h3>
+<h3 class="indent">Your Organization And You</h3>
 
 <div id="id_orgYouInfo" class="formBlock" style="margin-top: 0px">
 
-<!--
-Suggest data can be binded to input object in the Django form:
-data, maxHeight, minCharacters, url
-data-xp="{}"
--->
+<div id="id_jobTitle_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" ></div>
+<div id="id_organizationGroup_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" ></div>
 
-<div id="id_jobTitle_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145, suggest: true}" ></div>
-<div id="id_organizationGroup_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145, suggest: true}" ></div>
-<div id="id_organizationGroupTags_comp" data-xp-type="input.textChoice" data-xp="{info: true, left: 145}" ></div>
+<!--<div id="id_organizationGroupTags_comp" data-xp-type="list.inline" data-xp="{	info: true, 
+											left: 145, 
+											inType: 'input|select',
+											align: 'right|bottom',
+											buttonText: 'Add'
+										}" ></div>-->
 
-<!--
-<label for="id_jobTitle">{% trans "Job Title" %}: {{form.jobTitle}}<br />
-<label for="id_organizationGroup">{% trans "Group You Manage" %}: {{form.organizationGroup}}<br />
-<table border="0">
-<tr>
-<td>
-<label for="id_organizationGroupTags">{% trans "Group Tags" %}: {{form.organizationGroupTags}}
-</td><td>		 
-<input id="BtAddTag" type="button" value="Add" />
-</td><td valign="bottom" >
-<div id="id_groupTags" class="tagContainer">
+<div>
+<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>	
+<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" >Add</a></div>
+<div id="id_groupTags" class="listContainer" style="width: 300px; margin-left: 15px; margin-top: 10px" ></div>
 </div>
--->		 
 
-<!--</td></tr></table>-->	 
+<!--
+<div>
+<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>	
+<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" >Add</a></div>
+<div id="id_groupTags" class="listContainer" style="clear: both; margin-left: 145px; width: 300px" ></div>
+</div>
+-->
 
 </div>
 
 <br style="clear: both"/>
 
-<h3>Your Organization</h3>
+<h3 class="indent">Your Organization</h3>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
@@ -140,12 +160,12 @@ data-xp="{}"
 	
 <div class="frmLeft">
 
-<div id="id_account_comp" data-xp-type="basic.input" data-xp="{info: true, left: 75}" ></div>
-<div id="id_organizationName_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
-<div id="id_organizationDomain_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
-<div id="id_organizationCity_comp" data-xp-type="basic.input" data-xp="{left: 75}" ></div>
-<div id="id_organizationCountry_comp" data-xp-type="basic.select" data-xp="{left: 75}" ></div>
-<div id="id_descrition_comp" data-xp-type="basic.text" data-xp="{left: 75}" ></div>
+<div id="id_account_comp" data-xp-type="basic.text" data-xp="{info: true, left: 85}" ></div>
+<div id="id_organizationName_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
+<div id="id_organizationDomain_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
+<div id="id_organizationCity_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
+<div id="id_organizationCountry_comp" data-xp-type="basic.select" data-xp="{left: 85}" ></div>
+<div id="id_description_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
 
 </div>
 
@@ -167,18 +187,27 @@ data-xp="{}"
 
 <!--</td></tr></table>-->
 
+
+
+
 </div>
 
 
-</div><!-- UserData -->
+<!--</div>--><!-- UserData -->
 
-
+<!--</div>--> <!-- scroll-panel -->
 
 	
 </section> <!-- section id_signupUser -->
 
-<section>
-<div id="id_buttonBarBottom" class="btBar" style="width: 830px; margin-bottom: 5px">
+</section>
+<!-- End app_MyApp -->
+    
+</div>
+<!-- End Apps -->
+
+<section style="padding: 0; border: 0px solid; margin-top: 5px">
+<div id="id_buttonBarBottom" class="btBar" style="margin-bottom: 0px; margin-left: 0px; border: 0px solid">
 <div style="float: left">
 <!-- Button Left -->
 <!-- button -->
@@ -195,22 +224,14 @@ data-xp="{}"
 </div> 
 </section>
 
-</section>
-<!-- End app_MyApp -->
-    
-</div>
-<!-- End Apps -->
-
 <footer id="id_footer">
 </footer>
     
 </div>
 
-<br/>
-
 <!-- Variables -->
-<p id="id_variables" >
-</p>
+<div id="id_variables" >
+</div>
 
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
 <script type="text/javascript" src="http://localhost:8000/site_media/js/jquery/jquery-1.6.min.js"></script>
@@ -227,6 +248,10 @@ data-xp="{}"
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.networkIcon.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.loading.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.mousewheel.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.mwheelIntent.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jscrollpane.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.selectBox.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.input.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.select.js"></script>
@@ -238,7 +263,7 @@ data-xp="{}"
 
 <script>	
 jQuery(document).ready(function($){
-	ximpia.common.Page.init();		
+	ximpia.common.Page.init();
 	var invitationCode = ximpia.common.Browser.fetchParamByName("i");
 	var path = ximpia.common.Path.getServer() + 'signup/' + invitationCode
 	$("#id_Form1").attr('action', path);

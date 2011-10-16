@@ -282,23 +282,24 @@ class OrganizationSignupForm(XBaseForm):
 	organizationCountry = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, initial='')
 	account = XpCharField(_dbOrganization, '_dbOrganization.account')
 	# TextArea
-	description = XpCharField(_dbOrganization, '_dbOrganization.description')
+	description = XpCharField(_dbOrganization, '_dbOrganization.description', req=False)
 	#organizationGroup = XpCharField(_dbGroup, '_dbGroup.name', label=_('Organization Group'))
-	organizationGroupTags = XpCharField(_dbTag, '_dbTag.name', label=_('Group Tags'))
+	#organizationGroupTags = XpCharField(_dbTag, '_dbTag.name', label=_('Group Tags'))
+	organizationGroupTags = XpTextChoiceField(_dbTag, '_dbTag.name', label=_('Group Tags'), dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True})
 	jobTitle = XpTextChoiceField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle', choices=Choices.JOB_TITLES)
-	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), choices=Choices.ORG_GROUPS)
+	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), help_text=_('Department / Group of people for organization'), choices=Choices.ORG_GROUPS)
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
 	invitationCode = forms.CharField(widget=XpHiddenWidget)
 	
-	#orgGroupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
-	#orgGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	#jobTitle_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.JOB_TITLES))
 	#organizationGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.ORG_GROUPS))
+	#orgGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	#orgGroupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	#groupTags_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=GenericComponent())
 	#groupTagsAjax = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	
 	# Navigation and Message Fields
-	fields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
+	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
 									'userGroups': [KSignup.USER_GROUP_ID],
 									'affiliateId': -1,
