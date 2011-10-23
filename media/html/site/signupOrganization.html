@@ -10,6 +10,7 @@
 <link href="http://localhost:8000/site_media/css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
 
 <link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
 </head>
@@ -79,7 +80,27 @@
 <div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
 
 <!-- Country -->				
-<div id="id_country_comp" data-xp-type="basic.select" data-xp="{tabindex: '8'}" ></div>
+<div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '8'}" ></div>
+
+<!--
+<br/><br/>
+<div id="id_countryNew" style="position: relative; height: 22px; z-index: 0; ">
+<input type="hidden" id="id_countryNew_hidden" name="id_countryNew" value="" />
+<input id="id_countryNew_input" autocomplete="off" class="ffb-input valid" style="width: 183px; " />
+<span id="id_countryNew_arrow" class="ffb-arrow out"></span>
+<div id="id_countryNew_ctr" style="width: 209px; top: 22px; left: 0px; " class="ffb">
+	<div class="content" style="height: auto; " scrolltop="0">
+		<div id="es" val="Spain" class="row ffb-sel">Spain</div>
+		<div id="es" val="Spain" class="row">Spain</div>
+		<div id="es" val="Spain" class="row">Spain</div>
+		<div id="es" val="Spain" class="row">Spain</div>
+		<div id="es" val="Spain" class="row">Spain</div>
+	</div>
+<div>
+</div>
+</div>
+</div>
+-->
 
 <!--
 <select name="mio">
@@ -252,6 +273,7 @@
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.mwheelIntent.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jscrollpane.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.selectBox.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.flexbox.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.input.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.select.js"></script>
@@ -269,6 +291,21 @@ jQuery(document).ready(function($){
 	$("#id_Form1").attr('action', path);
 	var signup = ximpia.site.Signup();
 	var pageJx = ximpia.common.PageAjax();
+	
+	/*$("#id_countryNew").flexbox({
+			"results":[
+			{"id": "es", "name": "Spain"},
+			{"id": "es", "name": "Spain"},
+			{"id": "es", "name": "Spain"},
+			{"id": "es", "name": "Spain"},
+			{"id": "es", "name": "Spain"}
+			]}, 
+		{
+			paging: false
+		});*/
+	
+	//console.log(("#id_countryNew").flexbox);
+	
 	pageJx.init({	path: path, 
 			callback: signup.doOrganizationBind, 
 			formId: "form_signupOrg",

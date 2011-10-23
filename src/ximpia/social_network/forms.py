@@ -25,7 +25,7 @@ from models import UserSocial, Invitation, Address, ContactDetail, Organization,
 
 #from validators import *
 from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
-	XpChoiceField, XpTextChoiceField
+	XpChoiceField, XpTextChoiceField, XpChoiceTextField
 from ximpia.social_network.form_objects import XpUserField
 from ximpia.util.js import Form as _jsf
 
@@ -40,6 +40,7 @@ class XBaseForm(forms.Form):
 	entryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	copyEntryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=json.dumps(False))
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
+	choices = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	pkFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
@@ -275,11 +276,12 @@ class OrganizationSignupForm(XBaseForm):
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
 	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), help_text=_('Industries'))
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
-	country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
+	#country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
+	country = XpChoiceTextField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
 	organizationName = XpCharField(_dbOrganization, '_dbOrganization.name')
 	organizationDomain = XpCharField(_dbOrganization, '_dbOrganization.domain')
 	organizationCity = XpCharField(_dbAddress, '_dbAddress.city')
-	organizationCountry = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, initial='')
+	organizationCountry = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', initial='')
 	account = XpCharField(_dbOrganization, '_dbOrganization.account')
 	# TextArea
 	description = XpCharField(_dbOrganization, '_dbOrganization.description', req=False)
@@ -305,6 +307,10 @@ class OrganizationSignupForm(XBaseForm):
 									'affiliateId': -1,
 									'invitationCode': '',
 									'accountType': ''}))
+	choices = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
+									'country': Choices.COUNTRY,
+									'jobTitle' : Choices.JOB_TITLES,
+									'orgGroup': Choices.ORG_GROUPS}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))	
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	

@@ -388,6 +388,7 @@ def signup(request, invitationCode=None, **argsDict):
 				jsData['response']['affiliateId'] = affiliateId
 				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
 				result = signup.buildJSONResult(jsData)
+				#print jsData['response']['form_signupOrg']['choices']
 				print result
 		except Invitation.DoesNotExist:
 			raise Http404

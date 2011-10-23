@@ -1231,11 +1231,12 @@ ximpia.site.Signup = function() {
 				$("#id_variables").xpObjInput('addHidden', formData);
 				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
 				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', formData);
+				//$("[data-xp-type='list.select']").xpObjSelectList('render', formData);
 				/*$("select").selectBox({
 						'menuTransition': 'slide',
 						'menuSpeed' : 'fast'
-					});
-				$("a.selectBox").jScrollPane(
+					});*/
+				/*$("a.selectBox").jScrollPane(
 					{
 						showArrows: true,
 						verticalArrowPositions: 'after',

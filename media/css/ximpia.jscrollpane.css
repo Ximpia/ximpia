@@ -77,10 +77,10 @@
 
 .jspArrow
 {
-	background: #50506d;
+	/*background: #50506d;
 	text-indent: -20000px;
 	display: block;
-	cursor: pointer;
+	cursor: pointer;*/
 }
 
 .jspArrow.jspDisabled
@@ -91,7 +91,7 @@
 
 .jspVerticalBar .jspArrow
 {
-	height: 16px;
+	/*height: 16px;*/
 }
 
 .jspHorizontalBar .jspArrow

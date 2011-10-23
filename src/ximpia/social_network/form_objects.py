@@ -333,6 +333,36 @@ class XpEmailField(XpBaseCharField):
 			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpEmailField, self).__init__(**argsDict)
 
+class XpChoiceTextField(XpBaseCharField):
+	"""Choice field with autocompletion. Behaves like a select, with name and value"""
+	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
+			choices=(), dbClass='', params={}, **argsDict):
+		self._doInstanceInit(instance, insField)
+		fieldMaxLength = self._getMaxLength()
+		argsDict['validators'] = []
+		argsDict['max_length'] = max if max != None else fieldMaxLength
+		argsDict['min_length'] = min if min != None else None
+		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'maxlength': str(argsDict['max_length'])})
+		#data, maxHeight, minCharacters, url
+		#$('#id_jobTitle').jsonSuggest({data: $('#id_jobTitle_data').attr('value'), maxHeight: 200, minCharacters:3});
+		#dict = {'id': tupleData[0], 'text': tupleData[1]}
+		"""suggestList = []
+		for tuple in choices:
+			suggestList.append({'id': tuple[0], 'text': tuple[1]})"""
+		attrDict['data-xp'] = {	'maxHeight': maxHeight,
+					'minCharacters' : minCharacters
+					}
+		"""if len(choices) != 0:
+			attrDict['data-xp']['data'] = suggestList"""
+		"""if dbClass != '' and len(params) != 0:
+			attrDict['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params)""" 
+		if not argsDict.has_key('widget'):
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
+		super(XpChoiceTextField, self).__init__(**argsDict)
+
 class XpTextChoiceField(XpBaseCharField):
 	"""Text Choice Field. Field with autocompletion"""
 	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
@@ -394,7 +424,7 @@ class XpChoiceField(ChoiceField):
 		else:
 			dict = attrDict
 		return dict
-	def __init__(self, instance, insField, req=True, init='', choices=None, **argsDict):
+	def __init__(self, instance, insField, req=True, init='', choicesId='', **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
 			self.instanceName = instanceName
@@ -409,9 +439,12 @@ class XpChoiceField(ChoiceField):
 			if not argsDict.has_key('help_text'):
 				argsDict['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text if instance else argsDict['help_text']
 			argsDict['initial'] = init if init != '' else eval('instance' + '.' + self.instanceFieldName)
-		argsDict['choices'] = choices if choices != None else None		
+		#argsDict['choices'] = choices if choices != None else None		
+		#argsDict['choicesId'] = choicesId if choicesId != '' else ''
+		#print 'choicesId : ', choicesId
 		attrDict = self._doAttrs(argsDict, {	'class': classStr,
-							'data-xp-val': xpVal})
+							'data-xp-val': xpVal,
+							'choicesId': choicesId})
 		if not argsDict.has_key('widget'):
 			argsDict['widget'] = XpSelectWidget(attrs=attrDict)
 		# tabindex

@@ -9,7 +9,7 @@
 
         // Settings		
         var settings = {
-        	excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices'],
+        	excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
         	excludeListLabel: ['type','id','element'],
         	excludeList: ['info','type']
         };
@@ -33,6 +33,7 @@
 				$.metadata.setType("attr", "data-xp");
 				var attrs = $(element).metadata();
 				var dataAttrs = data[nameInput];
+				console.log(dataAttrs);
 				var type = 'text';
 				var value = "";
 				if (attrs.hasOwnProperty('type')) {
@@ -67,10 +68,13 @@
 						}*/
 						$("#" + idInput).attr(attr, value);
 					}					
-				}
+				}				
 				// Choices
-				for (choiceIndex in dataAttrs.choices) {
-					var htmlSelect = "<option value=\"" + dataAttrs.choices[choiceIndex][0] + "\">" + dataAttrs.choices[choiceIndex][1] + "</option>";
+				var choicesId = dataAttrs['choicesId'];
+				var choices = JSON.parse($("#id_choices").attr('value'))[choicesId];
+				console.log(choices)
+				for (choiceIndex in choices) {
+					var htmlSelect = "<option value=\"" + choices[choiceIndex][0] + "\">" + choices[choiceIndex][1] + "</option>";
 					$("#" + idInput).append(htmlSelect);
 				}
 				// Label				
