@@ -366,7 +366,7 @@ class XpChoiceTextField(XpBaseCharField):
 class XpTextChoiceField(XpBaseCharField):
 	"""Text Choice Field. Field with autocompletion"""
 	def __init__(self, instance, insField, min=None, max=None, req=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
-			choices=[], dbClass='', params={}, **argsDict):
+			choicesId='', dbClass='', params={}, **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = []
@@ -375,18 +375,11 @@ class XpTextChoiceField(XpBaseCharField):
 		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq)
 		classStr = 'fieldMust' if req == True else 'field'
 		attrDict = self._doAttrs(argsDict, {	'class': classStr,
-							'maxlength': str(argsDict['max_length'])})
-		#data, maxHeight, minCharacters, url
-		#$('#id_jobTitle').jsonSuggest({data: $('#id_jobTitle_data').attr('value'), maxHeight: 200, minCharacters:3});
-		#dict = {'id': tupleData[0], 'text': tupleData[1]}
-		suggestList = []
-		for tuple in choices:
-			suggestList.append({'id': tuple[0], 'text': tuple[1]})
+							'maxlength': str(argsDict['max_length']),
+							'choicesId': choicesId})
 		attrDict['data-xp'] = {	'maxHeight': maxHeight,
 					'minCharacters' : minCharacters
 					}
-		if len(choices) != 0:
-			attrDict['data-xp']['data'] = suggestList
 		if dbClass != '' and len(params) != 0:
 			attrDict['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params) 
 		if not argsDict.has_key('widget'):

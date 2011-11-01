@@ -1266,8 +1266,8 @@ div[data-xp-type="basic.select"] {
 .jspArrow.jspDisabled {
 	/*background: #ccc;*/
 	/*background-color: #ddd;*/
-	background: #ccc;
-	color: #bbb;
+	background: #ddd;
+	color: #a0a0a0;
 }
 
 #id_linkTest:after{

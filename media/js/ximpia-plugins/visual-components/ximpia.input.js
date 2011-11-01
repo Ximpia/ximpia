@@ -89,7 +89,7 @@
 				//console.log('attrs...');
 				//console.log(attrs)
 				var dataAttrs = data[nameInput];
-				//console.log(dataAttrs);
+				console.log(dataAttrs);
 				var sugAttrs = {};
 				var type = 'text';
 				if (attrs.hasOwnProperty('type')) {
@@ -137,6 +137,21 @@
 					}	
 				}
 				sugAttrs = JSON.parse($("#" + idInput).attr('data-xp'));
+				// Build property data from choices data
+				var choicesId = dataAttrs['choicesId'];
+				var choices = JSON.parse($("#id_choices").attr('value'))[choicesId];
+				/*console.log('choices...');
+				console.log('choicesId : ' + choicesId);
+				console.log(choices)*/
+				if (typeof(choices) != 'undefined') {
+					sugAttrs.data = []
+				}
+				for (choiceIndex in choices) {
+					sugAttrs.data[choiceIndex] = {}
+					sugAttrs.data[choiceIndex]['id'] = choices[choiceIndex][0];
+					sugAttrs.data[choiceIndex]['text'] = choices[choiceIndex][1];
+				}
+				//console.log(sugAttrs);
 				if (sugAttrs.hasOwnProperty('data')) {
 					$("#" + idInput).jsonSuggest({	data: sugAttrs.data, 
 								maxHeight: sugAttrs.maxHeight, 

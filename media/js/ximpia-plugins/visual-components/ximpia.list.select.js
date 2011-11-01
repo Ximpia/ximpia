@@ -5,7 +5,7 @@
 
 (function($) {	
 
-	$.fn.xpObjSelect = function( method ) {  
+	$.fn.xpObjListSelect = function( method ) {  
 
         // Settings		
         var settings = {
@@ -25,37 +25,58 @@
                 	});
 		},
 		render: function(data) {
+			console.log($(this));
+			console.log('Elements : ' + $(this).length);
 			for (var i=0; i<$(this).length; i++) {
-				//console.log($(this)[i]);
+				console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var idInputSrc = $(element).attr('id').split('_comp')[0];
+				var idInput = $(element).attr('id').split('_comp')[0] + '_text';
+				var idInputValue = $(element).attr('id').split('_comp')[0];
+				var nameInput = idInputSrc.split('id_')[1];
+				var idField = $(element).attr('id').split('_comp')[0] + '_field';
 				$.metadata.setType("attr", "data-xp");
 				var attrs = $(element).metadata();
 				var dataAttrs = data[nameInput];
-				//console.log(dataAttrs);
+				console.log('XpObjListSelect...');
+				console.log(dataAttrs);
+				console.log(attrs);
 				var type = 'text';
 				var value = "";
+				var choicesId = "";
+				if (dataAttrs.hasOwnProperty('choicesId')) {
+					choicesId = dataAttrs['choicesId'];
+				}				
 				if (attrs.hasOwnProperty('type')) {
 					type = attrs.type;
 				}
 				// id, name, type
 				var htmlContent = "";
 				if (attrs.hasOwnProperty('left')) {
-					htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div style=\"border: 0px solid; float: left\"><select id=\"" + idInput + "\" data-xp-class=\"combobox\"  ></select></div>";
+					htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div id=\"" + idField + "\" style=\"float: left; margin-top: 7px; margin-left: 3px\" ></div>";
 				} else {
-					htmlContent = "<div style=\"float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div style=\"border: 0px solid; float: left; margin-left: 5px \"><select id=\"" + idInput + "\" data-xp-class=\"combobox\" ></select></div>";
+					htmlContent = "<div style=\"float: left; border: 0px solid\"><label for=\"" + idInput + "\"></label>:</div> <div id=\"" + idField + "\" style=\"float: left; margin-top: 7px; margin-left: 3px\" ></div>";
 				}
-				$(element).html(htmlContent);				
+				console.log(htmlContent);
+				$(element).html(htmlContent);
+				// Plugin
+				var countryList = JSON.parse($('#id_choices').attr('value'))[choicesId];
+				var results = {'results': []};
+				for (j in countryList) {
+					results['results'][j] = {'id': countryList[j][0], 'name': countryList[j][1]}
+				}
+				console.log('idField : ' + idField);
+				var fb = $("#" + idField).flexbox(results,{
+					autoCompleteFirstMatch: true,
+					paging: false,
+					maxVisibleRows: 6
+				});
+				//fb.setValue('es', 'Spain');
 				// Input
 				for (attr in dataAttrs) {
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListSelect, attr);
 					if (exists == false) {
 						value = dataAttrs[attr];
-						/*if (attr == 'class') {
-							value = value + ' scroll';
-						}
-						console.log(attr + ' - ' + value);*/
 						$("#" + idInput).attr(attr, value);
 					}					
 				}
@@ -63,23 +84,10 @@
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
 					if (exists == false) {
 						value = attrs[attr];
-						/*if (attr == 'class') {
-							value = value + 'scroll';
-						}*/
 						$("#" + idInput).attr(attr, value);
 					}					
-				}				
-				// Choices
-				var choicesId = dataAttrs['choicesId'];
-				var choices = JSON.parse($("#id_choices").attr('value'))[choicesId];
-				/*console.log('choices...');
-				console.log('choicesId : ' + choicesId);
-				console.log(choices)*/
-				for (choiceIndex in choices) {
-					var htmlSelect = "<option value=\"" + choices[choiceIndex][0] + "\">" + choices[choiceIndex][1] + "</option>";
-					$("#" + idInput).append(htmlSelect);
 				}
-				// Label				
+				// Label
 				$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
 				if (attrs.info == true) {
 					$("label[for=\"" + idInput + "\"]").addClass("info");
@@ -87,15 +95,19 @@
 					if (dataAttrs.hasOwnProperty('help_text')) {
 						$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
 					}
-				}				
-				/*console.log($("#" + idInput));*/				
+				}
+				/*console.log($("#" + idInput));*/
+				console.log($(element));
+				console.log($('#id_country').val());
+				console.log($('#id_country_input').val());
 			}
 		},
 		disable: function() {
-			var idInput = $(this).attr('id').split('_comp')[0];
-			$("#" + idInput).attr('disable', 'disable');
 		},
 		enable: function() {
+		},
+		setValue: function(code) {
+			var countryList = JSON.parse($('#id_choices').attr('value'))[choicesId];
 		}	
         };
 		
@@ -104,7 +116,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjInput' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjListSelect' );
         }    
 		
 	};

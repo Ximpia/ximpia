@@ -389,7 +389,9 @@ def signup(request, invitationCode=None, **argsDict):
 				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
 				result = signup.buildJSONResult(jsData)
 				#print jsData['response']['form_signupOrg']['choices']
-				print result
+				#print result
+				print jsData['response']['form_signupOrg']['country']
+				print jsData['response']['form_signupOrg']['organizationCountry']
 		except Invitation.DoesNotExist:
 			raise Http404
 	return result

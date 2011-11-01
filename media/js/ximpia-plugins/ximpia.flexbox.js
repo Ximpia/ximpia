@@ -54,15 +54,21 @@
         pageSize = o.paging && o.paging.pageSize ? o.paging.pageSize : 0,
 		retrievingRemoteData = false,
         $div = $(div).css('position', 'relative').css('z-index', 0);
+        var idHidden = $div.attr('id').split('_field')[0];
+        console.log('idHidden : ' + idHidden);
+        var idInput = idHidden + '_input';
 
         // The hiddenField MUST be appended to the div before the input, or IE7 does not shift the dropdown below the input field (it overlaps)
         var $hdn = $('<input type="hidden"/>')
-            .attr('id', $div.attr('id') + '_hidden')
-            .attr('name', $div.attr('id'))
+            //.attr('id', $div.attr('id') + '_hidden')
+            .attr('id', idHidden)
+            //.attr('name', $div.attr('id'))
+            .attr('name', idHidden.split('id_')[1])
             .val(o.initialValue)
             .appendTo($div);
         var $input = $('<input/>')
-            .attr('id', $div.attr('id') + '_input')
+            //.attr('id', $div.attr('id') + '_input')
+            .attr('id', idInput)
             .attr('autocomplete', 'off')
             .addClass(o.inputClass)
             .css('width', o.width + 'px')
@@ -852,8 +858,11 @@
         }
     };
 
-    $.fn.setValue = function(val) {
-        var id = '#' + this.attr('id');
-        $(id + '_hidden,' + id + '_input').val(val).removeClass('watermark');
+    $.fn.setValue = function(code, value) {
+        var id = '#' + this.attr('id').split('_field')[0];
+        //$(id + '_hidden,' + id + '_input').val(val).removeClass('watermark');
+        //$(id + ',' + id + '_input').val(val).removeClass('watermark');
+        $(id).val(code).removeClass('watermark');
+        $(id + '_input').val(value).removeClass('watermark');
     };
 })(jQuery);

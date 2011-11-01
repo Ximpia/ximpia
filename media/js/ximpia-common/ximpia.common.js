@@ -877,12 +877,12 @@ ximpia.common.GoogleMaps = function() {
   								for (var j=0; j<fields.length; j++) {
 	  								if (fields[j] == "locality") {
   										city = list[i].long_name;
-  										$("#" + idCity).attr('value', city);
+  										//$("#" + idCity).attr('value', city);
   									} else if (fields[j] == "country") {
 	  									countryCode = list[i].short_name.toLowerCase();
   										//$("#" + idCountry + " :selected").removeAttr('selected');
   										//$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
-  										$("#" + idCountry).selectBox('value', countryCode);
+  										//$("#" + idCountry).selectBox('value', countryCode);
   									}
   								}		  					
   							}
@@ -1232,6 +1232,17 @@ ximpia.site.Signup = function() {
 				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
 				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', formData);
 				//$("[data-xp-type='list.select']").xpObjSelectList('render', formData);
+				/*var countryList = JSON.parse($('#id_choices').attr('value'))['country'];
+				var countries = {'results': []};
+				for (i in countryList) {
+					countries['results'][i] = {'id': countryList[i][0], 'name': countryList[i][1]}
+				}
+				$("[data-xp-type='list.select']").flexbox(countries,{
+					autoCompleteFirstMatch: true,
+					paging: false,
+					maxVisibleRows: 6
+				});*/
+				$("[data-xp-type='list.select']").xpObjListSelect('render', formData);
 				/*$("select").selectBox({
 						'menuTransition': 'slide',
 						'menuSpeed' : 'fast'

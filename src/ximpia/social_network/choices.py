@@ -29,7 +29,6 @@ class Choices(object):
 		)
 	# COUNTRY
 	COUNTRY = (
-		('',''),
 		('fr', _('France')),
 		('es', _('Spain')),
 		('us', _('United States')),
