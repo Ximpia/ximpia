@@ -24,9 +24,9 @@ from django.contrib.auth.models import User, Group
 from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract, getResultOK, getResultERROR
 
 #from validators import *
-from ximpia.core.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
+from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
 	XpChoiceField, XpTextChoiceField, XpChoiceTextField
-from ximpia.core.form_objects import XpUserField
+from ximpia.social_network.form_objects import XpUserField
 from ximpia.util.js import Form as _jsf
 
 from validators import validateCaptcha
