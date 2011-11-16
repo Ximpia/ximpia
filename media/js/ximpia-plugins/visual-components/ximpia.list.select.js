@@ -11,8 +11,10 @@
         var settings = {
         	excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
         	excludeListLabel: ['type','id','element'],
-        	excludeList: ['info','type']
+        	excludeList: ['info','type'],
+        	formData: {}
         };
+        
 		
         var methods = {
 		init : function( options ) { 
@@ -21,10 +23,11 @@
                     		// with our default settings
                     		if ( options ) { 
 	                        	$.extend( settings, options );
-                    		}					
+                    		}
                 	});
 		},
-		render: function(data) {
+		render: function() {
+			var data = JSON.parse(localStorage.getItem("xpForm"));
 			console.log($(this));
 			console.log('Elements : ' + $(this).length);
 			for (var i=0; i<$(this).length; i++) {
@@ -66,6 +69,10 @@
 					results['results'][j] = {'id': countryList[j][0], 'name': countryList[j][1]}
 				}
 				console.log('idField : ' + idField);
+				// *************
+				// ** Flexbox **
+				// *************
+				// input: maxVisibleRows, allowInput
 				var fb = $("#" + idField).flexbox(results,{
 					autoCompleteFirstMatch: true,
 					paging: false,
@@ -107,7 +114,16 @@
 		enable: function() {
 		},
 		setValue: function(code) {
-			var countryList = JSON.parse($('#id_choices').attr('value'))[choicesId];
+			var data = JSON.parse(localStorage.getItem("xpForm"));			
+			var idField = $(this).attr('id').split('_comp')[0] + '_field';
+        		var id = '#' + idField.split('_field')[0];
+        		var nameField = idField.split('_field')[0].split('id_')[1];
+        		var field = data[nameField];
+        		var choicesId = field['choicesId'];
+        		var countryList = ximpia.common.Choices.get(choicesId);
+			var value = ximpia.common.List.getValueFromList(code, countryList);
+        		$(id).val(code).removeClass('watermark');
+        		$(id + '_input').val(value).removeClass('watermark');			
 		}	
         };
 		

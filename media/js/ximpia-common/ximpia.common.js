@@ -18,6 +18,14 @@ ximpia.common.List.getValue = (function(id, key) {
 });
 ximpia.common.List.hasKey = (function(id, key) {	
 });
+ximpia.common.List.getValueFromList = (function(key, list) {
+	for (j in list) {
+		if (list[j][0] == key) {
+			value = list[j][1];
+		}
+	}
+	return value;
+});
 
 ximpia.common.ArrayUtil = {};
 ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
@@ -30,6 +38,13 @@ ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 		}
 	}
 	return exists;
+}
+
+ximpia.common.Choices = {};
+ximpia.common.Choices.get = function(choicesId) {
+	// Integrate here the new location for choices object
+	var list = JSON.parse($('#id_choices').attr('value'))[choicesId];
+	return list;
 }
 
 /*
@@ -1227,6 +1242,7 @@ ximpia.site.Signup = function() {
 			doOrganizationBind: (function(data) {
 				console.log('doOrganizationBind()...');
 				var formData = data.response["form_signupOrg"];
+				localStorage.setItem('xpForm', JSON.stringify(formData));
 				$("[data-xp-type='basic.text']").xpObjInput('renderField', formData);
 				$("#id_variables").xpObjInput('addHidden', formData);
 				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
@@ -1242,7 +1258,9 @@ ximpia.site.Signup = function() {
 					paging: false,
 					maxVisibleRows: 6
 				});*/
-				$("[data-xp-type='list.select']").xpObjListSelect('render', formData);
+				$("[data-xp-type='list.select']").xpObjListSelect('render');
+				$("#id_country_comp").xpObjListSelect('setValue', 'es');
+				//console.log(ximpia.common.Choices.get('country'));
 				/*$("select").selectBox({
 						'menuTransition': 'slide',
 						'menuSpeed' : 'fast'
