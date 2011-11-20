@@ -25,7 +25,8 @@
                     		}					
                 	});
 		},
-		renderField: function(data) {
+		renderField: function() {
+			var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			for (var i=0; i<$(this).length; i++) {
 				//console.log($(this)[i]);
 				var element = $(this)[i]; 
@@ -77,7 +78,8 @@
 				}
 			}
 		},
-		renderFieldAutoComplete: function(data) {
+		renderFieldAutoComplete: function() {
+			var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			console.log('renderTextChoice...');
 			for (var i=0; i<$(this).length; i++) {
 				//console.log($(this)[i]);
@@ -172,7 +174,8 @@
 		},
 		enable: function() {
 		},
-		addHidden: function(data) {
+		addHidden: function() {
+			var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			var list = Object.keys(data);
 			for (key in list) {
 				if (data[list[key]]['type'] == 'hidden') {

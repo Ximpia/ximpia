@@ -38,7 +38,10 @@
 
 <section id="id_sect_signupUser" class="sectionApp scroll" tabindex="0" >
 
-<h3 class="indent">XimpiaId</h3>
+<!--<h3 class="indent">XimpiaId</h3>-->
+	
+<fieldset>
+<legend>XimpiaId</legend>
 
 <div class="formBlock" style="margin-top: 0px">
 
@@ -51,12 +54,17 @@
 <div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
 
 <!-- Password Verify -->
-<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>	
+<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>
 			
 </div>
 
 </div>
 
+</fieldset>
+
+
+
+<!--
 <div class="vLineSep"><img src="http://localhost:8000/site_media/images/blank.png" alt=" " /></div>
 
 <div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 0px;">
@@ -64,10 +72,14 @@
 <a id="id_bt_tw" href="#" class="buttonIcon tw" onclick="return false;">Twitter</a><br/>
 <a id="id_bt_li" href="#" class="buttonIcon in" onclick="return false;">Linkedin</a>
 </div>
+-->
 
 <div id="id_userData" style=" clear: both; padding-top: 5px">
 
-<h3 class="indent">You</h3>
+<!--<h3 class="indent">You</h3>-->
+
+<fieldset>
+<legend>You</legend>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
@@ -95,9 +107,14 @@
 </div>
 </div><!-- Info -->	
 
+</fieldset>
+
 <br style="clear: both"/>
 
-<h3 class="indent">Your Organization And You</h3>
+<!--<h3 class="indent">Your Organization And You</h3>-->
+
+<fieldset>
+<legend>Your Organization And You</legend>
 
 <div id="id_orgYouInfo" class="formBlock" style="margin-top: 0px">
 
@@ -111,9 +128,10 @@
 											buttonText: 'Add'
 										}" ></div>-->
 
-<div>
-<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>	
-<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" >Add</a></div>
+<div id="id_organizationGroupTagsSet_comp" data-xp-type="list.field" data-xp="tabindex: 12" style="">
+<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>
+<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" data-xp-type="button.field" 
+	data-xp="{input: id_organizationGroupTags_comp}" >Add</a></div>
 <div id="id_groupTags" class="listContainer" style="width: 300px; margin-left: 15px; margin-top: 10px" ></div>
 </div>
 
@@ -127,9 +145,14 @@
 
 </div>
 
+</fieldset>
+
 <br style="clear: both"/>
 
-<h3 class="indent">Your Organization</h3>
+<!--<h3 class="indent">Your Organization</h3>-->
+
+<fieldset>
+<legend>Your Organization</legend>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
@@ -232,9 +255,10 @@
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.selectBox.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.flexbox.js"></script>
 
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.input.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.select.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.list.select.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.select.js"></script>-->
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.qtip.js"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->

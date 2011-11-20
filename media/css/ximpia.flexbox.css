@@ -13,19 +13,30 @@
 .ffb-arrow 
 {
 	float:left;
-	width:17px;
-	height:22px;
-	background-image:url(../images/sel_win7.gif);
+	border-bottom-right-radius: 8px;
+	border-top-right-radius: 8px;
+	height: 18px;
+	width: 17px;	
+	/*background-image:url(../images/sel_win7.gif);*/
+	background: url(../images/jquery.selectBox-arrow.gif) 50% center no-repeat;
+	border: 1px solid #bbb;
 }
+
 .ffb-arrow.out { /* css sprite technique */
-	background-position:0;
+	/*background-position:0;*/
 }
 .ffb-arrow.over { /* css sprite technique */
-	background-position:-17px 0;
+	/*background-position:-17px 0;*/
 }
 .ffb-arrow.active { /* css sprite technique */
-	background-position:-34px 0;
+	/*background-position:-34px 0;*/
 }
+
+
+.ffb-arrow:hover {
+	cursor: pointer;
+}
+
 .ffb-no-results 
 {
 	padding:2px;
@@ -46,7 +57,8 @@
 	overflow:auto;
 }
 .ffb .content .row {
-	border-bottom:1px solid #828790;
+	/*border-bottom:1px solid #828790;*/
+	border-bottom:1px solid #bbb;
 	color:#000;
 	height:20px;
 	clear:both;

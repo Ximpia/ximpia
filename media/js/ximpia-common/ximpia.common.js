@@ -892,12 +892,13 @@ ximpia.common.GoogleMaps = function() {
   								for (var j=0; j<fields.length; j++) {
 	  								if (fields[j] == "locality") {
   										city = list[i].long_name;
-  										//$("#" + idCity).attr('value', city);
+  										$("#" + idCity).attr('value', city);
   									} else if (fields[j] == "country") {
 	  									countryCode = list[i].short_name.toLowerCase();
   										//$("#" + idCountry + " :selected").removeAttr('selected');
   										//$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
   										//$("#" + idCountry).selectBox('value', countryCode);
+  										$("#" + idCountry).xpObjListSelect('setValue', 'es');
   									}
   								}		  					
   							}
@@ -1242,11 +1243,12 @@ ximpia.site.Signup = function() {
 			doOrganizationBind: (function(data) {
 				console.log('doOrganizationBind()...');
 				var formData = data.response["form_signupOrg"];
-				localStorage.setItem('xpForm', JSON.stringify(formData));
-				$("[data-xp-type='basic.text']").xpObjInput('renderField', formData);
-				$("#id_variables").xpObjInput('addHidden', formData);
-				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
-				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', formData);
+				sessionStorage.setItem('xpForm', JSON.stringify(formData));
+				// Have doubts about this??????
+				sessionStorage.setItem('form_signupOrg', JSON.stringify(formData));
+				$("[data-xp-type='basic.text']").xpObjInput('renderField');
+				$("#id_variables").xpObjInput('addHidden');
+				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
 				//$("[data-xp-type='list.select']").xpObjSelectList('render', formData);
 				/*var countryList = JSON.parse($('#id_choices').attr('value'))['country'];
 				var countries = {'results': []};
@@ -1259,8 +1261,8 @@ ximpia.site.Signup = function() {
 					maxVisibleRows: 6
 				});*/
 				$("[data-xp-type='list.select']").xpObjListSelect('render');
-				$("#id_country_comp").xpObjListSelect('setValue', 'es');
 				//console.log(ximpia.common.Choices.get('country'));
+				$("[data-xp-type='list.field']").xpObjListField('render');
 				/*$("select").selectBox({
 						'menuTransition': 'slide',
 						'menuSpeed' : 'fast'
@@ -1288,10 +1290,11 @@ ximpia.site.Signup = function() {
 				$(".scroll").jScrollPane(
 					{	showArrows: true,
 						verticalArrowPositions: 'after',
-						arrowButtonSpeed: 100,
-						animateScroll: true,
+						arrowButtonSpeed: 90,
+						animateScroll: false,
 						keyboardSpeed: 90,
-						keyboardSpeed: 100
+						animateDuration: 50,
+						arrowRepeatFreq: 0
 					}
 				);				
 				/*$("a.selectBox").each(function() {
@@ -1319,7 +1322,7 @@ ximpia.site.Signup = function() {
 				$("[data-xp-js='submit']").xpPageButton('render');
 				// Geo loc for city and country	
 				var oGoogleMaps = ximpia.common.GoogleMaps();
-				oGoogleMaps.insertCityCountry("id_city", "id_country");
+				oGoogleMaps.insertCityCountry("id_city", "id_country_comp");
 			})
 		}
 	}

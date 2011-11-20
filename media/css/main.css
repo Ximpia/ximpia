@@ -1274,11 +1274,16 @@ div[data-xp-type="basic.select"] {
 	content: "Holaaa";
 }
 
-.ffb-input {
+.ffb-input.field, .ffb-input.fieldMust {
 	border-top-left-radius: 8px;
 	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 0px;
+	border-top-right-radius: 0px;
 	padding-left: 7px;
+	border-right: 0px;
 }
+
+
 
 .arUp:after {
 	content: "\25b2";
@@ -1306,4 +1311,27 @@ div[data-xp-type="basic.select"] {
 
 .buttonPg:hover {
 	cursor: pointer;
+}
+
+fieldset {
+	border-radius: 10px; 
+	width: 500px; 
+	padding: 15px; 
+	float: left; 
+	box-shadow: #ccc 7px 7px 7px;
+	margin-left: 30px;
+	margin-top: 7px;
+	margin-right: 30px;
+	width: 750px;
+	margin-bottom: 7px;
+}
+
+legend {
+	background-color: #eee; 
+	border: 1px solid #bbb; 
+	border-radius: 5px; 
+	padding: 0px 15px; 
+	font-weight: bold; 
+	box-shadow: #ccc 3px 3px 3px;
+	font-size: 80%;
 }

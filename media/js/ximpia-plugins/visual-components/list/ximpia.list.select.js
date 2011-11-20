@@ -27,14 +27,14 @@
                 	});
 		},
 		render: function() {
-			var data = JSON.parse(localStorage.getItem("xpForm"));
+			var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			console.log($(this));
 			console.log('Elements : ' + $(this).length);
 			for (var i=0; i<$(this).length; i++) {
 				console.log($(this)[i]);
 				var element = $(this)[i]; 
 				var idInputSrc = $(element).attr('id').split('_comp')[0];
-				var idInput = $(element).attr('id').split('_comp')[0] + '_text';
+				var idInput = $(element).attr('id').split('_comp')[0] + '_input';
 				var idInputValue = $(element).attr('id').split('_comp')[0];
 				var nameInput = idInputSrc.split('id_')[1];
 				var idField = $(element).attr('id').split('_comp')[0] + '_field';
@@ -83,14 +83,24 @@
 				for (attr in dataAttrs) {
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListSelect, attr);
 					if (exists == false) {
-						value = dataAttrs[attr];
+						valueNew = dataAttrs[attr];
+						valueOld = $("#" + idInput).attr(attr);
+						value = valueNew;
+						if (valueOld != '') {
+							value = valueOld + ' ' + valueNew;
+						}
 						$("#" + idInput).attr(attr, value);
 					}					
 				}
 				for (attr in attrs) {
 					var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
 					if (exists == false) {
-						value = attrs[attr];
+						valueNew = dataAttrs[attr];
+						valueOld = $("#" + idInput).attr(attr);
+						value = valueNew;
+						if (valueOld != '') {
+							value = valueOld + ' ' + valueNew;
+						}
 						$("#" + idInput).attr(attr, value);
 					}					
 				}
@@ -110,8 +120,10 @@
 			}
 		},
 		disable: function() {
-		},
-		enable: function() {
+			var idField = $(this).attr('id').split('_comp')[0] + '_field';
+			var id = '#' + idField.split('_field')[0];
+			$(id + '_input').attr('disabled', 'disabled');
+			$('#' + idField + '_arrow').unbind('mouseenter mouseleave click mousedown mouseup');
 		},
 		setValue: function(code) {
 			var data = JSON.parse(localStorage.getItem("xpForm"));			
