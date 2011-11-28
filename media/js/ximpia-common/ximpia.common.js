@@ -1246,9 +1246,9 @@ ximpia.site.Signup = function() {
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
 				// Have doubts about this??????
 				sessionStorage.setItem('form_signupOrg', JSON.stringify(formData));
+				$("[data-xp-type='list.field']").xpObjListField('render');
 				$("[data-xp-type='basic.text']").xpObjInput('renderField');
-				$("#id_variables").xpObjInput('addHidden');
-				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
+				$("#id_variables").xpObjInput('addHidden');				
 				//$("[data-xp-type='list.select']").xpObjSelectList('render', formData);
 				/*var countryList = JSON.parse($('#id_choices').attr('value'))['country'];
 				var countries = {'results': []};
@@ -1259,10 +1259,10 @@ ximpia.site.Signup = function() {
 					autoCompleteFirstMatch: true,
 					paging: false,
 					maxVisibleRows: 6
-				});*/
+				});*/				
+				//console.log(ximpia.common.Choices.get('country'));				
 				$("[data-xp-type='list.select']").xpObjListSelect('render');
-				//console.log(ximpia.common.Choices.get('country'));
-				$("[data-xp-type='list.field']").xpObjListField('render');
+				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
 				/*$("select").selectBox({
 						'menuTransition': 'slide',
 						'menuSpeed' : 'fast'

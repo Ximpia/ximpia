@@ -9,7 +9,6 @@ from django.utils.translation import ugettext as _
 from choices import Choices
 
 from ximpia import settings
-from form_objects import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget
 
 import messages as _m
 from messages import MsgSignup
@@ -24,12 +23,15 @@ from django.contrib.auth.models import User, Group
 from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract, getResultOK, getResultERROR
 
 #from validators import *
-from ximpia.social_network.form_objects import XpMultipleWidget, XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField,\
-	XpChoiceField, XpTextChoiceField, XpChoiceTextField
-from ximpia.social_network.form_objects import XpUserField
+from form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
+from form_fields import XpChoiceTextField, XpUserField
+
+from form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
+
 from ximpia.util.js import Form as _jsf
 
 from validators import validateCaptcha
+from ximpia.social_network.form_fields import XpHiddenField
 
 class XBaseForm(forms.Form):
 	ERROR_INVALID = 'invalid'
@@ -37,18 +39,18 @@ class XBaseForm(forms.Form):
 	_ctx = None
 	_db = {}
 	#cleaned_data = None
-	entryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
-	copyEntryFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=json.dumps(False))
-	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
-	choices = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
-	pkFields = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.buildBlankArray([]))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([]))
-	ERR_GEN_VALIDATION = forms.CharField(widget=XpHiddenWidget, initial= _('Error validating your data. Check errors marked in red'))
-	siteMedia = forms.CharField(widget=XpHiddenWidget, initial= settings.MEDIA_URL)
-	buttonConstants = forms.CharField(widget=XpHiddenWidget, initial= "[['close','" + _('Close') + "']]")
-	facebookAppId = forms.CharField(widget=XpHiddenWidget, initial= settings.FACEBOOK_APP_ID)
-	objects = forms.CharField(widget=XpHiddenWidget, initial='')
+	entryFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	copyEntryFields = XpHiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
+	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	pkFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
+	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
+	ERR_GEN_VALIDATION = XpHiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
+	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
+	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
+	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
+	objects = XpHiddenField(xpType='input.hidden', initial='')
 	#errors = {}
 	_argsDict = {}
 	def __init__(self, *argsTuple, **argsDict): 
@@ -189,6 +191,13 @@ class XBaseForm(forms.Form):
 			attrs['label'] = oField.label
 			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
+			"""if attrs.has_key('xpType'):
+				xpType = attrs['xpType']
+				if not jsData['response']['form_' + self._XP_FORM_ID].has_key(xpType):
+					jsData['response']['form_' + self._XP_FORM_ID][xpType] = {}
+				jsData['response']['form_' + self._XP_FORM_ID][xpType][field] = attrs
+			else:
+				jsData['response']['form_' + self._XP_FORM_ID][field] = attrs"""
 			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
 
 class UserSignupForm(XBaseForm):
@@ -274,10 +283,10 @@ class OrganizationSignupForm(XBaseForm):
 	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email')
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
-	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), help_text=_('Industries'))
+	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), 
+					help_text=_('Industries'))
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
 	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', req=False, initial='')
-	#country = XpChoiceTextField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
 	organizationName = XpCharField(_dbOrganization, '_dbOrganization.name')
 	organizationDomain = XpCharField(_dbOrganization, '_dbOrganization.domain')
 	organizationCity = XpCharField(_dbAddress, '_dbAddress.city')
@@ -287,11 +296,17 @@ class OrganizationSignupForm(XBaseForm):
 	description = XpCharField(_dbOrganization, '_dbOrganization.description', req=False)
 	#organizationGroup = XpCharField(_dbGroup, '_dbGroup.name', label=_('Organization Group'))
 	#organizationGroupTags = XpCharField(_dbTag, '_dbTag.name', label=_('Group Tags'))
-	organizationGroupTags = XpTextChoiceField(_dbTag, '_dbTag.name', label=_('Group Tags'), dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True})
+	#organizationGroupTagsInput = XpTextChoiceField(_dbTag, '_dbTag.name', label=_('Group Tags'), dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True})
+	#organizationGroupTagsData = XpCharField()	
+	# organizationGroupTags : Input field with autocomplete and right zone to show list
+	organizationGroupTagsInput = XpTextChoiceField(_dbTag, '_dbTag.name', dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True}, 
+					label= _('Group Tags'), 
+					help_text = _('Include the tags associated with your group'))
+	organizationGroupTagsListValue = XpHiddenField(xpType='list.field')
 	jobTitle = XpTextChoiceField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle', choicesId='jobTitle')
 	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), help_text=_('Department / Group of people for organization'), choicesId='orgGroup')
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
-	invitationCode = forms.CharField(widget=XpHiddenWidget)
+	invitationCode = XpHiddenField(xpType='input.hidden')
 	
 	#jobTitle_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.JOB_TITLES))
 	#organizationGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.ORG_GROUPS))
@@ -301,22 +316,19 @@ class OrganizationSignupForm(XBaseForm):
 	#groupTagsAjax = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	
 	# Navigation and Message Fields
-	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
+	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
 									'userGroups': [KSignup.USER_GROUP_ID],
 									'affiliateId': -1,
 									'invitationCode': '',
 									'accountType': ''}))
-	choices = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
+	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({
 									'country': Choices.COUNTRY,
 									'jobTitle' : Choices.JOB_TITLES,
 									'orgGroup': Choices.ORG_GROUPS}))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))	
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
-	
-	def buildInitial(self):
-		pass
-	
+	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([_m, []]))	
+	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([_m, []]))
+		
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
 		self._validateSameFields([('password','passwordVerify')])

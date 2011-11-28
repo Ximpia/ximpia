@@ -1318,7 +1318,8 @@ fieldset {
 	width: 500px; 
 	padding: 15px; 
 	float: left; 
-	box-shadow: #ccc 7px 7px 7px;
+	/*box-shadow: #ccc 7px 7px 7px;*/
+	box-shadow: #ccc 5px 5px 5px;
 	margin-left: 30px;
 	margin-top: 7px;
 	margin-right: 30px;
@@ -1327,11 +1328,11 @@ fieldset {
 }
 
 legend {
-	background-color: #eee; 
-	border: 1px solid #bbb; 
-	border-radius: 5px; 
+	/*background-color: #eee;*/ 
+	/*border: 1px solid #bbb;*/ 
+	/*border-radius: 5px;*/ 
 	padding: 0px 15px; 
 	font-weight: bold; 
-	box-shadow: #ccc 3px 3px 3px;
+	/*box-shadow: #ccc 3px 3px 3px;*/
 	font-size: 80%;
 }

@@ -34,6 +34,7 @@ from yacaptcha.models import Captcha
 from business import SignupBusiness
 from data import UserDAO
 from constants import Constants
+from sqlalchemy.util import deprecated
 
 def test(request):
 	return HttpResponse("OK")
@@ -386,12 +387,18 @@ def signup(request, invitationCode=None, **argsDict):
 				jsData = getResultOK({})
 				ctx['form']._getJsData(jsData)
 				jsData['response']['affiliateId'] = affiliateId
-				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))
-				result = signup.buildJSONResult(jsData)
+				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))				
 				#print jsData['response']['form_signupOrg']['choices']
 				#print result
-				print jsData['response']['form_signupOrg']['country']
-				print jsData['response']['form_signupOrg']['organizationCountry']
+				#print jsData['response']['form_signupOrg']['country']
+				#print jsData['response']['form_signupOrg']['organizationCountry']
+				#print 'Form Size : ', len(jsData['response']['form_signupOrg'])
+				#print 'field: ', jsData['response']['form_signupOrg']['city']
+				"""dictA = jsData['response']['form_signupOrg']
+				print 'Keys : ', dictA.keys()
+				print 'basic.text : ', dictA['basic.text'].keys()"""
+				print 'keys : ', jsData['response']['form_signupOrg'].keys()
+				result = signup.buildJSONResult(jsData)
 		except Invitation.DoesNotExist:
 			raise Http404
 	return result

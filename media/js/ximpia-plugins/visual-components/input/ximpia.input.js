@@ -88,8 +88,8 @@
 				var nameInput = idInput.split('id_')[1];
 				$.metadata.setType("attr", "data-xp");
 				var attrs = $(element).metadata();
-				//console.log('attrs...');
-				//console.log(attrs)
+				console.log('attrs...');
+				console.log(attrs)
 				var dataAttrs = data[nameInput];
 				console.log(dataAttrs);
 				var sugAttrs = {};
