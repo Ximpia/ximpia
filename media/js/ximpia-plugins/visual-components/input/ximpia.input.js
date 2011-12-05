@@ -34,6 +34,10 @@
 				var nameInput = idInput.split('id_')[1];
 				$.metadata.setType("attr", "data-xp");
 				var attrs = $(element).metadata();
+				//console.log('input attrs: ' + idInput);
+				//console.log(attrs);
+				var relatedId = $(element).attr('data-xp-related');
+				var elementType = $(element).attr('data-xp-type');
 				var dataAttrs = data[nameInput];
 				var type = 'text';
 				if (attrs.hasOwnProperty('type')) {
@@ -62,6 +66,12 @@
 					}
 					
 				}
+				if (typeof relatedId != 'undefined') {
+					$("#" + idInput).attr('data-xp-related', relatedId);
+				}
+				if (typeof elementType != 'undefined') {
+					$("#" + idInput).attr('data-xp-type', elementType);
+				}
 				//console.log($("#" + idInput));
 				// Label
 				//console.log('dataAttrs');
@@ -88,8 +98,12 @@
 				var nameInput = idInput.split('id_')[1];
 				$.metadata.setType("attr", "data-xp");
 				var attrs = $(element).metadata();
-				console.log('attrs...');
-				console.log(attrs)
+				//console.log('input attrs: ' + idInput);
+				//console.log(attrs);
+				/*console.log('element...');
+				console.log(element);*/
+				var relatedId = $(element).attr('data-xp-related');
+				var elementType = $(element).attr('data-xp-type');
 				var dataAttrs = data[nameInput];
 				console.log(dataAttrs);
 				var sugAttrs = {};
@@ -125,6 +139,12 @@
 						$("#" + idInput).attr(attr, attrs[attr]);
 					}
 					
+				}
+				if (typeof relatedId != 'undefined') {
+					$("#" + idInput).attr('data-xp-related', relatedId);
+				}
+				if (typeof elementType != 'undefined') {
+					$("#" + idInput).attr('data-xp-type', elementType);
 				}
 				//console.log($("#" + idInput));
 				// Label				

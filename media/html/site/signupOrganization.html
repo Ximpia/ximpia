@@ -45,15 +45,11 @@
 
 <div class="formBlock" style="margin-top: 0px">
 
-<!-- XimpiaId -->
 <div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
 
 <div id="id_showPassword">
 
-<!-- Password -->
 <div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
-
-<!-- Password Verify -->
 <div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>
 			
 </div>
@@ -61,8 +57,6 @@
 </div>
 
 </fieldset>
-
-
 
 <!--
 <div class="vLineSep"><img src="http://localhost:8000/site_media/images/blank.png" alt=" " /></div>
@@ -76,31 +70,21 @@
 
 <div id="id_userData" style=" clear: both; padding-top: 5px">
 
-<!--<h3 class="indent">You</h3>-->
-
 <fieldset>
 <legend>You</legend>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
 <div class="frmLeft">
-
-<!-- First Name -->				
+			
 <div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '4'}" ></div>
-
-<!-- Email -->
 <div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
-
-<!-- Country -->				
 <div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '8'}" ></div>
 
 </div>	
 <div class="frmRight">
 
-<!-- Last Name -->
 <div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '5'}" ></div>
-
-<!-- City -->				
 <div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '7'}" ></div>
 
 <br/>
@@ -120,25 +104,7 @@
 
 <div id="id_jobTitle_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" ></div>
 <div id="id_organizationGroup_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" ></div>
-
 <div id="id_organizationGroupTags_comp" data-xp-type="list.field" data-xp="{info: true, left: 145, inType: 'input', align: 'right', buttonText: 'Add'}" ></div>
-
-<!--
-<div id="id_organizationGroupTagsSet_comp" data-xp-type="list.field" data-xp="tabindex: 12" style="">
-<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>
-<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" data-xp-type="button.field" 
-	data-xp="{input: id_organizationGroupTags_comp}" >Add</a></div>
-<div id="id_groupTags" class="listContainer" style="width: 300px; margin-left: 15px; margin-top: 10px" ></div>
-</div>
--->
-
-<!--
-<div>
-<div id="id_organizationGroupTags_comp" data-xp-type="text.autocomplete" data-xp="{info: true, left: 145}" style="float: left" ></div>	
-<div style="float: left"><a href="#" class="buttonIcon buttonIconSmall" onclick="return false;" >Add</a></div>
-<div id="id_groupTags" class="listContainer" style="clear: both; margin-left: 145px; width: 300px" ></div>
-</div>
--->
 
 </div>
 
@@ -146,12 +112,10 @@
 
 <br style="clear: both"/>
 
-<!--<h3 class="indent">Your Organization</h3>-->
-
 <fieldset>
 <legend>Your Organization</legend>
 
-<div id="id_info" class="formBlock" style="margin-top: 0px">
+<div id="id_info" class="formBlock" style="margin-top: 0px;">
 
 <!--<table border="0"><tr><td style="vertical-align: top">-->
 	
@@ -160,16 +124,17 @@
 <div id="id_account_comp" data-xp-type="basic.text" data-xp="{info: true, left: 85}" ></div>
 <div id="id_organizationName_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
 <div id="id_organizationDomain_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
-<div id="id_organizationCity_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
-<!--<div id="id_organizationCountry_comp" data-xp-type="basic.select" data-xp="{left: 85}" ></div>-->
-<div id="id_organizationCountry_comp" data-xp-type="list.select" data-xp="{left: 85}" ></div>
-<div id="id_description_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
+
+<!--<div id="id_description_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>-->
+
 
 </div>
 
 <div class="frmRight">
 
-<div id="id_organizationIndustry_comp" data-xp-type="basic.select" data-xp="{size: 8, style: 'vertical-align:top; margin-top: 10px'}" ></div>
+<div id="id_organizationCity_comp" data-xp-type="basic.text" data-xp="{left: 85}" ></div>
+<div id="id_organizationCountry_comp" data-xp-type="list.select" data-xp="{left: 85}" ></div>
+
 
 <!--
 <table><tr><td><label for="id_description"></label>:<br/> {{form.description}}<br />
@@ -185,14 +150,11 @@
 
 <!--</td></tr></table>-->
 
-
-
+<div id="id_organizationIndustry_comp" data-xp-type="list.field" data-xp="{info: true, left: 145, inType: 'select', align: 'right', buttonText: 'Add'}" ></div>
 
 </div>
 
-
 <!--</div>--><!-- UserData -->
-
 <!--</div>--> <!-- scroll-panel -->
 
 	

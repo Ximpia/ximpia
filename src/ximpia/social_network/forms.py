@@ -283,8 +283,8 @@ class OrganizationSignupForm(XBaseForm):
 	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email')
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
-	organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), 
-					help_text=_('Industries'))
+	"""organizationIndustry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], multiple=True, label=_('Industries'), 
+					help_text=_('Industries'))"""
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
 	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', req=False, initial='')
 	organizationName = XpCharField(_dbOrganization, '_dbOrganization.name')
@@ -301,10 +301,15 @@ class OrganizationSignupForm(XBaseForm):
 	# organizationGroupTags : Input field with autocomplete and right zone to show list
 	organizationGroupTagsInput = XpTextChoiceField(_dbTag, '_dbTag.name', dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True}, 
 					label= _('Group Tags'), 
-					help_text = _('Include the tags associated with your group'))
-	organizationGroupTagsListValue = XpHiddenField(xpType='list.field')
+					help_text = _('Include the tags associated with your group'), req=False)
+	organizationGroupTagsListValue = XpHiddenField(xpType='list.field', initial=GenericComponent().getS())
 	jobTitle = XpTextChoiceField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle', choicesId='jobTitle')
 	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), help_text=_('Department / Group of people for organization'), choicesId='orgGroup')
+	organizationIndustrySelect = XpChoiceField(None, '', choicesId='industry', req=False,  
+					label=_('Industries'), 
+					help_text=_('Industries'))
+	organizationIndustryListValue = XpHiddenField(xpType='list.field', initial=GenericComponent().getS())
+
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
 	invitationCode = XpHiddenField(xpType='input.hidden')
 	
@@ -325,7 +330,8 @@ class OrganizationSignupForm(XBaseForm):
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({
 									'country': Choices.COUNTRY,
 									'jobTitle' : Choices.JOB_TITLES,
-									'orgGroup': Choices.ORG_GROUPS}))
+									'orgGroup': Choices.ORG_GROUPS,
+									'industry': Choices.INDUSTRY}))
 	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([_m, []]))	
 	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([_m, []]))
 		

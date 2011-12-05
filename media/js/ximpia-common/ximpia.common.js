@@ -990,7 +990,7 @@ ximpia.visual.GenericComponentData = function() {
 			 */
 			init: function(id) {
 				_attr.priv.id = id
-				_attr.priv.inputData = $("#" + this.id).attr('value');
+				_attr.priv.inputData = $("#" + id).attr('value');
 				_attr.priv.dataDictList = JSON.parse(_attr.priv.inputData);
 			},
 			/**
@@ -1042,7 +1042,9 @@ ximpia.visual.GenericComponentData = function() {
 			 * Object has element by text?
 			 */
 			hasElement: function(searchText) {
-            			var array = _attr.priv.getDataList();
+            			var array = _attr.pub.getDataList();
+            			console.log('array');
+            			console.log(array);
             			var hasElement = false;
             			for (var i = 0; i< array.length; i++) {
                 			if (array[i].text == searchText) {
@@ -1099,11 +1101,12 @@ ximpia.visual.GenericComponentData.deleteFromList = function(element, oArg) {
         var idContainerData = idContainer + '_data';
         var index = list[list.length-1];
         $('#' + idElement).remove();
-        var obj = new GenericComponentData(idContainerData);
+        var obj = new ximpia.visual.GenericComponentData();
+        obj.init(idContainerData);
         obj.deleteData(index);
-        if (oArg.callBack) {
+        /*if (oArg.callBack) {
             oArg.callBack(oArg);
-        }	
+        }*/
 }
 
 ximpia.site.Signup = function() {
@@ -1244,49 +1247,17 @@ ximpia.site.Signup = function() {
 				console.log('doOrganizationBind()...');
 				var formData = data.response["form_signupOrg"];
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
-				// Have doubts about this??????
 				sessionStorage.setItem('form_signupOrg', JSON.stringify(formData));
 				$("[data-xp-type='list.field']").xpObjListField('render');
 				$("[data-xp-type='basic.text']").xpObjInput('renderField');
 				$("#id_variables").xpObjInput('addHidden');				
-				//$("[data-xp-type='list.select']").xpObjSelectList('render', formData);
-				/*var countryList = JSON.parse($('#id_choices').attr('value'))['country'];
-				var countries = {'results': []};
-				for (i in countryList) {
-					countries['results'][i] = {'id': countryList[i][0], 'name': countryList[i][1]}
-				}
-				$("[data-xp-type='list.select']").flexbox(countries,{
-					autoCompleteFirstMatch: true,
-					paging: false,
-					maxVisibleRows: 6
-				});*/				
-				//console.log(ximpia.common.Choices.get('country'));				
 				$("[data-xp-type='list.select']").xpObjListSelect('render');
 				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
-				/*$("select").selectBox({
-						'menuTransition': 'slide',
-						'menuSpeed' : 'fast'
-					});*/
-				/*$("a.selectBox").jScrollPane(
-					{
-						showArrows: true,
-						verticalArrowPositions: 'after',
-						arrowButtonSpeed: 90,
-						animateScroll: true,
-						keyboardSpeed: 90,
-						verticalDragMinHeight: 20
-					}
-				);*/
-				/*$(".comboScroll").jScrollPane(
-					{
-						showArrows: true,
-						verticalArrowPositions: 'after',
-						arrowButtonSpeed: 130,
-						animateScroll: true,
-						keyboardSpeed: 100,
-						verticalDragMinHeight: 20
-					}
-				);*/
+				// Binds related objects: Simple objects events binded to compound objects
+				// We do not bind enter event in autocomplete becaouse not compatible with enter event of complete list
+				$("input[data-xp-related='list.field']")
+					.filter("input[data-xp-type='basic.text']")
+					.xpObjListField('bindKeyPress');
 				$(".scroll").jScrollPane(
 					{	showArrows: true,
 						verticalArrowPositions: 'after',
@@ -1297,11 +1268,6 @@ ximpia.site.Signup = function() {
 						arrowRepeatFreq: 0
 					}
 				);				
-				/*$("a.selectBox").each(function() {
-					if ($(this).find(".jspArrow").length > 0) {
-						$(this).find('.jspTrack').addClass("jspTrackPag");
-					}
-				});*/
 				$(".scroll").each(function() {
 					if ($(this).find(".jspArrow").length > 0) {
 						$(this).find('.jspTrack').addClass("jspTrackPag");
