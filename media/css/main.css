@@ -3,13 +3,14 @@ body, h1, h2, h3, h4, p, ul, li {
 
 body {
 	font-family: sans-serif, Arial, Helvetica;
-	font-size: 16px;
+	/*font-size: 16px;*/
+	font-size: 11pt;
 	background-color: #FFFFFF;
 	margin: 0;
 	padding: 0;
 	color: #000;
 	line-height: 24px;
-	/*overflow: hidden;*/
+	overflow: hidden;
 }
 
 a {
@@ -55,8 +56,9 @@ input.Small, select.Small, textarea.Small {
 }
 
 .formBlock {
-	/*padding-left:30px;*/ 
-	line-height:35px;
+	/*padding-left:30px;*/
+	/*line-height:35px;*/ 
+	line-height:28px;
 	margin-top: 20px;
 	float: left; 
 	border: 0px solid
@@ -70,10 +72,9 @@ input.Small, select.Small, textarea.Small {
 	/*margin-top: 7px;*/
 }
 
-.TextArea {
-	/*font-size:120%;*/
+.textArea {
+	font-size:90%;
 	/*padding-left: 5px;*/
-	padding: 5px;
 }
 
 .InputText {
@@ -802,19 +803,23 @@ div.jsonSuggestResults div.resultItem p.extra {
 div.listContainer {
 	border: 1px solid #bbb;
 	/*height: 63px;*/ 
-	min-height: 42px;
-	max-height: 63px;
+	/*min-height: 42px;*/
+	/*height: 24px;*/
+	min-height: 24px;
+	max-height: 72px;
 	margin-bottom: 15px;
 	width: 400px;
 	float: left;
 	border-radius: 5px;
 	padding: 0;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 div.listField {
 	float: left; 
 	margin-left: 5px;
-	margin-top: 2px;
+	margin-top: 4px;
+	margin-bottom: 0px;
+	padding: 0;
 	border: 1px solid #ccc;
 }
 div.listField:hover, div.listField.sfhover {
@@ -825,7 +830,7 @@ div.listFieldText, div.listFieldTextAdd {
 	float: left; 
 	padding: 0px 7px; 
 	background-color: #dddddd; 
-	font-size: 70%; 
+	font-size: 90%; 
 	line-height: 15px; 
 	float: left;
 }
@@ -1287,7 +1292,11 @@ div[data-xp-type="basic.select"] {
 	border-right: 0px;
 }
 
-
+textarea {
+	border-radius: 5px;
+	border: 1px solid #ddd;
+	padding: 0;
+}
 
 .arUp:after {
 	content: "\25b2";

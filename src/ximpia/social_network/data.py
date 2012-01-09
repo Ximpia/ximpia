@@ -10,13 +10,17 @@ from django.contrib.auth.models import User as UserSys, Group as GroupSys
 from django.utils.translation import ugettext as _
 from ximpia import util
 
-from models import Constants, getFormDataValue, getPagingStartEnd, getDataDict, XpMsgException, parseLinks, parseText, Choices
+from constants import Constants
+from choices import Choices
+
+#from models import Constants, Choices
 from models import UserSocial, SocialNetwork, UserParam, SocialNetworkUserSocial, GroupSocial, UserDetail, UserProfile, Industry, UserAccount
 from models import Organization, OrganizationGroup, AddressOrganization, Tag, SocialNetworkOrganization, UserAccountContract
 from models import UserAccountRelation, Application, Subscription, Invitation, SignupData, GroupFollow, GroupStream, StatusMessage
 from models import Comment, TagUserTotal, LinkUserTotal, Link, Like, Notification, Skill, SkillGroup, SkillUserAccount, Affiliate, Version
 from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType
-from models import Calendar, CalendarInvite, MasterValue, XpMsgException, Address
+from models import Calendar, CalendarInvite, Address
+from ximpia.core.models import MasterValue, parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks
 import sys
 
 from ximpia.settings_visual import SocialNetworkIconData as SND

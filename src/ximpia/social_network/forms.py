@@ -6,6 +6,7 @@ from django.core import serializers as _s
 from django import forms
 from django.forms import ValidationError
 from django.utils.translation import ugettext as _
+
 from choices import Choices
 
 from ximpia import settings
@@ -20,18 +21,40 @@ from ximpia.settings_visual import SuggestBox, GenericComponent
 #from yacaptcha.models import Captcha
 
 from django.contrib.auth.models import User, Group
-from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract, getResultOK, getResultERROR
+#from ximpia.core.models import getResultOK, getResultERROR
+from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract
 
-#from validators import *
-from form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
-from form_fields import XpChoiceTextField, XpUserField
+from ximpia.core.form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
+from ximpia.core.form_fields import XpChoiceTextField, XpUserField
 
-from form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
+from ximpia.core.form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
 
 from ximpia.util.js import Form as _jsf
 
-from validators import validateCaptcha
-from ximpia.social_network.form_fields import XpHiddenField
+from ximpia.core.validators import validateCaptcha
+from ximpia.core.form_fields import XpHiddenField
+
+class AppRegex(object):
+	"""Doc.
+	@deprecated: """
+	# Any text
+	string = re.compile('\w+', re.L)
+	# text field, like 
+	textField = re.compile("^(\w*)\s?(\s?\w+)*$", re.L)
+	# Domain
+	domain = re.compile("^([a-z0-9]([-a-z0-9]*[a-z0-9])?\\.)+((a[cdefgilmnoqrstuwxz]|aero|arpa)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emop]|jobs)|k[eghimnprwyz]|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghklmnrstwy]|pro)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])$", re.L)
+	# currency, like 23.23, 34.5
+	currency = re.compile('^[0-9]*\.?|\,?[0-9]{0,2}$')
+	# id, like 87262562
+	id = re.compile('^[1-9]+[0-9]*$')
+	# user id
+	userId = re.compile('^[a-zA-Z0-9_.]+')
+	# password
+	password = re.compile('^\w+')
+	# captcha
+	captcha = re.compile('^\w{6}$')
+	# Email
+	email = re.compile('^([\w.])+\@([a-z0-9]([-a-z0-9]*[a-z0-9])?\\.)+((a[cdefgilmnoqrstuwxz]|aero|arpa)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emop]|jobs)|k[eghimnprwyz]|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghklmnrstwy]|pro)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])')
 
 class XBaseForm(forms.Form):
 	ERROR_INVALID = 'invalid'
@@ -219,7 +242,7 @@ class UserSignupForm(XBaseForm):
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
 	#industry = XpMultiField(None, '', choices = Choices.INDUSTRY, init=[], label=_('Industries'), help_text=_('Industries'))
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
-	country = XpChoiceField(_dbAddress, '_dbAddress.country', choices=Choices.COUNTRY, req=False, initial='')
+	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', req=False, initial='')
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
 	invitationCode = forms.CharField(widget=XpHiddenWidget)
 	twitterIcon_data = XpSocialIconField(network='twitter', version=1)
@@ -229,11 +252,12 @@ class UserSignupForm(XBaseForm):
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
 									'userGroups': [KSignup.USER_GROUP_ID],
-									'affiliateId': -1})) 
+									'affiliateId': -1}))
+	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'country': Choices.COUNTRY}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
 		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
-			
+
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		"""Build initial values for form"""
 		#self.initial = {}
@@ -293,7 +317,7 @@ class OrganizationSignupForm(XBaseForm):
 	organizationCountry = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', initial='')
 	account = XpCharField(_dbOrganization, '_dbOrganization.account')
 	# TextArea
-	description = XpCharField(_dbOrganization, '_dbOrganization.description', req=False)
+	#description = XpCharField(_dbOrganization, '_dbOrganization.description', req=False)
 	#organizationGroup = XpCharField(_dbGroup, '_dbGroup.name', label=_('Organization Group'))
 	#organizationGroupTags = XpCharField(_dbTag, '_dbTag.name', label=_('Group Tags'))
 	#organizationGroupTagsInput = XpTextChoiceField(_dbTag, '_dbTag.name', label=_('Group Tags'), dbClass='TagDAO', params={'text': 'name__icontains', 'isPublic': True})
@@ -312,6 +336,13 @@ class OrganizationSignupForm(XBaseForm):
 
 	captcha = XpCharField(None, '', max=6, val=[validateCaptcha], req=False, initial='', label=_('Validation'))
 	invitationCode = XpHiddenField(xpType='input.hidden')
+	
+	# description
+	description = forms.RegexField(max_length=144, regex=AppRegex.string, 
+				widget=XpTextareaWidget(attrs={		'class' : 'textArea Small',
+									'style': 'vertical-align:top; width: 330px; height: 16px; padding: 3px 5px; resize:none; overflow: none; margin-top:4px'
+								}), 
+				required=False, label=_('Description'))
 	
 	#jobTitle_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.JOB_TITLES))
 	#organizationGroup_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SuggestBox(Choices.ORG_GROUPS))
@@ -342,27 +373,13 @@ class OrganizationSignupForm(XBaseForm):
 		return self.cleaned_data
 
 
-class AppRegex(object):
-	"""Doc.
-	@deprecated: """
-	# Any text
-	string = re.compile('\w+', re.L)
-	# text field, like 
-	textField = re.compile("^(\w*)\s?(\s?\w+)*$", re.L)
-	# Domain
-	domain = re.compile("^([a-z0-9]([-a-z0-9]*[a-z0-9])?\\.)+((a[cdefgilmnoqrstuwxz]|aero|arpa)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emop]|jobs)|k[eghimnprwyz]|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghklmnrstwy]|pro)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])$", re.L)
-	# currency, like 23.23, 34.5
-	currency = re.compile('^[0-9]*\.?|\,?[0-9]{0,2}$')
-	# id, like 87262562
-	id = re.compile('^[1-9]+[0-9]*$')
-	# user id
-	userId = re.compile('^[a-zA-Z0-9_.]+')
-	# password
-	password = re.compile('^\w+')
-	# captcha
-	captcha = re.compile('^\w{6}$')
-	# Email
-	email = re.compile('^([\w.])+\@([a-z0-9]([-a-z0-9]*[a-z0-9])?\\.)+((a[cdefgilmnoqrstuwxz]|aero|arpa)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emop]|jobs)|k[eghimnprwyz]|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghklmnrstwy]|pro)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])')
+
+
+"""
+
+**********************************************************************************
+
+"""
 
 class FrmCommon(forms.Form):
 	"""Doc.

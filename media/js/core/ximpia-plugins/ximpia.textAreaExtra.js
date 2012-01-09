@@ -71,7 +71,7 @@
         // Make sure all the content in the textarea is visible
         setCSS(this);
         copyContent($(this));
-		$(this).height($("#" + id).height());		
+	$(this).height($("#" + id).height());		
         /*if ($(this).height() > settings.maxHeight) {
                 $(this).css({
                     'overflow-y': 'scroll',

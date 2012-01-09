@@ -1,6 +1,4 @@
 
-
-
 class Constants(object):
 	XIMPIA = 'ximpia'
 	TWITTER = 'twitter'
@@ -45,7 +43,6 @@ class Constants(object):
 	NUMBER_INVITATIONS_USER = 15
 	NUMBER_INVITATIONS_STAFF = 500
 	SOCIAL_NETWORK = 'social_network'
-
 
 class KSignup(object):
 	USER_GROUP_ID = '1'

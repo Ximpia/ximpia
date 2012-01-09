@@ -1135,11 +1135,35 @@ ximpia.site.Signup = function() {
 		},
 		pub: {
 			doProfessionalBind: (function(data) {
+				console.log('doProfessionalBind()...');
 				// Pre-page : Binding ajax data to form
 				var formData = data.response["form_signup"];
-				$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
-				$("#id_variables").xpObjInput('addHidden', formData);
-				$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
+				sessionStorage.setItem('xpForm', JSON.stringify(formData));
+				sessionStorage.setItem('form_signup', JSON.stringify(formData));
+				$("[data-xp-type='list.field']").xpObjListField('render');
+				$("[data-xp-type='basic.text']").xpObjInput('renderField');
+				$("#id_variables").xpObjInput('addHidden');				
+				$("[data-xp-type='list.select']").xpObjListSelect('render');
+				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
+				$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
+				$("input[data-xp-related='list.field']")
+					.filter("input[data-xp-type='basic.text']")
+					.xpObjListField('bindKeyPress');
+				$(".scroll").jScrollPane(
+					{	showArrows: true,
+						verticalArrowPositions: 'after',
+						arrowButtonSpeed: 90,
+						animateScroll: false,
+						keyboardSpeed: 90,
+						animateDuration: 50,
+						arrowRepeatFreq: 0
+					}
+				);
+				$(".scroll").each(function() {
+					if ($(this).find(".jspArrow").length > 0) {
+						$(this).find('.jspTrack').addClass("jspTrackPag");
+					}
+				});
 				ximpia.common.PageAjax.doFade();
 				// Conditions
 				// Post-Page : Page logic
@@ -1255,6 +1279,7 @@ ximpia.site.Signup = function() {
 				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
 				// Binds related objects: Simple objects events binded to compound objects
 				// We do not bind enter event in autocomplete becaouse not compatible with enter event of complete list
+				$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
 				$("input[data-xp-related='list.field']")
 					.filter("input[data-xp-type='basic.text']")
 					.xpObjListField('bindKeyPress');
@@ -1267,7 +1292,7 @@ ximpia.site.Signup = function() {
 						animateDuration: 50,
 						arrowRepeatFreq: 0
 					}
-				);				
+				);
 				$(".scroll").each(function() {
 					if ($(this).find(".jspArrow").length > 0) {
 						$(this).find('.jspTrack').addClass("jspTrackPag");

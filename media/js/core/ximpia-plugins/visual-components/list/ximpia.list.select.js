@@ -76,7 +76,7 @@
 				var fb = $("#" + idField).flexbox(results,{
 					autoCompleteFirstMatch: true,
 					paging: false,
-					maxVisibleRows: 6
+					maxVisibleRows: 10
 				});
 				//fb.setValue('es', 'Spain');
 				// Input

@@ -6,8 +6,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Ximpia - Signup</title>
 <link rel="stylesheet" href="http://localhost:8000/site_media/jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
-<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
+<link href="http://localhost:8000/site_media/css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
+
+<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
+	
 </head>
 
 <body>
@@ -29,27 +35,24 @@
 <section id="id_sect_loading" >
 </section>
 
-<div id="id_apps" style="border:solid 1px #ddd; margin-top:10px" >
+<div id="id_apps" style="border:solid 1px #ddd; margin-top:5px; border-radius: 8px">
     
 <section id="id_app_site" class="app">
 
-<section id="id_sect_signupUser" class="sectionApp">
+<section id="id_sect_signupUser" class="sectionApp scroll" tabindex="0" >
 
-<h3>XimpiaId</h3>
+<fieldset>
+<legend>XimpiaId</legend>
 
 <div class="formBlock" style="margin-top: 0px">
 
-<!-- XimpiaId -->
-<div id="id_ximpiaId_comp" data-xp-type="basic.input" data-xp="{info: true, tabindex: '1'}" ></div>
+<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
 
 <div id="id_showPassword">
 
-<!-- Password -->
-<div id="id_password_comp" data-xp-type="basic.input" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
+<div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
+<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>
 
-<!-- Password Verify -->
-<div id="id_passwordVerify_comp" data-xp-type="basic.input" data-xp="{type: 'password', tabindex: '3'}" ></div>	
-			
 </div>
 
 </div>
@@ -62,39 +65,49 @@
 <a id="id_bt_li" href="#" class="buttonIcon in" onclick="return false;">Linkedin</a>
 </div>
 
+</fieldset>
+
 <div id="id_userData" style=" clear: both; padding-top: 5px">
 
-<h3>About You</h3>
+<fieldset>
+<legend>You</legend>
 
 <div id="id_info" class="formBlock" style="margin-top: 0px">
 
 <div class="frmLeft">
 
-<!-- First Name -->				
-<div id="id_firstName_comp" data-xp-type="basic.input" data-xp="{tabindex: '4'}" ></div>
 
-<!-- Email -->
-<div id="id_email_comp" data-xp-type="basic.input" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
+<!-- Data -->
 
-<!-- Country -->				
-<div id="id_country_comp" data-xp-type="basic.select" data-xp="{tabindex: '8'}" ></div>
+<div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '4'}" ></div>
+<div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
+<div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '8'}" ></div>
 
 <br/>
 </div>	
 <div class="frmRight">
 
-<!-- Last Name -->
-<div id="id_lastName_comp" data-xp-type="basic.input" data-xp="{tabindex: '5'}" ></div>
-
-<!-- City -->				
-<div id="id_city_comp" data-xp-type="basic.input" data-xp="{tabindex: '7'}" ></div>
+<div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '5'}" ></div>
+<div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '7'}" ></div>
 
 <br/>
 </div>
-</div><!-- Info -->	
-</div><!-- UserData -->
+</div><!-- Info -->
 
-<div id="id_buttonBarBottom" class="btBar">
+</fieldset>
+	
+</div><!-- UserData -->
+	
+</section> <!-- section id_signupUser -->
+
+</section>
+<!-- End app_MyApp --> 
+    
+</div>
+<!-- End Apps -->
+
+<section style="padding: 0; border: 0px solid; margin-top: 5px; z-index: 10">
+<div id="id_buttonBarBottom" class="btBar" style="margin-bottom: 0px; margin-left: 0px; border: 0px solid">
 <div style="float: left">
 <!-- Button Left -->
 <!-- button -->
@@ -108,15 +121,8 @@
 <div style="float: left">
 <!-- Button Right -->
 </div>
-</div>
-	
-</section> <!-- section id_signupUser -->
-
+</div> 
 </section>
-<!-- End app_MyApp --> 
-    
-</div>
-<!-- End Apps -->
 
 <footer id="id_footer">
 </footer>
@@ -131,24 +137,31 @@
 
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
 <script type="text/javascript" src="http://localhost:8000/site_media/js/jquery/jquery-1.6.min.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.metadata.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jqDock.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-common/ximpia.common.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.metadata.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jqDock.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-common/ximpia.common.js"></script>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/google_maps.js"></script>-->
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.passStrengthener.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.passStrengthener.js"></script>
 
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.form.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.validate.js"></script>
-<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.jsonSuggest.js"></script>-->
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.networkIcon.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.loading.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.form.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.validate.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jsonSuggest.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.networkIcon.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.loading.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.mousewheel.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.mwheelIntent.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jscrollpane.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.selectBox.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.flexbox.js"></script>
 
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.input.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/visual-components/ximpia.select.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
 
-<script type="text/javascript" src="http://localhost:8000/site_media/js/ximpia-plugins/ximpia.qtip.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.qtip.js"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
 <!-- x-webkit-speech -->
@@ -158,8 +171,8 @@ jQuery(document).ready(function($){
 	ximpia.common.Page.init();		
 	var invitationCode = ximpia.common.Browser.fetchParamByName("i");
 	var path = ximpia.common.Path.getServer() + 'signup/' + invitationCode
-	$("#id_Form1").attr('action', path);	
-	var signup = ximpia.site.Signup();	
+	$("#id_Form1").attr('action', path);
+	var signup = ximpia.site.Signup();
 	var pageJx = ximpia.common.PageAjax();
 	pageJx.init({	path: path, 
 			callback: signup.doProfessionalBind, 

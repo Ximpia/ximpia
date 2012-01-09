@@ -51,6 +51,7 @@
 	border-left:1px solid #828790; /* #7B9EBD for Vista */
 	border-right:1px solid #828790;
 	background-color:#fff; /* Give it a background-color, so it's not transparent */
+	z-index: 90000;
 }
 /* Inner div for dropdown */
 .ffb .content {
@@ -60,10 +61,12 @@
 	/*border-bottom:1px solid #828790;*/
 	border-bottom:1px solid #bbb;
 	color:#000;
-	height:20px;
+	/*height:20px;*/
+	/*min-height: 20px;*/
 	clear:both;
 	font-size: 12px;
 	line-height: 20px;
+	z-index: 90000;
 }
 .ffb-sel {
 	cursor:pointer;

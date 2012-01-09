@@ -18,11 +18,15 @@ from django.contrib.auth.models import User, Group
 from django.utils import translation
 from django.utils.translation import ugettext as _
 
-from models import Invitation, context, Context, XpTemplate, getResultOK
+#from models import Invitation
+from ximpia.core.models import context, Context, XpTemplate, getResultOK
+#from choices import Choices
+#from constants import Constants
+#from messages import MsgSignup
 from data import *
-from choices import Choices
+#from choices import Choices
 import forms
-from constants import Constants
+#from constants import Constants
 
 #from ximpia import util
 from ximpia.util.http import Request
@@ -327,6 +331,11 @@ def checkCaptcha(request, value):
 		'org': 'social_network/signup/signupOrganization.html'})
 def signup(request, invitationCode=None, **argsDict):
 	"""Sign up professional account"""
+	#
+	#
+	# TODO: You need user signup only. Recycle this method to support only signup and use a Business method instead ?? Common ???
+	#
+	#
 	# init
 	ctx = argsDict['ctx']
 	tmplDict = argsDict['tmplDict']
@@ -361,24 +370,30 @@ def signup(request, invitationCode=None, **argsDict):
 	else:
 		#signup.doGet()
 		try:
+			# parameters ??????
+			# entity parameters ?????
+			# affiliate.id:int; 
 			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
 			print 'affiliateId : ', affiliateId
 			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
 			print 'accType : ', invitation.accType
 			if invitation.accType == Choices.INVITATION_ACC_TYPE_USER:
 				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-				ctx['form'].buildInitial(invitation, {}, '', affiliateId)
+				# facebook dict should be inside db instances
+				ctx['form'].buildInitial(invitation, {}, '', affiliateId)				
+				# form => jsDData => result
 				jsData = getResultOK({})
 				#print 'jsData : ', jsData
 				ctx['form']._getJsData(jsData)
 				# TODO: entryFields ????
 				jsData['response']['affiliateId'] = affiliateId
 				#print jsData
-				#print invitationCode, jsData['forms']['signup']['invitationCode']
+				print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 				result = signup.buildJSONResult(jsData)
 				#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
 				#time.sleep(1)
-				print result
+				print 'keys : ', jsData['response']['form_signup'].keys()
+				#print result
 			else:
 				# Organization
 				print 'Organization...'

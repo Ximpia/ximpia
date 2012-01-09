@@ -16,10 +16,11 @@ import forms
 
 from django.contrib.auth.models import User as UserSys, Group as GroupSys
 
-from models import UserSocial, XmlMessage, UserProfile, UserDetail, getResultOK, getResultERROR, Constants,\
-	Invitation
+from models import UserSocial, XmlMessage, UserProfile, UserDetail, Constants, Invitation
 
 from ximpia.util import ut_email
+
+from ximpia.core.models import getResultOK, getResultERROR
 
 from yacaptcha.models import Captcha
 from ximpia import settings
