@@ -47,5 +47,9 @@ class Constants(object):
 class KSignup(object):
 	USER_GROUP_ID = '1'
 
+class KMasterValue(object):
+	SN_COMMTYPE_EMAIL = 'SN.COMMTYPE-EMAIL'
+	SN_COMMTYPE = 'SN.COMMTYPE'
+
 class DbType(object):
 	COMMTYPE = 'COMMTYPE'

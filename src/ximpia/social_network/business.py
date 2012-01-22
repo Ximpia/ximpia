@@ -16,138 +16,29 @@ import forms
 
 from django.contrib.auth.models import User as UserSys, Group as GroupSys
 
-from models import UserSocial, XmlMessage, UserProfile, UserDetail, Constants, Invitation
+from models import UserSocial, UserProfile, UserDetail, Invitation
+from constants import Constants, KMasterValue
 
 from ximpia.util import ut_email
 
-from ximpia.core.models import getResultOK, getResultERROR
+from ximpia.core.models import getResultOK, getResultERROR, XpMsgException
+from ximpia.core.business import CommonBusiness
 
 from yacaptcha.models import Captcha
 from ximpia import settings
 
+from choices import Choices
+
 from ximpia.util.js import Form as _jsf
 
-from data import UserDAO, AccountDAO, OrganizationDAO
+from data import UserDAO, AccountDAO, OrganizationDAO, UserSysDAO, InvitationDAO, UserDetailDAO, GroupSysDAO, UserSocialDAO,\
+	ContactDAO
+from data import GroupSocialDAO, ContactDetailDAO, SocialNetworkDAO, UserParamDAO, SocialNetworkUserSocialDAO, UserProfileDAO
+from data import IndustryDAO, OrganizationGroupDAO, SocialNetworkOrganizationDAO, UserAccountContractDAO, TagUserTotalDAO, LinkUserTotalDAO
+from data import SkillGroupDAO, SkillUserAccountDAO, VersionDAO, AddressContactDAO, CommunicationTypeContactDAO, FileVersionDAO
+from data import TagTypeDAO, CalendarInviteDAO, AddressDAO, MasterValueDAO, UserAccountDAO
 
 import facebook
-
-class Common(object):
-	
-	_ctx = None
-	_request = None
-	_errorDict = {}
-	_resultDict = {}
-	_form = None
-	_postDict = {}
-	_isBusinessOK = False
-	_isFormOK = None
-	
-	def __init__(self, ctx):
-		self._ctx = ctx
-		self._resultDict = getResultERROR([])
-		self._postDict = ctx['post']
-		self._errorDict = {}
-		self._resultDict = {}
-		self._isFormOK = None
-	
-	def buildJSONResult(self, resultDict):
-		"""Builds json result
-		@param resultDict: dict : Dictionary with json data
-		@return: result : HttpResponse"""
-		result = HttpResponse(json.dumps(resultDict))
-		return result
-	
-	def _addError(self, idError, form, errorField):
-		"""Add error
-		@param idError: String : Id of error
-		@param form: Form
-		@param errorField: String : The field inside class form"""
-		if not self._errorDict.has_key(idError):
-			self._errorDict[idError] = {}
-		self._errorDict[idError] = form.fields[errorField].initial
-	
-	def getErrorResultDict(self, errorDict):
-		"""Get sorted error list to show in pop-up window
-		@return: self._resultDict : ResultDict"""		
-		#dict = self._errorDict
-		keyList = errorDict.keys()
-		keyList.sort()
-		list = []
-		for key in keyList:
-			message = errorDict[key]
-			index = key.find('id_')
-			if index == -1:
-				list.append(('id_' + key, message))
-			else:
-				list.append((key, message))
-		self._resultDict = getResultERROR(list)
-		return self._resultDict
-
-	def _doValidations(self, validationDict):
-		"""Do all validations defined in validation dictionary"""
-		bFormOK = self._ctx['form'].is_valid()
-		if bFormOK:
-			keys = self.validationDict.keys()
-			for key in keys:
-				oVal = eval(key)(self._ctx)
-				for sFunc in self.validationDict[key]:
-					oVal.eval(sFunc)()
-				self._doErrors(oVal.getErrors())
-		"""if self.isBusinessOK() and bFormOK:
-			result = f(*argsTuple, **argsDict)
-			# check errors
-			return wrapped_f
-		else:
-			# Errors
-			result = self._buildJSONResult(self._getErrorResultDict())
-			return result"""
-	
-	def getForm(self):
-		"""Get form"""
-		return self._ctx['form']
-	
-	def setForm(self, form):
-		"""Sets the form"""
-		self._ctx['form'] = form
-	
-	def getPostDict(self):
-		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
-		return self._postDict
-	
-	def isBusinessOK(self):
-		"""Checks that no errors have been generated in the validation methods
-		@return: isOK : boolean"""
-		if len(self._errorDict.keys()) == 0:
-			self._isBusinessOK = True
-		return self._isBusinessOK
-	
-	def _isFormValid(self):
-		"""Is form valid?"""
-		if self._isFormOK == None:
-			self._isFormOK = self._ctx['form'].is_valid()
-		return self._isFormOK
-
-	def _isFormBsOK(self):
-		"""Is form valid and business validations passed?"""
-		bDo = False
-		if len(self._errorDict.keys()) == 0:
-			self._isBusinessOK = True
-		if self._isFormOK == True and self._isBusinessOK == True:
-			bDo = True
-		return bDo
-
-class EmailBusiness(object):
-	#python -m smtpd -n -c DebuggingServer localhost:1025
-	@staticmethod
-	def send(keyName, subsDict, recipientList, lang):
-		"""Send email
-		@param keyName: keyName for datastore
-		@subsDict : Dictionary with substitution values for template
-		@param recipientList: List of emails to send message"""
-		xmlMessage = XmlMessage.objects.get(name=keyName, lang=lang).body
-		subject, message = ut_email.getMessage(xmlMessage)
-		message = string.Template(message).substitute(**subsDict)
-		send_mail(subject, message, settings.WEBMASTER_EMAIL, recipientList)
 
 class ValidationBusiness(object):
 	_objList = []
@@ -194,7 +85,7 @@ class ValidationBusiness(object):
 				return result
 		return wrapped_f
 
-class BaseValidationBusiness(object):	
+class BaseValidationBusiness(object):
 	_ctx = None
 	_errorDict = {}
 	def __init__(self, ctx):
@@ -222,6 +113,7 @@ class BaseValidationBusiness(object):
 	def getPost(self):
 		"""Get post dictionary"""
 		return self._ctx['post']
+
 
 class SignupValidationBusiness(BaseValidationBusiness):	
 	def __init__(self, ctx):
@@ -264,48 +156,125 @@ class SignupValidationBusiness(BaseValidationBusiness):
 			if settings.PRIVATE_BETA == True:
 				self.addError('invitationCode')
 		return invitation
+	def validateProfessional(self):
+		pass
 
-class SignupBusiness(Common):	
+
+class ContactBusiness(CommonBusiness):
+	def __init__(self, ctx):
+		super(ContactBusiness, self).__init__(ctx)
+		self._dbContactDetail = ContactDetailDAO(ctx)
+		self._dbAddress = AddressDAO(ctx)
+		self._dbAddressContact = AddressContactDAO(ctx)
+		self._dbMasterValue = MasterValueDAO(ctx)
+		self._dbCommunicationTypeContact = CommunicationTypeContactDAO(ctx)
+		self._dbContact = ContactDAO(ctx)
+		self._f = ctx['form']
+	def createDirectoryUser(self, ctx, user, userSocial):
+		"""Create user in directory"""
+		try:
+			# ContactDetail
+			contactDetail = self._dbContactDetail.create({'user': user, 'firstName': self._f.d('firstName'), 
+					'lastName': self._f.d('lastName'), 'name': self._f.d('firstName') + ' ' + self._f.d('lastName')})
+			groupList = userSocial.groups.all()
+			for group in groupList:
+				if group.isIndustry:
+					contactDetail.industries.add(group)
+				else:
+					contactDetail.groups.add(group)
+			# City and Country
+			address, bCreate = self._dbAddress.getCreate({'city': self._f.d('city'), 'country': self._f.d('country')})
+			self._dbAddressContact.create({'addressType': Choices.ADDRESS_TYPE_HOME, 'contact': contactDetail, 'address': address})
+			# Email
+			communicationTypeEmail = self._dbMasterValue.get({'name': KMasterValue.SN_COMMTYPE_EMAIL, 
+									'type': KMasterValue.SN_COMMTYPE})
+			comContact = self._dbCommunicationTypeContact.create({'communicationType': communicationTypeEmail,
+						'contact': contactDetail, 'value': self._f.d('email')})
+			# Contact
+			contact, bCreate = self._dbContact.getCreate({'user': userSocial, 'detail': contactDetail})
+			return contactDetail
+		except Exception as e:
+			print e
+			raise XpMsgException(e, _('Error creating user in directory'))
+
+
+class SignupBusiness(CommonBusiness):
 	_ctx = None
 	_request = None
+	_form = None
 	_TMPL_SIGNUP_PROFESSIONAL = 'social_network/signupProfessional.html'
 	_TMPL_SIGNUP_ORGANIZATION = 'social_network/signupOrganization.html'
 	_TMPL_SIGNUP_OK = 'social_network/signupOK.msg.html'
+
 	def __init__(self, ctx):
 		super(SignupBusiness, self).__init__(ctx)
-		self._dbUser = UserDAO(ctx)
+		self._dbUserSys = UserSysDAO(ctx)
 		self._dbAccount = AccountDAO(ctx)
 		self._dbOrganization = OrganizationDAO(ctx)
-		self._valSignup = SignupValidationBusiness(ctx)
-	def doProfessional(self, bFacebookLogin):
-		"""Signup professional user"""
+		self._dbInvitation = InvitationDAO(ctx)
+		self._dbUserDetail = UserDetailDAO(ctx)
+		self._dbGroupSys = GroupSysDAO(ctx)
+		self._dbUserSocial = UserSocialDAO(ctx)
+		self._dbGroupSocial = GroupSocialDAO(ctx)
+		self._dbUserAccount = UserAccountDAO(ctx)
+		self._contact = ContactBusiness(ctx)
+		self._f = ctx['form']
+			
+	def doUser(self, ctx):
+		"""Signup professional user
+		@param ctx: Context"""
 		# Validation
-		invitation = self._valSignup.getInvitation(self._dbUser)
-		self._valSignup.validateSameUser()
-		self._valSignup.validateSameEmail(self._dbUser)
-		self._errorDict = self._valSignup.getErrors()
+		self.validateNotExists([
+				[self._dbUserSys, {'username': self._f.d('ximpiaId')}, 'ximpiaId'],
+				[self._dbUserSys, {'email': self._f.d('email')}, 'email']
+				])
+		self.validateExists([
+				[self._dbInvitation, {'invitationCode': self._f.d('invitationCode')}, 'invitationCode']
+				])
+		self.isValid()
 		# Business
-		if self.isBusinessOK():
-			form = self._ctx['form']
-			# Signup
-			form = self._getNetworkProfile(form, bFacebookLogin)		
-			self._dbAccount.doSignup(form)
-			invitation = self._dbUser.changeInvitationUsed(invitation)
-			resultDict = getResultOK([], status='OK.create')			
-			# login and show control panel if login from facebook
-			# Redirect
-			result = self.buildJSONResult(resultDict)
-			print result
-		else:
-			# Errors
-			result = self.buildJSONResult(self.getErrorResultDict(self._errorDict))
+		# Invitation
+		invitation = self._dbInvitation.get({'invitationCode': self._f.d('invitationCode')})
+		# System User
+		user = self._dbUserSys.create({'username': self._f.d('ximpiaId'), 'email': self._f.d('email'), 
+						'first_name': self._f.d('firstName'), 'last_name': self._f.d('lastName')}, bPassword=True,
+						password=self._f.d('firstName'))
+		# Ximpia User
+		userSocial = self._dbUserSocial.create({'user': user, 'socialChannel': Constants.PROFESSIONAL, 'userCreateId': user.id})
+		userDetail = self._dbUserDetail.create({'user': user, 'name': self._f.d('firstName') + ' ' + self._f.d('lastName')})
+		# Groups
+		userGroupId = json.loads(self._f.d('params'))['userGroup']
+		group = self._dbGroupSys.get({'id': userGroupId})
+		groupSocial = self._dbGroupSocial.get({'group__id': group.id})
+		user.groups.add(group)
+		userSocial.groups.add(groupSocial)
+		# Directory
+		contactDetail = self._contact.createDirectoryUser(ctx, user, userSocial)
+		# InvitedBy
+		invitedByUser = None
+		invitedByOrg = None
+		if invitation.fromUser.pk != None:
+			invitedByUser = self._dbUserSys.get({'pk': invitation.fromUser.pk})
+		if invitation.fromAccount != None:
+			invitedByOrg = self._dbOrganization.get({'account': invitation.fromAccount})
+		# UserAccount
+		userAccount = self._dbUserAccount.create({'user': userDetail, 'invitedByUser': invitedByUser, 'invitedByOrg': invitedByOrg,
+							'contact': contactDetail, 'userCreateId': user.pk})
+		# Modify Invitation
+		invitation.status = Constants.USED
+		invitation.save()
+		# Build Result 
+		# login and show control panel if login from facebook
+		# Redirect
+		result = self.buildJSONResult(getResultOK([], status='OK.create'))
 		return result
-	def activateAccount(self, user, activationCode):
+	
+	#def activateAccount(self, user, activationCode):
 		"""Activate account
 		@param user: User
 		@param activationCode: Activation Code
 		@return: resultDict"""
-		signupData = self._dbUser.getSignupData(user)
+		"""signupData = self._dbUser.getSignupData(user)
 		sData = signupData.data.encode('utf-8')
 		formDict = cPickle.loads(base64.decodestring(sData))
 		activationCode = int(activationCode)
@@ -346,10 +315,11 @@ class SignupBusiness(Common):
 			# Activation code is not same => We show original form with message
 			resultDict = getResultERROR([])
 		print 'resultDict : ', resultDict
-		return resultDict
-	def _getNetworkProfile(self, form, bFacebookLogin):
+		return resultDict"""
+	
+	#def _getNetworkProfile(self, form, bFacebookLogin):
 		"""Doc."""
-		# Get facebook profile
+		"""# Get facebook profile
 		profilesDict = {}
 		facebookIcon_data = form.cleaned_data['facebookIcon_data']
 		fbIconTuple = json.loads(facebookIcon_data)
@@ -367,7 +337,7 @@ class SignupBusiness(Common):
 		linkedInIcon_data = form.cleaned_data['linkedinIcon_data']
 		profilesDict['linkedin'] = False
 		# TODO: do linkedin profile...		
-		# Build in case only Facebook, Only LinkedIn or both		
+		# Build in case only Facebook, Only LinkedIn or both"""		
 		"""if profilesDict['facebook'] == True and profilesDict['linkedin'] == False:
 			pass
 		elif profilesDict['facebook'] == False and profilesDict['linkedin'] == True:
@@ -405,8 +375,8 @@ u'link': u'http://www.facebook.com/jorge.alegre', u'location': {u'id': u'1065048
 u'gender': u'male', u'timezone': 1, u'updated_time': u'2011-01-02T18:54:59+0000', u'id': u'602227728'}
 
 		"""
-		return form
-	def doOrganization(self, form, captcha, bFacebookLogin, *argsTuple, **argsDict):
+		"""return form"""
+	"""def doOrganization(self, form, captcha, bFacebookLogin, *argsTuple, **argsDict):
 		self.setForm(form) 
 		self.setFormOK(form.isValid(captcha=captcha))
 		if self._isFormOK: 
@@ -456,4 +426,4 @@ u'gender': u'male', u'timezone': 1, u'updated_time': u'2011-01-02T18:54:59+0000'
 		else:
 			# Errors
 			result = self._buildJSONResult(self._getErrorResultDict())
-		return result
+		return result"""

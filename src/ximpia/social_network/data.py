@@ -21,151 +21,13 @@ from models import Comment, TagUserTotal, LinkUserTotal, Link, Like, Notificatio
 from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType
 from models import Calendar, CalendarInvite, Address
 from ximpia.core.models import MasterValue, parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks
+from ximpia.core.data import CommonDAO
 import sys
 
 from ximpia.settings_visual import SocialNetworkIconData as SND
 from ximpia.settings_visual import GenericComponent
 
 from constants import DbType
-
-class CommonDAO(object):	
-
-	NUMBER_MATCHES = 100
-	_ctx = None
-	_model = None
-	_argsTuple = ()
-	_argsDict = {}
-
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		self._ctx = ctx
-		self._argsTuple = ArgsTuple
-		self._argsDict = ArgsDict
-		
-	def _cleanDict(self, dict):
-		"""Clean dict removing xpXXX fields.
-		@param dict: Dictionary
-		@return: dictNew : New dictionary without xpXXX fields"""
-		list = dict.keys()
-		dictNew = {}
-		for sKey in list:
-			if sKey.find('xp') == 0:
-				pass
-			else:
-				dictNew[sKey] = dict[sKey]
-		return dictNew
-	
-	def _getPagingStartEnd(self, page, numberMatches):
-		"""Get tuple (iStart, iEnd)"""
-		iStart = (page-1)*numberMatches
-		iEnd = iStart+numberMatches
-		tuple = (iStart, iEnd)
-		return tuple
-	
-	def getMap(self, idList, bFull=False, useModel=None):
-		"""Get object map for a list of ids 
-		@param idList: 
-		@param bFull: boolean : Follows all foreign keys
-		@return: Dict[id]: object"""
-		dict = {}
-		if len(idList) != 0:
-			if useModel != None:
-				dbObj = self.useModel.objects
-			else:
-				dbObj = self._model.objects
-			if bFull == True:
-				dbObj = dbObj.select_related()
-			list = dbObj.filter(id__in=idList)
-			for object in list:
-				dict[object.id] = object
-		return dict
-	
-	def getById(self, id, bFull=False):
-		"""Get model object by id
-		@param id: Object id
-		@param bFull: boolean : Follows all foreign keys
-		@return: Model object"""
-		try:
-			dbObj = self._model.objects
-			if bFull == True:
-				dbObj = self._model.objects.select_related()
-			object = dbObj.get(id=id)
-		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
-		return object	
-	
-	def deleteById(self, id):
-		"""Delete model object by id
-		@param id: Object id
-		@return: Model object"""
-		try:
-			list = self._model.objects.filter(id=id)
-			object = list[0]
-			list.delete()
-		except Exception as e:
-			raise XpMsgException(e, _('Error delete object by id ') + str(id))
-		return object
-	
-	def filter(self, bFull=False, **ArgsDict):
-		"""Search a model table with ordering support and paging
-		@param bFull: boolean : Follows all foreign keys
-		@return: list : List of model objects"""
-		try:
-			iNumberMatches = self.NUMBER_MATCHES
-			if ArgsDict.has_key('xpNumberMatches'):
-				iNumberMatches = ArgsDict['xpNumberMatches']
-			page = 1
-			if ArgsDict.has_key('xpPage'):
-				page = int(ArgsDict['xpPage'])
-			iStart, iEnd = self._getPagingStartEnd(page, iNumberMatches)
-			orderByTuple = ()
-			if ArgsDict.has_key('xpOrderBy'):
-				orderByTuple = ArgsDict['xpOrderBy']
-			ArgsDict = self._cleanDict(ArgsDict)
-			dbObj = self._model.objects
-			if bFull == True:
-				dbObj = self._model.objects.select_related()
-			if len(orderByTuple) != 0:
-				dbObj = self._model.objects.order_by(*orderByTuple)
-			list = dbObj.filter(**ArgsDict)[iStart:iEnd]			
-		except Exception as e:
-			raise XpMsgException(e, _('Error in search table model ') + str(self._model))
-		return list	
-		
-	def getAll(self, bFull=False):
-		"""Get all rows from table
-		@param bFull: boolean : Follows all foreign keys
-		@return: list"""
-		try:
-			dbObj = self._model.objects
-			if bFull == True:
-				dbObj = self._model.objects.select_related()
-			list = dbObj.all()
-		except Exception as e:
-			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model))
-		return list
-	
-	def _getCtx(self):
-		"""Get context"""
-		return self._ctx
-
-	def _doManyById(self, model, idList, field):
-		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
-		@param idList: List
-		@param object: Model"""
-		dict = self.getMap(idList, userModel=model)
-		for idTarget in dict.keys():
-			addModel = dict[idTarget]
-			field.add(addModel)
-	
-	def _doManyByName(self, model, nameList, field):
-		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
-		@param idList: List
-		@param object: Model"""
-		for value in nameList:
-			nameModel, bCreate = model.objects.get_or_create(name=value)
-			field.add(nameModel)
-
-	ctx = property(_getCtx, None)
 
 class AccountDAO(CommonDAO):
 	
@@ -560,6 +422,148 @@ class AccountDAO(CommonDAO):
 		except Exception as e:
 			raise XpMsgException(e, _('Error in getting number of subscriptions'))
 		return numberSubscriptions
+
+
+class UserSysDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserSysDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserSys
+
+class GroupSysDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(GroupSysDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = GroupSys
+
+class InvitationDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(InvitationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Invitation
+
+class UserDetailDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserDetailDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserDetail
+
+class UserSocialDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserSocialDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserSocial
+
+class GroupSocialDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(GroupSocialDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = GroupSocial
+
+class SocialNetworkDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SocialNetworkDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SocialNetwork
+
+class UserParamDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserParam
+
+class SocialNetworkUserSocialDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SocialNetworkUserSocialDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SocialNetworkUserSocial
+
+class UserProfileDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserProfileDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserProfile
+
+class IndustryDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(IndustryDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Industry
+
+class OrganizationGroupDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(OrganizationGroupDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = OrganizationGroup
+
+class AddressOrganizationDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(AddressOrganizationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = AddressOrganization
+
+class SocialNetworkOrganizationDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SocialNetworkOrganizationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SocialNetworkOrganization
+
+class UserAccountContractDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(UserAccountContractDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = UserAccountContract
+
+class TagUserTotalDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(TagUserTotalDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = TagUserTotal
+
+class LinkUserTotalDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(LinkUserTotalDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = LinkUserTotal
+
+class SkillGroupDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SkillGroupDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SkillGroup
+
+class SkillUserAccountDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SkillUserAccountDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SkillUserAccount
+
+class VersionDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(VersionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Version
+
+class AddressContactDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(AddressContactDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = AddressContact
+
+class CommunicationTypeContactDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(CommunicationTypeContactDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = CommunicationTypeContact
+
+class ContactDetailDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ContactDetailDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = ContactDetail
+
+class FileVersionDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(FileVersionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = FileVersion
+
+class TagTypeDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(TagTypeDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = TagType
+
+class CalendarInviteDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(CalendarInviteDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = CalendarInvite
+
+class AddressDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(AddressDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Address
+
+class MasterValueDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(MasterValueDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = MasterValue
+
 
 class UserDAO(CommonDAO):
 	
@@ -1819,12 +1823,6 @@ class LinkDAO(CommonDAO):
 			raise XpMsgException(e, _('Error in getting links for group organization'))
 		return linkList
 
-class IndustryDAO(CommonDAO):
-	
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(GroupDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = Industry	
-
 class UserAccountDAO(CommonDAO):
 	
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
@@ -2066,7 +2064,6 @@ class AffiliateDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(AffiliateDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Affiliate
-	
 
 class ProfileDAO(CommonDAO):
 	

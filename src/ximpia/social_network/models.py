@@ -1048,20 +1048,6 @@ class Notification(BaseModel):
 		verbose_name = _('Notification')
 		verbose_name_plural = _('Notifications')
 
-class XmlMessage(BaseModel):
-	"""XML Message"""
-	name = models.CharField(max_length=255,
-			verbose_name = _('Name'), help_text = _('Code name of XML'))
-	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH,
-			verbose_name = _('Language'), help_text = _('Language for xml'))
-	body = models.TextField(verbose_name = _('Xml Content'), help_text = _('Xml content'))
-	def __unicode__(self):
-		return str(self.name)
-	class Meta:
-		db_table = 'SN_XML_MESSAGE'
-		verbose_name = _('Xml Message')
-		verbose_name_plural = _('Xml Messages')
-
 class SignupData(BaseModel):
 	"""SignUp Data"""
 	invitationByUser = models.ForeignKey(UserSys, blank=True, null=True,

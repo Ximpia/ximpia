@@ -7,9 +7,9 @@ from models import UserProfile, ProfileDetail, Organization, OrganizationGroup, 
 from models import Skill, SkillUserAccount, SkillGroup, Industry, AddressOrganization, SocialNetworkOrganization, TaxType, TaxOrganization
 from models import TaxUserAccount, SocialNetworkOrganizationGroup, UserAccountRelation, UserAccountContract, Invitation, Affiliate
 from models import TagUserTotal, LinkUserTotal, SubscriptionDaily, Subscription, SubscriptionItemMonth, Application, Contact, ContactDetail
-from models import Notification, XmlMessage, Profile
+from models import Notification, Profile
 
-from ximpia.core.models import MasterValue
+from ximpia.core.models import MasterValue, XmlMessage
 
 from django.contrib import admin
 

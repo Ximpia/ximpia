@@ -129,6 +129,18 @@ class XpCharField(XpBaseCharField):
 			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
 		super(XpCharField, self).__init__(**argsDict)
 
+
+class XpHiddenDataField(XpBaseCharField):
+	"""Hidden Field"""
+	def __init__(self, instance, insField, req=True, init=None, jsReq=None, xpType='', **argsDict):
+		self._doInstanceInit(instance, insField)
+		argsDict['validators'] = []
+		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq) 
+		attrDict = self._doAttrs(argsDict, {'xpType': xpType})
+		if not argsDict.has_key('widget'):
+			argsDict['widget'] = XpHiddenWidget(attrs=attrDict)
+		super(XpHiddenDataField, self).__init__(**argsDict)
+
 class XpHiddenField(XpBaseCharField):
 	"""Hidden Field"""
 	def __init__(self, req=True, init=None, jsReq=None, xpType='', **argsDict):

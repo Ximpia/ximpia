@@ -64,21 +64,70 @@ class CommonDAO(object):
 			object = dbObj.get(id=id)
 		except Exception as e:
 			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
-		return object	
+		return object
 	
-	def deleteById(self, id):
+	def check(self, qsArgs):
+		"""Checks if object exists
+		@param qsArgs: query arguments
+		@return: Boolean"""
+		try:
+			dbObj = self._model.objects
+			exists = dbObj.filter(**qsArgs).exists()
+		except Exception as e:
+			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
+		return exists
+	
+	def get(self, qsArgs):
+		"""Get object
+		@param qsArgs: query arguments
+		@return: Model Object"""
+		try:
+			dbObj = self._model.objects
+			data = dbObj.get(**qsArgs)
+		except Exception as e:
+			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
+		return data
+	
+	def create(self, qsArgs, bPassword=False, password=''):
+		"""Create object
+		@param qsArgs: Query arguments
+		@param bPassword: True / False if password must be set
+		@param password: Password value
+		@return: Data Object"""
+		try:
+			dbObj = self._model.objects
+			data = dbObj.create(**qsArgs)
+			if bPassword == True:
+				data.set_password(password)
+				data.save()
+		except Exception as e:
+			raise XpMsgException(e, _('Error in create object ') + str(id) + _(' in model ') + str(self._model))
+		return data
+	
+	def getCreate(self, qsArgs):
+		"""Get or create object. If exists, gets the current value. If does not exist, creates data.
+		@param qsArgs: Query arguments
+		@return: tuple (Data Object, bCreated)"""
+		try:
+			dbObj = self._model.objects
+			xpTuple = dbObj.get_or_create(**qsArgs)
+		except Exception as e:
+			raise XpMsgException(e, _('Error in get or create object ') + str(id) + _(' in model ') + str(self._model))
+		return xpTuple
+	
+	def deleteById(self, xpId):
 		"""Delete model object by id
 		@param id: Object id
 		@return: Model object"""
 		try:
-			list = self._model.objects.filter(id=id)
-			object = list[0]
-			list.delete()
+			xpList = self._model.objects.filter(id=xpId)
+			xpObject = xpList[0]
+			xpList.delete()
 		except Exception as e:
 			raise XpMsgException(e, _('Error delete object by id ') + str(id))
-		return object
+		return xpObject
 	
-	def filter(self, bFull=False, **ArgsDict):
+	def filterData(self, bFull=False, **ArgsDict):
 		"""Search a model table with ordering support and paging
 		@param bFull: boolean : Follows all foreign keys
 		@return: list : List of model objects"""
@@ -99,10 +148,10 @@ class CommonDAO(object):
 				dbObj = self._model.objects.select_related()
 			if len(orderByTuple) != 0:
 				dbObj = self._model.objects.order_by(*orderByTuple)
-			list = dbObj.filter(**ArgsDict)[iStart:iEnd]			
+			xpList = dbObj.filter(**ArgsDict)[iStart:iEnd]			
 		except Exception as e:
 			raise XpMsgException(e, _('Error in search table model ') + str(self._model))
-		return list	
+		return xpList	
 		
 	def getAll(self, bFull=False):
 		"""Get all rows from table
@@ -112,10 +161,10 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			if bFull == True:
 				dbObj = self._model.objects.select_related()
-			list = dbObj.all()
+			xpList = dbObj.all()
 		except Exception as e:
 			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model))
-		return list
+		return xpList
 	
 	def _getCtx(self):
 		"""Get context"""
@@ -125,9 +174,9 @@ class CommonDAO(object):
 		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
 		@param idList: List
 		@param object: Model"""
-		dict = self.getMap(idList, userModel=model)
-		for idTarget in dict.keys():
-			addModel = dict[idTarget]
+		xpDict = self.getMap(idList, userModel=model)
+		for idTarget in xpDict.keys():
+			addModel = xpDict[idTarget]
 			field.add(addModel)
 	
 	def _doManyByName(self, model, nameList, field):

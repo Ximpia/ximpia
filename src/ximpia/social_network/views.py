@@ -36,9 +36,9 @@ from ximpia import settings
 from yacaptcha.models import Captcha
 
 from business import SignupBusiness
-from data import UserDAO
-from constants import Constants
-from sqlalchemy.util import deprecated
+#from data import UserDAO
+#from constants import Constants
+#from sqlalchemy.util import deprecated
 
 def test(request):
 	return HttpResponse("OK")
@@ -338,10 +338,10 @@ def signup(request, invitationCode=None, **argsDict):
 	#
 	# init
 	ctx = argsDict['ctx']
-	tmplDict = argsDict['tmplDict']
+	#tmplDict = argsDict['tmplDict']
 	dbUser = UserDAO(ctx)
 	# start
-	bFacebookLogin = False
+	#bFacebookLogin = False
 	"""ctx['auth'] = {'facebook': False}
 	if ctx['cookies'].has_key(settings.FACEBOOK_APP_COOKIE):
 		ctx['auth']['facebook'] = True
@@ -350,23 +350,21 @@ def signup(request, invitationCode=None, **argsDict):
 	if request.method == 'POST':
 		# POST
 		#signup.doPost()
-		print 'account ??? : ', ctx['post'].has_key('account')
-		if ctx['post'].has_key('account'):
-			# organization
-			pass
-		else:
-			# user
-			ctx['form'] = forms.UserSignupForm(ctx['post'])
-			ctx['captcha'] = Captcha(request).get()
-			#ctx['form'].full_clean()
-			bForm = ctx['form'].is_valid()
-			#print 'bForm : ', bForm, ctx['form'].errors, ctx['form']._errors
-			signup = SignupBusiness(ctx)
-			if bForm == True:
-				result = signup.doProfessional(bFacebookLogin)
+		# user
+		ctx['form'] = forms.UserSignupForm(ctx['post'])
+		ctx['captcha'] = Captcha(request).get()
+		bForm = ctx['form'].is_valid()
+		print 'bForm : ', bForm, ctx['form'].errors, ctx['form']._errors
+		signup = SignupBusiness(ctx)
+		try:
+			result = signup.doUser(ctx)
+		except XpMsgException:
+			errorDict = signup.getErrors()
+			if len(errorDict) != 0:
+				result = signup.buildJSONResult(signup.getErrorResultDict(errorDict))
 			else:
-				result = signup.buildJSONResult(signup.getErrorResultDict(ctx['form'].errors))
-			print result
+				raise
+		print result
 	else:
 		#signup.doGet()
 		try:
@@ -377,43 +375,23 @@ def signup(request, invitationCode=None, **argsDict):
 			print 'affiliateId : ', affiliateId
 			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
 			print 'accType : ', invitation.accType
-			if invitation.accType == Choices.INVITATION_ACC_TYPE_USER:
-				ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-				# facebook dict should be inside db instances
-				ctx['form'].buildInitial(invitation, {}, '', affiliateId)				
-				# form => jsDData => result
-				jsData = getResultOK({})
-				#print 'jsData : ', jsData
-				ctx['form']._getJsData(jsData)
-				# TODO: entryFields ????
-				jsData['response']['affiliateId'] = affiliateId
-				#print jsData
-				print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
-				result = signup.buildJSONResult(jsData)
-				#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
-				#time.sleep(1)
-				print 'keys : ', jsData['response']['form_signup'].keys()
-				#print result
-			else:
-				# Organization
-				print 'Organization...'
-				#ctx['form'] = forms.OrganizationSignupForm(instances={'dbInvitation': invitation})
-				ctx['form'] = forms.OrganizationSignupForm(instances = {'dbInvitation': invitation})
-				jsData = getResultOK({})
-				ctx['form']._getJsData(jsData)
-				jsData['response']['affiliateId'] = affiliateId
-				#result = render_to_response(tmplDict['org'], RequestContext(request, ctx))				
-				#print jsData['response']['form_signupOrg']['choices']
-				#print result
-				#print jsData['response']['form_signupOrg']['country']
-				#print jsData['response']['form_signupOrg']['organizationCountry']
-				#print 'Form Size : ', len(jsData['response']['form_signupOrg'])
-				#print 'field: ', jsData['response']['form_signupOrg']['city']
-				"""dictA = jsData['response']['form_signupOrg']
-				print 'Keys : ', dictA.keys()
-				print 'basic.text : ', dictA['basic.text'].keys()"""
-				print 'keys : ', jsData['response']['form_signupOrg'].keys()
-				result = signup.buildJSONResult(jsData)
+			ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
+			#print 'form invitation data : ', ctx['form']._dbInvitation, ctx['form'].fields['invitationCode'].initial
+			# facebook dict should be inside db instances
+			#ctx['form'].buildInitial(invitation, {}, '', affiliateId)				
+			# form => jsDData => result
+			jsData = getResultOK({})
+			#print 'jsData : ', jsData
+			ctx['form']._getJsData(jsData)
+			# TODO: entryFields ????
+			jsData['response']['affiliateId'] = affiliateId
+			#print jsData
+			print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
+			result = signup.buildJSONResult(jsData)
+			#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
+			#time.sleep(1)
+			print 'keys : ', jsData['response']['form_signup'].keys()
+			#print result
 		except Invitation.DoesNotExist:
 			raise Http404
 	return result
