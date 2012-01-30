@@ -153,8 +153,11 @@ div#Wrapper {
 
 header {
 	width:870px; 
-	height: 68px;
-	border: 1px solid #ccc;
+	/*height: 68px;*/
+	height: 40px;
+	border-bottom: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
 	background-color: #fafafa;
 }
 
@@ -315,12 +318,22 @@ div#Logo:hover, div#Logo.sfhover {
 	cursor: pointer;
 }
 
+span.logo {
+	font-family: Arial; 
+	font-size: 26pt;
+	font-weight: bold; 
+	color: #09afff;
+	/*text-shadow: 3px 3px 7px #555;*/
+	border: 3px #000;
+	border-width: 10px;
+}
+
 img#LogoImg {
 	border: 0px solid; 
 	width: 120px;
 	height: 40px;
 	margin: 1px 0px;
-	background: url(../images/ximpia-logo-plano.png) 0 0 no-repeat;
+	background: url(../images/ximpia-logo-small-plano.png) 0 0 no-repeat;
 }
 
 img#BetaImg {
@@ -332,6 +345,17 @@ img#BetaImg {
 	border: solid 0px;
 	background: url(../images/beta2_b_2_p.png) 0 0 no-repeat;
 	z-index: 400;
+}
+
+div#login {
+	width: 500px;
+	height: 30px;
+	/*border: 1px solid;*/
+	float: right; 
+	margin-right:5px;
+	margin-top: 5px;
+	/*border: 0px solid;*/
+	/*background-color: #000;*/
 }
 
 img#TecorLogo {
@@ -1235,6 +1259,16 @@ section[data-xp-type="condSection"] {
 
 div[data-xp-type="basic.select"] {
 	height: 35px;
+}
+
+.cond {
+	display: none;
+	float: right;
+	border: 1px solid;
+	width: 600px;
+	height: 30px;
+	margin-right: 5px;
+	margin-top: 5px;
 }
 
 .jspVerticalBar {

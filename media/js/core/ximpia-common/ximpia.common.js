@@ -322,7 +322,7 @@ ximpia.common.Page.init = (function() {
 	basicTags.pageTags();	
 		
 	// set up the options to be used for jqDock...  
-	var labelTransform = function(labelText, optionIndex){ //scope (this) is the #menu element
+	/*var labelTransform = function(labelText, optionIndex){ //scope (this) is the #menu element
 		rtn = "<div class='jqDockLabelNew' style='position: relative'>" + labelText + "</div>";
         	return rtn;
       	},
@@ -332,7 +332,7 @@ ximpia.common.Page.init = (function() {
 	   	,setLabel: labelTransform
     	};
     	// ...and apply...
-    	$('#IconMenu').jqDock(dockOptions);
+    	$('#IconMenu').jqDock(dockOptions);*/
 	// *************************
 	// *** jQuery VALIDATORS ***
 	// *************************
@@ -361,6 +361,10 @@ ximpia.common.Path.getServer = (function() {
 	var server = "http://localhost:8000/";
 	return server;
 });
+ximpia.common.Path.getBusiness = (function() {
+	var path = ximpia.common.Path.getServer() + 'jxBusiness';
+	return path
+})
 
 ximpia.common.Browser = {};
 /**
@@ -451,21 +455,22 @@ ximpia.common.BasicTags = function() {
 				var htmlI = $("header").html();
 				var sm = ximpia.common.Path.getSiteMedia();
 				var contentLength = $("header div").length;
+				console.log('contentLength : ' + contentLength);
 				if (contentLength < 1) {
 					htmlI = "<div id=\"Header\" >";
 					htmlI += "<div id=\"Logo\">";
-					htmlI += "<a href=\"http://localhost:8000/\"><img id=\"LogoImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /> <br/>";
-					htmlI += "<img id=\"BetaImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /></a>";
+					htmlI += "<a href=\"http://localhost:8000/\"><img id=\"LogoImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /> </a>";
 					htmlI += "</div>";
 					htmlI += "<nav>";
-					htmlI += "<div id=\"IconMenu\">";
+					htmlI += "<div id=\"id_loginForm\"></div>";
+					htmlI += "<!--<div id=\"IconMenu\">";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/add_60.png\" title=\"Signup\" alt=\"Signup\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/users_two_60.png\" title=\"Friends\" alt=\"Friends\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/paper_content_60.png\" title=\"About Us\" alt=\"About Us\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/mail_add_60.png\" title=\"Contact Us\" alt=\"Contact Us\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/lock_60.png\" title=\"Privacy\" alt=\"Privacy\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/go_60.png\" title=\"Login\" alt=\"Login\" />";
-					htmlI += "</div>";
+					htmlI += "</div>-->";
 					htmlI += "</nav>";
 					htmlI += "</div>";
 					$("header").html(htmlI);
@@ -841,7 +846,7 @@ ximpia.common.PageAjax = function() {
 				$("#id_sect_loading").fadeOut('fast');
 				$("#" + "id_sect_signupUser").css('visibility', 'visible');
 			},
-			doForm: function() {
+			doForm: function(app) {
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
 						console.log(data)
@@ -851,13 +856,43 @@ ximpia.common.PageAjax = function() {
 					//$("#id_variables").xpObjInput('addHidden', formData);
 					//$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
 					//$("#id_sect_loading").fadeOut('fast');
-					//$("#" + "id_sect_signupUser").css('visibility', 'visible');
+					//$("#" + "id_sect_signupUser").css('visibility', 'visible');					
+					// Pre-page : Binding ajax data to form
+					//var formData = data.response["form_signup"];
+					//sessionStorage.setItem('xpForm', JSON.stringify(formData));
+					//sessionStorage.setItem('form_signup', JSON.stringify(formData));
+					sessionStorage.setItem('xpData-' + app, JSON.stringify(data));
+					$("[data-xp-type='list.field']").xpObjListField('render');
+					$("[data-xp-type='basic.text']").xpObjInput('renderField');
+					$("#id_variables").xpObjInput('addHidden');				
+					$("[data-xp-type='list.select']").xpObjListSelect('render');
+					$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
+					$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
+					$("input[data-xp-related='list.field']")
+						.filter("input[data-xp-type='basic.text']")
+						.xpObjListField('bindKeyPress');
+					ximpia.common.PageAjax.doFade();
+					// Conditions
+					// Post-Page : Page logic
+					var formId = "id_Form1";
+					var oForm = ximpia.common.Form();
+					oForm.doBindBubbles();
+					oForm.doBindSubmitForm(formId);
+					//processSnLogin();
+					$("[data-xp-js='submit']").xpPageButton();
+					$("[data-xp-js='submit']").xpPageButton('render');
+					// Callback
 					_attr.priv.callback(data);
 				}).error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
+			},
+			doBusinessGetRequest: function(obj) {
+				_attr.priv.path = _attr.priv.path + '?bsClass=' + obj.className + ';method=' + obj.method;
+				console.log('path: ' + _attr.priv.path);
+				_attr.pub.doForm(obj.application);
 			}
 		}
 	}
@@ -1314,6 +1349,21 @@ ximpia.site.Signup = function() {
 				// Geo loc for city and country	
 				var oGoogleMaps = ximpia.common.GoogleMaps();
 				oGoogleMaps.insertCityCountry("id_city", "id_country_comp");
+			})
+		}
+	}
+	return _attr.pub;
+}
+
+ximpia.site.Login = function() {
+	var _attr = {
+		priv: {
+		},
+		pub: {
+			login: (function() {
+				console.log('show login page');
+				//$("#id_loginForm").html("<div id=\"id_ximpiaId_comp\" data-xp-type=\"basic.text\" data-xp=\"{info: true, tabindex: '1'}\" ></div>");
+				//$("[data-xp-type='basic.text']").xpObjInput('renderField');
 			})
 		}
 	}

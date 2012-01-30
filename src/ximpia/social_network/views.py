@@ -35,7 +35,7 @@ from ximpia.util.content import getContentRelaseDict
 from ximpia import settings
 from yacaptcha.models import Captcha
 
-from business import SignupBusiness
+from business import SignupBusiness, LoginBusiness
 #from data import UserDAO
 #from constants import Constants
 #from sqlalchemy.util import deprecated
@@ -173,6 +173,19 @@ def jxJSON(request, **ArgsDict):
 	response = json.dumps(ctx.rs)
 	return HttpResponse(response)
 
+@Context
+def jxBusiness(request, *argsTuple, **argsDict):
+	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
+	@param request: Request
+	@param result: Result"""
+	ctx = argsDict['ctx']
+	if request.REQUEST.has_key('bsClass'):
+		bsClass = request.REQUEST['bsClass'];
+		method = request.REQUEST['method'] 
+		object = eval(bsClass)(ctx)
+		result = eval('object.' + method)(*[ctx])
+	return result
+
 @context
 def jxSuggestList(request, **ArgsDict):
 	"""Suggest search list"""
@@ -185,8 +198,8 @@ def jxSuggestList(request, **ArgsDict):
 		params = json.loads(request.REQUEST['params']);
 		params[params['text']] = request.REQUEST['search'];
 		del params['text']
-		object = eval(dbClass)(ctx)				
-		list = eval('object.filter')(*[], **params) 
+		object = eval(dbClass)(ctx)
+		list = eval('object.filter')(*[], **params)
 		for entity in list:
 			dict = {}
 			dict['id'] = entity.id
@@ -327,30 +340,15 @@ def checkCaptcha(request, value):
 	return jsonCheck
 
 @Context
-@XpTemplate({	'user': 'social_network/signup/signupProfessional.html',
-		'org': 'social_network/signup/signupOrganization.html'})
 def signup(request, invitationCode=None, **argsDict):
 	"""Sign up professional account"""
-	#
-	#
-	# TODO: You need user signup only. Recycle this method to support only signup and use a Business method instead ?? Common ???
-	#
-	#
 	# init
 	ctx = argsDict['ctx']
-	#tmplDict = argsDict['tmplDict']
 	dbUser = UserDAO(ctx)
 	# start
-	#bFacebookLogin = False
-	"""ctx['auth'] = {'facebook': False}
-	if ctx['cookies'].has_key(settings.FACEBOOK_APP_COOKIE):
-		ctx['auth']['facebook'] = True
-		bFacebookLogin = True"""
 	signup = SignupBusiness(ctx)
 	if request.method == 'POST':
 		# POST
-		#signup.doPost()
-		# user
 		ctx['form'] = forms.UserSignupForm(ctx['post'])
 		ctx['captcha'] = Captcha(request).get()
 		bForm = ctx['form'].is_valid()
@@ -368,29 +366,15 @@ def signup(request, invitationCode=None, **argsDict):
 	else:
 		#signup.doGet()
 		try:
-			# parameters ??????
-			# entity parameters ?????
-			# affiliate.id:int; 
 			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-			print 'affiliateId : ', affiliateId
 			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
-			print 'accType : ', invitation.accType
 			ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-			#print 'form invitation data : ', ctx['form']._dbInvitation, ctx['form'].fields['invitationCode'].initial
-			# facebook dict should be inside db instances
-			#ctx['form'].buildInitial(invitation, {}, '', affiliateId)				
-			# form => jsDData => result
 			jsData = getResultOK({})
-			#print 'jsData : ', jsData
-			ctx['form']._getJsData(jsData)
-			# TODO: entryFields ????
+			ctx['form'].buildJsData(jsData)
 			jsData['response']['affiliateId'] = affiliateId
-			#print jsData
-			print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
+			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 			result = signup.buildJSONResult(jsData)
-			#result = render_to_response(tmplDict['user'], RequestContext(request, ctx))
-			#time.sleep(1)
-			print 'keys : ', jsData['response']['form_signup'].keys()
+			#print 'keys : ', jsData['response']['form_signup'].keys()
 			#print result
 		except Invitation.DoesNotExist:
 			raise Http404

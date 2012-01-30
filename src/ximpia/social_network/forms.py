@@ -103,6 +103,24 @@ class UserSignupForm(XBaseForm):
 		return self.cleaned_data
 
 
+class LoginForm(XBaseForm):
+	_XP_FORM_ID = 'login'
+	# Instances 
+	_dbUser = User()
+	# Fields
+	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('XimpiaId'))
+	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True,  help_text = _('Password'))
+	#params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({}))
+	#choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({}))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
+		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha']]))
+	#okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
+	def clean(self):
+		"""Clean form: validate same password and captcha when implemented"""
+		self._xpClean()
+		return self.cleaned_data
+
+
 class OrganizationSignupForm(XBaseForm):
 	_XP_FORM_ID = 'signupOrg'
 	# Instances
@@ -143,7 +161,8 @@ class OrganizationSignupForm(XBaseForm):
 					help_text = _('Include the tags associated with your group'), req=False)
 	organizationGroupTagsListValue = XpHiddenField(xpType='list.field', initial=GenericComponent().getS())
 	jobTitle = XpTextChoiceField(_dbUserAccountContract, '_dbUserAccountContract.jobTitle', choicesId='jobTitle')
-	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), help_text=_('Department / Group of people for organization'), choicesId='orgGroup')
+	organizationGroup = XpTextChoiceField(_dbGroup, '_dbGroup.name', label=_('Organization Group'), 
+					help_text=_('Department / Group of people for organization'), choicesId='orgGroup')
 	organizationIndustrySelect = XpChoiceField(None, '', choicesId='industry', req=False,  
 					label=_('Industries'), 
 					help_text=_('Industries'))

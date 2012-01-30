@@ -45,6 +45,7 @@ urlpatterns = patterns('',
     # Ajax Urls
     (r'^jxSuggestList$', 'social_network.views.jxSuggestList'),
     (r'^jxJSON$', 'social_network.views.jxJSON'),
+    (r'^jxBusiness$', 'social_network.views.jxBusiness'),
 
     # Social network and applications
     (r'^$', 'social_network.views.staticContent'),

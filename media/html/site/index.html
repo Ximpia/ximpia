@@ -39,7 +39,7 @@
     
 <section id="id_app_site" class="app">
 
-<section id="id_sect_signupUser" class="sectionApp scroll" tabindex="0" >
+<section id="id_sect_login" class="sectionApp scroll" tabindex="0" >
 
 <fieldset>
 <legend>XimpiaId</legend>
@@ -168,20 +168,35 @@
 <!-- x-webkit-speech -->
 
 <script>	
-jQuery(document).ready(function($){	
-	ximpia.common.Page.init();	
-	var invitationCode = ximpia.common.Browser.fetchParamByName("i");
-	var path = ximpia.common.Path.getServer() + 'signup/' + invitationCode
-	$("#id_Form1").attr('action', path);
-	var signup = ximpia.site.Signup();
+
+jQuery(document).ready(function($){
+	var app = 'SN';
+	// bsClass, method
+	$("#id_Form1").attr('action', ximpia.common.Path.getBusiness());
+	// Check logged in
+	// If not, show....
+	// Else, redirect, or show desktop
+	//login.show();
+	ximpia.common.Page.init();
+	console.log('path : ' + ximpia.common.Path.getBusiness());
+	var login = ximpia.site.Login();
 	var pageJx = ximpia.common.PageAjax();
-	pageJx.init({	path: path, 
-			callback: signup.doProfessionalBind, 
-			formId: "form_signup",
-			sectionId: "id_sect_signupUser",
+	pageJx.init({	path: ximpia.common.Path.getBusiness(), 
+			callback: login.doLogin, 
+			formId: "form_login", 
+			sectionId: "id_sect_login", 
 			verbose: true});
-	pageJx.doForm();		
+	pageJx.doBusinessGetRequest({	application: app, 
+					className: 'LoginBusiness', 
+					method: 'login'});	
+	// context is on memory	
+	//showOn({id: 'id_component', condition: 'a == 1'});
+	// hideOn
+	
+	//$('#id_loginForm').css('display', 'block');
+	
 });
+
 </script>
 
 </form>

@@ -160,6 +160,47 @@ class SignupValidationBusiness(BaseValidationBusiness):
 		pass
 
 
+class LoginBusiness(CommonBusiness):
+	def __init__(self, ctx):
+		super(LoginBusiness, self).__init__(ctx)
+		self._dbUserAccount = UserAccountDAO(ctx)
+		self._f = ctx['form']
+	def doLogin(self, ctx):
+		"""Performs the login action
+		@param ctx: Context
+		@return: result"""
+		pass
+	def rememberPassword(self, ctx):
+		"""We check email with the one in database. If ok, we send reset password email to user
+		@param ctx: Context
+		@return: result"""
+		pass
+	def login(self, ctx):
+		"""Checks if user is logged in. If true, get login user information in the context
+		@param ctx: Context
+		@return: result"""
+		# Check if login:
+		print 'user : ', ctx['user']
+		print 'is_authenticated : ', ctx['user'].is_authenticated()
+		if ctx['user'].is_authenticated():
+			# login: context variable isLogin = True
+			print 'user logged in... we get data...'
+			jsData = getResultOK({})
+			jsData['response']['isLogin'] = True
+			jsData['response']['user'] = ctx['user']
+			# ...
+			result = self.buildJSONResult(jsData)
+		else:
+			# no login: login form
+			jsData = getResultOK({})
+			ctx['form'] = forms.LoginForm()
+			ctx['form'].buildJsData(jsData)
+			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
+			jsData['response']['isLogin'] = False
+			result = self.buildJSONResult(jsData)
+		print 'result : ', result
+		return result
+
 class ContactBusiness(CommonBusiness):
 	def __init__(self, ctx):
 		super(ContactBusiness, self).__init__(ctx)
