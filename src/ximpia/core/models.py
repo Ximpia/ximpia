@@ -326,6 +326,39 @@ class ContextObj(object):
 	userSocial = property(_getUserSocial, _setUserSocial)
 	socialChannel = property(_getSocialChannel, _setSocialChannel)
 
+
+class JsResultDict(dict):
+	OK = 'OK'
+	ERROR = 'ERROR'
+	STATUS = 'status'
+	RESPONSE = 'response'
+	ERRORS = 'errors'
+	def __init__(self, status=OK, response={}, errors=[]):
+		dict.__init__(self, status=status, response=response, errors=errors)
+	def setStatus(self, status):
+		"""Set status"""
+		dict.__setitem__(self, self.STATUS, status)
+	def setResponse(self, response):
+		"""Set response"""
+		dict.__setitem__(self, self.RESPONSE, response)
+	def setErrors(self, errorList):
+		"""Set error list"""
+		dict.__setitem__(self, self.ERRORS, errorList)
+	def addAttr(self, attrName, attrValue):
+		"""Set attribute"""
+		myDict = dict.__getitem__(self, self.RESPONSE)
+		myDict[attrName] = attrValue
+		dict.__setitem__(self, self.RESPONSE, myDict)
+	def getAttr(self, attrName):
+		"""Get attribute"""
+		myDict = dict.__getitem__(self, self.RESPONSE)
+		return myDict[attrName]
+	def buildError(self, errorList):
+		"""build error response"""
+		dict.__setitem__(self, self.STATUS, self.ERROR)
+		dict.__setitem__(self, self.ERRORS, errorList)
+		dict.__setitem__(self, self.RESPONSE, {})
+
 def getResultOK(dataDict, status='OK'):
 	"""Build result dict for OK status. resultList is a list of objects or content to show in client"""
 	resultDict = {}

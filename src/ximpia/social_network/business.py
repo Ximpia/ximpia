@@ -21,7 +21,7 @@ from constants import Constants, KMasterValue
 
 from ximpia.util import ut_email
 
-from ximpia.core.models import getResultOK, getResultERROR, XpMsgException
+from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict
 from ximpia.core.business import CommonBusiness
 
 from yacaptcha.models import Captcha
@@ -180,23 +180,19 @@ class LoginBusiness(CommonBusiness):
 		@param ctx: Context
 		@return: result"""
 		# Check if login:
-		print 'user : ', ctx['user']
-		print 'is_authenticated : ', ctx['user'].is_authenticated()
 		if ctx['user'].is_authenticated():
 			# login: context variable isLogin = True
-			print 'user logged in... we get data...'
-			jsData = getResultOK({})
-			jsData['response']['isLogin'] = True
-			jsData['response']['user'] = ctx['user']
-			# ...
+			jsData = JsResultDict()
+			jsData.addAttr('isLogin', True)
+			jsData.addAttr('userid', ctx['user'].pk)
 			result = self.buildJSONResult(jsData)
 		else:
 			# no login: login form
-			jsData = getResultOK({})
+			jsData = JsResultDict()
 			ctx['form'] = forms.LoginForm()
 			ctx['form'].buildJsData(jsData)
 			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
-			jsData['response']['isLogin'] = False
+			jsData.addAttr('isLogin', False)
 			result = self.buildJSONResult(jsData)
 		print 'result : ', result
 		return result

@@ -35,7 +35,10 @@ class CommonBusiness(object):
 		"""Builds json result
 		@param resultDict: dict : Dictionary with json data
 		@return: result : HttpResponse"""
-		result = HttpResponse(json.dumps(resultDict))
+		print 'Dumping...'
+		sResult = json.dumps(resultDict)
+		print 'sResult : ', sResult
+		result = HttpResponse(sResult)
 		return result
 	
 	def _addError(self, idError, form, errorField):
