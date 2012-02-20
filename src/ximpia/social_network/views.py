@@ -179,12 +179,14 @@ def jxBusiness(request, *argsTuple, **argsDict):
 	@param request: Request
 	@param result: Result"""
 	ctx = argsDict['ctx']
+	print 'jxBusiness...'
+	print request.REQUEST.items()
 	if request.REQUEST.has_key('bsClass') and request.is_ajax() == True:
 		bsClass = request.REQUEST['bsClass'];
 		method = request.REQUEST['method']
 		if method.find('_') == -1 or method.find('__') == -1: 
 			object = eval(bsClass)(ctx)
-			result = eval('object.' + method)(*[ctx])
+			result = eval('object.' + method)()
 		else:
 			print 'private methods...'
 			raise Http404

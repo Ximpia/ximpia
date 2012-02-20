@@ -205,6 +205,22 @@ def context(f):
 	return new_f
 
 class Context(object):
+	USER = 'user'
+	LANG = 'lang'
+	SETTINGS = 'settings'
+	SESSION = 'session'
+	COOKIES = 'cookies'
+	META = 'meta'
+	POST = 'post'
+	REQUEST = 'request'
+	GET = 'get'
+	SOCIAL_CHANNEL = 'socialChannel'
+	USER_SOCIAL = 'userSocial'
+	AUTH = 'auth'
+	FORM = 'form'
+	CAPTCHA = 'captcha'
+	RAW_REQUEST = 'raw_request'
+	JS_DATA = 'jsData'
 	def __init__(self, f):
 		self.f = f
 	def __call__(self, *argsTuple, **argsDict):
@@ -223,12 +239,14 @@ class Context(object):
 		ctx['meta'] = request.META
 		ctx['post'] = request.POST
 		ctx['request'] = request.REQUEST
+		ctx['raw_request'] = request
 		ctx['get'] = request.GET
 		ctx['socialChannel'] = ''
 		ctx['userSocial'] = ''
 		ctx['auth'] = {}
 		ctx['form'] = None
 		ctx['captcha'] = None
+		ctx[self.JS_DATA] = ''
 		if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
 			ctx['socialChannel'] = request.REQUEST['socialChannel']
 			ctx['userSocial'] = request.REQUEST['userSocial']
@@ -333,8 +351,9 @@ class JsResultDict(dict):
 	STATUS = 'status'
 	RESPONSE = 'response'
 	ERRORS = 'errors'
-	def __init__(self, status=OK, response={}, errors=[]):
-		dict.__init__(self, status=status, response=response, errors=errors)
+	def __init__(self):
+		#print 'dict : ', statusIn, responseIn, errorsIn
+		dict.__init__(self, status=self.OK, response={}, errors=[])
 	def setStatus(self, status):
 		"""Set status"""
 		dict.__setitem__(self, self.STATUS, status)

@@ -11,6 +11,7 @@ ERR_invitationCode = _("""Error in validating invitation code. Ximpia is invitat
 ERR_ximpiaId = _('An user with same ximpiaId already exists. Please choose another id for your ximpia account')
 ERR_email = _('An user with same email address already exists. Please select another email')
 ERR_captcha = _('Error in validation image. You can reload image to display another image.')
+ERR_password = _('The user or password is not correct')
 
 
 class Labels(object):

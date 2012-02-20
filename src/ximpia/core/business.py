@@ -6,9 +6,12 @@ from django.http import HttpResponse
 from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 
+from django.contrib.auth import login, authenticate, logout
+
 from models import getResultOK, getResultERROR, XmlMessage, XpMsgException
 from ximpia.util import ut_email
 from ximpia.util.js import Form as _jsf
+from ximpia.core.models import JsResultDict, Context as Ctx
 
 from ximpia import settings
 
@@ -35,9 +38,9 @@ class CommonBusiness(object):
 		"""Builds json result
 		@param resultDict: dict : Dictionary with json data
 		@return: result : HttpResponse"""
-		print 'Dumping...'
+		#print 'Dumping...'
 		sResult = json.dumps(resultDict)
-		print 'sResult : ', sResult
+		#print 'sResult : ', sResult
 		result = HttpResponse(sResult)
 		return result
 	
@@ -50,7 +53,7 @@ class CommonBusiness(object):
 			self._errorDict[idError] = {}
 		self._errorDict[idError] = form.fields[errorField].initial
 	
-	def getErrorResultDict(self, errorDict):
+	def getErrorResultDict(self, errorDict, pageError=False):
 		"""Get sorted error list to show in pop-up window
 		@return: self._resultDict : ResultDict"""		
 		#dict = self._errorDict
@@ -60,10 +63,16 @@ class CommonBusiness(object):
 		for key in keyList:
 			message = errorDict[key]
 			index = key.find('id_')
-			if index == -1:
-				list.append(('id_' + key, message))
+			if pageError == False:
+				if index == -1:
+					list.append(('id_' + key, message))
+				else:
+					list.append((key, message))
 			else:
-				list.append((key, message))
+				if index == -1:
+					list.append(('id_' + key, message, True))
+				else:
+					list.append((key, message, True))
 		self._resultDict = getResultERROR(list)
 		return self._resultDict
 
@@ -88,7 +97,9 @@ class CommonBusiness(object):
 	
 	def getForm(self):
 		"""Get form"""
-		return self._ctx['form']
+		#print 'form: ', self._f
+		#return self._ctx['form']
+		return self._f
 	
 	def setForm(self, form):
 		"""Sets the form"""
@@ -174,6 +185,17 @@ class CommonBusiness(object):
 			if self._ctx[name] != value:
 				self.addError(errName)
 	
+	def authenticateUser(self, userData):
+		"""Authenticates user and password"""
+		dbObj, qArgs, errName = userData
+		user = authenticate(**qArgs)
+		print 'user: ', user
+		if user:
+			pass
+		else:
+			self.addError(errName)
+		return user
+	
 	def isValid(self):
 		"""Checks if no errors have been written to error container.
 		If not, raises XpMsgException """
@@ -197,3 +219,34 @@ class EmailBusiness(object):
 		message = string.Template(message).substitute(**subsDict)
 		send_mail(subject, message, settings.WEBMASTER_EMAIL, recipientList)
 
+class ValidateFormBusiness(object):
+	_form = None
+	_pageError = False
+	def __init__(self, *argsTuple, **argsDict):
+		# Sent by decorator
+		self._form = argsTuple[0]
+		self._pageError = argsDict['pageError']
+	def __call__(self, f):
+		"""Decorator call method"""
+		def wrapped_f(*argsTuple, **argsDict):
+			"""Doc."""
+			object = argsTuple[0]
+			object._ctx[Ctx.JS_DATA] = JsResultDict() 
+			object._f = self._form(object._ctx[Ctx.POST])
+			bForm = object._f.is_valid()
+			if bForm == True:
+				try:
+					f(*argsTuple, **argsDict)
+					object._f.buildJsData(object._ctx[Ctx.JS_DATA])
+					result = object.buildJSONResult(object._ctx[Ctx.JS_DATA])
+					return result
+				except XpMsgException:
+					errorDict = object.getErrors()
+					if len(errorDict) != 0:
+						result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=self._pageError))
+					else:
+						raise
+					return result
+			else:
+				print 'Validation error!!!!!'
+		return wrapped_f

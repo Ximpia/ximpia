@@ -26,10 +26,13 @@ class XBaseForm(forms.Form):
 	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	ERR_GEN_VALIDATION = XpHiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
+	msg_ok = XpHiddenField(xpType='input.hidden', initial= _('I performed the action you requested'))
 	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
-	objects = XpHiddenField(xpType='input.hidden', initial='')
+	bsClass = XpHiddenField(xpType='input.hidden', required=False)
+	method = XpHiddenField(xpType='input.hidden', required=False)
+	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}
 	_argsDict = {}
 	def __init__(self, *argsTuple, **argsDict): 
@@ -39,7 +42,7 @@ class XBaseForm(forms.Form):
 			self._ctx = argsDict['ctx']
 		#self.errors = {}
 		#self.errors['invalid'] = []
-		print 'argsDict : ', argsDict
+		#print 'argsDict : ', argsDict
 		if argsDict.has_key('instances'):
 			dict = argsDict['instances']
 			keys = dict.keys()

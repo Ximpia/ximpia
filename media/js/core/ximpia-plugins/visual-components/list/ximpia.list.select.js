@@ -26,8 +26,9 @@
                     		}
                 	});
 		},
-		render: function() {
-			var data = JSON.parse(sessionStorage.getItem("xpForm"));
+		render: function(xpForm) {
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			//var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			console.log($(this));
 			console.log('Elements : ' + $(this).length);
 			for (var i=0; i<$(this).length; i++) {

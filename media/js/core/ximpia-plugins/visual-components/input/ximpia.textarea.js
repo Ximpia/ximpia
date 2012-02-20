@@ -53,9 +53,10 @@
                     		}					
                 	});
 		},
-		render: function() {
+		render: function(xpForm) {
 			console.log('textarea render....');
-			var data = JSON.parse(sessionStorage.getItem("xpForm"));
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			//var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			console.log($(this));
 			console.log('Elements : ' + $(this).length);
 			

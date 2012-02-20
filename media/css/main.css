@@ -10,7 +10,7 @@ body {
 	padding: 0;
 	color: #000;
 	line-height: 24px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 a {
@@ -140,6 +140,27 @@ div#Wrapper {
 	padding-left: 0px;
 }
 
+.sectionComp {
+	visibility: hidden;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+.sectionContent {
+	/*margin-top: 0px;*/
+	/*height: 500px;*/
+	min-height: 350px;
+	padding-top: 0px;
+	/*border: solid 0px;*/
+	padding-right: 0px;
+	padding-left: 0px;
+	border:solid 1px #ddd; 
+	margin-top:5px; 
+	border-radius: 8px;
+	position: relative;
+	top: 43px;
+}
+
 #id_sect_loading {
 	position: absolute; 
 	border: 0px solid #000; 
@@ -152,13 +173,17 @@ div#Wrapper {
 }
 
 header {
-	width:870px; 
+	width:870px;
+	/*width: 100%;*/
 	/*height: 68px;*/
 	height: 40px;
 	border-bottom: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-right: 1px solid #ccc;
 	background-color: #fafafa;
+	position: fixed;
+	top: 0px;
+	z-index: 9999;
 }
 
 /*div#Header {
@@ -879,6 +904,12 @@ div.listFieldDel {
 	width: 15px; 
 	text-align: center;
 }
+div.listFieldDel:hover, div.listFieldDel.sfhover {
+	/*cursor: pointer;*/
+	cursor: default;
+}
+
+
 /* Label Container */
 
 
@@ -1245,6 +1276,29 @@ div.listFieldDel {
 	border-radius: 8px;
 	height: 35px; 
 	padding: 2px;
+	margin-bottom: 0px; 
+	margin-left: 0px; 
+	border: 0px solid;
+}
+
+/* Button Message Result */
+.btMsg {
+	width: 870px; 
+	border: 1px solid #ccc; 
+	height: 25px;
+	border-radius: 8px;
+	position: fixed;
+	bottom: 365px;
+}
+
+.sectionButton {
+	padding: 0; 
+	border: 0px solid; 
+	margin-top: 5px; 
+	z-index: 10; 
+	position: fixed; 
+	width: 870px; 
+	bottom: 0p;	
 }
 
 .warning {

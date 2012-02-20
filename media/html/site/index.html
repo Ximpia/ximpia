@@ -11,16 +11,12 @@
 <link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
-
-<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />
-	
+<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />	
 </head>
 
 <body>
 
-<!-- Only one form??? -->
-
-<form id="id_Form1" action="" method="post">
+<form id="form_login" action="" method="post" data-xp="{callback: 'ximpia.site.Login.showLogin', className: 'LoginBusiness', method: 'login'}">
 
 <!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
 
@@ -35,98 +31,45 @@
 <section id="id_sect_loading" >
 </section>
 
-<div id="id_apps" style="border:solid 1px #ddd; margin-top:5px; border-radius: 8px">
-    
-<section id="id_app_site" class="app">
+<section id="id_content" class="sectionContent">
 
-<section id="id_sect_login" class="sectionApp scroll" tabindex="0" >
-
+<div id="id_login" class="sectionComp">
+	
 <fieldset>
-<legend>XimpiaId</legend>
-
-<div class="formBlock" style="margin-top: 0px">
-
+<legend>You</legend>
+<div class="formBlock" style="margin-top: 0px;">
 <div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
-
-<div id="id_showPassword">
-
+<br/>
 <div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
-<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>
 
-</div>
+<br/>
 
-</div>
+<!-- Link Component: Open new panel (task) or open in modal mode -->
+<div id="id_passwordReminderLink_comp" data-xp-type="link" 
+	data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password'}"></div>
 
 <!--
-<div class="vLineSep"><img src="http://localhost:8000/site_media/images/blank.png" alt=" " /></div>
-<div id="id_socialNetworkSignupButtonsZone" style="float: left; margin-top: 0px;">
-<a id="id_bt_fb" href="#" class="buttonIcon fb" onclick="return false;">Facebook</a>
-<a id="id_bt_tw" href="#" class="buttonIcon tw" onclick="return false;">Twitter</a><br/>
-<a id="id_bt_li" href="#" class="buttonIcon in" onclick="return false;">Linkedin</a>
+<div id="id_passwordReminderLink_comp" data-xp-type="link">
+<a href="javascript:return void(false)" id="id_passwordReminderLink"  alt="Remember password" data-xp="">Remember your password</a>
 </div>
 -->
 
+</div>
 </fieldset>
 
-<div id="id_userData" style=" clear: both; padding-top: 5px">
-
-<fieldset>
-<legend>You</legend>
-
-<div id="id_info" class="formBlock" style="margin-top: 0px">
-
-<div class="frmLeft">
-
-
-<!-- Data -->
-
-<div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '4'}" ></div>
-<div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
-<div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '8'}" ></div>
-
-<br/>
-</div>	
-<div class="frmRight">
-
-<div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '5'}" ></div>
-<div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '7'}" ></div>
-
-<br/>
 </div>
-</div><!-- Info -->
-
-</fieldset>
 	
-</div><!-- UserData -->
-	
-</section> <!-- section id_signupUser -->
-
-</section>
-<!-- End app_MyApp --> 
-    
-</div>
-<!-- End Apps -->
-
-<section style="padding: 0; border: 0px solid; margin-top: 5px; z-index: 10">
-<div id="id_buttonBarBottom" class="btBar" style="margin-bottom: 0px; margin-left: 0px; border: 0px solid">
-<div style="float: left">
-<!-- Button Left -->
-<!-- button -->
-<a id="id_Form1_Submit" href="#" class="button buttonBlue" data-xp-js="submit" 
-	data-xp-obj='{"form": "id_Form1","btMethod": ""}' onclick="return false;">
-<span>Signup</span></a>   
-<img id="id_Form1_Submit_Status" src="http://localhost:8000/site_media/images/blank.png" class="AjaxButton" alt=" " />
-<span id="id_Form1_Submit_Text"></span>
-<!-- button -->
-</div>
-<div style="float: left">
-<!-- Button Right -->
-</div>
-</div> 
 </section>
 
-<footer id="id_footer">
-</footer>
+<section id="id_sectionButton" class="sectionButton">
+
+<div id="id_pageButton" class="btBar">
+<div id="id_doLogin_comp" 
+	data-xp-type="button" 
+	data-xp="{form: 'form_login', align: 'left', text: 'Login', type: 'pageActionMsg', method: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
+</div>
+
+</section>
     
 </div>
 
@@ -161,6 +104,8 @@
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.button.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.link.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.qtip.js"></script>
 <!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->
@@ -170,40 +115,26 @@
 <script>	
 
 jQuery(document).ready(function($){
-	var app = 'SN';
-	// bsClass, method
-	$("#id_Form1").attr('action', ximpia.common.Path.getBusiness());
-	// Check logged in
-	// If not, show....
-	// Else, redirect, or show desktop
-	//login.show();
-	ximpia.common.Page.init();
-	console.log('path : ' + ximpia.common.Path.getBusiness());
-	var login = ximpia.site.Login();
+	ximpia.common.Page.init();	
+	// Get all forms, for each:
 	var pageJx = ximpia.common.PageAjax();
-	pageJx.init({	path: ximpia.common.Path.getBusiness(), 
-			callback: login.doLogin, 
-			formId: "form_login", 
-			sectionId: "id_sect_login", 
-			verbose: true});
-	pageJx.doBusinessGetRequest({	application: app, 
-					className: 'LoginBusiness', 
-					method: 'login'});	
-	// context is on memory	
-	//showOn({id: 'id_component', condition: 'a == 1'});
-	// hideOn
-	
-	//$('#id_loginForm').css('display', 'block');
-	
+	for (var i = 0; i<document.forms.length; i++) {
+		var myForm = document.forms[i];
+		console.log('form : ' + myForm);
+		$.metadata.setType("attr", "data-xp");
+		var formData = $("#" + myForm.id).metadata();
+		var callback = eval(formData.callback)
+		pageJx.init({	path: ximpia.common.Path.getBusiness(),
+				callback: callback,
+				formId: myForm.id,
+				verbose: true});
+		pageJx.doBusinessGetRequest({	className: formData.className, 
+						method: formData.method});
+	}
 });
 
 </script>
 
-</form>
-
-<form id="id_formAjax" action="http://localhost:8000/DontKnow" method="post">
-	<input id="id_formAjax_jsonData" type="hidden" name="jsonData" value="" />
-<div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>
 </form>
 
 </body>

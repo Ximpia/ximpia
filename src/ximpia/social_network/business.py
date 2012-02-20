@@ -15,14 +15,15 @@ from ximpia import util
 import forms
 
 from django.contrib.auth.models import User as UserSys, Group as GroupSys
+from django.contrib.auth import login, authenticate, logout
 
 from models import UserSocial, UserProfile, UserDetail, Invitation
 from constants import Constants, KMasterValue
 
 from ximpia.util import ut_email
 
-from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict
-from ximpia.core.business import CommonBusiness
+from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx
+from ximpia.core.business import CommonBusiness, ValidateFormBusiness
 
 from yacaptcha.models import Captcha
 from ximpia import settings
@@ -164,33 +165,61 @@ class LoginBusiness(CommonBusiness):
 	def __init__(self, ctx):
 		super(LoginBusiness, self).__init__(ctx)
 		self._dbUserAccount = UserAccountDAO(ctx)
-		self._f = ctx['form']
-	def doLogin(self, ctx):
+		self._dbUserSys = UserSysDAO(ctx)
+		self._f = ctx[Ctx.FORM]
+	@ValidateFormBusiness(forms.LoginForm, pageError=True)
+	def doLogin(self):
 		"""Performs the login action
 		@param ctx: Context
 		@return: result"""
+		user = self.authenticateUser([self._dbUserSys, {'username': self._f.d('ximpiaId'), 
+						'password': self._f.d('password')}, 'password'])
+		self.isValid()
+		login(self._ctx[Ctx.RAW_REQUEST], user)
+	def showReminderNewPassword(self):
+		"""Doc."""
+		# Checks validity of link attributes and activation link
 		pass
-	def rememberPassword(self, ctx):
+	def showReminderEmail(self):
 		"""We check email with the one in database. If ok, we send reset password email to user
 		@param ctx: Context
 		@return: result"""
+		# Shows the forms, both for email feed, and new password and confirmation
+		status = self._ctx[Ctx.REQUEST]['status']
+		if status == 'email':
+			# Show email form
+			pass
+		elif status == 'newPassword':
+			# Show new password form
+			pass
+	@ValidateFormBusiness(forms.LoginForm, pageError=True)
+	def doReminderSendEmail(self):
+		"""Doc."""
+		# Checks that email sent is in system
+		# Send email with link to reset password. Link has time validation
 		pass
-	def login(self, ctx):
+	@ValidateFormBusiness(forms.LoginForm, pageError=True)
+	def doReminderNewPassword(self):
+		"""Doc."""
+		# Sets new password for user
+		# Logs in user and redirect to index.html
+		pass
+	def login(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@param ctx: Context
 		@return: result"""
 		# Check if login:
-		if ctx['user'].is_authenticated():
+		if self._ctx['user'].is_authenticated():
 			# login: context variable isLogin = True
 			jsData = JsResultDict()
 			jsData.addAttr('isLogin', True)
-			jsData.addAttr('userid', ctx['user'].pk)
+			jsData.addAttr('userid', self._ctx['user'].pk)
 			result = self.buildJSONResult(jsData)
 		else:
 			# no login: login form
 			jsData = JsResultDict()
-			ctx['form'] = forms.LoginForm()
-			ctx['form'].buildJsData(jsData)
+			self._ctx[Ctx.FORM] = forms.LoginForm()
+			self._ctx[Ctx.FORM].buildJsData(jsData)
 			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 			jsData.addAttr('isLogin', False)
 			result = self.buildJSONResult(jsData)
@@ -206,7 +235,7 @@ class ContactBusiness(CommonBusiness):
 		self._dbMasterValue = MasterValueDAO(ctx)
 		self._dbCommunicationTypeContact = CommunicationTypeContactDAO(ctx)
 		self._dbContact = ContactDAO(ctx)
-		self._f = ctx['form']
+		self._f = ctx[Ctx.FORM]
 	def createDirectoryUser(self, ctx, user, userSocial):
 		"""Create user in directory"""
 		try:

@@ -404,7 +404,26 @@ ximpia.common.Browser.fetchParamByName = (function(name) {
 	  else
 	  	return results[1];
 });
-
+/*
+ * Get form data from sessionStorage
+ */
+ximpia.common.Browser.getFormDataFromSession = (function(xpForm) {
+	var fields = xpForm.split('.');
+	var data = JSON.parse(sessionStorage.getItem(fields[0]))['response'][fields[1]];
+	return data
+});
+/*
+ * Set sessionStorage for action
+ */
+ximpia.common.Browser.setSessionAction = (function(data) {
+	sessionStorage.setItem('xpData-action', JSON.stringify(data));
+});
+/*
+ * Set sessionStorage for popup
+ */
+ximpia.common.Browser.setSessionPopUp = (function(data) {
+	sessionStorage.setItem('xpData-popup', JSON.stringify(data));
+});
 
 ximpia.common.BasicTags = function() {
 	var _attr = {
@@ -549,6 +568,104 @@ ximpia.common.Form = function() {
 					$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
 				}				
 			},
+			/**
+			 * Do action form submit. Will post form to server and write to sessionStorage xpData-action results
+			 * obj: formId
+			 */
+			bindAction: function(obj) {
+				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
+				//console.log('Submit form: ' + $("#" + obj.formId).val());
+				$("#" + obj.attrs.form).validate({
+					submitHandler: function(form) {
+                				$(form).ajaxSubmit({
+                    					dataType: 'json',
+                    					success: function(response, status) {
+                    						console.log('suscess');
+                        					// Set action into session
+                        					ximpia.common.Browser.setSessionAction(response);
+                        					var responseMap = eval(response);
+                        					statusCode = responseMap['status'];
+                        					if (statusCode.indexOf('.') != -1) {
+                            						statusCode = statusCode.split('.')[0]
+                        					}
+                        					console.log('form :: statusCode : ' + statusCode);
+                        					if (statusCode == 'OK') {
+                        						if (obj.attrs.type == 'pageActionMsg') {
+                        							$("#id_btPageMsg_img").xpLoadingSmallIcon('ok');
+                        							$("#id_btPageMsg_text").text($("#id_msg_ok").attr('value'));
+                        						} else if (obj.attrs.type == 'pageAction') {
+                        							$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
+                        						}
+                            						// Put all fields inside form valid that are now errors
+                            						$(".error").addClass('valid').removeClass("error");
+                            						// Callback
+                            						if (typeof obj.callback != 'undefined') {
+                            							//console.log('form :: callback : ' + obj.callback);
+	                            						obj.callback();
+                            						}
+                            						if (typeof obj.attrs.disableOnClick != 'undefined') {
+                            							//console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
+                            							$("#" + obj.idActionComp).xpObjButton('disable');
+                            						}
+                        					} else {
+                        						// Business Error Messages
+                        						// Can be associated to fields or not
+                            						// Integrate showMessage, popUp, etc...
+                            						var list = responseMap['errors'];
+                            						var doPageError = false;
+                            						if (list.length > 0) {
+                            							doPageError = list[0][2]
+                            						}
+                            						console.log('doPageError: ' + doPageError);
+                            						if (doPageError == true) {
+                        							if (obj.attrs.type == 'pageActionMsg') {
+	                        							$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
+                        								$("#id_btPageMsg_text").text(list[0][1]);
+                        							} else if (obj.attrs.type == 'pageAction') {
+	                        							$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
+                        							}
+                            						} else {
+                            							console.log('form :: errors: ' + list);
+                            							message = '<ul>'
+                            							var errorName = "";
+                            							var errorId = "";
+                            							for (var i=0; i<list.length; i++) {
+	                                						errorId = list[i][0];
+                                							errorName = $("label[for='" + errorId + "']").text();
+                                							console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
+                                							var errorMessage = list[i][1];
+                                							$("#" + errorId).removeClass("valid");
+                                							$("#" + errorId).addClass("error");
+                                							message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
+                            							}
+                            							message = message + '</ul>';
+                            							// Show error Message in pop up
+                            							ximpia.common.Window.showPopUp({
+	                                						title: 'Errors Found',
+                                							message: message,
+                            							});                            							
+                            						}
+                        					}
+                    					},
+                    					error: function (data, status, e) {
+                        					console.log(data + ' ' + status + ' ' + e);
+                        					if (obj.attrs.type == 'pageActionMsg') {
+                        						$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
+                        					}
+                        					ximpia.common.Window.showPopUp({
+                            						title: 'Could not make it!',
+                            						message: 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks',
+                            						height: 50
+                            						});
+                    					}
+                    				});
+					},
+            				errorPlacement: function(error, element) {
+            					console.log('error placement...');
+	                			element.next("img table").after(error);
+            				}
+				});
+			},
 			/**        
 	 		* Bind signup submit button. Binds the click event of button, shows waiting icon, sends data through AJAX
 	 		*/
@@ -558,7 +675,7 @@ ximpia.common.Form = function() {
             			submitHandler: function(form) {
                 			// Submit form
                 			var idImg = form.id + '_Submit_Status';
-                			var idTxt = form.id + '_Submit_Text';               
+                			var idTxt = form.id + '_Submit_Text';
                 			$("#" + idImg).xpLoadingSmallIcon();
                 			$("#" + idImg).xpLoadingSmallIcon('wait');
                 			$("#" + idTxt).text('');
@@ -585,7 +702,7 @@ ximpia.common.Form = function() {
                             					if (typeof callbackFunction != 'undefined') {
                             						callbackFunction();
                             					}
-                            				}                       
+                            				}
                         			} else {
                             				$("#" + idImg).xpLoadingSmallIcon('error');
                             				$("#" + idTxt).text($("#id_ERR_GEN_VALIDATION").attr('value'));
@@ -843,10 +960,14 @@ ximpia.common.PageAjax = function() {
 				console.log('doAction : ' + doAction);				
 			},
 			doFade: function() {
-				$("#id_sect_loading").fadeOut('fast');
-				$("#" + "id_sect_signupUser").css('visibility', 'visible');
+				//console.log('doFade()...');
+				//$("#id_sect_loading").fadeOut('fast');
+				//$("#" + "id_sect_signupUser").css('visibility', 'visible');
+				//$(":hidden").removeClass('hidden');
+				//$(".sectionComp").css('visibility', 'visible');
+				//console.log('.sectionComp: ' + $(".sectionComp"));
 			},
-			doForm: function(app) {
+			doForm: function() {
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
 						console.log(data)
@@ -861,27 +982,31 @@ ximpia.common.PageAjax = function() {
 					//var formData = data.response["form_signup"];
 					//sessionStorage.setItem('xpForm', JSON.stringify(formData));
 					//sessionStorage.setItem('form_signup', JSON.stringify(formData));
-					sessionStorage.setItem('xpData-' + app, JSON.stringify(data));
-					$("[data-xp-type='list.field']").xpObjListField('render');
-					$("[data-xp-type='basic.text']").xpObjInput('renderField');
-					$("#id_variables").xpObjInput('addHidden');				
-					$("[data-xp-type='list.select']").xpObjListSelect('render');
-					$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
-					$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
+					var xpForm = 'xpData' + '.' + _attr.priv.formId;
+					sessionStorage.setItem('xpData', JSON.stringify(data));
+					//$("[data-xp-type='list.field']").xpObjListField('render');
+					$("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+					$("#id_variables").xpObjInput('addHidden', xpForm);
+					$("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+					$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+					$("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
 					$("input[data-xp-related='list.field']")
 						.filter("input[data-xp-type='basic.text']")
-						.xpObjListField('bindKeyPress');
+						.xpObjListField('bindKeyPress', xpForm);
+					$("[data-xp-type='button']").xpObjButton('render');
+					$("[data-xp-type='link']").xpObjLink('render');
 					ximpia.common.PageAjax.doFade();
 					// Conditions
 					// Post-Page : Page logic
-					var formId = "id_Form1";
 					var oForm = ximpia.common.Form();
 					oForm.doBindBubbles();
-					oForm.doBindSubmitForm(formId);
+					//oForm.doBindSubmitForm(_attr.priv.formId);
 					//processSnLogin();
 					$("[data-xp-js='submit']").xpPageButton();
 					$("[data-xp-js='submit']").xpPageButton('render');
 					// Callback
+					//console.log('callback: ' + _attr.priv.callback);
+					console.log('verbose: ' + _attr.priv.verbose);
 					_attr.priv.callback(data);
 				}).error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
@@ -892,7 +1017,7 @@ ximpia.common.PageAjax = function() {
 			doBusinessGetRequest: function(obj) {
 				_attr.priv.path = _attr.priv.path + '?bsClass=' + obj.className + ';method=' + obj.method;
 				console.log('path: ' + _attr.priv.path);
-				_attr.pub.doForm(obj.application);
+				_attr.pub.doForm();
 			}
 		}
 	}
@@ -903,7 +1028,7 @@ ximpia.common.PageAjax = function() {
  */
 ximpia.common.PageAjax.doFade = function() {
 	$("#id_sect_loading").fadeOut('fast');
-	$("#" + "id_sect_signupUser").css('visibility', 'visible');
+	$(".sectionComp").css('visibility', 'visible');
 }
 
 
@@ -1355,17 +1480,16 @@ ximpia.site.Signup = function() {
 	return _attr.pub;
 }
 
-ximpia.site.Login = function() {
-	var _attr = {
-		priv: {
-		},
-		pub: {
-			login: (function() {
-				console.log('show login page');
-				//$("#id_loginForm").html("<div id=\"id_ximpiaId_comp\" data-xp-type=\"basic.text\" data-xp=\"{info: true, tabindex: '1'}\" ></div>");
-				//$("[data-xp-type='basic.text']").xpObjInput('renderField');
-			})
-		}
-	}
-	return _attr.pub;
-}
+ximpia.site.Login = {};
+/*
+ * Login Form
+ */
+ximpia.site.Login.showLogin = (function() {
+	console.log('Show login...');
+});
+/*
+ * Do login : After login button has been clicked
+ */
+ximpia.site.Login.doLogin = (function() {
+	console.log('Do login...');
+});
