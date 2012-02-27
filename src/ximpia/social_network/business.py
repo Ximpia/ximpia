@@ -184,14 +184,13 @@ class LoginBusiness(CommonBusiness):
 		"""We check email with the one in database. If ok, we send reset password email to user
 		@param ctx: Context
 		@return: result"""
-		# Shows the forms, both for email feed, and new password and confirmation
-		status = self._ctx[Ctx.REQUEST]['status']
-		if status == 'email':
-			# Show email form
-			pass
-		elif status == 'newPassword':
-			# Show new password form
-			pass
+		print 'showReminderEmail...'
+		jsData = JsResultDict()
+		self._ctx[Ctx.FORM] = forms.PasswordReminderForm()
+		self._ctx[Ctx.FORM].buildJsData(jsData)
+		result = self.buildJSONResult(jsData)
+		print result
+		return result
 	@ValidateFormBusiness(forms.LoginForm, pageError=True)
 	def doReminderSendEmail(self):
 		"""Doc."""

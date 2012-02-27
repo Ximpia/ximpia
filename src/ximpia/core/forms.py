@@ -10,6 +10,8 @@ from django.utils.translation import ugettext as _
 from ximpia.util.js import Form as _jsf
 from ximpia import settings
 
+from constants import Constants as K
+
 from form_fields import XpHiddenField
 
 class XBaseForm(forms.Form):
@@ -20,7 +22,7 @@ class XBaseForm(forms.Form):
 	#cleaned_data = None
 	entryFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
 	copyEntryFields = XpHiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
-	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
 	pkFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
 	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
@@ -80,20 +82,30 @@ class XBaseForm(forms.Form):
 				obj = json.loads(jsonObj)[0]
 				dict[key] = obj['fields']
 				self.base_fields['objects'].initial = json.dumps(dict)
+	def setViewMode(self, viewList):
+		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
+		paramDict = json.loads(self.fields['params'].initial)
+		paramDict['viewMode'] = viewList
+		self.fields['params'].initial = json.dumps(paramDict)
+	def setViewModeRead(self):
+		"""Read only mode"""
+		paramDict = json.loads(self.fields['params'].initial)
+		paramDict['viewMode'] = ['read']
+		self.fields['params'].initial = json.dumps(paramDict)
 	def putParam(self, name, value):
 		"""Adds field to javascript array
 		@param name: 
 		@param value: """
-		dict = json.loads(self.fields['params'].initial)
-		dict[name] = value
-		self.fields['params'].initial = json.dumps(dict)
+		paramDict = json.loads(self.fields['params'].initial)
+		paramDict[name] = value
+		self.fields['params'].initial = json.dumps(paramDict)
 	def getParam(self, name):
 		"""Get param value.
 		@param name: Param name
 		@return: value"""
-		dict = json.loads(self.fields['params'].initial)
-		if dict.has_key(name):
-			value = dict[name]
+		paramDict = json.loads(self.fields['params'].initial)
+		if paramDict.has_key(name):
+			value = paramDict[name]
 		else:
 			raise ValueError
 		return value

@@ -59,46 +59,50 @@
 			var oForm = ximpia.common.Form();
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
-				var idButton = $(element).attr('id').split('_comp')[0];
-				$.metadata.setType("attr", "data-xp");
-				var attrs = $(element).metadata();
-				var sStyle = "float: left; margin-top: 3px";
-				if (attrs.hasOwnProperty('align')) {
-					sStyle = "float: " + attrs.align + "; margin-top: 3px";
+				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
+				if (doRender == true) {
+					var idButton = $(element).attr('id').split('_comp')[0];
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					var sStyle = "float: left; margin-top: 3px";
+					if (attrs.hasOwnProperty('align')) {
+						sStyle = "float: " + attrs.align + "; margin-top: 3px";
+					}
+					var dataXp = "{form: '" + attrs.form + "', type: '" + attrs.type + "', method: '" + attrs.method + "', callback: '" + attrs.callback + "'}";
+					console.log('form :: dataXp : ' + dataXp);
+					var htmlContent = "<div style=\"" + sStyle + "\">"; 
+					htmlContent += "<a id=\"" + idButton + "\" href=\"#\" class=\"button buttonBlue\" data-xp=\"" + dataXp + "\" onclick=\"return false;\"  >";
+					htmlContent += "<span>" + attrs.text + "</span></a>";
+					htmlContent += "</div>";
+					$(element).html(htmlContent);
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					$("#" + idButton).hover(function() {
+						$("#" + idButton).addClass(settings.classButton +  '-hover');
+						$("#" + idButton).addClass(settings.classButtonColor +  '-hover');
+					}, function() {		
+						$("#" + idButton).removeClass(settings.classButton +  '-hover');
+						$("#" + idButton).removeClass(settings.classButtonColor +  '-hover');
+					});
+					$("#" + idButton).mousedown(function() {
+						$("#" + idButton).addClass(settings.classButton +  '-active');
+						$("#" + idButton).addClass(settings.classButtonColor +  '-active');
+					}).mouseup(function(){
+						$("#" + idButton).removeClass(settings.classButton +  '-active');
+						$("#" + idButton).removeClass(settings.classButtonColor +  '-active');
+					})
+					$("#" + idButton).click(function() {					
+						$(this).xpObjButton('click');
+					});
+					// callback : We get method if defined. If none defined, will send undefined
+					var callback = undefined;
+					if (attrs.callback != '') {
+						callback = eval(attrs.callback);
+					}
+					console.log('form :: bind callback : ' + attrs.callback);
+					// Bind options to the bindaction for all types of buttons				
+					// callback, choose form callback or button callback
+					oForm.bindAction({attrs: attrs, callback: callback, idActionComp: idButton});
 				}
-				var dataXp = "{form: '" + attrs.form + "', type: '" + attrs.type + "', method: '" + attrs.method + "', callback: '" + attrs.callback + "'}";
-				console.log('form :: dataXp : ' + dataXp);
-				var htmlContent = "<div style=\"" + sStyle + "\">"; 
-				htmlContent += "<a id=\"" + idButton + "\" href=\"#\" class=\"button buttonBlue\" data-xp=\"" + dataXp + "\" onclick=\"return false;\"  >";
-				htmlContent += "<span>" + attrs.text + "</span></a>";
-				htmlContent += "</div>";
-				$(element).html(htmlContent);
-				$("#" + idButton).hover(function() {
-					$("#" + idButton).addClass(settings.classButton +  '-hover');
-					$("#" + idButton).addClass(settings.classButtonColor +  '-hover');
-				}, function() {		
-					$("#" + idButton).removeClass(settings.classButton +  '-hover');
-					$("#" + idButton).removeClass(settings.classButtonColor +  '-hover');
-				});
-				$("#" + idButton).mousedown(function() {
-					$("#" + idButton).addClass(settings.classButton +  '-active');
-					$("#" + idButton).addClass(settings.classButtonColor +  '-active');
-				}).mouseup(function(){
-					$("#" + idButton).removeClass(settings.classButton +  '-active');
-					$("#" + idButton).removeClass(settings.classButtonColor +  '-active');
-				})
-				$("#" + idButton).click(function() {					
-					$(this).xpObjButton('click');
-				});
-				// callback : We get method if defined. If none defined, will send undefined
-				var callback = undefined;
-				if (attrs.callback != '') {
-					callback = eval(attrs.callback);
-				}
-				console.log('form :: bind callback : ' + attrs.callback);
-				// Bind options to the bindaction for all types of buttons				
-				// callback, choose form callback or button callback
-				oForm.bindAction({attrs: attrs, callback: callback, idActionComp: idButton});
 			}
 		},
 		click: function() {

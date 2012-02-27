@@ -10,7 +10,9 @@
         var settings = {
         };
         var doOpenPopup = function(obj) {
-        	console.log('Open Popup!!!!');
+        	//console.log('Link Open Popup!!!!');
+        	//console.log(obj);
+        	$('body').xpObjPopUp(obj).xpObjPopUp('create');
         };
         var methods = {
 		init : function( options ) { 
@@ -26,15 +28,19 @@
 			console.log('Render Link...');
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
-				var idLink = $(element).attr('id').split('_comp')[0];
-				$.metadata.setType("attr", "data-xp");
-				var attrs = $(element).metadata();
-				var dataXp = "{op: '" + attrs.op + "', app: '" + attrs.app + "', name: '" + attrs.name + "', content: '" + attrs.content + "'}";
-				var htmlContent = "<a href=\"javascript:return void(false)\" id=\"" + idLink + "\"  alt=\"" + attrs.alt + "\" data-xp=\"" + dataXp + "\">" + attrs.linkText + "</a>";
-				$(element).html(htmlContent);
-				$("#" + idLink).click(function() {
-					$(this).xpObjLink('click');
-				});
+				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
+				if (doRender == true) {
+					var idLink = $(element).attr('id').split('_comp')[0];
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					var dataXp = "{op: '" + attrs.op + "', app: '" + attrs.app + "', name: '" + attrs.name + "', content: '" + attrs.content + "'}";
+					var htmlContent = "<a href=\"javascript:return void(false)\" id=\"" + idLink + "\"  alt=\"" + attrs.alt + "\" data-xp=\"" + dataXp + "\">" + attrs.linkText + "</a>";
+					$(element).html(htmlContent);
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					$("#" + idLink).click(function() {
+						$(this).xpObjLink('click');
+					});
+				}
 			}
 		},
 		click: function() {

@@ -21,7 +21,7 @@
                     // with our default settings
                     if ( options ) { 
                         settings = $.extend( settings, options );
-						$(this).prop('settings', settings);
+			$(this).prop('settings', settings);
                     }
                 });
 			},

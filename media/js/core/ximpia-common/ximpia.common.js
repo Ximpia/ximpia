@@ -98,6 +98,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         var bFadeBackground = true;
         var iWidth = null;
         var iHeight = null;
+        var isHidden = false;
         functionShow = null;
         console.log('Will do...');
         //var htmlPage = "<!-- START POPUP MESSAGE --><div class=\"Pops\"><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div><!-- END POPUP MESSAGE -->";
@@ -112,6 +113,7 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         if (messageOptions.width) iWidth = messageOptions.width;
         if (messageOptions.height) iHeight = messageOptions.height;
         if (messageOptions.functionShow) functionShow = messageOptions.functionShow;
+        if (messageOptions.isHidden) isHidden = messageOptions.isHidden;
         bFadeOut = ximpia.common.Window.checkFadeOut();
         if (!bFadeOut) {
             bFadeBackground = false;
@@ -181,14 +183,16 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         }*/   
         $("div.Pops").css('left', iLeft + 'px');
         $("div.Pops").css('top', iTop + 'px');
-        $("div.Pops").css('visibility','visible');
+        if (isHidden == false) {
+        	$("div.Pops").css('visibility','visible');
+        	if (bFadeBackground) {
+	            $("#Wrapper").fadeTo("fast", 0.50);
+	        }
+        }
         //$("div.PopMessage").fadeOut('slow');
         /*if (sEffectOutTxt == 'fadeOut') {
             $("div.PopMessage").fadeOut(iEffectOutTime);
         }*/
-        if (bFadeBackground) {
-            $("#Wrapper").fadeTo("fast", 0.50);
-        }
         if (functionShow) {
             functionShow($(this));
         }	
@@ -365,6 +369,12 @@ ximpia.common.Path.getBusiness = (function() {
 	var path = ximpia.common.Path.getServer() + 'jxBusiness';
 	return path
 })
+/*
+ * 
+ */
+ximpia.common.Path.getTemplate = (function(app, name) {
+	return ximpia.common.Path.getSiteMedia() + 'html/apps/' + app + '/popup/' + name + '.html';
+});
 
 ximpia.common.Browser = {};
 /**
@@ -403,6 +413,12 @@ ximpia.common.Browser.fetchParamByName = (function(name) {
 	  	return "";
 	  else
 	  	return results[1];
+});
+/*
+ * Get form from xpForm, like xpData.my_form
+ */
+ximpia.common.Browser.getForm = (function(xpForm) {
+	return xpForm.split('.')[1];
 });
 /*
  * Get form data from sessionStorage
@@ -781,6 +797,21 @@ ximpia.common.Form = function() {
 	}
 	return _attr.pub;
 }
+/**
+ * 
+ */
+ximpia.common.Form.doRender = (function(element, reRender) {
+	var isRender = false;
+	if (typeof $(element).attr('data-xp-render') != 'undefined') {
+		isRender = $(element).attr('data-xp-render');
+	}
+	//console.log('isRender: ', isRender);
+	var doRender = false; 
+	if (isRender == false || reRender == true) {
+		doRender = true;
+	}
+	return doRender;
+});
 
 ximpia.common.Ajax = {};
 /**
@@ -848,7 +879,19 @@ ximpia.common.PageAjax = function() {
 			sectionId: "",
 			verbose: false,
 			data: {},
-			formData: {}
+			formData: {},
+			doRenders: function(xpForm) {
+				$("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+				$("#id_variables").xpObjInput('addHidden', xpForm);
+				$("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+				$("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+				$("input[data-xp-related='list.field']")
+					.filter("input[data-xp-type='basic.text']")
+					.xpObjListField('bindKeyPress', xpForm);
+				$("[data-xp-type='button']").xpObjButton('render');
+				$("[data-xp-type='link']").xpObjLink('render');
+			}
 		},
 		pub: {
 			init: function(obj) {
@@ -967,41 +1010,42 @@ ximpia.common.PageAjax = function() {
 				//$(".sectionComp").css('visibility', 'visible');
 				//console.log('.sectionComp: ' + $(".sectionComp"));
 			},
-			doForm: function() {
+			doFormPopup: function() {
+				console.log('doFormPopup...');
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
 						console.log(data)
 					}
-					//var formData = data.response[_attr.priv.formId];
-					//$("[data-xp-type='basic.input']").xpObjInput('renderField', formData);
-					//$("#id_variables").xpObjInput('addHidden', formData);
-					//$("[data-xp-type='basic.select']").xpObjSelect('render', formData);
-					//$("#id_sect_loading").fadeOut('fast');
-					//$("#" + "id_sect_signupUser").css('visibility', 'visible');					
-					// Pre-page : Binding ajax data to form
-					//var formData = data.response["form_signup"];
-					//sessionStorage.setItem('xpForm', JSON.stringify(formData));
-					//sessionStorage.setItem('form_signup', JSON.stringify(formData));
+					var xpForm = 'xpData' + '.' + _attr.priv.formId;
+					items = JSON.parse(sessionStorage.getItem('xpData'));
+					items['response'][_attr.priv.formId] = data;
+					sessionStorage.setItem('xpData', JSON.stringify(items));
+					_attr.priv.doRenders(xpForm);
+					var oForm = ximpia.common.Form();
+					oForm.doBindBubbles();
+					console.log('verbose: ' + _attr.priv.verbose);
+					_attr.priv.callback(data);
+				}).error(function(jqXHR, textStatus, errorThrown) {
+					$("#id_sect_loading").fadeOut('fast');
+					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
+					$("body").before(html);
+				});
+			},
+			doForm: function() {
+				console.log('doForm...');
+				$.getJSON(_attr.priv.path, function(data) {
+					if (_attr.priv.verbose == true) {
+						console.log(data)
+					}
 					var xpForm = 'xpData' + '.' + _attr.priv.formId;
 					sessionStorage.setItem('xpData', JSON.stringify(data));
-					//$("[data-xp-type='list.field']").xpObjListField('render');
-					$("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
-					$("#id_variables").xpObjInput('addHidden', xpForm);
-					$("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
-					$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
-					$("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
-					$("input[data-xp-related='list.field']")
-						.filter("input[data-xp-type='basic.text']")
-						.xpObjListField('bindKeyPress', xpForm);
-					$("[data-xp-type='button']").xpObjButton('render');
-					$("[data-xp-type='link']").xpObjLink('render');
+					_attr.priv.doRenders(xpForm);
 					ximpia.common.PageAjax.doFade();
 					// Conditions
 					// Post-Page : Page logic
 					var oForm = ximpia.common.Form();
 					oForm.doBindBubbles();
 					//oForm.doBindSubmitForm(_attr.priv.formId);
-					//processSnLogin();
 					$("[data-xp-js='submit']").xpPageButton();
 					$("[data-xp-js='submit']").xpPageButton('render');
 					// Callback
@@ -1017,7 +1061,11 @@ ximpia.common.PageAjax = function() {
 			doBusinessGetRequest: function(obj) {
 				_attr.priv.path = _attr.priv.path + '?bsClass=' + obj.className + ';method=' + obj.method;
 				console.log('path: ' + _attr.priv.path);
-				_attr.pub.doForm();
+				if (obj.mode == 'popup') {
+					_attr.pub.doFormPopup();
+				} else {
+					_attr.pub.doForm();
+				}
 			}
 		}
 	}

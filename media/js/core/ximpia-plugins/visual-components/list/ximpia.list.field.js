@@ -121,46 +121,50 @@
 				console.log('element : ' + element); 
 				var idBase = $(element).attr('id').split('_comp')[0];
 				console.log('idBase : ' + idBase);
-				var name = idBase.split('id_')[1];
-				var nameInput = name + 'Input';
-				var nameSelect = name + 'Select';
-				var nameList = name + 'ListValue';
-				$.metadata.setType("attr", "data-xp");
-				var attrs = $(element).metadata();
-				var dataInputAttrs = data[nameInput];
-				var dataSelectAttrs = data[nameSelect];
-				var dataListAttrs = data[nameList];
-				console.log('attrs....');
-				console.log(attrs);
-				console.log('dataInputAttrs....');
-				console.log(dataInputAttrs);
-				console.log('dataInputAttrs....');
-				console.log(dataSelectAttrs);
-				console.log('dataSelectAttrs....');
-				console.log(dataListAttrs);
-				/*var type = 'text';
-				if (attrs.hasOwnProperty('type')) {
-					type = attrs.type;
-				}*/
-				// id, name, type
-				var inType = attrs.inType;
-				if (inType == "input") {
-					var htmlContent = "";
-					htmlContent = htmlContent + "<div id=\"" + idBase + 'Input_comp' + "\" data-xp-type=\"text.autocomplete\" data-xp=\"{info: true, left: 145}\" style=\"float: left\" data-xp-related=\"list.field\" ></div>";
-					htmlContent = htmlContent + "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\" onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: " + idBase + "Input_comp, type: 'input'}\" >Add</a></div>";
-					htmlContent = htmlContent + "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px; margin-left: 15px; margin-top: 4px\" ></div><div style='clear:both'></div>";
-					htmlContent = htmlContent + "<input type=\"hidden\" name=\"" + nameList + "\" id=\"" + idBase + "ListValue\" value=\"\" />";
-				} else if (inType == "select") {
-					var htmlContent = "";
-					htmlContent = htmlContent + "<div id=\"" + idBase + 'Select_comp' + "\" data-xp-type=\"list.select\" data-xp=\"{left: 85, info: true}\" style=\"float: left\" data-xp-related=\"list.field\" ></div>";
-					htmlContent = htmlContent + "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\" onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: " + idBase + "Select_comp, type: 'select', choicesId: '" + dataSelectAttrs.choicesId + "'}\" >Add</a></div>";
-					htmlContent = htmlContent + "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px; margin-left: 15px; margin-top: 4px\" ></div><div style='clear:both'></div>";
-					htmlContent = htmlContent + "<input type=\"hidden\" name=\"" + nameList + "\" id=\"" + idBase + "ListValue\" value=\"\" />";
-				}
-				$(element).html(htmlContent);
-				$(element).css('clear', 'both');
-				console.log('field list html...');
-				console.log(htmlContent);				
+				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
+				if (doRender == true) {
+					var name = idBase.split('id_')[1];
+					var nameInput = name + 'Input';
+					var nameSelect = name + 'Select';
+					var nameList = name + 'ListValue';
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					var dataInputAttrs = data[nameInput];
+					var dataSelectAttrs = data[nameSelect];
+					var dataListAttrs = data[nameList];
+					console.log('attrs....');
+					console.log(attrs);
+					console.log('dataInputAttrs....');
+					console.log(dataInputAttrs);
+					console.log('dataInputAttrs....');
+					console.log(dataSelectAttrs);
+					console.log('dataSelectAttrs....');
+					console.log(dataListAttrs);
+					/*var type = 'text';
+					if (attrs.hasOwnProperty('type')) {
+						type = attrs.type;
+					}*/
+					// id, name, type
+					var inType = attrs.inType;
+					if (inType == "input") {
+						var htmlContent = "";
+						htmlContent = htmlContent + "<div id=\"" + idBase + 'Input_comp' + "\" data-xp-type=\"text.autocomplete\" data-xp=\"{info: true, left: 145}\" style=\"float: left\" data-xp-related=\"list.field\" ></div>";
+						htmlContent = htmlContent + "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\" onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: " + idBase + "Input_comp, type: 'input'}\" >Add</a></div>";
+						htmlContent = htmlContent + "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px; margin-left: 15px; margin-top: 4px\" ></div><div style='clear:both'></div>";
+						htmlContent = htmlContent + "<input type=\"hidden\" name=\"" + nameList + "\" id=\"" + idBase + "ListValue\" value=\"\" />";
+					} else if (inType == "select") {
+						var htmlContent = "";
+						htmlContent = htmlContent + "<div id=\"" + idBase + 'Select_comp' + "\" data-xp-type=\"list.select\" data-xp=\"{left: 85, info: true}\" style=\"float: left\" data-xp-related=\"list.field\" ></div>";
+						htmlContent = htmlContent + "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\" onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: " + idBase + "Select_comp, type: 'select', choicesId: '" + dataSelectAttrs.choicesId + "'}\" >Add</a></div>";
+						htmlContent = htmlContent + "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px; margin-left: 15px; margin-top: 4px\" ></div><div style='clear:both'></div>";
+						htmlContent = htmlContent + "<input type=\"hidden\" name=\"" + nameList + "\" id=\"" + idBase + "ListValue\" value=\"\" />";
+					}
+					$(element).html(htmlContent);
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					$(element).css('clear', 'both');
+					console.log('field list html...');
+					console.log(htmlContent);
+				}				
 			}			
 			// Bind click event to add button
 			$("[data-xp-type='button.field']").click(function() {

@@ -707,6 +707,7 @@ div.loadError {
 	border-radius: 20px;
 	border: 2px solid;
 	box-shadow: 10px 10px 5px #888888;
+	z-index: 9999;
 }
 
 span.AjaxButton {

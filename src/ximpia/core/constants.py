@@ -6,3 +6,6 @@ class Constants(object):
 	LINKEDIN = 'linkedin'
 	GOOGLE = 'google'
 	EMAIL = 'email'
+	READ = 'read'
+	UPDATE = 'update'
+	DELETE = 'delete'
