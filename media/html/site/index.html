@@ -16,7 +16,9 @@
 
 <body>
 
-<form id="form_login" action="" method="post" data-xp="{callback: 'ximpia.site.Login.showLogin', className: 'LoginBusiness', method: 'login'}">
+<div id="id_view" data-xp="{viewName: 'login', className: 'LoginBusiness', method: 'login', callback: 'ximpia.site.Login.showLogin'}" />
+
+<form id="form_login" action="" method="post" >
 
 <!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
 
@@ -111,24 +113,16 @@
 
 <script>	
 
-jQuery(document).ready(function($){
-	
-	ximpia.common.Page.init();	
-	// Get all forms, for each:
+jQuery(document).ready(function($){	
+	ximpia.common.Page.init();
+	var viewData = ximpia.common.Window.getViewAttrs();
 	var pageJx = ximpia.common.PageAjax();
-	for (var i = 0; i<document.forms.length; i++) {
-		var myForm = document.forms[i];
-		console.log('form : ' + myForm);
-		$.metadata.setType("attr", "data-xp");
-		var formData = $("#" + myForm.id).metadata();
-		var callback = eval(formData.callback)
-		pageJx.init({	path: ximpia.common.Path.getBusiness(),
+	var callback = eval(viewData.callback);
+	pageJx.init({	path: ximpia.common.Path.getBusiness(),
 				callback: callback,
-				formId: myForm.id,
+				viewName: viewData.viewName,
 				verbose: true});
-		pageJx.doBusinessGetRequest({	className: formData.className, 
-						method: formData.method});
-	}
+	pageJx.doBusinessGetRequest({ className: viewData.className, method: viewData.method });
 });
 
 </script>

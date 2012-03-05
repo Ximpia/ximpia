@@ -213,16 +213,18 @@ class LoginBusiness(CommonBusiness):
 			jsData = JsResultDict()
 			jsData.addAttr('isLogin', True)
 			jsData.addAttr('userid', self._ctx['user'].pk)
-			result = self.buildJSONResult(jsData)
 		else:
 			# no login: login form
 			jsData = JsResultDict()
 			self._ctx[Ctx.FORM] = forms.LoginForm()
 			self._ctx[Ctx.FORM].buildJsData(jsData)
 			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
-			jsData.addAttr('isLogin', False)
-			result = self.buildJSONResult(jsData)
-		print 'result : ', result
+			jsData.addAttr('isLogin', False)			
+		# Popup - Password reminder
+		self._ctx[Ctx.FORM] = forms.PasswordReminderForm()
+		self._ctx[Ctx.FORM].buildJsData(jsData)
+		result = self.buildJSONResult(jsData)
+		print 'result: ', result
 		return result
 
 class ContactBusiness(CommonBusiness):

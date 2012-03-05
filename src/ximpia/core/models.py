@@ -218,6 +218,7 @@ class Context(object):
 	USER_SOCIAL = 'userSocial'
 	AUTH = 'auth'
 	FORM = 'form'
+	FORMS = 'forms'
 	CAPTCHA = 'captcha'
 	RAW_REQUEST = 'raw_request'
 	JS_DATA = 'jsData'
@@ -245,6 +246,7 @@ class Context(object):
 		ctx['userSocial'] = ''
 		ctx['auth'] = {}
 		ctx['form'] = None
+		ctx['forms'] = {}
 		ctx['captcha'] = None
 		ctx[self.JS_DATA] = ''
 		if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():

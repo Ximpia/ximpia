@@ -166,6 +166,9 @@ class XBaseForm(forms.Form):
 			raise ValidationError('Form Clean Validation Error')
 		"""print 'self.cleaned_data : ', self.cleaned_data
 		return self.cleaned_data"""
+	def getFormId(self):
+		"""Get form id"""
+		return self._XP_FORM_ID
 	def buildJsData(self, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
