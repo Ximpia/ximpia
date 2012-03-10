@@ -168,40 +168,26 @@ class LoginBusiness(CommonBusiness):
 		self._dbUserSys = UserSysDAO(ctx)
 		self._f = ctx[Ctx.FORM]
 	@ValidateFormBusiness(forms.LoginForm, pageError=True)
-	def doLogin(self):
+	def doLogin(self, **dd):
 		"""Performs the login action
 		@param ctx: Context
 		@return: result"""
-		user = self.authenticateUser([self._dbUserSys, {'username': self._f.d('ximpiaId'), 
-						'password': self._f.d('password')}, 'password'])
+		user = self.authenticateUser(	userName = self._f.d('ximpiaId'), 
+						password = self._f.d('password'), 
+						errorName = 'password')
 		self.isValid()
 		login(self._ctx[Ctx.RAW_REQUEST], user)
-	def showReminderNewPassword(self):
+	@ValidateFormBusiness(forms.PasswordReminderForm, pageError=True)
+	def doPasswordReminder(self):
 		"""Doc."""
-		# Checks validity of link attributes and activation link
-		pass
-	def showReminderEmail(self):
-		"""We check email with the one in database. If ok, we send reset password email to user
-		@param ctx: Context
-		@return: result"""
-		print 'showReminderEmail...'
-		jsData = JsResultDict()
-		self._ctx[Ctx.FORM] = forms.PasswordReminderForm()
-		self._ctx[Ctx.FORM].buildJsData(jsData)
-		result = self.buildJSONResult(jsData)
-		print result
-		return result
-	@ValidateFormBusiness(forms.LoginForm, pageError=True)
-	def doReminderSendEmail(self):
-		"""Doc."""
+		print 'doPasswordReminder...'
 		# Checks that email sent is in system
 		# Send email with link to reset password. Link has time validation
-		pass
-	@ValidateFormBusiness(forms.LoginForm, pageError=True)
-	def doReminderNewPassword(self):
+	def doNewPassword(self):
 		"""Doc."""
-		# Sets new password for user
-		# Logs in user and redirect to index.html
+		pass
+	def showNewPassword(self):
+		"""Doc."""
 		pass
 	def login(self):
 		"""Checks if user is logged in. If true, get login user information in the context

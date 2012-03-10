@@ -118,7 +118,7 @@ class LoginForm(XBaseForm):
 class PasswordReminderForm(XBaseForm):
 	_XP_FORM_ID = 'passwordReminder'
 	_dbUser = User()
-	email = XpEmailField(_dbUser, '_dbUser.email', label='Email')
+	email = XpEmailField(_dbUser, '_dbUser.email', label='Email', help_text= _('Email address you signed up with'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_password']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):

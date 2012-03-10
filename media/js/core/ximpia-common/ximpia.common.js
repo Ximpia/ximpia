@@ -110,7 +110,8 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
 	ximpia.common.Window.createPopHtml();
         var sTitle = '';
         var sMessage = '';
-        var sButtons = 'MsgCPClose:' + eval($("#id_buttonConstants").attr('value'))['close'];
+        //var sButtons = 'MsgCPClose:' + eval($("#id_buttonConstants").attr('value'))['close'];
+        var sButtons = '';
         var sEffectIn = 'fadeIn,1000';
         var sEffectOut = '';
         var bFadeBackground = true;
@@ -122,11 +123,13 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         //var htmlPage = "<!-- START POPUP MESSAGE --><div class=\"Pops\"><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div><!-- END POPUP MESSAGE -->";
         //console.log(htmlPage);
         //$("body").before(htmlPage);
+        console.log('messageOptions...');
+        console.log(messageOptions);
         if (messageOptions.title) sTitle = messageOptions.title;
         if (messageOptions.message) sMessage = messageOptions.message;
-        if (messageOptions.buttons) sButtons = messageOptions.buttons;
-        if (messageOptions.effectIn) sEffectIn = messageOptions.effectIn;
-        if (messageOptions.effectOut) sEffectOut = messageOptions.effectOut;
+        if (messageOptions.buttons) buttons = messageOptions.buttons;
+        if (messageOptions.effectIn) effectIn = messageOptions.effectIn;
+        if (messageOptions.effectOut) effectOut = messageOptions.effectOut;
         if (messageOptions.fadeBackground) bFadeBackground = messageOptions.fadeBackground;
         if (messageOptions.width) iWidth = messageOptions.width;
         if (messageOptions.height) iHeight = messageOptions.height;
@@ -145,6 +148,9 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
             $("div.PopMessage").css('width', '450px');
             $("div#PopMsgWrapper").css('width', '450px');
         }
+        // Max Height is 400 pixels
+        // TODO: Make this dynamic depending on system resolution
+        if (iHeight > 400) iHeight = 400;
         if (iHeight) {
             $("div.MsgText").css('height', iHeight + 'px');
             var iTopPosition = 80;
@@ -180,21 +186,29 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         $("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + sTitle + '</div>');
         $("div.MsgText").html(sMessage);
         //$("#PopMsgWrapper .MsgText").html(sMessage);
-        ButtonList = sButtons.split(',');
+        //ButtonList = sButtons.split(',');
+        //console.log('sButtons: ' + sButtons);
+        //console.log('ButtonList: ' + ButtonList);
+        console.log('buttons: ' + buttons);
         $("div.MsgButtons").text('');
-        for (var i=0; i<ButtonList.length; i++) {
+        $("div.MsgButtons").append(buttons);
+        /*for (var i=0; i<ButtonList.length; i++) {
             Fields = ButtonList[i].split(':');
             sButtonId = Fields[0];
             sButtonText = Fields[1];
             buttonBefore = Fields[2];
-            $("div.MsgButtons").append('<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>');
+            //$("div.MsgButtons").append('<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>');
+        }*/
+        //EffectInList = sEffectIn.split(',');
+        //sEffectInTxt = EffectInList[0];
+        effectInTxt = effectIn.style;
+        iEffectInTime = parseInt(effectIn.time);
+        //iEffectInTime = parseInt(EffectInList[1]);
+        //EffectOutList = sEffectOut.split(',');
+        if (typeof effectOut.style != 'undefined') {
+        	effectOutTxt = effectOut.style;
+        	iEffectOutTime = parseInt(effectOut.time);        	
         }
-        EffectInList = sEffectIn.split(',');
-        sEffectInTxt = EffectInList[0];
-        iEffectInTime = parseInt(EffectInList[1]);
-        EffectOutList = sEffectOut.split(',');
-        sEffectOutTxt = EffectOutList[0];
-        iEffectOutTime = parseInt(EffectOutList[1]);        
         $("div.PopMessage").fadeIn('fast');        
         /*if (sEffectInTxt == 'fadeIn') {
             $("div.PopMessage").fadeIn(iEffectInTime);
@@ -625,6 +639,18 @@ ximpia.common.Form = function() {
 			/**
 			 * Do action form submit. Will post form to server and write to sessionStorage xpData-action results
 			 * obj: formId
+			 * 
+			 * Options
+			 * =======
+			 * attrs: 		Button attributes: action, align, callback, form, method, text, type
+			 * callback: 		Callback function
+			 * idActionComp: 	Id of button to bind
+			 * isMsg: 		Show message area check
+			 * isMsg: 		Id of message area
+			 * showPopUp: 		Check if new popup is shown to display validation errors in form and system error. 
+			 * 			false for popup buttons.
+			 * destroyMethod: 	Button plugin method to use to destroy message area.
+			 * 
 			 */
 			bindAction: function(obj) {
 				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
@@ -644,73 +670,87 @@ ximpia.common.Form = function() {
                         					}
                         					console.log('form :: statusCode : ' + statusCode);
                         					if (statusCode == 'OK') {
-                        						if (obj.attrs.type == 'pageActionMsg') {
-                        							$("#id_btPageMsg_img").xpLoadingSmallIcon('ok');
-                        							$("#id_btPageMsg_text").text($("#id_msg_ok").attr('value'));
-                        						} else if (obj.attrs.type == 'pageAction') {
-                        							$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
+                        						if (obj.isMsg == true) {
+                        							$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
+                        							$("#" + obj.idMsg + "_text").text($("#id_" + obj.attrs.form + "_msg_ok").attr('value'));
+                        						} else {
+                        							$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                         						}
                             						// Put all fields inside form valid that are now errors
-                            						$(".error").addClass('valid').removeClass("error");
+                            						$(".error").addClass('valid').removeClass("error");                            						
+                            						console.log('clickStatus: ' + obj.attrs.clickStatus);
+                            						if (typeof obj.attrs.clickStatus != 'undefined' && obj.attrs.clickStatus == 'disable') {
+                            							//console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
+                            							$("#" + obj.idActionComp).xpObjButton('disable');					
+                            						}
                             						// Callback
                             						if (typeof obj.callback != 'undefined') {
                             							//console.log('form :: callback : ' + obj.callback);
 	                            						obj.callback();
-                            						}
-                            						if (typeof obj.attrs.disableOnClick != 'undefined') {
-                            							//console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
-                            							$("#" + obj.idActionComp).xpObjButton('disable');
                             						}
                         					} else {
                         						// Business Error Messages
                         						// Can be associated to fields or not
                             						// Integrate showMessage, popUp, etc...
                             						var list = responseMap['errors'];
-                            						var doPageError = false;
+                            						var doMsgError = false;
                             						if (list.length > 0) {
-                            							doPageError = list[0][2]
+                            							doMsgError = list[0][2]
                             						}
-                            						console.log('doPageError: ' + doPageError);
-                            						if (doPageError == true) {
-                        							if (obj.attrs.type == 'pageActionMsg') {
-	                        							$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
-                        								$("#id_btPageMsg_text").text(list[0][1]);
-                        							} else if (obj.attrs.type == 'pageAction') {
-	                        							$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
-                        							}
+                            						console.log('doMsgError: ' + doMsgError);
+                            						console.log('isgMsg: ' + obj.isMsg);
+                            						if (doMsgError == true) {
+                            							if (obj.isMsg == true) {
+                        								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
+                        								$("#" + obj.idMsg + "_text").text(list[0][1]);
+                            							} else {
+                            								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+                            							}
                             						} else {
                             							console.log('form :: errors: ' + list);
-                            							message = '<ul>'
-                            							var errorName = "";
-                            							var errorId = "";
-                            							for (var i=0; i<list.length; i++) {
-	                                						errorId = list[i][0];
-                                							errorName = $("label[for='" + errorId + "']").text();
-                                							console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
-                                							var errorMessage = list[i][1];
-                                							$("#" + errorId).removeClass("valid");
-                                							$("#" + errorId).addClass("error");
-                                							message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
+                            							if (obj.showPopUp == true) {
+                            								message = '<ul>'
+                            								var errorName = "";
+                            								var errorId = "";
+                            								for (var i=0; i<list.length; i++) {
+		                                						errorId = list[i][0];
+                                								errorName = $("label[for='" + errorId + "']").text();
+                                								console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
+                                								var errorMessage = list[i][1];
+                                								$("#" + errorId).removeClass("valid");
+                                								$("#" + errorId).addClass("error");
+                                								message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
+                            								}
+                            								message = message + '</ul>';
+                            								// Show error Message in pop up
+                            								ximpia.common.Window.showPopUp({
+		                                						title: 'Errors Found',
+                                								message: message,
+                            								});
+                            							} else {
+                        								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
+                        								$("#" + obj.idMsg + "_text").text('Error!!!');
                             							}
-                            							message = message + '</ul>';
-                            							// Show error Message in pop up
-                            							ximpia.common.Window.showPopUp({
-	                                						title: 'Errors Found',
-                                							message: message,
-                            							});                            							
                             						}
                         					}
                     					},
                     					error: function (data, status, e) {
                         					console.log(data + ' ' + status + ' ' + e);
-                        					if (obj.attrs.type == 'pageActionMsg') {
-                        						$("#id_btPageMsg").xpObjButton('destroyPageMsgBar');
+                        					var errorMsg = 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks'; 
+                        					if (obj.showPopUp == true) {
+                        						if (doMsgError == false) {
+                        							$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+                        						}
+                        						ximpia.common.Window.showPopUp({
+	                            						title: 'Could not make it!',
+                            							message: errorMsg,
+                            							height: 50
+                            							});                        						
+                        					} else {
+                        						errorMsg = 'I received an expected error. Please retry later. Thanks';
+                        						$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
+                        						$("#" + obj.idMsg + "_text").text(errorMsg);                        						
                         					}
-                        					ximpia.common.Window.showPopUp({
-                            						title: 'Could not make it!',
-                            						message: 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks',
-                            						height: 50
-                            						});
                     					}
                     				});
 					},
@@ -921,6 +961,7 @@ ximpia.common.PageAjax = function() {
 			doRenders: function(xpForm) {
 				console.log('xpForm: ' + xpForm);
 				var formId = xpForm.split('.')[1];
+				//console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
 				$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
 				$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
 				$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
@@ -929,8 +970,8 @@ ximpia.common.PageAjax = function() {
 				$('#' + formId).find("input[data-xp-related='list.field']")
 					.filter("input[data-xp-type='basic.text']")
 					.xpObjListField('bindKeyPress', xpForm);
-				$('#' + formId).find("[data-xp-type='button']").xpObjButton('render');
-				$('#' + formId).find("[data-xp-type='link']").xpObjLink('render');
+				$("[data-xp-type='button']").xpObjButton('render');
+				$("[data-xp-type='link']").xpObjLink('render');
 			}
 		},
 		pub: {
@@ -1053,6 +1094,7 @@ ximpia.common.PageAjax = function() {
 			},
 			doFormPopupNoView: function() {
 				console.log('doFormPopupNoView...');
+				console.log(document.forms);
 				var data = JSON.parse(sessionStorage.getItem('xpData-view-' + _attr.priv.viewName));
 				for (var i = 0; i<document.forms.length; i++) {
 					var myForm = document.forms[i];
@@ -1064,7 +1106,7 @@ ximpia.common.PageAjax = function() {
 				// Post-Page : Page logic
 				var oForm = ximpia.common.Form();
 				oForm.doBindBubbles();
-				_attr.priv.callback(data);
+				//_attr.priv.callback(data);
 				console.log('end doFormPopupNoView()');
 			},
 			doFormPopup: function() {

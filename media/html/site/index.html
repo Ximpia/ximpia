@@ -18,7 +18,9 @@
 
 <div id="id_view" data-xp="{viewName: 'login', className: 'LoginBusiness', method: 'login', callback: 'ximpia.site.Login.showLogin'}" />
 
-<form id="form_login" action="" method="post" >
+<section id="id_data" >
+
+<form id="form_login" action="" method="post" data-xp="{className: 'LoginBusiness', method: 'login'}" >
 
 <!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
 
@@ -47,8 +49,7 @@
 <br/>
 
 <!-- Link Component: Open new panel (task) or open in modal mode -->
-<div id="id_passwordReminderLink_comp" data-xp-type="link" 
-	data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password'}"></div>
+<div id="id_passwordReminderLink_comp" data-xp-type="link" data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password'}"></div>
 
 <!--
 <div id="id_passwordReminderLink_comp" data-xp-type="link">
@@ -66,9 +67,7 @@
 <section id="id_sectionButton" class="sectionButton">
 
 <div id="id_pageButton" class="btBar">
-<div id="id_doLogin_comp" 
-	data-xp-type="button" 
-	data-xp="{form: 'form_login', align: 'left', text: 'Login', type: 'pageActionMsg', method: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
+<div id="id_doLogin_comp" data-xp-type="button" data-xp="{form: 'form_login', align: 'left', text: 'Login', action: 'pageActionMsg', type: 'color', method: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
 </div>
 
 </section>
@@ -128,6 +127,8 @@ jQuery(document).ready(function($){
 </script>
 
 </form>
+
+</section>
 
 </body>
 </html>

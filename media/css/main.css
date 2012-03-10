@@ -244,7 +244,7 @@ header {
 	left: -2000px;
 	top: 200px;
 	visibility:hidden;
-	z-index: 100000;
+	z-index: 5000;
 }
 
 .Pops iframe
@@ -306,6 +306,11 @@ div.PopMessage div.MsgText {
 	min-height: 100px;
 	max-height: 500px;
 	overflow:auto;
+}
+
+.msgPopBody {
+	margin-top: auto;
+	margin-bottom: auto;
 }
 
 div.PopMessage div.MsgButtons {
@@ -1019,7 +1024,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	background-image: linear-gradient(top, #eee, #ccc);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#eeeeee', EndColorStr='#cccccc');
 	border: 1px solid #777;
-	padding: 0 1.0em;
+	padding: 0 1.4em;
 	margin: 0.5em;
 	font: bold 1em/2em Arial, Helvetica;
 	text-decoration: none;
@@ -1049,7 +1054,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	border-top-right-radius: 10px; 
 }
 
-.buttonIcon-hover, .buttonIcon:hover
+/* .buttonIcon-hover, .buttonIcon:hover */
+.buttonIcon-hover
 {
 	background-color: #ddd;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
@@ -1061,7 +1067,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#fafafa', EndColorStr='#dddddd');
 }
 
-.buttonIcon-active, .buttonIcon:active
+/*  .buttonIcon:active  */
+.buttonIcon-active
 {
 	-moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
 	-webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
@@ -1284,12 +1291,22 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 
 /* Button Message Result */
 .btMsg {
-	width: 870px; 
+	width: 868px; 
 	border: 1px solid #ccc; 
 	height: 25px;
 	border-radius: 8px;
 	position: fixed;
 	bottom: 365px;
+}
+
+.btMsgPopup {
+	/*width: 870px;*/ 
+	border: 1px solid #ccc; 
+	height: 25px;
+	/*min-height: 25px;*/
+	border-radius: 8px;
+	position: fixed;
+	/*bottom: 365px;*/
 }
 
 .sectionButton {

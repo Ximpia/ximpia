@@ -28,7 +28,7 @@ class XBaseForm(forms.Form):
 	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	ERR_GEN_VALIDATION = XpHiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
-	msg_ok = XpHiddenField(xpType='input.hidden', initial= _('I performed the action you requested'))
+	msg_ok = XpHiddenField(xpType='input.hidden', initial= _('OK!'))
 	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)

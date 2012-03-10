@@ -209,7 +209,7 @@
 			var list = Object.keys(data);						
 			for (key in list) {
 				if (data[list[key]]['type'] == 'hidden') {					
-					$('#' + formId).append("<input type=\"hidden\" id=\"id_" + list[key] + "\" name=\"" + list[key] + "\" value=\"\" />");
+					$('#' + formId).append("<input type=\"hidden\" id=\"id_" + formId + '_' + list[key] + "\" name=\"" + list[key] + "\" value=\"" + data[list[key]]['value'] + "\" />");
 					$("#id_" + list[key]).attr('value', data[list[key]]['value']);
 				}				
 			}

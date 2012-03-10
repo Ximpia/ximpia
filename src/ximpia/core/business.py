@@ -185,15 +185,15 @@ class CommonBusiness(object):
 			if self._ctx[name] != value:
 				self.addError(errName)
 	
-	def authenticateUser(self, userData):
-		"""Authenticates user and password"""
-		dbObj, qArgs, errName = userData
+	def authenticateUser(self, **dd):
+		"""Authenticates user and password
+		dd: {'userName': $userName, 'password': $password, 'errorName': $errorName}"""
+		qArgs = {'username': dd['userName'], 'password': dd['password']}
 		user = authenticate(**qArgs)
-		print 'user: ', user
 		if user:
 			pass
 		else:
-			self.addError(errName)
+			self.addError(dd['errorName'])
 		return user
 	
 	def isValid(self):
@@ -220,6 +220,7 @@ class EmailBusiness(object):
 		send_mail(subject, message, settings.WEBMASTER_EMAIL, recipientList)
 
 class ValidateFormBusiness(object):
+	"""Checks that form is valid, builds result, builds errors"""
 	_form = None
 	_pageError = False
 	def __init__(self, *argsTuple, **argsDict):
@@ -231,7 +232,7 @@ class ValidateFormBusiness(object):
 		def wrapped_f(*argsTuple, **argsDict):
 			"""Doc."""
 			object = argsTuple[0]
-			object._ctx[Ctx.JS_DATA] = JsResultDict() 
+			object._ctx[Ctx.JS_DATA] = JsResultDict()
 			object._f = self._form(object._ctx[Ctx.POST])
 			bForm = object._f.is_valid()
 			if bForm == True:
@@ -242,6 +243,7 @@ class ValidateFormBusiness(object):
 					return result
 				except XpMsgException:
 					errorDict = object.getErrors()
+					print errorDict
 					if len(errorDict) != 0:
 						result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=self._pageError))
 					else:
@@ -249,4 +251,9 @@ class ValidateFormBusiness(object):
 					return result
 			else:
 				print 'Validation error!!!!!'
+				#print object._f
+				#print object._f.errors
+				errorDict = {'': 'Error validating your data. Check it out and send again'}
+				result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=True))
+				return result
 		return wrapped_f
