@@ -121,6 +121,7 @@ class UserDetail(BaseModel):
 				verbose_name = _('Validated Email'), help_text = _('User has validated his email address?'))
 	filesQuota = models.IntegerField(default=Constants.FILE_QUOTA_DEFAULT,
 				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files'))
+	resetPasswordDate = models.DateField(verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
 	def __unicode__(self):
 		return str(self.user.username)
 	def getSocialNetworkUser(self, socialNetName):

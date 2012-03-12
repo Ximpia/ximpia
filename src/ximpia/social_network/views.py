@@ -19,7 +19,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 #from models import Invitation
-from ximpia.core.models import context, Context, XpTemplate, getResultOK
+from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx
 #from choices import Choices
 #from constants import Constants
 #from messages import MsgSignup
@@ -178,8 +178,8 @@ def jxBusiness(request, *argsTuple, **argsDict):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
-	ctx = argsDict['ctx']
 	print 'jxBusiness...'
+	ctx = argsDict['ctx']
 	print request.REQUEST.items()
 	if request.REQUEST.has_key('bsClass') and request.is_ajax() == True:
 		bsClass = request.REQUEST['bsClass'];
@@ -449,7 +449,7 @@ def activateAccount(request, user, activationCode, **argsDict):
 	ctx = argsDict['ctx']
 	# start
 	signup = SignupBusiness(ctx)
-	resultDict = signup.activateAccount(user, activationCode)		
+	resultDict = signup.activateAccount(user, activationCode)
 	if resultDict['status'] == 'OK':
 		# login user
 		# Redirect to Ximpia home
@@ -458,3 +458,24 @@ def activateAccount(request, user, activationCode, **argsDict):
 		# assume spammer
 		raise Http404
 	return result
+
+
+# ===========================================================================================================
+
+
+# *******************************
+# ****     Server Content     ***
+# *******************************
+
+
+@Context
+def changePassword(request, userAccount, **argsDict):
+	"""View to show change password form. User will enter new password and click save. New password then would be saved
+	and user logged in"""
+	print 'changePassword...'
+	print 'userAccount: ', userAccount
+	ctx = argsDict['ctx']
+	ctx['userAccount'] = userAccount
+	ctx[Ctx.FORM] = forms.ChangePasswordForm()
+	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, ctx))
+	return result	

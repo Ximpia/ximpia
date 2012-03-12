@@ -655,12 +655,15 @@ ximpia.common.Form = function() {
 			bindAction: function(obj) {
 				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
 				//console.log('Submit form: ' + $("#" + obj.formId).val());
+				var idOkMsg = '';
+				var okMsg = '';
 				$("#" + obj.attrs.form).validate({
 					submitHandler: function(form) {
                 				$(form).ajaxSubmit({
                     					dataType: 'json',
                     					success: function(response, status) {
                     						console.log('suscess');
+                    						console.log(response);
                         					// Set action into session
                         					ximpia.common.Browser.setSessionAction(response);
                         					var responseMap = eval(response);
@@ -672,7 +675,8 @@ ximpia.common.Form = function() {
                         					if (statusCode == 'OK') {
                         						if (obj.isMsg == true) {
                         							$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
-                        							$("#" + obj.idMsg + "_text").text($("#id_" + obj.attrs.form + "_msg_ok").attr('value'));
+                        							okMsg = responseMap['response'][obj.attrs.form]['msg_ok']['value'];
+                        							$("#" + obj.idMsg + "_text").text(okMsg);
                         						} else {
                         							$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                         						}

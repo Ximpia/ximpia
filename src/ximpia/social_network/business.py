@@ -3,6 +3,7 @@ import simplejson as json
 import string
 import base64
 import cPickle
+import datetime
 
 from django.http import HttpResponse
 from django.db.models import Q
@@ -24,6 +25,7 @@ from ximpia.util import ut_email
 
 from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx
 from ximpia.core.business import CommonBusiness, ValidateFormBusiness
+from ximpia.core.data import XmlMessageDAO
 
 from yacaptcha.models import Captcha
 from ximpia import settings
@@ -32,8 +34,7 @@ from choices import Choices
 
 from ximpia.util.js import Form as _jsf
 
-from data import UserDAO, AccountDAO, OrganizationDAO, UserSysDAO, InvitationDAO, UserDetailDAO, GroupSysDAO, UserSocialDAO,\
-	ContactDAO
+from data import UserDAO, AccountDAO, OrganizationDAO, UserSysDAO, InvitationDAO, UserDetailDAO, GroupSysDAO, UserSocialDAO, ContactDAO
 from data import GroupSocialDAO, ContactDetailDAO, SocialNetworkDAO, UserParamDAO, SocialNetworkUserSocialDAO, UserProfileDAO
 from data import IndustryDAO, OrganizationGroupDAO, SocialNetworkOrganizationDAO, UserAccountContractDAO, TagUserTotalDAO, LinkUserTotalDAO
 from data import SkillGroupDAO, SkillUserAccountDAO, VersionDAO, AddressContactDAO, CommunicationTypeContactDAO, FileVersionDAO
@@ -166,6 +167,8 @@ class LoginBusiness(CommonBusiness):
 		super(LoginBusiness, self).__init__(ctx)
 		self._dbUserAccount = UserAccountDAO(ctx)
 		self._dbUserSys = UserSysDAO(ctx)
+		self._dbXmlMessage = XmlMessageDAO(ctx)
+		self._dbUserDetail = UserDetailDAO(ctx)
 		self._f = ctx[Ctx.FORM]
 	@ValidateFormBusiness(forms.LoginForm, pageError=True)
 	def doLogin(self, **dd):
@@ -174,26 +177,57 @@ class LoginBusiness(CommonBusiness):
 		@return: result"""
 		user = self.authenticateUser(	userName = self._f.d('ximpiaId'), 
 						password = self._f.d('password'), 
-						errorName = 'password')
+						errorName = 'wrongPassword')
 		self.isValid()
 		login(self._ctx[Ctx.RAW_REQUEST], user)
 	@ValidateFormBusiness(forms.PasswordReminderForm, pageError=True)
 	def doPasswordReminder(self):
-		"""Doc."""
+		"""Checks that email exists, then send email to user with reset link"""
 		print 'doPasswordReminder...'
 		# Checks that email sent is in system
+		self.validateExists([
+					[self._dbUserSys, {'email': self._f.d('email')}, 'emailDoesNotExist']
+				])
+		self.isValid()
+		# Update User : resetPasswordDate with system date +48 hours (parameters) ???
+		user = self._dbUserSys.get(email = self._f.d('email'))
+		userDetail = self._dbUserDetail.get(user=user)
+		now = datetime.date.today()
+		# The number of days validity should be parameter
+		numberDaysDelay = 2
+		userDetail.resetPasswordDate = datetime.date(now.year, now.month, now.day+numberDaysDelay)
+		userDetail.save()
 		# Send email with link to reset password. Link has time validation
+		xmlMessage = self._dbXmlMessage.get(name='Msg/SocialNetwork/Login/PasswordReminder/', lang='en').body
+		subject, message = ut_email.getMessage(xmlMessage)
+		message = string.Template(message).substitute(	firstName = user.first_name,
+								userAccount = user.username	)
+		# send mail
+		send_mail(subject, message, settings.WEBMASTER_EMAIL, [self._f.d('email')])
+		self.setOkMsg('OK_PASSWORD_REMINDER')
+	@ValidateFormBusiness(forms.ChangePasswordForm, pageError=True)
 	def doNewPassword(self):
-		"""Doc."""
-		pass
-	def showNewPassword(self):
-		"""Doc."""
+		"""Saves new password, it does authenticate and login user."""
+		print 'doNewPassword...'
+		user = self._dbUserSys.get(pk=self._f.d('ximpiaId'))
+		user.set_password(self._f.d('newPassword'))
+		user.save()
+		# Authenticate user
+		user = self.authenticateUser(	userName = self._f.d('ximpiaId'), 
+						password = self._f.d('newPassword'), 
+						errorName = 'wrongPassword')
+		self.isValid()
+		login(self._ctx[Ctx.RAW_REQUEST], user)
+	def showNewPassword(self, userAccount):
+		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword."""
+		#result = render_to_response('', RequestContext(request, ctx))
 		pass
 	def login(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@param ctx: Context
 		@return: result"""
 		# Check if login:
+		print 'login...'
 		if self._ctx['user'].is_authenticated():
 			# login: context variable isLogin = True
 			jsData = JsResultDict()
@@ -291,7 +325,7 @@ class SignupBusiness(CommonBusiness):
 		# System User
 		user = self._dbUserSys.create({'username': self._f.d('ximpiaId'), 'email': self._f.d('email'), 
 						'first_name': self._f.d('firstName'), 'last_name': self._f.d('lastName')}, bPassword=True,
-						password=self._f.d('firstName'))
+						password=self._f.d('password'))
 		# Ximpia User
 		userSocial = self._dbUserSocial.create({'user': user, 'socialChannel': Constants.PROFESSIONAL, 'userCreateId': user.id})
 		userDetail = self._dbUserDetail.create({'user': user, 'name': self._f.d('firstName') + ' ' + self._f.d('lastName')})

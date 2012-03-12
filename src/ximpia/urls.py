@@ -57,6 +57,9 @@ urlpatterns = patterns('',
     
     # User profile
     
-    # Organization profile    
+    # Organization profile
+    
+    # Social Network    
+    (r'^view/', include('ximpia.social_network.urls')),
     
 )

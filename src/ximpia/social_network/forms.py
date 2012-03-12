@@ -108,7 +108,7 @@ class LoginForm(XBaseForm):
 	_dbUser = User()
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId'))
 	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, help_text = _('Your Password'))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_password']]))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
@@ -119,10 +119,24 @@ class PasswordReminderForm(XBaseForm):
 	_XP_FORM_ID = 'passwordReminder'
 	_dbUser = User()
 	email = XpEmailField(_dbUser, '_dbUser.email', label='Email', help_text= _('Email address you signed up with'))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_password']]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword','ERR_emailDoesNotExist']]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_REMINDER']]))
 	def clean(self):
 		"""Clean form"""
+		self._xpClean()
+		return self.cleaned_data
+
+class ChangePasswordForm(XBaseForm):
+	_XP_FORM_ID = 'changePassword'
+	_dbUser = User()
+	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId, the id you signed up'))
+	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='New Password', help_text = _('Your New Password'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm New Password', help_text = _('write again your password to make sure there are no errors'))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
+	def clean(self):
+		"""Clean form"""
+		self._validateSameFields([('newPassword','newPasswordConfirm')])
 		self._xpClean()
 		return self.cleaned_data
 

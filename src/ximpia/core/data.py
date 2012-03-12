@@ -1,5 +1,6 @@
 from django.utils.translation import ugettext as _
 from ximpia.core.models import XpMsgException 
+from models import XmlMessage
 
 class CommonDAO(object):	
 
@@ -188,3 +189,9 @@ class CommonDAO(object):
 			field.add(nameModel)
 
 	ctx = property(_getCtx, None)
+
+class XmlMessageDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(XmlMessageDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = XmlMessage
+

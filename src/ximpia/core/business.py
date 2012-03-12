@@ -204,6 +204,10 @@ class CommonBusiness(object):
 		if not self.isBusinessOK():
 			# Here throw the BusinessException
 			raise XpMsgException(None, _('Error in validating business layer'))
+	def setOkMsg(self, idOK):
+		"""Sets the ok message id to shoe"""
+		msgDict = _jsf.decodeArray(self._f.fields['okMessages'].initial)
+		self._f.fields['msg_ok'].initial = msgDict[idOK]
 	
 
 class EmailBusiness(object):
@@ -240,6 +244,7 @@ class ValidateFormBusiness(object):
 					f(*argsTuple, **argsDict)
 					object._f.buildJsData(object._ctx[Ctx.JS_DATA])
 					result = object.buildJSONResult(object._ctx[Ctx.JS_DATA])
+					#print result
 					return result
 				except XpMsgException:
 					errorDict = object.getErrors()

@@ -28,7 +28,7 @@ class XBaseForm(forms.Form):
 	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
 	ERR_GEN_VALIDATION = XpHiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
-	msg_ok = XpHiddenField(xpType='input.hidden', initial= _('OK!'))
+	msg_ok = XpHiddenField(xpType='input.hidden', initial= _(' '))
 	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
@@ -188,13 +188,6 @@ class XBaseForm(forms.Form):
 			attrs['label'] = oField.label
 			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
-			"""if attrs.has_key('xpType'):
-				xpType = attrs['xpType']
-				if not jsData['response']['form_' + self._XP_FORM_ID].has_key(xpType):
-					jsData['response']['form_' + self._XP_FORM_ID][xpType] = {}
-				jsData['response']['form_' + self._XP_FORM_ID][xpType][field] = attrs
-			else:
-				jsData['response']['form_' + self._XP_FORM_ID][field] = attrs"""
 			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
 
 class AppRegex(object):
