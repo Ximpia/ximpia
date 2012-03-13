@@ -480,6 +480,12 @@ ximpia.common.Browser.getFormDataFromSession = (function(xpForm) {
 ximpia.common.Browser.setXpDataView = (function(viewName, data) {
 	sessionStorage.setItem('xpData-view-' + viewName, JSON.stringify(data));
 });
+/**
+ * Set sessionStorage xpData with viewName. Attibute data comes serialzed and needs not to be serialzed with JSON
+ */
+ximpia.common.Browser.setXpDataViewSerial = (function(viewName, data) {
+	sessionStorage.setItem('xpData-view-' + viewName, data);
+});
 /*
  * Set sessionStorage for action
  */
@@ -1136,7 +1142,30 @@ ximpia.common.PageAjax = function() {
 					$("body").before(html);
 				});
 			},
+			renderCtx: function(data) {
+				/**
+				 * Render forms once context is passed as attribute (data)
+				 */
+				if (_attr.priv.verbose == true) {
+					console.log(data)
+				}
+				ximpia.common.Browser.setXpDataViewSerial(_attr.priv.viewName, data);
+				console.log('foms length: ' + document.forms.length);
+				for (var i = 0; i<document.forms.length; i++) {
+					var myForm = document.forms[i];
+					var xpForm = 'xpData-view-' + _attr.priv.viewName +  '.' + myForm.id;
+					_attr.priv.doRenders(xpForm);
+				}
+				ximpia.common.PageAjax.doFade();
+				var oForm = ximpia.common.Form();
+				oForm.doBindBubbles();
+				console.log('verbose: ' + _attr.priv.verbose);
+				_attr.priv.callback(data);
+			},
 			doForm: function() {
+				/**
+				 * Process forms for view request
+				 */
 				console.log('doForm...');
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {

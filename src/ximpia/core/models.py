@@ -221,6 +221,7 @@ class Context(object):
 	FORMS = 'forms'
 	CAPTCHA = 'captcha'
 	RAW_REQUEST = 'raw_request'
+	CTX = 'ctx'
 	JS_DATA = 'jsData'
 	def __init__(self, f):
 		self.f = f

@@ -19,7 +19,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 #from models import Invitation
-from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx
+from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx, JsResultDict
 #from choices import Choices
 #from constants import Constants
 #from messages import MsgSignup
@@ -477,5 +477,11 @@ def changePassword(request, userAccount, **argsDict):
 	ctx = argsDict['ctx']
 	ctx['userAccount'] = userAccount
 	ctx[Ctx.FORM] = forms.ChangePasswordForm()
+	jsData = JsResultDict()
+	ctx[Ctx.FORM].buildJsData(jsData)
+	#ctx[Ctx.CTX] = HttpResponse(json.dumps(jsData))
+	ctx[Ctx.CTX] = json.dumps(jsData)
+	print 'ctx =>'
+	print ctx['ctx']
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, ctx))
 	return result	
