@@ -120,7 +120,7 @@ class UserDetail(BaseModel):
 	hasValidatedEmail = models.BooleanField(default=False,
 				verbose_name = _('Validated Email'), help_text = _('User has validated his email address?'))
 	filesQuota = models.IntegerField(default=K.FILE_QUOTA_DEFAULT,
-				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files'))
+				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files in MB'))
 	resetPasswordDate = models.DateField(null=True, blank=True, 
 				verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
 	def __unicode__(self):
@@ -1363,6 +1363,8 @@ class SNParam(BaseModel):
 			verbose_name=_('Value Id'), help_text=_('Parameter Value for Integers'))
 	valueDate = models.DateTimeField(null=True, blank=True, 
 			verbose_name = _('Value Date'), help_text = _('Parameter Value for Date'))
+	myType = models.CharField(max_length=10, choices=Choices.PARAM_TYPE,
+			verbose_name=_('Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
 		return str(self.mode) + ' - ' + str(self.name)
 	class Meta:

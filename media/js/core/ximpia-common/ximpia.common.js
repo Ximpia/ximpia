@@ -1117,8 +1117,8 @@ ximpia.common.PageAjax = function() {
 			doShowPasswordStrength: (function(userId, passwordId) {
 	        		// Password Strength
 		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
-		        	// TODO: Include validation of strength when clicking on signup button or buttons
-		        	$("#" + passwordId).passStrengthener({
+		        	// TODO: Include validation of strength when clicking on signup button or buttons		        	
+		        	$('.passStrength').passStrengthener({
 					userid: "#" + userId
 					/*strengthCallback:function(score, strength) {
 						console.log('strength : ' + strength)

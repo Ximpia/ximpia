@@ -466,3 +466,8 @@ class Choices(object):
 				(7, _('Sales Director')),
 				(8, _('Marketing Director')),
 				)
+	# PARAM_TYPE
+	PARAM_TYPE = (
+				('param', _('Parameter')),
+				('table', _('Table')),
+				)

@@ -22,8 +22,8 @@ class SNXmlMessageAdmin(admin.ModelAdmin):
 		obj.save()
 
 class SNParamAdmin(admin.ModelAdmin):
-	list_display = ('id','mode','name','value','valueId', 'valueDate')
-	list_filter = ('mode',)
+	list_display = ('id','mode','name','value','valueId', 'valueDate', 'myType')
+	list_filter = ('myType', 'mode',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()

@@ -49,5 +49,5 @@ class KSignup(object):
 	USER_GROUP_ID = '1'
 
 class KParam(object):
-	LOGIN = 'Login'
+	LOGIN = 'LOGIN'
 	REMINDER_DAYS = 'REMINDER_DAYS'

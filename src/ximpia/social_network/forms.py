@@ -129,9 +129,8 @@ class PasswordReminderForm(XBaseForm):
 class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
-	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId, the id you signed up'))
 	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Your New Password'))
-	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', help_text = _('write again your password to make sure there are no errors'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', help_text = _('Write again your password to make sure there are no errors'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 	def clean(self):

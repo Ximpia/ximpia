@@ -5,7 +5,7 @@ import base64
 import cPickle
 import datetime
 
-from datetime import date, datetime
+from datetime import date, timedelta, datetime
 
 from django.http import Http404
 from django.db.models import Q
@@ -41,7 +41,7 @@ from data import UserDAO, AccountDAO, OrganizationDAO, UserSysDAO, InvitationDAO
 from data import GroupSocialDAO, ContactDetailDAO, SocialNetworkDAO, SocialNetworkUserSocialDAO, UserProfileDAO
 from data import IndustryDAO, OrganizationGroupDAO, SocialNetworkOrganizationDAO, UserAccountContractDAO, TagUserTotalDAO, LinkUserTotalDAO
 from data import SkillGroupDAO, SkillUserAccountDAO, VersionDAO, AddressContactDAO, CommunicationTypeContactDAO, FileVersionDAO
-from data import TagTypeDAO, CalendarInviteDAO, AddressDAO, UserAccountDAO, XmlMessageDAO
+from data import TagTypeDAO, CalendarInviteDAO, AddressDAO, UserAccountDAO, XmlMessageDAO, SNParamDAO
 
 import facebook
 
@@ -172,8 +172,9 @@ class LoginBusiness(CommonBusiness):
 		self._dbUserSys = UserSysDAO(ctx)
 		self._dbXmlMessage = XmlMessageDAO(ctx)
 		self._dbUserDetail = UserDetailDAO(ctx)
-		self._dbCoreParam = CoreParameterDAO(ctx)
+		self._dbParam = SNParamDAO(ctx)
 		self._f = ctx[Ctx.FORM]
+	
 	@ValidateFormBusiness(forms.LoginForm, pageError=True)
 	def doLogin(self, **dd):
 		"""Performs the login action
@@ -184,10 +185,10 @@ class LoginBusiness(CommonBusiness):
 						errorName = 'wrongPassword')
 		self.isValid()
 		login(self._ctx[Ctx.RAW_REQUEST], user)
+	
 	@ValidateFormBusiness(forms.PasswordReminderForm, pageError=True)
 	def doPasswordReminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
-		print 'doPasswordReminder...'
 		# Checks that email sent is in system
 		self.validateExists([
 					[self._dbUserSys, {'email': self._f.d('email')}, 'emailDoesNotExist']
@@ -196,36 +197,46 @@ class LoginBusiness(CommonBusiness):
 		# Update User
 		user = self._dbUserSys.get(email = self._f.d('email'))
 		userDetail = self._dbUserDetail.get(user=user) 
-		numberDaysDelay = self._dbCoreParam.get(mode=K.APP, name=KParam.REMINDER_DAYS).valueId
-		userDetail.resetPasswordDate = datetime.date(	datetime.date.today().year, 
-								datetime.date.today().month, 
-								datetime.date.today().day+numberDaysDelay)
+		days = self._dbParam.get(mode=KParam.LOGIN, name=KParam.REMINDER_DAYS).valueId
+		newDate = date.today() + timedelta(days=days)
+		userDetail.resetPasswordDate = datetime.date(newDate)
+		# Set reminderId
+		userDetail.reminderId = str(random.randint(1, 999999))
 		userDetail.save()
 		# Send email with link to reset password. Link has time validation
 		xmlMessage = self._dbXmlMessage.get(name='Msg/SocialNetwork/Login/PasswordReminder/', lang='en').body
-		EmailBusiness.send(xmlMessage, {'firstName': user.first_name, 'userAccount': user.username}, [self._f.d('email')])
+		EmailBusiness.send(xmlMessage, {'firstName': user.first_name, 'userAccount': user.username,
+						'reminderId': userDetail.reminderId}, [self._f.d('email')])
 		self.setOkMsg('OK_PASSWORD_REMINDER')
+	
 	@ValidateFormBusiness(forms.ChangePasswordForm, pageError=True)
 	def doNewPassword(self):
 		"""Saves new password, it does authenticate and login user."""
-		print 'doNewPassword...'
-		user = self._dbUserSys.get(pk=self._f.d('ximpiaId'))
+		user = self._dbUserSys.get(username= self._f.getParam('ximpiaId'))
 		user.set_password(self._f.d('newPassword'))
 		user.save()
-		login(self._ctx[Ctx.RAW_REQUEST], user)
+		userDetail = self._dbUserDetail.get(user=user)
+		userDetail.reminderId = None
+		userDetail.resetPasswordDate = None
+		userDetail.save()
+		#login(self._ctx[Ctx.RAW_REQUEST], user)
+	
 	@ShowSrvContent(forms.ChangePasswordForm)
-	def showNewPassword(self, userAccount):
+	def showNewPassword(self, ximpiaId, reminderId):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword."""
-		days = self._dbCoreParam.get(mode=K.APP, name=KParam.REMINDER_DAYS).valueId
+		days = self._dbParam.get(mode=KParam.LOGIN, name=KParam.REMINDER_DAYS).valueId
+		newDate = date.today() + timedelta(days=days)
+		# Show actual password, new password and confirm new password
 		self.validateExists([
-					[self._dbUserSys, {'username': userAccount}, 'changePassword'],
-					[self._dbUserDetail, {'resetPasswordDate__lt' : date(date.today().year, 
-											date.today().month, 
-											date.today().day+days)}, 'changePassword']
+					[self._dbUserSys, {'username': ximpiaId}, 'changePassword'],
+					[self._dbUserDetail, {	'user__username': ximpiaId, 
+								'reminderId': reminderId, 
+								'resetPasswordDate__lt' : newDate}, 'changePassword'],
 					])		
 		# validate
 		self.isValid()
-		self._ctx['userAccount'] = userAccount
+		self._f.putParamList(ximpiaId=ximpiaId)
+	
 	def login(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@param ctx: Context
@@ -309,11 +320,9 @@ class SignupBusiness(CommonBusiness):
 	@ShowSrvContent(forms.UserSignupForm)
 	def showSignupUser(self, invitationCode, affiliateId):
 		"""Show signup form. Get get invitation code."""
-		print 'showSignupUser'
 		self.validateNotExists([
 				[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.USED}, 'invitationUsed']
 				])
-		print 'did validateNotExists'
 		self.isValid()
 		invitation = self._dbUser.getInvitation(invitationCode, status=K.PENDING)
 		self._ctx['affiliateid'] = json.dumps(affiliateId)
@@ -323,8 +332,6 @@ class SignupBusiness(CommonBusiness):
 	def doUser(self):
 		"""Signup professional user
 		@param ctx: Context"""
-		print 'doUser...'
-		print self._f.d('ximpiaId'), self._f.d('email'), self._f.d('invitationCode')
 		# Validation
 		self.validateNotExists([
 				[self._dbUserSys, {'username': self._f.d('ximpiaId')}, 'ximpiaId'],
@@ -334,7 +341,6 @@ class SignupBusiness(CommonBusiness):
 				[self._dbInvitation, {'invitationCode': self._f.d('invitationCode')}, 'invitationCode']
 				])
 		self.isValid()
-		print 'did validation'
 		# Business
 		# Invitation
 		invitation = self._dbInvitation.get(invitationCode=self._f.d('invitationCode'))
@@ -345,7 +351,7 @@ class SignupBusiness(CommonBusiness):
 		user.save()
 		# Ximpia User
 		userSocial = self._dbUserSocial.create(user=user, socialChannel=K.PROFESSIONAL, userCreateId=user.id)
-		userDetail = self._dbUserDetail.create(user=user, name=self._f.d('firstName') + ' ' + self._f.d('lastName'))
+		userDetail = self._dbUserDetail.create(user=user, name=self._f.d('firstName') + ' ' + self._f.d('lastName'), hasValidatedEmail=True)
 		# Groups
 		userGroupId = json.loads(self._f.d('params'))['userGroup']
 		group = self._dbGroupSys.get(id=userGroupId)

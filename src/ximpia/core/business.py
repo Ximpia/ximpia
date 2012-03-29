@@ -1,4 +1,5 @@
 import re
+import traceback
 import string
 import simplejson as json
 
@@ -238,12 +239,14 @@ class ShowSrvContent(object):
 			try:
 				f(*argsTuple, **argsDict)
 				jsData = JsResultDict()
+				obj._ctx[Ctx.FORM] = obj._f
 				obj._ctx[Ctx.FORM].buildJsData(jsData)
 				obj._ctx[Ctx.CTX] = json.dumps(jsData)
 			except XpMsgException as e:
 				if settings.DEBUG == True:
 					print e
 					print e.myException
+					traceback.print_exc()
 				errorDict = obj.getErrors()
 				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
 				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
@@ -251,6 +254,7 @@ class ShowSrvContent(object):
 				raise
 				if settings.DEBUG == True:
 					print e
+					traceback.print_exc()
 				errorDict = {'': _('I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks')}
 				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
 				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
@@ -271,39 +275,41 @@ class ValidateFormBusiness(object):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			"""Doc."""
-			object = argsTuple[0]
-			object._ctx[Ctx.JS_DATA] = JsResultDict()
-			object._f = self._form(object._ctx[Ctx.POST])
-			bForm = object._f.is_valid()
-			object._ctx[Ctx.FORM] = object._f
+			obj = argsTuple[0]
+			obj._ctx[Ctx.JS_DATA] = JsResultDict()
+			obj._f = self._form(obj._ctx[Ctx.POST])
+			bForm = obj._f.is_valid()
+			obj._ctx[Ctx.FORM] = obj._f
 			if bForm == True:
 				try:
 					f(*argsTuple, **argsDict)
-					object._f.buildJsData(object._ctx[Ctx.JS_DATA])
-					result = object.buildJSONResult(object._ctx[Ctx.JS_DATA])
+					obj._f.buildJsData(obj._ctx[Ctx.JS_DATA])
+					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
 					#print result
 					return result
 				except XpMsgException as e:
-					errorDict = object.getErrors()
+					errorDict = obj.getErrors()
 					if settings.DEBUG == True:
 						print errorDict
 						print e
 						print e.myException
+						traceback.print_exc()
 					if len(errorDict) != 0:
-						result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=self._pageError))
+						result = obj.buildJSONResult(obj.getErrorResultDict(errorDict, pageError=self._pageError))
 					else:
 						raise
 					return result
 				except Exception as e:
 					if settings.DEBUG == True:
 						print e
-						print e.myException
+						traceback.print_exc()
 			else:
 				if settings.DEBUG == True:
 					print 'Validation error!!!!!'
-					#print object._f
-					print object._f.errors
+					#print obj._f
+					print obj._f.errors
+					traceback.print_exc()
 				errorDict = {'': 'Error validating your data. Check it out and send again'}
-				result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=True))
+				result = obj.buildJSONResult(obj.getErrorResultDict(errorDict, pageError=True))
 				return result
 		return wrapped_f

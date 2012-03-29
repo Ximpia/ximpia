@@ -4,6 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 #python -m smtpd -n -c DebuggingServer localhost:1025
+#python manage.py dumpdata --indent 4 > ximpia.json
 
 # Ximpia Config
 PRIVATE_BETA = True

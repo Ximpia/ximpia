@@ -705,7 +705,7 @@ div.loadError {
 	position: absolute;
 	top: 140px;
 	left: 270px;
-	font-size: 2em;
+	font-size: 1.6em;
 	width: 700px;
 	background-color: #eee;
 	padding: 15px;
@@ -713,6 +713,14 @@ div.loadError {
 	border: 2px solid;
 	box-shadow: 10px 10px 5px #888888;
 	z-index: 9999;
+}
+
+div.loadError div {
+	/*border: 1px solid;*/
+	/*height: 55px;*/
+	margin-top: auto;
+	margin-bottom: auto;
+	float: left;
 }
 
 span.AjaxButton {

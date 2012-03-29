@@ -47,11 +47,11 @@ class XBaseForm(forms.Form):
 		#self.errors['invalid'] = []
 		#print 'argsDict : ', argsDict
 		if argsDict.has_key('instances'):
-			dict = argsDict['instances']
-			keys = dict.keys()
+			d = argsDict['instances']
+			keys = d.keys()
 			# Set instances
 			for key in keys:
-				setattr(self, '_' + key, dict[key])
+				setattr(self, '_' + key, d[key])
 			fields = self.base_fields.keys()
 			for sField in fields:
 				field = self.base_fields[sField]
@@ -76,13 +76,13 @@ class XBaseForm(forms.Form):
 	def _buildObjects(self):
 		"""Build db instance json objects"""
 		if self._argsDict.has_key('instances'):
-			dict = {}
+			d = {}
 			for key in self._argsDict['instances']:
 				# Get json object, parse, serialize fields object
 				jsonObj = _s.serialize("json", [self._argsDict['instances'][key]])
 				obj = json.loads(jsonObj)[0]
-				dict[key] = obj['fields']
-				self.base_fields['objects'].initial = json.dumps(dict)
+				d[key] = obj['fields']
+				self.base_fields['objects'].initial = json.dumps(d)
 	def setViewMode(self, viewList):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
@@ -100,37 +100,59 @@ class XBaseForm(forms.Form):
 		paramDict = json.loads(self.fields['params'].initial)
 		paramDict[name] = value
 		self.fields['params'].initial = json.dumps(paramDict)
+	def putParamList(self, **argsDict):
+		"""Put list of parameters. attribute set, like putParamList(myKey='', myOtherKey='')"""
+		paramDict = json.loads(self.fields['params'].initial)
+		for key in argsDict:
+			paramDict[key] = argsDict[key]
+		self.fields['params'].initial = json.dumps(paramDict)
 	def getParam(self, name):
 		"""Get param value.
 		@param name: Param name
 		@return: value"""
-		paramDict = json.loads(self.fields['params'].initial)
+		paramDict = json.loads(self.d('params'))
 		if paramDict.has_key(name):
 			value = paramDict[name]
 		else:
 			raise ValueError
 		return value
+	def getParamDict(self, paramList):
+		"""Get dictionary of parameters for the list of parameters given"""
+		paramDict = json.loads(self.fields['params'].initial)
+		d = {}
+		for field in paramList: 
+			d[field] = paramDict[field]
+		return d
+	def getParamList(self, paramList):
+		"""Get list of values from list of names given.
+		@param paramList: List of fields (names)
+		@return: list of values"""
+		paramDict = json.loads(self.fields['params'].initial)
+		l = []
+		for field in paramList:
+			l.append(paramDict[field])
+		return l
 	def hasParam(self, name):
 		"""Checks if has key name
 		@param name: 
 		@return: boolean"""
-		dict = json.loads(self.fields['params'].initial)
-		return dict.has_key(name)
+		d = json.loads(self.fields['params'].initial)
+		return d.has_key(name)
 	def _validateSameFields(self, tupleList):
 		"""Validate same fields for list of tuples in form
 		@param tupleList: Like ('password','passwordVerify')"""
-		for tuple in tupleList:
-			field1 = eval("self.fields['" + tuple[0] + "']")
-			field2 = eval("self.fields['" + tuple[1] + "']")
-			field1Value = self.data[tuple[0]]
-			field2Value = self.data[tuple[1]]
+		for myTuple in tupleList:
+			field1 = eval("self.fields['" + myTuple[0] + "']")
+			field2 = eval("self.fields['" + myTuple[1] + "']")
+			field1Value = self.data[myTuple[0]]
+			field2Value = self.data[myTuple[1]]
 			if field1Value != field2Value:
-				if not self.errors.has_key('id_' + tuple[0]):
-					self.errors['id_' + tuple[0]] = []
-				if not self._errors.has_key('id_' + tuple[0]):
-					self._errors['id_' + tuple[0]] = []
-				self.errors['id_' + tuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
-				self._errors['id_' + tuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
+				if not self.errors.has_key('id_' + myTuple[0]):
+					self.errors['id_' + myTuple[0]] = []
+				if not self._errors.has_key('id_' + myTuple[0]):
+					self._errors['id_' + myTuple[0]] = []
+				self.errors['id_' + myTuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
+				self._errors['id_' + myTuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
 
 	def _validateSignupCaptcha(self):
 		"""Validate Signup captcha"""
@@ -160,7 +182,7 @@ class XBaseForm(forms.Form):
 		value = ''
 		if self.cleaned_data.has_key(name):
 			value = self.cleaned_data[name]
-		return value	
+		return value
 	def _xpClean(self):
 		"""Cleans form. Raises ValidationError in case errors found. Returns cleaned_data"""
 		if self.hasInvalidErrors():

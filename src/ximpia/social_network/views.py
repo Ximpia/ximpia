@@ -473,12 +473,12 @@ def activateAccount(request, user, activationCode, **argsDict):
 # *******************************
 
 @Context
-def changePassword(request, userAccount, **argsDict):
+def changePassword(request, ximpiaId, reminderId, **argsDict):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
 	login = LoginBusiness(argsDict['ctx'])
-	login.showNewPassword(userAccount)
+	login.showNewPassword(ximpiaId, reminderId)
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, argsDict['ctx']))
 	return result
 
