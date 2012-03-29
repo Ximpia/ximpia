@@ -70,7 +70,7 @@ class UserSignupForm(XBaseForm):
 									'affiliateId': -1}))
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'country': Choices.COUNTRY}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
-		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha']]))
+		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha','ERR_invitationUsed']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
 
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
@@ -130,9 +130,9 @@ class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId, the id you signed up'))
-	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='New Password', help_text = _('Your New Password'))
-	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm New Password', help_text = _('write again your password to make sure there are no errors'))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Your New Password'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', help_text = _('write again your password to make sure there are no errors'))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 	def clean(self):
 		"""Clean form"""

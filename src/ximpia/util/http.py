@@ -3,12 +3,12 @@ import os
 import MySQLdb
 import socket
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest, HttpResponseServerError
+#from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest, HttpResponseServerError
 
 """Copyright (c) 2010 Tecor Communications S.L.
 All rights reserved."""
 
-def doSession(request, AnonSessionDict, th=None, sth=None):
+"""def doSession(request, AnonSessionDict, th=None, sth=None):
 	# Session check
 	if not AnonSessionDict.has_key('theme'):
 		if th and sth:
@@ -33,10 +33,10 @@ def doSession(request, AnonSessionDict, th=None, sth=None):
 	else:
 		sSession = None
 	Tuple = (sTheme, sSearchTheme, sSession, AnonSessionDict)
-	return Tuple
+	return Tuple"""
 
-def getLangZoneBrowser(request):
-	"""Get local information from browser. Returns first language from browser and zone plus a list of all variables for language and zone from browser settings. -> Tuple(sLang, sZone, LangList, ZoneList)."""
+"""def getLangZoneBrowser(request):
+	Get local information from browser. Returns first language from browser and zone plus a list of all variables for language and zone from browser settings. -> Tuple(sLang, sZone, LangList, ZoneList).
 	if request.META.has_key('HTTP_ACCEPT_LANGUAGE'):
 		BrowserLanguageList = request.META['HTTP_ACCEPT_LANGUAGE'].split(',')
 	else:
@@ -79,20 +79,22 @@ def selectLanguage(request, sLang):
 			sLang = str(config.DEFAULT_LANG)
 	if not config.LANG_DICT.has_key(sLang):
 		raise Http404
-	return sLang
+	return sLang"""
 
 class Request(object):
 	
 	@staticmethod
 	def getReqParams(request, paramList, method='GET'):
-		"""Get params from request, either by GET, REQUEST or POST"""
-		list = []
-		dict = {}
-		typesNone = {'int': -1, 'str': '', 'long': -1L}
+		"""Get params from request, either by GET, REQUEST or POST. 
+		@param paramList: param:type. It accepts either type and not type, like kk=aid and kk=aid:int
+		@param method: Either GET or POST
+		@return: myList : List of values from request. In case not found, None is returned"""
+		myList = []
+		typesNone = {'int': None, 'str': None, 'long': None}
 		for paramFields in paramList:
 			hasType = True
 			if paramFields.find(':') != -1:
-				param, paramType = paramFields.split(':')
+				param, paramType = paramFields.split(':') #@UnusedVariable
 			else:
 				hasType = False
 			try:
@@ -102,5 +104,5 @@ class Request(object):
 					value = eval('request.' + method + '[param]')					
 			except:
 				value = typesNone[paramType]
-			list.append(value)
-		return list
+			myList.append(value)
+		return myList

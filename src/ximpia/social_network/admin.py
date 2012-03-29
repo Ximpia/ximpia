@@ -1,20 +1,32 @@
 from models import Comment, GroupFollow, GroupStream, GroupStreamPublic, Like
-from models import SocialNetwork, StatusMessage, StatusShare, Tag, UserParam, UserSocial, GroupSocial
+from models import SocialNetwork, StatusMessage, StatusShare, Tag, UserSocial, GroupSocial
 
 from models import SocialNetworkUserSocial, UserDetail
 from models import Link, Version
 from models import UserProfile, ProfileDetail, Organization, OrganizationGroup, UserAccount, IdentifierUserAccount, UserAccountIdentifier 
 from models import Skill, SkillUserAccount, SkillGroup, Industry, AddressOrganization, SocialNetworkOrganization, TaxType, TaxOrganization
 from models import TaxUserAccount, SocialNetworkOrganizationGroup, UserAccountRelation, UserAccountContract, Invitation, Affiliate
-from models import TagUserTotal, LinkUserTotal, SubscriptionDaily, Subscription, SubscriptionItemMonth, Application, Contact, ContactDetail
-from models import Notification, Profile
-
-from ximpia.core.models import MasterValue, XmlMessage
+from models import TagUserTotal, LinkUserTotal, SubscriptionDaily, Subscription, SubscriptionItemMonth, Contact, ContactDetail
+from models import Notification, Profile, SNParam, SNXmlMessage
 
 from django.contrib import admin
 
 """Copyright (c) 2011 Jorge Alegre Vilches
 All rights reserved."""
+
+
+class SNXmlMessageAdmin(admin.ModelAdmin):
+	list_display = ('id','name','lang')
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
+
+class SNParamAdmin(admin.ModelAdmin):
+	list_display = ('id','mode','name','value','valueId', 'valueDate')
+	list_filter = ('mode',)
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
 
 class CommentAdmin(admin.ModelAdmin):
 	list_display = ('id','user','message','isPublic',)
@@ -50,7 +62,7 @@ class LikeAdmin(admin.ModelAdmin):
 		obj.save()
 
 class SocialNetworkAdmin(admin.ModelAdmin):
-	list_display = ('id','type',)
+	list_display = ('id','myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -68,16 +80,9 @@ class StatusShareAdmin(admin.ModelAdmin):
 		obj.save()
 
 class TagAdmin(admin.ModelAdmin):
-	list_display = ('id','name','type','popularity')
-	list_filter = ('type',)
+	list_display = ('id','name','myType','popularity')
+	list_filter = ('myType',)
 	search_fields = ('name',)
-	def save_model(self, request, obj, form, change):
-		obj.UserModifyId = request.user.id
-		obj.save()
-
-class UserParamAdmin(admin.ModelAdmin):
-	list_display = ('id','mode','name','value','valueId')
-	list_filter = ('mode',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -115,8 +120,8 @@ class UserDetailAdmin(admin.ModelAdmin):
 		obj.save()
 
 class MessageAddrAdmin(admin.ModelAdmin):
-	list_display = ('address','type',)
-	list_filter = ('type',)
+	list_display = ('address','myType',)
+	list_filter = ('myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -202,14 +207,14 @@ class CommunicationTypeContactAdmin(admin.ModelAdmin):
 		obj.save()
 
 class CommunicationTypeAdmin(admin.ModelAdmin):
-	list_display = ('id','type',)
+	list_display = ('id','myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
 class FileAdmin(admin.ModelAdmin):
-	list_display = ('id','name','type',)
-	list_filter = ('type',)
+	list_display = ('id','name','myType',)
+	list_filter = ('myType',)
 	search_fields = ('name','title','description',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
@@ -241,7 +246,7 @@ class ProfileDetailAdmin(admin.ModelAdmin):
 		obj.save()
 
 """class AddressTypeAdmin(admin.ModelAdmin):
-	list_display = ('id','type',)
+	list_display = ('id','myType',)
 	exclude = ('userModifyId','userCreateId',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
@@ -273,7 +278,7 @@ class IdentifierUserAccountAdmin(admin.ModelAdmin):
 		obj.save()
 
 class UserAccountIdentifierAdmin(admin.ModelAdmin):
-	list_display = ('id','type',)
+	list_display = ('id','myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -319,7 +324,7 @@ class SocialNetworkOrganizationAdmin(admin.ModelAdmin):
 		obj.save()
 
 class TaxTypeAdmin(admin.ModelAdmin):
-	list_display = ('id','type',)
+	list_display = ('id','myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -403,15 +408,9 @@ class SubscriptionItemMonthAdmin(admin.ModelAdmin):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
-class ApplicationAdmin(admin.ModelAdmin):
-	list_display = ('id','name','developer','developerOrg',)
-	def save_model(self, request, obj, form, change):
-		obj.UserModifyId = request.user.id
-		obj.save()
-
 class CalendarAdmin(admin.ModelAdmin):
-	list_display = ('id','owner','timeDateStart','type',)
-	list_filter = ('type',)
+	list_display = ('id','owner','timeDateStart','myType',)
+	list_filter = ('myType',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -459,17 +458,6 @@ class NotificationAdmin(admin.ModelAdmin):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
-class XmlMessageAdmin(admin.ModelAdmin):
-	list_display = ('id','name','lang')
-	def save_model(self, request, obj, form, change):
-		obj.UserModifyId = request.user.id
-		obj.save()
-
-class MasterValueAdmin(admin.ModelAdmin):
-	def save_model(self, request, obj, form, change):
-		obj.UserModifyId = request.user.id
-		obj.save()
-
 class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('name','app','account','group')
 	list_filter = ('app',)
@@ -479,6 +467,9 @@ class ProfileAdmin(admin.ModelAdmin):
 
 ########################################################################################
 
+# social network
+admin.site.register(SNParam, SNParamAdmin)
+admin.site.register(SNXmlMessage, SNXmlMessageAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(GroupFollow, GroupFollowAdmin)
 admin.site.register(GroupStream, GroupStreamAdmin)
@@ -488,7 +479,6 @@ admin.site.register(SocialNetwork, SocialNetworkAdmin)
 admin.site.register(StatusMessage, StatusMessageAdmin)
 admin.site.register(StatusShare, StatusShareAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(UserParam, UserParamAdmin)
 admin.site.register(UserSocial, UserSocialAdmin)
 admin.site.register(GroupSocial, GroupSocialAdmin)
 admin.site.register(Profile, ProfileAdmin)
@@ -524,9 +514,6 @@ admin.site.register(LinkUserTotal, LinkUserTotalAdmin)
 admin.site.register(SubscriptionDaily, SubscriptionDailyAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(SubscriptionItemMonth, SubscriptionItemMonthAdmin)
-admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Notification, NotificationAdmin)
-admin.site.register(XmlMessage, XmlMessageAdmin)
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(ContactDetail, ContactDetailAdmin)
-admin.site.register(MasterValue, MasterValueAdmin)

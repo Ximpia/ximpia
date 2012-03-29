@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 
 from django.contrib.auth import login, authenticate, logout
 
-from models import getResultOK, getResultERROR, XmlMessage, XpMsgException
+from models import getResultOK, getResultERROR, XpMsgException
 from ximpia.util import ut_email
 from ximpia.util.js import Form as _jsf
 from ximpia.core.models import JsResultDict, Context as Ctx
@@ -59,21 +59,21 @@ class CommonBusiness(object):
 		#dict = self._errorDict
 		keyList = errorDict.keys()
 		keyList.sort()
-		list = []
+		myList = []
 		for key in keyList:
 			message = errorDict[key]
 			index = key.find('id_')
 			if pageError == False:
 				if index == -1:
-					list.append(('id_' + key, message))
+					myList.append(('id_' + key, message, False))
 				else:
-					list.append((key, message))
+					myList.append((key, message, False))
 			else:
 				if index == -1:
-					list.append(('id_' + key, message, True))
+					myList.append(('id_' + key, message, True))
 				else:
-					list.append((key, message, True))
-		self._resultDict = getResultERROR(list)
+					myList.append((key, message, True))
+		self._resultDict = getResultERROR(myList)
 		return self._resultDict
 
 	def _doValidations(self, validationDict):
@@ -137,7 +137,8 @@ class CommonBusiness(object):
 		@param form: Form
 		@param errorField: String : The field inside class form"""
 		form = self.getForm()
-		msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)		
+		#print 'form: ', form
+		msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
 		idError = 'id_' + field
 		if not self._errorDict.has_key(idError):
 			self._errorDict[idError] = {}
@@ -160,7 +161,8 @@ class CommonBusiness(object):
 		print 'dbDataList : ', dbDataList
 		for dbData in dbDataList:
 			dbObj, qArgs, errName = dbData
-			exists = dbObj.check(qArgs)
+			exists = dbObj.check(**qArgs)
+			print 'exists: ', exists
 			if not exists:
 				self.addError(field=errName)
 	
@@ -173,8 +175,8 @@ class CommonBusiness(object):
 		print 'dbDataList : ', dbDataList
 		for dbData in dbDataList:
 			dbObj, qArgs, errName = dbData
-			exists = dbObj.check(qArgs)
-			print 'qArgs : ', exists
+			exists = dbObj.check(**qArgs)
+			print 'exists : ', exists
 			if exists:
 				self.addError(field=errName)
 		
@@ -184,7 +186,7 @@ class CommonBusiness(object):
 			name, value, errName = ctxData
 			if self._ctx[name] != value:
 				self.addError(errName)
-	
+		
 	def authenticateUser(self, **dd):
 		"""Authenticates user and password
 		dd: {'userName': $userName, 'password': $password, 'errorName': $errorName}"""
@@ -213,15 +215,46 @@ class CommonBusiness(object):
 class EmailBusiness(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
 	@staticmethod
-	def send(keyName, subsDict, recipientList, lang):
+	def send(xmlMessage, subsDict, recipientList):
 		"""Send email
 		@param keyName: keyName for datastore
 		@subsDict : Dictionary with substitution values for template
 		@param recipientList: List of emails to send message"""
-		xmlMessage = XmlMessage.objects.get(name=keyName, lang=lang).body
 		subject, message = ut_email.getMessage(xmlMessage)
 		message = string.Template(message).substitute(**subsDict)
 		send_mail(subject, message, settings.WEBMASTER_EMAIL, recipientList)
+
+class ShowSrvContent(object):
+	"""Doc."""
+	def __init__(self, *argsTuple, **argsDict):
+		"""Doc."""
+		self._form = argsTuple[0]
+	def __call__(self, f):
+		"""Doc."""
+		def wrapped_f(*argsTuple, **argsDict):
+			obj = argsTuple[0]
+			obj._ctx[Ctx.FORM] = self._form()
+			obj._f = self._form()
+			try:
+				f(*argsTuple, **argsDict)
+				jsData = JsResultDict()
+				obj._ctx[Ctx.FORM].buildJsData(jsData)
+				obj._ctx[Ctx.CTX] = json.dumps(jsData)
+			except XpMsgException as e:
+				if settings.DEBUG == True:
+					print e
+					print e.myException
+				errorDict = obj.getErrors()
+				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
+				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
+			except Exception as e:
+				raise
+				if settings.DEBUG == True:
+					print e
+				errorDict = {'': _('I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks')}
+				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
+				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
+		return wrapped_f
 
 class ValidateFormBusiness(object):
 	"""Checks that form is valid, builds result, builds errors"""
@@ -230,7 +263,10 @@ class ValidateFormBusiness(object):
 	def __init__(self, *argsTuple, **argsDict):
 		# Sent by decorator
 		self._form = argsTuple[0]
-		self._pageError = argsDict['pageError']
+		if argsDict.has_key('pageError'):
+			self._pageError = argsDict['pageError']
+		else:
+			self._pageError = False
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
@@ -239,6 +275,7 @@ class ValidateFormBusiness(object):
 			object._ctx[Ctx.JS_DATA] = JsResultDict()
 			object._f = self._form(object._ctx[Ctx.POST])
 			bForm = object._f.is_valid()
+			object._ctx[Ctx.FORM] = object._f
 			if bForm == True:
 				try:
 					f(*argsTuple, **argsDict)
@@ -246,18 +283,26 @@ class ValidateFormBusiness(object):
 					result = object.buildJSONResult(object._ctx[Ctx.JS_DATA])
 					#print result
 					return result
-				except XpMsgException:
+				except XpMsgException as e:
 					errorDict = object.getErrors()
-					print errorDict
+					if settings.DEBUG == True:
+						print errorDict
+						print e
+						print e.myException
 					if len(errorDict) != 0:
 						result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=self._pageError))
 					else:
 						raise
 					return result
+				except Exception as e:
+					if settings.DEBUG == True:
+						print e
+						print e.myException
 			else:
-				print 'Validation error!!!!!'
-				#print object._f
-				#print object._f.errors
+				if settings.DEBUG == True:
+					print 'Validation error!!!!!'
+					#print object._f
+					print object._f.errors
 				errorDict = {'': 'Error validating your data. Check it out and send again'}
 				result = object.buildJSONResult(object.getErrorResultDict(errorDict, pageError=True))
 				return result

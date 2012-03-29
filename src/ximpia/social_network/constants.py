@@ -1,5 +1,6 @@
 
 class Constants(object):
+	APP = 'SN'
 	XIMPIA = 'ximpia'
 	TWITTER = 'twitter'
 	FACEBOOK = 'facebook'
@@ -47,9 +48,6 @@ class Constants(object):
 class KSignup(object):
 	USER_GROUP_ID = '1'
 
-class KMasterValue(object):
-	SN_COMMTYPE_EMAIL = 'SN.COMMTYPE-EMAIL'
-	SN_COMMTYPE = 'SN.COMMTYPE'
-
-class DbType(object):
-	COMMTYPE = 'COMMTYPE'
+class KParam(object):
+	LOGIN = 'Login'
+	REMINDER_DAYS = 'REMINDER_DAYS'

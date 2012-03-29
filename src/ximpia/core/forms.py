@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from ximpia.util.js import Form as _jsf
 from ximpia import settings
 
-from constants import Constants as K
+from constants import CoreConstants as K
 
 from form_fields import XpHiddenField
 
@@ -34,7 +34,7 @@ class XBaseForm(forms.Form):
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
 	bsClass = XpHiddenField(xpType='input.hidden', required=False)
 	method = XpHiddenField(xpType='input.hidden', required=False)
-	ctx = XpHiddenField(xpType='input.hidden', required=False, initial='')
+	ctx = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}
 	_argsDict = {}

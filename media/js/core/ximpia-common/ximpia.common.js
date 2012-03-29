@@ -38,6 +38,9 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 });
 
 ximpia.common.ArrayUtil = {};
+/*
+ * Checks if array has key
+ */
 ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 	var exists = false;
 	//console.log(JSON.stringify(array));
@@ -49,6 +52,7 @@ ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 	}
 	return exists;
 }
+
 
 ximpia.common.Choices = {};
 ximpia.common.Choices.get = function(choicesId) {
@@ -205,10 +209,10 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         iEffectInTime = parseInt(effectIn.time);
         //iEffectInTime = parseInt(EffectInList[1]);
         //EffectOutList = sEffectOut.split(',');
-        if (typeof effectOut.style != 'undefined') {
+        /*if (typeof effectOut.style != 'undefined') {
         	effectOutTxt = effectOut.style;
         	iEffectOutTime = parseInt(effectOut.time);        	
-        }
+        }*/
         $("div.PopMessage").fadeIn('fast');        
         /*if (sEffectInTxt == 'fadeIn') {
             $("div.PopMessage").fadeIn(iEffectInTime);
@@ -310,7 +314,8 @@ ximpia.common.Window.showPopUp = (function(key) {
         }
         // This is to prevent fadeouts in popups since Internet Explorer does not show frame border
         sFadeOut = '';
-        var closeValue = ximpia.common.List.getValue('id_buttonConstants', 'close');
+        //var closeValue = ximpia.common.List.getValue('id_buttonConstants', 'close');
+        var closeValue = 'Close';
         ximpia.common.Window.showMessage({
             title: sTitle,
             message: sMessage,
@@ -663,6 +668,7 @@ ximpia.common.Form = function() {
 				//console.log('Submit form: ' + $("#" + obj.formId).val());
 				var idOkMsg = '';
 				var okMsg = '';
+				var doMsgError = false;
 				$("#" + obj.attrs.form).validate({
 					submitHandler: function(form) {
                 				$(form).ajaxSubmit({
@@ -703,12 +709,13 @@ ximpia.common.Form = function() {
                         						// Can be associated to fields or not
                             						// Integrate showMessage, popUp, etc...
                             						var list = responseMap['errors'];
-                            						var doMsgError = false;
+                            						console.log('list errors...');
+                            						console.log(list);
                             						if (list.length > 0) {
                             							doMsgError = list[0][2]
                             						}
                             						console.log('doMsgError: ' + doMsgError);
-                            						console.log('isgMsg: ' + obj.isMsg);
+                            						console.log('isMsg: ' + obj.isMsg);
                             						if (doMsgError == true) {
                             							if (obj.isMsg == true) {
                         								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
@@ -732,11 +739,11 @@ ximpia.common.Form = function() {
                                 								message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
                             								}
                             								message = message + '</ul>';
+                            								console.log(message);
+                            								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                             								// Show error Message in pop up
-                            								ximpia.common.Window.showPopUp({
-		                                						title: 'Errors Found',
-                                								message: message,
-                            								});
+                        								$('body').xpObjPopUp({	title: 'Errors Found',
+                        									message: message}).xpObjPopUp('createMsg');
                             							} else {
                         								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
                         								$("#" + obj.idMsg + "_text").text('Error!!!');
@@ -748,14 +755,13 @@ ximpia.common.Form = function() {
                         					console.log(data + ' ' + status + ' ' + e);
                         					var errorMsg = 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks'; 
                         					if (obj.showPopUp == true) {
-                        						if (doMsgError == false) {
+                        						// All have a waiting message
+                        						/*if (doMsgError == false) {
                         							$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
-                        						}
-                        						ximpia.common.Window.showPopUp({
-	                            						title: 'Could not make it!',
-                            							message: errorMsg,
-                            							height: 50
-                            							});                        						
+                        						}*/
+                        						$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+                        						$('body').xpObjPopUp({	title: 'Could not make it!',
+                        									message: errorMsg}).xpObjPopUp('createMsg');
                         					} else {
                         						errorMsg = 'I received an expected error. Please retry later. Thanks';
                         						$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
@@ -900,6 +906,90 @@ ximpia.common.Form.doRender = (function(element, reRender) {
 	}
 	return doRender;
 });
+/**
+ * Get for from xpForm
+ */
+ximpia.common.Form.getForm = (function(xpForm) {
+	var fields = xpForm.split('.');
+	return fields[fields.length-1]
+});
+/*
+ * Append attribute values, separated by spaces
+ */
+ximpia.common.Form.appendAttrs = (function(idElement, attr, valueNew) {
+	var exclude = {tabindex: ''};
+	valueOld = $("#" + idElement).attr(attr);
+	value = valueNew;
+	if (typeof valueOld != 'undefined') {
+		if (!exclude.hasOwnProperty(attr)) {
+			if (valueOld != valueNew) {
+				value = valueOld + ' ' + valueNew;
+			}
+		}
+	}
+	$("#" + idElement).attr(attr, value);
+}),
+/*
+ * Include attributes in form elements from metadata of div components and server attributes
+ * obj:
+ * djangoAttrs: List of attributes identified in django and should not pass to html
+ * htmlAttrs: List of attributes that must be included in html as attributes. The ones not in the list will be included in data-xp
+ * excludeList: List of attributes to exclude
+ * dataAttrs: Attributes from server
+ * attrs: Attributes from component in metadata
+ * idElement: Id of form element to include attributes to
+ * 
+ */
+ximpia.common.Form.doAttributes = (function(obj) {
+	var attrData = {};
+	var attrDataS = "{";
+	var valueNew = "";
+	var valueOld = "";
+	var value = '';
+	for (attr in obj.dataAttrs) {
+		if (ximpia.common.ArrayUtil.hasKey(obj.djangoAttrs, attr) == false) {
+			if (ximpia.common.ArrayUtil.hasKey(obj.htmlAttrs, attr) == true) {
+				ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.dataAttrs[attr])				
+			} else {
+				if (attr.search('data') == 0) {
+					ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.dataAttrs[attr])
+				} else {
+					if (!attrData.hasOwnProperty(attr)) {
+						if (Object.keys(attrData).length == 0) {
+							attrDataS += attr + ": '" + obj.dataAttrs[attr] + "'";
+						} else {
+							attrDataS += ', ' + attr + ": '" + obj.dataAttrs[attr] + "'";
+						}
+						attrData[attr] = obj.dataAttrs[attr];
+					}
+				}
+			}
+		}
+	}
+	for (attr in obj.attrs) {
+		if (ximpia.common.ArrayUtil.hasKey(obj.htmlAttrs, attr) == true) {
+			ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.attrs[attr])
+		} else {
+			if (ximpia.common.ArrayUtil.hasKey(obj.excludeList, attr) == false) {
+				if (attr.search('data') == 0) {
+					ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.attrs[attr])
+				} else {
+					if (!attrData.hasOwnProperty(attr)) {
+						if (Object.keys(attrData).length == 0) {
+							attrDataS += attr + ": '" + obj.attrs[attr] + "'";
+						} else {
+							attrDataS += ', ' + attr + ": '" + obj.attrs[attr] + "'";
+						}
+						attrData[attr] = obj.attrs[attr];
+					}
+				}
+			}
+		}
+	}
+	attrDataS += '}';
+	$("#" + obj.idElement).attr('data-xp', attrDataS);
+});
+
 
 ximpia.common.Ajax = {};
 /**
@@ -968,7 +1058,7 @@ ximpia.common.PageAjax = function() {
 			verbose: false,
 			data: {},
 			formData: {},
-			doRenders: function(xpForm) {
+			doRenders: (function(xpForm) {
 				console.log('xpForm: ' + xpForm);
 				var formId = xpForm.split('.')[1];
 				//console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
@@ -982,7 +1072,64 @@ ximpia.common.PageAjax = function() {
 					.xpObjListField('bindKeyPress', xpForm);
 				$("[data-xp-type='button']").xpObjButton('render');
 				$("[data-xp-type='link']").xpObjLink('render');
-			}
+				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
+				//_attr.priv.doLocal();
+			}),
+			/*
+			 * Process Google maps local
+			 */
+			doLocal: (function() {
+				//console.log($(".gmaps"));
+				/*$(".gmaps").each(function() {	
+				});*/
+				console.log('***************************************');
+				console.log(typeof $(".gmaps"));
+				console.log($(".gmaps").length);
+				var values = $(".gmaps");
+				var cityList = [];
+				var countryList = [];
+				$.metadata.setType("attr", "data-xp");
+				var metaObj = {};
+				for (var i=0; i<values.length; i++) {
+					console.log(values[i]);
+					console.log(values[i].id);
+					metaObj = $("#" + values[i].id).metadata();
+					if (metaObj.gmaps == 'city') {
+						cityList.push(values[i].id)
+					} else {
+						countryList.push(values[i].id)
+					}
+				}
+				console.log('cityList');
+				console.log(cityList);
+				console.log('countryList');
+				console.log(countryList);
+				if (cityList.length != 0 || countryList.length != 0) {
+					var oGoogleMaps = ximpia.common.GoogleMaps();
+					oGoogleMaps.insertCityCountry(cityList, countryList);
+				}
+			}),
+			/**
+	 		* Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
+	 		* and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
+	 		* the message of nor validating.
+	 		*/
+			doShowPasswordStrength: (function(userId, passwordId) {
+	        		// Password Strength
+		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
+		        	// TODO: Include validation of strength when clicking on signup button or buttons
+		        	$("#" + passwordId).passStrengthener({
+					userid: "#" + userId
+					/*strengthCallback:function(score, strength) {
+						console.log('strength : ' + strength)
+						if(strength == 'good' || strength == 'strong') {
+							$("#" + submitId).xpPageButton('enable', ximpia.common.Form().doSubmitButton);
+						} else {
+							$("#" + submitId).xpPageButton('disable');
+						}
+					}*/
+				});
+			})			
 		},
 		pub: {
 			init: function(obj) {
@@ -1151,16 +1298,28 @@ ximpia.common.PageAjax = function() {
 				}
 				ximpia.common.Browser.setXpDataViewSerial(_attr.priv.viewName, data);
 				console.log('foms length: ' + document.forms.length);
-				for (var i = 0; i<document.forms.length; i++) {
-					var myForm = document.forms[i];
+				// Consider only one form, since this is a server generated content
+				var myForm = document.forms[0];
+				var dataObj = JSON.parse(data);
+				var status = dataObj.status;
+				var errorMsg = '';
+				console.log('status: ' + status);				
+				if (status != 'ERROR') {
 					var xpForm = 'xpData-view-' + _attr.priv.viewName +  '.' + myForm.id;
 					_attr.priv.doRenders(xpForm);
+					ximpia.common.PageAjax.doFade();
+					var oForm = ximpia.common.Form();
+					oForm.doBindBubbles();
+					console.log('verbose: ' + _attr.priv.verbose);
+					if (typeof _attr.priv.callback != 'undefined') {
+						_attr.priv.callback(data);
+					}
+				} else {
+					errorMsg = dataObj.errors[0][1];
+					$("#id_sect_loading").fadeOut('fast');
+					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>" + errorMsg + "</div></div>";
+					$("body").before(html);
 				}
-				ximpia.common.PageAjax.doFade();
-				var oForm = ximpia.common.Form();
-				oForm.doBindBubbles();
-				console.log('verbose: ' + _attr.priv.verbose);
-				_attr.priv.callback(data);
 			},
 			doForm: function() {
 				/**
@@ -1189,7 +1348,9 @@ ximpia.common.PageAjax = function() {
 					// Callback
 					//console.log('callback: ' + _attr.priv.callback);
 					console.log('verbose: ' + _attr.priv.verbose);
-					_attr.priv.callback(data);
+					if (typeof _attr.priv.callback != 'undefined') {
+						_attr.priv.callback(data);
+					}					
 				}).error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
@@ -1223,13 +1384,21 @@ ximpia.common.GoogleMaps = function() {
 		priv:  {},
 		pub:  {
 			init: function() {},
-			insertCityCountry: function(idCity, idCountry) {
+			insertCityCountry: function(idCityList, idCountryList) {
+				console.log('insertCityCountry...');
   				var data = {};
 				if (navigator.geolocation) {
+					console.log('1');
 	  				navigator.geolocation.getCurrentPosition(function(position) {
-  						var loc = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+	  					console.log('2');
+  						var loc = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+  						console.log('2.1');
   						geocoder = new google.maps.Geocoder();
+  						console.log('2.2');
   						geocoder.geocode({'latLng': loc}, function(results, status) {
+  							console.log('3');
+  							console.log(status);
+  							console.log(results);
 							var city = "";
   							var countryCode = "";
   							var list =  results[0].address_components;
@@ -1238,13 +1407,17 @@ ximpia.common.GoogleMaps = function() {
   								for (var j=0; j<fields.length; j++) {
 	  								if (fields[j] == "locality") {
   										city = list[i].long_name;
-  										$("#" + idCity).attr('value', city);
+  										console.log('city: ' + city);
+  										for (var i=0; i<idCityList.length; i++) {
+  											$("#" + idCityList[i]).attr('value', city);
+  										}
+  										//$("#" + idCity).attr('value', city);
   									} else if (fields[j] == "country") {
 	  									countryCode = list[i].short_name.toLowerCase();
-  										//$("#" + idCountry + " :selected").removeAttr('selected');
-  										//$("#" + idCountry + " option[value=" + countryCode + "]")[0].selected = true;
-  										//$("#" + idCountry).selectBox('value', countryCode);
-  										$("#" + idCountry).xpObjListSelect('setValue', 'es');
+	  									console.log('country: ' + countryCode);
+  										for (var i=0; i<idCountryList.length; i++) {
+  											$("#" + idCountryList[i]).xpObjListSelect('setValue', countryCode);
+  										}
   									}
   								}		  					
   							}

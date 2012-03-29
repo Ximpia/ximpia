@@ -10,24 +10,25 @@ from django.contrib.auth.models import User as UserSys, Group as GroupSys
 from django.utils.translation import ugettext as _
 from ximpia import util
 
-from constants import Constants
+from constants import Constants as K
 from choices import Choices
 
 #from models import Constants, Choices
-from models import UserSocial, SocialNetwork, UserParam, SocialNetworkUserSocial, GroupSocial, UserDetail, UserProfile, Industry, UserAccount
+from models import UserSocial, SocialNetwork, SocialNetworkUserSocial, GroupSocial, UserDetail, UserProfile, Industry, UserAccount
 from models import Organization, OrganizationGroup, AddressOrganization, Tag, SocialNetworkOrganization, UserAccountContract
-from models import UserAccountRelation, Application, Subscription, Invitation, SignupData, GroupFollow, GroupStream, StatusMessage
+from models import UserAccountRelation, Subscription, Invitation, SignupData, GroupFollow, GroupStream, StatusMessage
 from models import Comment, TagUserTotal, LinkUserTotal, Link, Like, Notification, Skill, SkillGroup, SkillUserAccount, Affiliate, Version
-from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType
+from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType, SNXmlMessage, SNParam
 from models import Calendar, CalendarInvite, Address
-from ximpia.core.models import MasterValue, parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks
-from ximpia.core.data import CommonDAO
+from ximpia.core.models import parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks, CoreParam
+from ximpia.core.data import CommonDAO, CoreParameterDAO, ApplicationDAO
 import sys
 
 from ximpia.settings_visual import SocialNetworkIconData as SND
 from ximpia.settings_visual import GenericComponent
+from ximpia.core.constants import CoreKParam
 
-from constants import DbType
+#from constants import DbType
 
 class AccountDAO(CommonDAO):
 	
@@ -39,29 +40,29 @@ class AccountDAO(CommonDAO):
 	def linkUserSocialNetworks(self, userDetail, twitterDict, facebookDict, linkedinDict):
 		"""Doc."""
 		user = userDetail.user
-		typeTwitter = UserParam.objects.get(mode='net', name=Constants.TWITTER)
-		typeFacebook = UserParam.objects.get(mode='net', name=Constants.FACEBOOK)
-		typeLinkedIn = UserParam.objects.get(mode='net', name=Constants.LINKEDIN)
+		typeTwitter = CoreParam.objects.get(mode='net', name=K.TWITTER)
+		typeFacebook = CoreParam.objects.get(mode='net', name=K.FACEBOOK)
+		typeLinkedIn = CoreParam.objects.get(mode='net', name=K.LINKEDIN)
 		netTwitter = SocialNetwork.objects.get(type=typeTwitter)
 		netFacebook = SocialNetwork.objects.get(type=typeFacebook)
 		netLinkedIn = SocialNetwork.objects.get(type=typeLinkedIn)
 		tupleSocialNets = (netTwitter, netFacebook, netLinkedIn)
 		for socialNet in tupleSocialNets:
-			if socialNet.getName() == Constants.TWITTER and twitterDict['token'] != '':
+			if socialNet.getName() == K.TWITTER and twitterDict['token'] != '':
 				userDetail.TwitterAuth = True
 				netUser = SocialNetworkUserSocial(user=userDetail, socialNetwork=socialNet)
 				netUser.token = twitterDict['token']
 				netUser.tokenSecret = twitterDict['tokenSecret']
 				netUser.userCreateId = user.pk
 				netUser.save()
-			elif socialNet.getName() == Constants.FACEBOOK and facebookDict['token'] != '':
+			elif socialNet.getName() == K.FACEBOOK and facebookDict['token'] != '':
 				userDetail.FacebookAuth = True
 				netUser = SocialNetworkUserSocial(user=userDetail, socialNetwork=socialNet)
 				netUser.token = facebookDict['token']
 				netUser.tokenSecret = facebookDict['tokenSecret']
 				netUser.userCreateId = user.pk
 				netUser.save()
-			elif socialNet.getName() == Constants.LINKEDIN and linkedinDict['token'] != '':
+			elif socialNet.getName() == K.LINKEDIN and linkedinDict['token'] != '':
 				userDetail.LinkedInAuth = True
 				netUser = SocialNetworkUserSocial(user=userDetail, socialNetwork=socialNet)
 				netUser.token = linkedinDict['token']
@@ -95,11 +96,11 @@ class AccountDAO(CommonDAO):
 	def _createXimpiaUser(self, user, firstName, lastName, auth, profiles):
 		"""Doc."""
 		try:
-			userX = UserDAO(self._ctx).get(user, socialChannel=Constants.PROFESSIONAL)
+			userX = UserDAO(self._ctx).get(user, socialChannel=K.PROFESSIONAL)
 			userDetail = UserDetail.objects.get(user=user)
 		except UserSocial.DoesNotExist:
 			name = firstName + ' ' + lastName
-			userX = UserDAO(self._ctx).createUserChannel(user, Constants.PROFESSIONAL)
+			userX = UserDAO(self._ctx).createUserChannel(user, K.PROFESSIONAL)
 			userDetail = UserDetail.objects.create(user=user, name=name, auth=auth, netProfiles=profiles)
 		tuple = (userX, userDetail)
 		return tuple
@@ -112,14 +113,14 @@ class AccountDAO(CommonDAO):
 		@param linkedinIcon_data: json data for Linkedin
 		@return: (authDict, profileDict)"""
 		# Processing auth and profiles...
-		profileDict = {Constants.FACEBOOK: {}, Constants.LINKEDIN: {}}
+		profileDict = {K.FACEBOOK: {}, K.LINKEDIN: {}}
 		if profiles != '':
 			profileDict = json.loads(profiles)		
 		# Processing icon data
 		twitterDataDict = SND(jsonData=twitterIcon_data).getData()
 		facebookDataDict = SND(jsonData=facebookIcon_data).getData()
 		linkedinDataDict = SND(jsonData=linkedinIcon_data).getData()
-		auth = {Constants.FACEBOOK: facebookDataDict, Constants.TWITTER: twitterDataDict, Constants.LINKEDIN: linkedinDataDict}		
+		auth = {K.FACEBOOK: facebookDataDict, K.TWITTER: twitterDataDict, K.LINKEDIN: linkedinDataDict}		
 		tuple = (auth, profileDict, facebookDataDict, twitterDataDict, linkedinDataDict)
 		return tuple
 
@@ -178,7 +179,7 @@ class AccountDAO(CommonDAO):
 			affiliate = AffiliateDAO(self._ctx).get(affiliateId)
 		# User Directory
 		contactDetail = ContactDAO(self._ctx).createDirectoryUser(user, firstName, lastName, email, city, country, 
-									userSocial, None, Constants.PROFESSIONAL)
+									userSocial, None, K.PROFESSIONAL)
 		# InvitedBy
 		invitedByUser = None
 		invitedByOrg = None
@@ -198,7 +199,7 @@ class AccountDAO(CommonDAO):
 
 	def getSocialNetwork(self, socialNet):
 		"""Doc."""
-		typeNet = UserParam.objects.get(mode='net', name=socialNet)
+		typeNet = CoreParam.objects.get(mode='net', name=socialNet)
 		socialNet = SocialNetwork.objects.get(type=typeNet)
 		return socialNet
 
@@ -251,7 +252,7 @@ class AccountDAO(CommonDAO):
 							name=d['organizationName'], 
 							domain=d['organizationDomain'], 
 							description=d['description'], 
-							filesQuota = Constants.FILE_QUOTA_DEFAULT, 
+							filesQuota = K.FILE_QUOTA_DEFAULT, 
 							invitedByUser = invitedByUser,
 							invitedByOrg = invitedByOrg,
 							affiliate = affiliate)
@@ -278,7 +279,7 @@ class AccountDAO(CommonDAO):
 							city=d['organizationCity'], 
 							country=d['organizationCountry'])
 		# Social Networks
-		netTwitter = self.getSocialNetwork(Constants.TWITTER)
+		netTwitter = self.getSocialNetwork(K.TWITTER)
 		if twitterOrgDataDict['token'] != '':
 			socialNetworkOrganization = SocialNetworkOrganization.objects.create(
 							organization=organization, 
@@ -368,7 +369,7 @@ class AccountDAO(CommonDAO):
 							name=organizationName, 
 							domain=organizationDomain, 
 							description=organizationDescription, 
-							filesQuota = Constants.FILE_QUOTA_DEFAULT)
+							filesQuota = K.FILE_QUOTA_DEFAULT)
 		# OrganizationGroup & Groups
 		orgGroup, bCreate = GroupSys.objects.get_or_create(name=organizationGroup)
 		orgGroupSocial, bCreate = GroupSocial.objects.get_or_create(group=orgGroup, public=False, orgGroup=True)
@@ -405,7 +406,7 @@ class AccountDAO(CommonDAO):
 		organization.subscriptionStatus = Choices.SUBSCRIPTION_VALID
 		organization.save()
 		# Change subscription to valid for all users
-		application = Application.objects.get(name=Constants.SOCIAL_NETWORK)
+		application = ApplicationDAO.get(code=K.APP)
 		list = Subscription.objects.filter(organization=organization, app=application)
 		for subscription in list:
 			subscription.subscriptionStatus = Choices.SUBSCRIPTION_VALID
@@ -418,7 +419,7 @@ class AccountDAO(CommonDAO):
 		@param account: 
 		@return: numberSubscriptions"""
 		try:
-			numberSubscriptions = Subscription.objects.filter(organization__account=account, app__name=Constants.SOCIAL_NETWORK).count()
+			numberSubscriptions = Subscription.objects.filter(organization__account=account, app__name=K.SOCIAL_NETWORK).count()
 		except Exception as e:
 			raise XpMsgException(e, _('Error in getting number of subscriptions'))
 		return numberSubscriptions
@@ -458,11 +459,6 @@ class SocialNetworkDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(SocialNetworkDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = SocialNetwork
-
-class UserParamDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(UserParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = UserParam
 
 class SocialNetworkUserSocialDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
@@ -559,19 +555,13 @@ class AddressDAO(CommonDAO):
 		super(AddressDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Address
 
-class MasterValueDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(MasterValueDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = MasterValue
-
-
 class UserDAO(CommonDAO):
 	
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(UserDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = UserAccount
 	
-	def get(self, user, userName=None, socialChannel=Constants.PROFESSIONAL):
+	def get(self, user, userName=None, socialChannel=K.PROFESSIONAL):
 		"""Get UserSocial
 		@param userName: 
 		@param socialChannel:  
@@ -604,7 +594,7 @@ class UserDAO(CommonDAO):
 			raise XpMsgException(e, _('Error when deleting django user ') + str(userId))
 		return user
 
-	def getByUserId(self, userId, socialChannel=Constants.PROFESSIONAL):
+	def getByUserId(self, userId, socialChannel=K.PROFESSIONAL):
 		"""Get UserSocial for given django user id and social channel
 		@param userId: 
 		@param socialChannel:
@@ -721,9 +711,9 @@ class UserDAO(CommonDAO):
 		@return: numberInvitationsLeft"""
 		numberInvitationsUsed = Invitation.objects.filter(fromUser=user).count()
 		if user.is_staff:
-			numberMaxInvitations = Constants.NUMBER_INVITATIONS_STAFF
+			numberMaxInvitations = K.NUMBER_INVITATIONS_STAFF
 		else:
-			numberMaxInvitations = Constants.NUMBER_INVITATIONS_USER
+			numberMaxInvitations = K.NUMBER_INVITATIONS_USER
 		numberInvitationsLeft = numberMaxInvitations-numberInvitationsUsed
 		return numberInvitationsLeft
 
@@ -765,14 +755,14 @@ class UserDAO(CommonDAO):
 			else:
 				# Get affiliate from professional if any
 				try:
-					affiliate = UserAccountDAO(self._ctx).get(user, Constants.PROFESSIONAL).affiliate
+					affiliate = UserAccountDAO(self._ctx).get(user, K.PROFESSIONAL).affiliate
 				except:
 					affiliate = None
 			# Number
 			if user.is_staff:
-				numberMaxInvitations = Constants.NUMBER_INVITATIONS_STAFF
+				numberMaxInvitations = K.NUMBER_INVITATIONS_STAFF
 			else:
-				numberMaxInvitations = Constants.NUMBER_INVITATIONS_USER
+				numberMaxInvitations = K.NUMBER_INVITATIONS_USER
 			numberInvitationsUsed = numberMaxInvitations - numberInvitationsLeft
 			number = numberInvitationsUsed + 1;
 			invitation = Invitation.objects.create(
@@ -809,7 +799,7 @@ class UserDAO(CommonDAO):
 		@param invitation: Invitation
 		@return: invitation"""
 		try:
-			invitation.status = Constants.USED
+			invitation.status = K.USED
 			invitation.save()
 		except Exception as e:
 			raise XpMsgException(e, _('Error in chnaging status of invitation'))
@@ -866,7 +856,7 @@ class GroupDAO(CommonDAO):
 		@param socialGroup:  
 		@return: boolean"""
 		check = True
-		for reservedWord in Constants.RESERVED_GROUP_NAME_LIST:
+		for reservedWord in K.RESERVED_GROUP_NAME_LIST:
 			indexXimpia = groupName.lower().find(reservedWord)
 			if indexXimpia == 0 and socialGroup == True:
 				check = False
@@ -1040,7 +1030,7 @@ class GroupDAO(CommonDAO):
 			page = getDataDict(form)['page']
 			numberMatches = getDataDict(form)['numberMatches']
 			if not numberMatches:
-				numberMatches = Constants.NUMBER_MATCHES
+				numberMatches = K.NUMBER_MATCHES
 			if not page:
 				page = 1
 			iStart, iEnd = getPagingStartEnd(page, numberMatches)
@@ -1059,7 +1049,7 @@ class GroupDAO(CommonDAO):
 			try:
 				# ????????????????????
 				if sessionAllowPrivateGrpSubs == True:			
-				#if request.session[Constants.USER_SETTINGS][Constants.SETTINGS_ALLOW_PRIVATE_GRP_SUBS] == True:
+				#if request.session[K.USER_SETTINGS][K.SETTINGS_ALLOW_PRIVATE_GRP_SUBS] == True:
 					for groupX in groupListNamePrivate:
 						sortList.append(groupX.group.name, groupX)
 					for groupX in groupListTagPrivate:
@@ -1089,7 +1079,7 @@ class GroupDAO(CommonDAO):
 			page = getDataDict(form)['page']
 			numberMatches = getDataDict(form)['numberMatches']
 			if not numberMatches:
-				numberMatches = Constants.NUMBER_MATCHES
+				numberMatches = K.NUMBER_MATCHES
 			if not page:
 				page = 1
 			iStart, iEnd = getPagingStartEnd(page, numberMatches)
@@ -1128,7 +1118,7 @@ class GroupDAO(CommonDAO):
 			page = getDataDict(form)['page']
 			numberMatches = getDataDict(form)['numberMatches']
 			if not numberMatches:
-				numberMatches = Constants.NUMBER_MATCHES
+				numberMatches = K.NUMBER_MATCHES
 			if not page:
 				page = 1
 			iStart, iEnd = getPagingStartEnd(page, numberMatches)
@@ -1155,7 +1145,7 @@ class GroupDAO(CommonDAO):
 			try:
 				# ???????????????????????
 				if sessionAllowPrivateGrpSubs:			
-				#if request.session[Constants.USER_SETTINGS][Constants.SETTINGS_ALLOW_PRIVATE_GRP_SUBS] == True:
+				#if request.session[K.USER_SETTINGS][K.SETTINGS_ALLOW_PRIVATE_GRP_SUBS] == True:
 					for groupX in groupListNamePrivate:
 						sortList.append(groupX.group.name, groupX)
 					for groupX in groupListTagPrivate:
@@ -1281,7 +1271,7 @@ class SocialDAO(CommonDAO):
 			groupTarget = GroupSocial.objects.get(id=groupIdTarget)
 			groupSource = GroupSocial.objects.get(id=groupIdSource)
 			groupFollow = GroupFollow.objects.get(groupSource=groupSource, groupTarget=groupTarget)
-			groupFollow.status = Constants.BLOCKED
+			groupFollow.status = K.BLOCKED
 			groupFollow.save()
 		except GroupSocial.DoesNotExist:
 			raise GroupSocial.DoesNotExist
@@ -1294,18 +1284,18 @@ class SocialDAO(CommonDAO):
 			groupTarget = GroupSocial.objects.get(id=groupIdTarget)
 			groupSource = GroupSocial.objects.get(id=groupIdSource)
 			groupFollow = GroupFollow.objects.get(groupSource=groupSource, groupTarget=groupTarget)
-			groupFollow.status = Constants.OK
+			groupFollow.status = K.OK
 			groupFollow.save()
 		except GroupSocial.DoesNotExist:
 			raise GroupSocial.DoesNotExist
 		except GroupFollow.DoesNotExist:
 			raise GroupFollow.DoesNotExist
 
-	def listFollowing(self, groupIdSource, page, numberMatches=Constants.NUMBER_MATCHES):
+	def listFollowing(self, groupIdSource, page, numberMatches=K.NUMBER_MATCHES):
 		"""List of groups that we follow
 		@param groupIdSource: 
 		@param page: 1-XX
-		@param numberMatches: Constants.NUMBER_MATCHES [optional]
+		@param numberMatches: K.NUMBER_MATCHES [optional]
 		@return: list : List of Groups"""
 		try:
 			iStart, iEnd = getPagingStartEnd(page, numberMatches)
@@ -1315,11 +1305,11 @@ class SocialDAO(CommonDAO):
 			raise GroupSocial.DoesNotExist
 		return list
 
-	def listFollowed(self, groupIdTarget, page, numberMatches=Constants.NUMBER_MATCHES):
+	def listFollowed(self, groupIdTarget, page, numberMatches=K.NUMBER_MATCHES):
 		"""List of groups that follow us
 		@param groupIdTarget: 
 		@param page: 1-XX
-		@param numberMatches: Constants.NUMBER_MATCHES [optional]
+		@param numberMatches: K.NUMBER_MATCHES [optional]
 		@return: list : List of Groups"""
 		try:
 			iStart, iEnd = getPagingStartEnd(page, numberMatches)
@@ -1389,9 +1379,9 @@ class StatusDAO(CommonDAO):
 			if source == None:
 				for group in groupFollowerList:
 					if group.isOrgGroup == True:
-						streamGroupList.append((group, group.account, group.isPublic, Constants.XIMPIA))
+						streamGroupList.append((group, group.account, group.isPublic, K.XIMPIA))
 					else:
-						streamGroupList.append((group, '', group.isPublic, Constants.XIMPIA))
+						streamGroupList.append((group, '', group.isPublic, K.XIMPIA))
 			else:
 				for group in groupFollowerList:
 					streamGroupList.append((group, '', True, source))
@@ -1920,7 +1910,7 @@ class SkillDAO(CommonDAO):
 			if skillCatCode == '':
 				list = Skill.objects.all()
 			else:
-				skillList = UserParam.objects.filter(mode='skill_cat')
+				skillList = CoreParam.objects.filter(mode='skill_cat')
 				list = Skill.objects.filter(catCode__in=skillList)
 		except Exception as e:
 			raise XpMsgException(e, _('Error in get notification list'))
@@ -1932,7 +1922,7 @@ class SkillDAO(CommonDAO):
 		@param skillName: 
 		@param skillCatCode: """
 		try:
-			catCode = UserParam.objects.filter(mode='skill_cat', name=skillCatCode)
+			catCode = CoreParam.objects.filter(mode='skill_cat', name=skillCatCode)
 			tuple = Skill.objects.get_or_create(catCode=catCode, skillName=skillName)
 			skill = tuple[0]
 		except Exception as e:
@@ -2354,7 +2344,8 @@ class ContactDAO(CommonDAO):
 					tuple = commTypesDict[comm]
 					name, value = tuple
 					# CommunicationType
-					communicationType = MasterValue.objects.get(name=comm, type=DbType.COMMTYPE)
+					#communicationType = MasterValue.objects.get(name=comm, type=DbType.COMMTYPE)
+					communicationType = CoreParameterDAO.get(mode=CoreKParam.COMMTYPE, name=comm)
 					# CommunicationTypeContact
 					communicationTypeContact = CommunicationTypeContact.objects.create(	contactDetail=contactDetail,
 														communicationType = communicationType,
@@ -2405,7 +2396,7 @@ class ContactDAO(CommonDAO):
 			userX = None
 			if getFormDataValue(form, 'ownerId') != '':
 				userX = UserDAO(self._ctx).getByChannel(user, socialChannel)
-				if socialChannel == Constants.PROFESSIONAL:
+				if socialChannel == K.PROFESSIONAL:
 					ranking = Contact._RANKING_USER_ACCOUNT
 				else:
 					ranking = Contact._RANKING_USER
@@ -2418,7 +2409,7 @@ class ContactDAO(CommonDAO):
 				contact, bExists = Contact.objects.get_or_create(organization=ownerOrg, detail=contactDetail, ranking = Contact._RANKING_ORG)
 			else:
 				userX = UserDAO(self._ctx).getByChannel(user, socialChannel)
-				if socialChannel == Constants.PROFESSIONAL:
+				if socialChannel == K.PROFESSIONAL:
 					ranking = Contact._RANKING_USER_ACCOUNT
 				else:
 					ranking = Contact._RANKING_USER
@@ -2474,7 +2465,7 @@ class ContactDAO(CommonDAO):
 			addressTypeHome = Choices.ADDRESS_TYPE_HOME
 			AddressContact.objects.create(addressType=addressTypeHome, contact=contactDetail, address=address)
 			# Email
-			communicationTypeEmail = MasterValue.objects.get(name='SN.COMMTYPE-EMAIL', type='SN.COMMTYPE')
+			communicationTypeEmail = CoreParameterDAO.get(mode='SN.COMMTYPE', name='email')
 			comContact = CommunicationTypeContact.objects.create(
 										communicationType=communicationTypeEmail, 
 										contact=contactDetail, 
@@ -2516,7 +2507,7 @@ class ContactDAO(CommonDAO):
 		numberMatches = getFormDataValue(form, 'numberMatches')
 		socialChannel = getFormDataValue(form, 'socialChannel')
 		if not numberMatches:
-			numberMatches = Constants.NUMBER_MATCHES
+			numberMatches = K.NUMBER_MATCHES
 		if not page:
 			page = 1
 		try:
@@ -2540,7 +2531,7 @@ class ContactDAO(CommonDAO):
 		name = getFormDataValue(form, 'name')
 		socialChannel = getFormDataValue(form, 'socialChannel')
 		if not numberMatches:
-			numberMatches = Constants.NUMBER_MATCHES
+			numberMatches = K.NUMBER_MATCHES
 		if not page:
 			page = 1
 		try:
@@ -3035,7 +3026,7 @@ class FileDAO(CommonDAO):
 		numberMatches = getFormDataValue(form, 'numberMatches')
 		socialChannel = getFormDataValue(form, 'socialChannel')
 		if not numberMatches:
-			numberMatches = Constants.NUMBER_MATCHES
+			numberMatches = K.NUMBER_MATCHES
 		if not page:
 			page = 1
 		try:
@@ -3045,7 +3036,7 @@ class FileDAO(CommonDAO):
 			if socialChannel != None:
 				groupList = UserDAO(self._ctx).getGroupsByChannel(user, socialChannel)
 				organizationList = GroupDAO(self._ctx).getOrganizations(groupList)
-				if socialChannel == Constants.PROFESSIONAL:
+				if socialChannel == K.PROFESSIONAL:
 					fileList = File.objects.select_related().filter(accessReadUserAccounts__in=[professional])[iStart:iEnd]
 				else:
 					fileList = File.objects.select_related().filter(
@@ -3074,7 +3065,7 @@ class FileDAO(CommonDAO):
 		numberMatches = getFormDataValue(form, 'numberMatches')
 		socialChannel = getFormDataValue(form, 'socialChannel')
 		if not numberMatches:
-			numberMatches = Constants.NUMBER_MATCHES
+			numberMatches = K.NUMBER_MATCHES
 		if not page:
 			page = 1
 		try:
@@ -3084,7 +3075,7 @@ class FileDAO(CommonDAO):
 			if socialChannel != None:
 				groupList = UserDAO(self._ctx).getGroupsByChannel(user, socialChannel)
 				organizationList = GroupDAO(self._ctx).getOrganizations(groupList)
-				if socialChannel == Constants.PROFESSIONAL:
+				if socialChannel == K.PROFESSIONAL:
 					fileList = File.objects.select_related().filter(
 														Q(name__icontains=fileName, title__icontains=fileTitle, 
 														description__icontains=fileDescription),
@@ -3184,3 +3175,13 @@ class FileDAO(CommonDAO):
 	def makePublic(self, fileId):
 		"""Make public in ximpia and world a file"""
 		pass
+
+class XmlMessageDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(XmlMessageDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SNXmlMessage
+
+class SNParamDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SNParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SNParam

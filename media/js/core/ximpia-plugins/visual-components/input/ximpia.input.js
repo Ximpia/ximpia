@@ -13,6 +13,8 @@
         	excudeListInputSug: ['type','id','element','help_text','label','left'],
         	excludeListLabel: ['type','id','element'],
         	excludeList: ['info','type','left'],
+        	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete'],
+        	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype'],
         	reRender: false
         };
 		
@@ -48,26 +50,25 @@
 					}
 					// id, name, type
 					var htmlContent = "";
+					console.log(dataAttrs);
+					var myValue = dataAttrs.value;
 					if (attrs.hasOwnProperty('left')) {
-						htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left\"><label for=\"" + idInput + "\"></label>:</div> <input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"\" />";
+						htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left\"><label for=\"" + idInput + "\"></label>:</div> <input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";
 					} else {
-						htmlContent = "<label for=\"" + idInput + "\"></label>: <input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"\" />";
+						htmlContent = "<label for=\"" + idInput + "\"></label>: <input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";
 					}
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					// Input
-					for (attr in dataAttrs) {
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListInput, attr);
-						if (exists == false) {
-							$("#" + idInput).attr(attr, dataAttrs[attr]);
-						}					
-					}
-					for (attr in attrs) {
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
-						if (exists == false) {
-							$("#" + idInput).attr(attr, attrs[attr]);
-						}					
-					}
+					// Insert attributes to form element from server and metadata of visual component
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: settings.djangoAttrs,
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: settings.excludeList,
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idInput
+					});
 					if (typeof relatedId != 'undefined') {
 						$("#" + idInput).attr('data-xp-related', relatedId);
 					}
@@ -127,25 +128,14 @@
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					// Input
-					for (attr in dataAttrs) {
-						//console.log(attr);
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListInputSug, attr);
-						//console.log('attr : ' + attr + ' ' + typeof dataAttrs[attr]);
-						if (exists == false) {
-							if (typeof dataAttrs[attr] == 'object') {
-								$("#" + idInput).attr(attr, JSON.stringify(dataAttrs[attr]));
-							} else {
-								$("#" + idInput).attr(attr, dataAttrs[attr]);
-							}						
-						}					
-					}
-					for (attr in attrs) {
-						//console.log(attr);
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
-						if (exists == false) {
-							$("#" + idInput).attr(attr, attrs[attr]);
-						}					
-					}
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: settings.djangoAttrs,
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: settings.excludeList,
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idInput
+					});
 					if (typeof relatedId != 'undefined') {
 						$("#" + idInput).attr('data-xp-related', relatedId);
 					}
@@ -206,11 +196,14 @@
 			//console.log('xpForm: ', xpForm);
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			var formId = ximpia.common.Browser.getForm(xpForm);
-			var list = Object.keys(data);						
+			var list = Object.keys(data);
+			//JSON.stringify(data[list[key]]['value'])
 			for (key in list) {
-				if (data[list[key]]['type'] == 'hidden') {					
-					$('#' + formId).append("<input type=\"hidden\" id=\"id_" + formId + '_' + list[key] + "\" name=\"" + list[key] + "\" value=\"" + data[list[key]]['value'] + "\" />");
-					$("#id_" + list[key]).attr('value', data[list[key]]['value']);
+				if (data[list[key]]['type'] == 'hidden') {
+					//var value = JSON.stringify(data[list[key]]['value']);
+					var value = data[list[key]]['value'];
+					$('#' + formId).append("<input type=\"hidden\" id=\"id_" + formId + '_' + list[key] + "\" name=\"" + list[key] + "\"  />");
+					$("#id_" + formId + '_' + list[key]).attr('value', value);
 				}				
 			}
 			//console.log($('#' + formId));

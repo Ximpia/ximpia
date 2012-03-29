@@ -1,6 +1,5 @@
 from django.utils.translation import ugettext as _
-from ximpia.core.models import XpMsgException 
-from models import XmlMessage
+from ximpia.core.models import XpMsgException, CoreParam, Application 
 
 class CommonDAO(object):	
 
@@ -67,7 +66,7 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
 		return object
 	
-	def check(self, qsArgs):
+	def check(self, **qsArgs):
 		"""Checks if object exists
 		@param qsArgs: query arguments
 		@return: Boolean"""
@@ -78,7 +77,7 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
 		return exists
 	
-	def get(self, qsArgs):
+	def get(self, **qsArgs):
 		"""Get object
 		@param qsArgs: query arguments
 		@return: Model Object"""
@@ -89,23 +88,29 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
 		return data
 	
-	def create(self, qsArgs, bPassword=False, password=''):
+	def getAllRelated(self, **qsArgs):
+		"""Get object and all objects related
+		@param qsArgs: query arguments
+		@return: Model Object"""
+		try:
+			dbObj = self._model.objects.select_related()
+			data = dbObj.get(**qsArgs)
+		except Exception as e:
+			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
+		return data
+	
+	def create(self, **qsArgs):
 		"""Create object
 		@param qsArgs: Query arguments
-		@param bPassword: True / False if password must be set
-		@param password: Password value
 		@return: Data Object"""
 		try:
 			dbObj = self._model.objects
 			data = dbObj.create(**qsArgs)
-			if bPassword == True:
-				data.set_password(password)
-				data.save()
 		except Exception as e:
 			raise XpMsgException(e, _('Error in create object ') + str(id) + _(' in model ') + str(self._model))
 		return data
 	
-	def getCreate(self, qsArgs):
+	def getCreate(self, **qsArgs):
 		"""Get or create object. If exists, gets the current value. If does not exist, creates data.
 		@param qsArgs: Query arguments
 		@return: tuple (Data Object, bCreated)"""
@@ -128,22 +133,22 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error delete object by id ') + str(id))
 		return xpObject
 	
-	def filterData(self, bFull=False, **ArgsDict):
+	def filterData(self, bFull=False, **argsDict):
 		"""Search a model table with ordering support and paging
 		@param bFull: boolean : Follows all foreign keys
 		@return: list : List of model objects"""
 		try:
 			iNumberMatches = self.NUMBER_MATCHES
-			if ArgsDict.has_key('xpNumberMatches'):
-				iNumberMatches = ArgsDict['xpNumberMatches']
+			if argsDict.has_key('xpNumberMatches'):
+				iNumberMatches = argsDict['xpNumberMatches']
 			page = 1
-			if ArgsDict.has_key('xpPage'):
-				page = int(ArgsDict['xpPage'])
+			if argsDict.has_key('xpPage'):
+				page = int(argsDict['xpPage'])
 			iStart, iEnd = self._getPagingStartEnd(page, iNumberMatches)
 			orderByTuple = ()
-			if ArgsDict.has_key('xpOrderBy'):
-				orderByTuple = ArgsDict['xpOrderBy']
-			ArgsDict = self._cleanDict(ArgsDict)
+			if argsDict.has_key('xpOrderBy'):
+				orderByTuple = argsDict['xpOrderBy']
+			ArgsDict = self._cleanDict(argsDict)
 			dbObj = self._model.objects
 			if bFull == True:
 				dbObj = self._model.objects.select_related()
@@ -190,8 +195,12 @@ class CommonDAO(object):
 
 	ctx = property(_getCtx, None)
 
-class XmlMessageDAO(CommonDAO):
+class CoreParameterDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(XmlMessageDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = XmlMessage
+		super(CoreParameterDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = CoreParam
 
+class ApplicationDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ApplicationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Application

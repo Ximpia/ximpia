@@ -3,6 +3,8 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+#python -m smtpd -n -c DebuggingServer localhost:1025
+
 # Ximpia Config
 PRIVATE_BETA = True
 AFFILIATES = False
@@ -185,6 +187,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'ximpia.site',
     'ximpia.social_network',
+    'ximpia.core',
     #'ximpia.tasks',
     #'ximpia.notes',
     #'ximpia.messages',

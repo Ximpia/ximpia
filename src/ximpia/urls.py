@@ -50,8 +50,7 @@ urlpatterns = patterns('',
     # Social network and applications
     (r'^$', 'social_network.views.staticContent'),
     #(r'^', 'social_network.views.test'),
-    (r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),    
-    
+    (r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),        
     
     # Ajax
     
@@ -60,6 +59,5 @@ urlpatterns = patterns('',
     # Organization profile
     
     # Social Network    
-    (r'^view/', include('ximpia.social_network.urls')),
-    
+    (r'^view/', include('ximpia.social_network.urls')),    
 )

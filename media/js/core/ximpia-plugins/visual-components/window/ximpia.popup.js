@@ -9,6 +9,15 @@
         // Settings		
         var settings = {
         };
+        /**
+         * 
+         */
+        var doCreateMessage = function(obj) {
+        	
+        };
+        /**
+         * 
+         */
         var doCreateNoView = function(obj) {
         	var data = obj.data;
         	var settings = obj.settings;
@@ -52,6 +61,9 @@
 		pageJx.doBusinessGetRequest({ className: viewData.className, method: viewData.method, mode: 'popupNoView' });
             	console.log('I am done!!!');
         };
+        /**
+         * 
+         */
         var doCreateView = function(obj) {
         	var settings = $(this).prop('settings');
         	var pageJx = ximpia.common.PageAjax();
@@ -134,6 +146,23 @@
 				//var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 				//$("body").before(html);
 			});
+		},
+		createMsg: function() {
+			console.log('create message popup!!!');
+			var settings = $(this).prop('settings');
+			console.log(settings);
+        		ximpia.common.Window.showMessage({
+	            		title: settings.title,
+            			message: settings.message,
+            			buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', action: \'closePopup\', icon: \'delete\'}" ></div></div>',
+            			effectIn: {style: 'fadeIn', time: 1000},
+            			effectOut: {},
+            			fadeBackground: true,
+            			height: 50
+        		});
+            		$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
+            		$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
+            		$("[data-xp-type='button']").xpObjButton('render');
 		},
 		destroy: function() {
 			console.log('Will destroy popup...');

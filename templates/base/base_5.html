@@ -3,7 +3,7 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Ximpia - Change Password</title>
+<title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" href="{{settings.MEDIA_URL}}jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
 <link href="{{settings.MEDIA_URL}}css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
 <link href="{{settings.MEDIA_URL}}css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
@@ -15,13 +15,13 @@
 
 <body>
 
-<div id="id_view" data-xp="{viewName: 'changePassword', className: 'LoginBusiness', method: 'changePassword', callback: 'ximpia.site.Login.showLogin'}" />
+{% block id_view %}
+{% endblock %}
 
 <section id="id_data" >
 
-<!-- pageForm -->
-
-<form id="form_changePassword" action="" method="post" data-xp="{className: 'LoginBusiness', method: 'login'}" >
+{% block pageForm %}
+{% endblock %}
 
 <div id="Wrapper">
 
@@ -36,42 +36,15 @@
 
 <section id="id_content" class="sectionContent">
 
-<!-- content from main template -->
-
-<div id="id_login" class="sectionComp">
-	
-<fieldset>
-<legend>You</legend>
-<div class="formBlock" style="margin-top: 0px;">
-<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
-<br/>
-<div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
-
-<br/>
-
-<!-- Link Component: Open new panel (task) or open in modal mode -->
-<div id="id_passwordReminderLink_comp" data-xp-type="link" data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password'}"></div>
-
-<!--
-<div id="id_passwordReminderLink_comp" data-xp-type="link">
-<a href="javascript:return void(false)" id="id_passwordReminderLink"  alt="Remember password" data-xp="">Remember your password</a>
-</div>
--->
-
-</div>
-</fieldset>
-
-</div>
+{% block sectionContent %}
+{% endblock%}
 	
 </section>
 
 <section id="id_sectionButton" class="sectionButton">
 
-<!-- buttons -->
-
-<div id="id_pageButton" class="btBar">
-<div id="id_doLogin_comp" data-xp-type="button" data-xp="{form: 'form_login', align: 'left', text: 'Login', action: 'pageActionMsg', type: 'color', method: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
-</div>
+{% block buttons %}
+{% endblock %}
 
 </section>
     
@@ -84,8 +57,13 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.metadata.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jqDock.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-common/ximpia.common.js"></script>
-<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>-->
-<!--<script type="text/javascript" src="{{settings.MEDIA_URL}}js/google_maps.js"></script>-->
+
+<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/google_maps.js"></script>-->
+
+{% block scripts %}
+{% endblock %}
+
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.passStrengthener.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.form.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.validate.js"></script>
@@ -112,10 +90,11 @@
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
 <!-- x-webkit-speech -->
 
-<script>	
+
+<script>
 
 jQuery(document).ready(function($){
-		
+
 	ximpia.common.Page.init();
 	var viewData = ximpia.common.Window.getViewAttrs();
 	var pageJx = ximpia.common.PageAjax();
@@ -126,7 +105,6 @@ jQuery(document).ready(function($){
 			callback: callback,
 			verbose: true});
 	pageJx.renderCtx(data)
-
 });
 
 </script>

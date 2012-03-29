@@ -29,7 +29,7 @@
         var settings = {
         	classButton: "button",
         	classButtonColor: "buttonBlue",
-        	modes: {pageActionMsg: 'page', pageAction: 'page', popupAction: 'popup', popupActionMsg: 'popup'}
+        	modes: {pageActionMsg: 'page', pageAction: 'page', popupAction: 'popup', popupActionMsg: 'popup', pageActionPopUp: 'page'}
         };
         /*
          * Creates the page message bar
@@ -79,6 +79,7 @@
         var doPageActionMsg = function(obj) {
         	console.log('doPageActionMsg...');
         	var oForm = ximpia.common.Form();
+        	console.log(obj.form);
         	var isValid = $("#" + obj.form).valid();
         	console.log('isValid: ' + isValid);
         	$("#id_btPageMsg_img").xpLoadingSmallIcon();
@@ -103,8 +104,36 @@
 			createPageMsgBar(obj);
 			$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
 			$("#id_btPageMsg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
-        	}        	
+        	}
         };
+        /*
+         * Page action is called and result must be shown in popup window with all the errors
+         */
+        var doPageActionPopUp = function(obj) {
+        	console.log('doPageActionPopUp...');
+        	var oForm = ximpia.common.Form();
+        	var isValid = $("#" + obj.form).valid();
+        	console.log('isValid: ' + isValid);
+        	$("#id_btPageMsg_img").xpLoadingSmallIcon();
+        	if (isValid == true) {
+        		createPageMsgBar(obj);
+                	$("#id_btPageMsg_img").xpLoadingSmallIcon('wait');
+        		$("#id_btPageMsg_text").text('Waiting...');
+        		// Set form values from data-xp and action
+        		var attrs = getFormAttrs(obj.form)
+        		console.log('Form attributes');
+        		console.log(attrs);
+        		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
+        		$("#id_" + obj.form + "_bsClass").val(attrs.className);
+        		console.log('form :: button method : ' + obj.method)
+        		$("#id_" + obj.form + "_method").val(obj.method);
+        		$("#" + obj.form).submit();
+        	} else {
+			createPageMsgBar(obj);
+			$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
+			$("#id_btPageMsg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
+        	}
+        }
         /*
          * Close the Popup
          */
@@ -262,6 +291,8 @@
 				doPopupActionMsg(attrs);
 			} else if (actionType == 'popupAction') {
 				doPopupAction(attrs);
+			} else if (actionType == 'pageActionPopUp') {
+				doPageActionPopUp(attrs);
 			}
 		},
 		disable: function() {

@@ -11,10 +11,11 @@
         var settings = {
         	excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
         	excludeListLabel: ['type','id','element'],
-        	excludeList: ['info','type'],
+        	excludeList: ['info','type','left'],
+        	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete'],
+        	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype','choices'],
         	formData: {}
         };
-        
 		
         var methods = {
 		init : function( options ) { 
@@ -28,6 +29,7 @@
 		},
 		render: function(xpForm) {
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			var myForm = ximpia.common.Form.getForm(xpForm);
 			//var data = JSON.parse(sessionStorage.getItem("xpForm"));
 			console.log($(this));
 			console.log('Elements : ' + $(this).length);
@@ -52,7 +54,7 @@
 					var choicesId = "";
 					if (dataAttrs.hasOwnProperty('choicesId')) {
 						choicesId = dataAttrs['choicesId'];
-					}				
+					}
 					if (attrs.hasOwnProperty('type')) {
 						type = attrs.type;
 					}
@@ -67,7 +69,8 @@
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					// Plugin
-					var countryList = JSON.parse($('#id_choices').attr('value'))[choicesId];
+					//var countryList = JSON.parse(JSON.parse($('#id_' + myForm + '_choices').attr('value')))[choicesId];
+					var countryList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
 					var results = {'results': []};
 					for (j in countryList) {
 						results['results'][j] = {'id': countryList[j][0], 'name': countryList[j][1]}
@@ -84,30 +87,14 @@
 					});
 					//fb.setValue('es', 'Spain');
 					// Input
-					for (attr in dataAttrs) {
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excudeListSelect, attr);
-						if (exists == false) {
-							valueNew = dataAttrs[attr];
-							valueOld = $("#" + idInput).attr(attr);
-							value = valueNew;
-							if (valueOld != '') {
-								value = valueOld + ' ' + valueNew;
-							}
-							$("#" + idInput).attr(attr, value);
-						}					
-					}
-					for (attr in attrs) {
-						var exists = ximpia.common.ArrayUtil.hasKey(settings.excludeList, attr);
-						if (exists == false) {
-							valueNew = dataAttrs[attr];
-							valueOld = $("#" + idInput).attr(attr);
-							value = valueNew;
-							if (valueOld != '') {
-								value = valueOld + ' ' + valueNew;
-							}
-							$("#" + idInput).attr(attr, value);
-						}					
-					}
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: settings.djangoAttrs,
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: settings.excludeList,
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idInput
+					});					
 					// Label
 					$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
 					if (attrs.info == true) {

@@ -478,6 +478,9 @@ $.extend($.validator, {
 	
 		check: function( element ) {
 			element = this.clean( element );
+			//console.log('element: ' + element.name);
+			//console.log('rules...');
+			//console.log($(element).rules());
 			
 			// if radio/checkbox, validate first element in group instead
 			if (this.checkable(element)) {
@@ -487,8 +490,12 @@ $.extend($.validator, {
 			var rules = $(element).rules();
 			var dependencyMismatch = false;
 			for( method in rules ) {
+				//console.log('method: ' + method);
 				var rule = { method: method, parameters: rules[method] };
 				try {
+					//console.log('call...');
+					//console.log(typeof $.validator.methods[method]);
+					if (typeof $.validator.methods[method] != 'undefined') {
 					var result = $.validator.methods[method].call( this, element.value.replace(/\r/g, ""), element, rule.parameters );
 					
 					// if a method indicates that the field is optional and therefore valid,
@@ -507,7 +514,9 @@ $.extend($.validator, {
 					if( !result ) {
 						this.formatAndAdd( element, rule );
 						return false;
+					}						
 					}
+
 				} catch(e) {
 					this.settings.debug && window.console && console.log("exception occured when checking element " + element.id
 						 + ", check the '" + rule.method + "' method", e);

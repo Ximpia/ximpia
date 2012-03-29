@@ -7,8 +7,8 @@ from django.utils.translation import ugettext as _
 from ximpia import settings
 from django.utils import translation
 from choices import Choices
-from constants import Constants
-from ximpia.core.models import BaseModel, UserParam
+from constants import Constants as K
+from ximpia.core.models import BaseModel
 
 class Address(BaseModel):
 	"""Address"""
@@ -30,12 +30,12 @@ class Address(BaseModel):
 		verbose_name_plural = _('Addresses')
 
 class SocialNetwork(BaseModel):
-	type = models.ForeignKey(UserParam, limit_choices_to={'mode__lte': 'nets'},
+	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': 'nets'},
 				verbose_name = _('Social Network Type'), help_text = _('Type of social network'))
 	def __unicode__(self):
-		return str(self.type)
+		return str(self.myType)
 	def getName(self):
-		return self.type.name
+		return self.myType.name
 	class Meta:
 		db_table = 'SN_SOCIAL_NETWORK'
 		verbose_name = _('Social Network')
@@ -65,7 +65,7 @@ class UserSocial(BaseModel):
 				verbose_name = _('User'), help_text = _('User'))
 	groups = models.ManyToManyField('GroupSocial',
 				verbose_name = _('Groups'), help_text = _('Groups'))
-	socialChannel = models.CharField(max_length=20, default=Constants.USER,
+	socialChannel = models.CharField(max_length=20, default=K.USER,
 				verbose_name = _('Social Channel'), help_text = _('Social Channel'))
 	profiles = models.ManyToManyField('Profile',
 				verbose_name = _('Profiles'), help_text=_('Profiles for user'))
@@ -73,9 +73,9 @@ class UserSocial(BaseModel):
 		return str(self.user.username) + '-' + str(self.socialChannel)
 	def getGroupById(self, groupId):
 		"""Doc."""
-		list = self.groups.filter(pk=groupId)
-		if len(list) != 0:
-			value = list[0]
+		groups = self.groups.filter(pk=groupId)
+		if len(groups) != 0:
+			value = groups[0]
 		else:
 			value = None
 		return value
@@ -115,20 +115,21 @@ class UserDetail(BaseModel):
 				verbose_name = _('Authentication'), help_text = _('Authentication'))	
 	netProfiles = models.TextField(default = '', null=True, blank=True,
 				verbose_name = _('Network Profiles'), help_text = _('Network Profiles'))	
-	msgPreference = models.CharField(max_length=10, choices=Choices.MSG_PREFERRED, default=Constants.XIMPIA,
+	msgPreference = models.CharField(max_length=10, choices=Choices.MSG_PREFERRED, default=K.XIMPIA,
 				verbose_name = _('Messaging Preference'), help_text = _('Preference for sending messages: Facebook, Twitter, Email, etc...'))
 	hasValidatedEmail = models.BooleanField(default=False,
 				verbose_name = _('Validated Email'), help_text = _('User has validated his email address?'))
-	filesQuota = models.IntegerField(default=Constants.FILE_QUOTA_DEFAULT,
+	filesQuota = models.IntegerField(default=K.FILE_QUOTA_DEFAULT,
 				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files'))
-	resetPasswordDate = models.DateField(verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
+	resetPasswordDate = models.DateField(null=True, blank=True, 
+				verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
 	def __unicode__(self):
 		return str(self.user.username)
 	def getSocialNetworkUser(self, socialNetName):
 		"""Doc."""
-		list = self.socialNetworks.filter(type__name=socialNetName)
-		if len(list) != 0:
-			value = list[0].socialnetworkuserSocial_set.all()[0]
+		nets = self.socialNetworks.filter(myType__name=socialNetName)
+		if len(nets) != 0:
+			value = nets[0].socialnetworkuserSocial_set.all()[0]
 		else:
 			value = None
 		return value
@@ -194,7 +195,7 @@ class GroupFollow(BaseModel):
 				verbose_name = _('Group Source'), help_text = _('Group that follows'))
 	groupTarget = models.ForeignKey('GroupSocial', related_name='group_follow_target',
 				verbose_name = _('Group Target'), help_text = _('Group followed'))
-	status = models.CharField(max_length=10, choices=Choices.FOLLOW_STATUS, default=Constants.OK,
+	status = models.CharField(max_length=10, choices=Choices.FOLLOW_STATUS, default=K.OK,
 				verbose_name = _('Status'), help_text = _('Group status: ok, blocked, unblocked'))
 	def __unicode__(self):
 		return str(self.groupSource) + ' - ' + str(self.groupTarget)
@@ -315,7 +316,7 @@ class GroupStream(BaseModel):
 				verbose_name = _('Shares'), help_text = _('Shares'))
 	isPublic = models.BooleanField(default=False,
 				verbose_name = _('Public'), help_text = _('Public'))
-	source = models.CharField(max_length=10, choices=Choices.MSG_MEDIA, default=Constants.XIMPIA,
+	source = models.CharField(max_length=10, choices=Choices.MSG_MEDIA, default=K.XIMPIA,
 				verbose_name = _('Source'), help_text = _('Where stream came from'))
 	def __unicode__(self):
 		return str(self.user) + ' - ' + str(self.postId)
@@ -354,7 +355,7 @@ class Tag(BaseModel):
 	Public : Boolean:True"""
 	name = models.CharField(max_length=30,
 			verbose_name = _('Name'), help_text = _('Tag name'))
-	type = models.ForeignKey('TagType', related_name='Tag_Type',
+	myType = models.ForeignKey('TagType', related_name='Tag_Type',
 			verbose_name = _('Type'), help_text = _('Tag type'))
 	popularity = models.IntegerField(default=1, null=True, blank=True,
 			verbose_name = _('Popularity'), help_text = _('Popularity'))
@@ -372,12 +373,12 @@ class Tag(BaseModel):
 
 class TagType(BaseModel):
 	"""Tag Type Model"""
-	type = models.CharField(max_length=30,
+	myType = models.CharField(max_length=30,
 			verbose_name = _('Type'), help_text = _('Tag type'))
 	isPublic = models.BooleanField(default=True,
 			verbose_name = _('Public'), help_text = _('Is tag type public?'))
 	def __unicode__(self):
-		return str(self.type)
+		return str(self.myType)
 	class Meta:
 		db_table = 'SN_TAG_TYPE'
 		verbose_name = _('Tag Type')
@@ -435,7 +436,7 @@ class Version(BaseModel):
 
 class ProfileDetail(BaseModel):
 	"""Profile information for site, im, etc..."""
-	mode = models.ForeignKey('core.UserParam', limit_choices_to={'mode__exact': 'mode'}, related_name='profile_detail_mode',
+	mode = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__exact': 'mode'}, related_name='profile_detail_mode',
 				verbose_name = _('Mode'), help_text = _('Mode: Site, Im, etc...'))
 	value = models.CharField(max_length=50,
 				verbose_name = _('Value'), help_text = _('Value'))
@@ -448,7 +449,7 @@ class ProfileDetail(BaseModel):
 
 class Profile(BaseModel):
 	"""User profiles for social network and applications. Profile name allows visibility options in web pages"""
-	app = models.ForeignKey('Application', null=True, blank=True,
+	app = models.ForeignKey('core.Application', null=True, blank=True,
 				verbose_name = _('Application'), help_text = _('Application attached to profile. If none selected, applies to whole system'))
 	name = models.CharField(max_length=20, db_index=True,
 				verbose_name = _('Name'), help_text = _('Profile name'))
@@ -675,10 +676,10 @@ class IdentifierUserAccount(BaseModel):
 		verbose_name_plural = _("Identifiers for User Account")
 
 class UserAccountIdentifier(BaseModel):
-	type = models.CharField(max_length=20, null=True, blank=True,
+	myType = models.CharField(max_length=20, null=True, blank=True,
 			verbose_name = _('Type'), help_text = _('Type'))
 	def __unicode__(self):
-		return str(self.type)
+		return str(self.myType)
 	class Meta:
 		db_table = 'SN_USER_ACCOUNT_IDENTIFIER'
 		verbose_name = _('User Account Identifier')
@@ -686,7 +687,7 @@ class UserAccountIdentifier(BaseModel):
 
 class Skill(BaseModel):
 	"""Skills, either technical or """
-	catCode = models.ForeignKey('core.UserParam', limit_choices_to={'mode__exact': 'skill_cat'}, related_name='skill_cat_code',
+	catCode = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__exact': 'skill_cat'}, related_name='skill_cat_code',
 				verbose_name = _('Skill'), help_text = _('Employee skill'))
 	skillName = models.CharField(max_length=50,
 				verbose_name = _('Skill Name'), help_text = _('Name of the employee skill'))
@@ -782,10 +783,10 @@ class SocialNetworkOrganization(BaseModel):
 		verbose_name_plural = _('Social Networks for Organization')
 
 class TaxType(BaseModel):
-	type = models.CharField(max_length=100,
+	myType = models.CharField(max_length=100,
 			verbose_name = _('Type'), help_text = _('Type'))
 	def __unicode__(self):
-		return str(self.type)
+		return str(self.myType)
 	class Meta:
 		db_table = 'SN_TAX_TYPE'
 		verbose_name = _('Tax Type')
@@ -892,7 +893,7 @@ class Invitation(BaseModel):
 	invitationCode = models.CharField(max_length=10, unique=True,
 				verbose_name = _('Inivitation Code'), help_text = _('Invitation Code'))
 	email = models.EmailField(unique=True, verbose_name = _('Email'), help_text = _('Email attached to invitation'))
-	status = models.CharField(max_length=10, choices=Choices.INVITATION_STATUS, default=Constants.PENDING,
+	status = models.CharField(max_length=10, choices=Choices.INVITATION_STATUS, default=K.PENDING,
 				verbose_name = _('Status'), help_text = _('Invitation status : pending, used.'))
 	number = models.PositiveSmallIntegerField(default=1,
 				verbose_name = _('Number'), help_text = _('Invitation Number'))
@@ -970,7 +971,7 @@ class SubscriptionDaily(BaseModel):
 			verbose_name = _('User Account'), help_text = _('User Account'))
 	organization = models.ForeignKey('Organization', null=True, blank=True,
 			verbose_name = _('Organization'), help_text = _('Organization'))
-	app = models.ForeignKey('Application',
+	app = models.ForeignKey('core.Application',
 			verbose_name = _('Application'), help_text = _('Application'))
 	numberUsers = models.PositiveIntegerField(verbose_name = _('Number Users'), help_text = _('Number Users'))
 	date = models.DateField(auto_now_add=True, verbose_name = _('Date'), help_text = _('Date'))
@@ -987,7 +988,7 @@ class Subscription(BaseModel):
 				verbose_name = _('User Account'), help_text = _('User Account'))
 	organization = models.ForeignKey('Organization', null=True, blank=True,
 				verbose_name = _('Organization'), help_text = _('Organization'))
-	app = models.ForeignKey('Application',
+	app = models.ForeignKey('core.Application',
 				verbose_name = _('Application'), help_text = _('Application'))
 	users = models.ManyToManyField(UserSys,
 				verbose_name = _('Users'), help_text = _('Users'))
@@ -1017,23 +1018,6 @@ class SubscriptionItemMonth(BaseModel):
 		db_table = 'SN_SUBSCRIPTION_ITEM_MONTH'
 		verbose_name = _('Subscription Item per Month')
 		verbose_name_plural = _('Subscription Items per Month')
-
-class Application(BaseModel):
-	"""Applications"""
-	code = models.CharField(max_length=20,
-		verbose_name = _('Code'), help_text = _('Application code'))
-	name = models.CharField(max_length=30,
-		verbose_name = _('Name'), help_text = _('Application name'))
-	developer = models.ForeignKey('UserAccount', null=True, blank=True,
-		verbose_name = _('Developer'), help_text = _('Developer'))
-	developerOrg = models.ForeignKey('Organization', null=True, blank=True,
-		verbose_name = _('Organization'), help_text = _('Developer organization'))
-	def __unicode__(self):
-		return str(self.name)
-	class Meta:
-		db_table = 'SN_APPLICATION'
-		verbose_name = _('Application')
-		verbose_name_plural = _('Applications')
 
 class Notification(BaseModel):
 	"""Notifications"""
@@ -1093,7 +1077,7 @@ class File(BaseModel):
 			verbose_name = _('File Title'), help_text = _('File Title'))
 	description = models.TextField(null=True, blank=True,
 			verbose_name = _('File Description'), help_text = _('File Description'))
-	type = models.CharField(max_length=50, choices=Choices.FILE_TYPE,
+	myType = models.CharField(max_length=50, choices=Choices.FILE_TYPE,
 			verbose_name = _('File Type'), help_text = _('File Type'))
 	tags = models.ManyToManyField('social_network.Tag', null=True, blank=True,
 			verbose_name = _('Tags'), help_text = _('Tags'))
@@ -1122,7 +1106,7 @@ class File(BaseModel):
 
 class FileVersion(BaseModel):
 	"""Version for file"""
-	file = models.ForeignKey('File',
+	myFile = models.ForeignKey('File',
 			verbose_name = _('File'), help_text = _('File'))
 	version = models.ForeignKey('social_network.Version',
 			verbose_name = _('Version'), help_text = _('Version'))
@@ -1133,7 +1117,7 @@ class FileVersion(BaseModel):
 	isPublic = models.BooleanField(default=False,
 			verbose_name = _('Public'), help_text = _('Is Public?'))
 	def __unicode__(self):
-		return str(self.file) + ' - ' + str(self.version)
+		return str(self.myFile) + ' - ' + str(self.version)
 	class Meta:
 		db_table = 'SN_VERSION_file'
 		verbose_name = _('File Version')
@@ -1196,8 +1180,8 @@ class ContactDetail(BaseModel):
 			verbose_name = _('Birthday'), help_text = _('Birthday'))
 	anniversary = models.DateField(null=True, blank=True,
 			verbose_name = _('Anniversary'), help_text = _('Anniversary'))
-	communications = models.ManyToManyField('core.MasterValue', through='CommunicationTypeContact', null=True, blank=True, 
-			limit_choices_to={"type": "SN.COMMTYPE"}, related_name='contact_communications', verbose_name = _('Communications'), 
+	communications = models.ManyToManyField('core.CoreParam', through='CommunicationTypeContact', null=True, blank=True, 
+			limit_choices_to={"mode": "COMMTYPE"}, related_name='contact_communications', verbose_name = _('Communications'), 
 			help_text = _('Communications'))
 	comBy = models.CharField(max_length=15, null=True, blank=True, choices=Choices.CONTACT_COMM,
 			verbose_name = _('Communication By'), help_text = _('Preferred way of communication'))
@@ -1281,7 +1265,7 @@ class AddressContact(BaseModel):
 class CommunicationTypeContact(BaseModel):
 	"""Communication type for contact"""
 	contact = models.ForeignKey('ContactDetail')
-	communicationType = models.ForeignKey('core.MasterValue', related_name='contactcommtype_value')
+	communicationType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': 'COMMTYPE'}, related_name='contactcommtype_value')
 	name = models.CharField(max_length=50, null=True, blank=True,
 			verbose_name = _('Name'), help_text = _('Name'))
 	value = models.CharField(max_length=250,
@@ -1324,7 +1308,7 @@ class Calendar(BaseModel):
 	timeDateStart = models.DateTimeField(verbose_name = _('Start'), help_text = _('Start'))
 	timeDateEnd = models.DateTimeField(null=True, blank=True,
 			verbose_name = _('End'), help_text = _('End'))
-	type = models.CharField(max_length=15, choices=Choices.CALENDAR_TYPE,
+	myType = models.CharField(max_length=15, choices=Choices.CALENDAR_TYPE,
 			verbose_name = _('Type'), help_text = _('Type'))
 	isAllDay = models.BooleanField(default=False,
 			verbose_name = _('All Day'), help_text = _('All Day'))
@@ -1344,7 +1328,7 @@ class CalendarInvite(BaseModel):
 			verbose_name = _('Calendar'), help_text = _('Calendar'))
 	contact = models.ForeignKey('social_network.Contact',
 			verbose_name = _('Contact'), help_text = _('Contact'))
-	status = models.CharField(max_length=15, choices=Choices.CALENDAR_INVITE_STATUS, default= Constants.PENDING,
+	status = models.CharField(max_length=15, choices=Choices.CALENDAR_INVITE_STATUS, default= K.PENDING,
 			verbose_name = _('Status'), help_text = _('Status'))
 	def __unicode__(self):
 		return str(self.calendar) + ' ' + str(self.contact)
@@ -1352,3 +1336,36 @@ class CalendarInvite(BaseModel):
 		db_table = 'SN_CALENDAR_invite'
 		verbose_name = _('Calendar Invite')
 		verbose_name_plural = _('Calendar Invites')
+
+class SNXmlMessage(BaseModel):
+	"""XML Message"""
+	name = models.CharField(max_length=255,
+			verbose_name = _('Name'), help_text = _('Code name of XML'))
+	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH,
+			verbose_name = _('Language'), help_text = _('Language for xml'))
+	body = models.TextField(verbose_name = _('Xml Content'), help_text = _('Xml content'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'SN_XML_MESSAGE'
+		verbose_name = _('Xml Message')
+		verbose_name_plural = _('Xml Messages')
+
+class SNParam(BaseModel):
+	"""Social Network Parameters"""
+	mode = models.CharField(max_length=20, 
+			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
+	name = models.CharField(max_length=20, 
+			verbose_name=_('Name'), help_text=_('Parameter Name'))
+	value = models.CharField(max_length=100, null=True, blank=True, 
+			verbose_name=_('Value'), help_text=_('Parameter Value for Strings'))
+	valueId = models.IntegerField(null=True, blank=True, 
+			verbose_name=_('Value Id'), help_text=_('Parameter Value for Integers'))
+	valueDate = models.DateTimeField(null=True, blank=True, 
+			verbose_name = _('Value Date'), help_text = _('Parameter Value for Date'))
+	def __unicode__(self):
+		return str(self.mode) + ' - ' + str(self.name)
+	class Meta:
+		db_table = 'SN_PARAMETER'
+		verbose_name = "Parameter"
+		verbose_name_plural = "Parameters"

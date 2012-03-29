@@ -19,14 +19,17 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 #from models import Invitation
-from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx, JsResultDict
+from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx, JsResultDict, XpMsgException
 #from choices import Choices
 #from constants import Constants
 #from messages import MsgSignup
-from data import *
+#from data import *
 #from choices import Choices
 import forms
 #from constants import Constants
+
+from data import UserDAO
+from models import Invitation
 
 #from ximpia import util
 from ximpia.util.http import Request
@@ -39,6 +42,8 @@ from business import SignupBusiness, LoginBusiness
 #from data import UserDAO
 #from constants import Constants
 #from sqlalchemy.util import deprecated
+
+from constants import Constants as K
 
 def test(request):
 	return HttpResponse("OK")
@@ -185,8 +190,8 @@ def jxBusiness(request, *argsTuple, **argsDict):
 		bsClass = request.REQUEST['bsClass'];
 		method = request.REQUEST['method']
 		if method.find('_') == -1 or method.find('__') == -1: 
-			object = eval(bsClass)(ctx)
-			result = eval('object.' + method)()
+			obj = eval(bsClass)(ctx)
+			result = eval('obj.' + method)()
 		else:
 			print 'private methods...'
 			raise Http404
@@ -207,8 +212,8 @@ def jxSuggestList(request, **ArgsDict):
 		params = json.loads(request.REQUEST['params']);
 		params[params['text']] = request.REQUEST['search'];
 		del params['text']
-		object = eval(dbClass)(ctx)
-		list = eval('object.filter')(*[], **params)
+		obj = eval(dbClass)(ctx)
+		list = eval('obj.filter')(*[], **params)
 		for entity in list:
 			dict = {}
 			dict['id'] = entity.id
@@ -376,7 +381,7 @@ def signup(request, invitationCode=None, **argsDict):
 		#signup.doGet()
 		try:
 			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
+			invitation = dbUser.getInvitation(invitationCode, status=K.PENDING)
 			ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
 			jsData = getResultOK({})
 			ctx['form'].buildJsData(jsData)
@@ -418,7 +423,7 @@ def signupOrganization(request, invitationCode=None, **argsDict):
 		try:
 			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
 			print 'affiliateId : ', affiliateId
-			invitation = dbUser.getInvitation(invitationCode, status=Constants.PENDING)
+			invitation = dbUser.getInvitation(invitationCode, status=K.PENDING)
 			if settings.PRIVATE_BETA == True and affiliateId == None:
 				ctx['showInvitation'] = True
 			else:
@@ -467,21 +472,22 @@ def activateAccount(request, user, activationCode, **argsDict):
 # ****     Server Content     ***
 # *******************************
 
-
 @Context
 def changePassword(request, userAccount, **argsDict):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
-	print 'userAccount: ', userAccount
-	ctx = argsDict['ctx']
-	ctx['userAccount'] = userAccount
-	ctx[Ctx.FORM] = forms.ChangePasswordForm()
-	jsData = JsResultDict()
-	ctx[Ctx.FORM].buildJsData(jsData)
-	#ctx[Ctx.CTX] = HttpResponse(json.dumps(jsData))
-	ctx[Ctx.CTX] = json.dumps(jsData)
-	print 'ctx =>'
-	print ctx['ctx']
-	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, ctx))
-	return result	
+	login = LoginBusiness(argsDict['ctx'])
+	login.showNewPassword(userAccount)
+	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, argsDict['ctx']))
+	return result
+
+@Context
+def signupUser(request, invitationCode, **argsDict):
+	"""Signup user with invitation."""
+	print 'signupUser...'
+	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
+	signup = SignupBusiness(argsDict['ctx'])
+	signup.showSignupUser(invitationCode, affiliateId)
+	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, argsDict['ctx']))
+	return result

@@ -56,6 +56,7 @@
 /* Inner div for dropdown */
 .ffb .content {
 	overflow:auto;
+	/*z-index: 900000;*/
 }
 .ffb .content .row {
 	/*border-bottom:1px solid #828790;*/

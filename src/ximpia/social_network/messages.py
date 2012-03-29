@@ -15,6 +15,8 @@ ERR_email = _('An user with same email address already exists. Please select ano
 ERR_captcha = _('Error in validation image. You can reload image to display another image.')
 ERR_wrongPassword = _('The user or password is not correct')
 ERR_emailDoesNotExist = _('The email address does not exist')
+ERR_changePassword = _('Invalid data to change password')
+ERR_invitationUsed = _('This invitation has already been used')
 
 
 class Labels(object):

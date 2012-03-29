@@ -43,22 +43,7 @@ class BaseModel(models.Model):
 	class Meta:
 		abstract = True
 
-class MasterValue(BaseModel):
-	"""Master Values"""
-	name = models.CharField(max_length=50,
-			verbose_name=_('Name'), help_text=_('Name'))
-	value = models.CharField(max_length=100,
-			verbose_name=_('Value'), help_text=_('Value'))
-	type = models.CharField(max_length=30, db_index=True,
-			verbose_name=_('Type'), help_text=_('Type'))
-	def __unicode__(self):
-		return str(self.name) + ' => ' + str(self.value)
-	class Meta:
-		db_table = 'SN_MASTER_VALUE'
-		verbose_name = _('Master Value')
-		verbose_name_plural = _('Master Values')
-
-class UserParam(BaseModel):
+class CoreParam(BaseModel):
 	"""User Parameters"""
 	mode = models.CharField(max_length=20, 
 			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
@@ -68,14 +53,16 @@ class UserParam(BaseModel):
 			verbose_name=_('Value'), help_text=_('Parameter Value for Strings'))
 	valueId = models.IntegerField(null=True, blank=True, 
 			verbose_name=_('Value Id'), help_text=_('Parameter Value for Integers'))
+	valueDate = models.DateTimeField(null=True, blank=True, 
+			verbose_name = _('Value Date'), help_text = _('Parameter Value for Date'))
 	def __unicode__(self):
 		return str(self.mode) + ' - ' + str(self.name)
 	class Meta:
-		db_table = 'SN_PARAM'
-		verbose_name = "User Parameter"
-		verbose_name_plural = "User Parameters"
+		db_table = 'CORE_PARAMETER'
+		verbose_name = "Parameter"
+		verbose_name_plural = "Parameters"
 
-class XmlMessage(BaseModel):
+class CoreXmlMessage(BaseModel):
 	"""XML Message"""
 	name = models.CharField(max_length=255,
 			verbose_name = _('Name'), help_text = _('Code name of XML'))
@@ -85,13 +72,30 @@ class XmlMessage(BaseModel):
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
-		db_table = 'SN_XML_MESSAGE'
+		db_table = 'CORE_XML_MESSAGE'
 		verbose_name = _('Xml Message')
 		verbose_name_plural = _('Xml Messages')
 
+class Application(BaseModel):
+	"""Applications"""
+	code = models.CharField(max_length=20,
+		verbose_name = _('Code'), help_text = _('Application code'))
+	name = models.CharField(max_length=30,
+		verbose_name = _('Name'), help_text = _('Application name'))
+	developer = models.ForeignKey(UserSys, null=True, blank=True,
+		verbose_name = _('Developer'), help_text = _('Developer'))
+	developerOrg = models.ForeignKey(GroupSys, null=True, blank=True,
+		verbose_name = _('Organization'), help_text = _('Developer organization'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'CORE_APPLICATION'
+		verbose_name = _('Application')
+		verbose_name_plural = _('Applications')
+
 class XpMsgException(Exception):
 	Msg = ''
-	Exception = None
+	myException = None
 	ArgsDict = {}
 	def __init__(self, exception, msg, **argsDict):
 		"""Doc.
@@ -99,7 +103,7 @@ class XpMsgException(Exception):
 		@param msg: 
 		@param **argsDict: """
 		self.Msg = msg
-		self.Exception = exception
+		self.myException = exception
 		self.ArgsDict = argsDict
 	def _log(self, exception, msg, argsDict):
 		"""Will use log facility of django 1.3"""
