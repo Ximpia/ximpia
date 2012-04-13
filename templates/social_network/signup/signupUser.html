@@ -12,11 +12,11 @@
 {% block title %}Ximpia - {% trans "Signup" %}{% endblock %}
 
 {% block id_view %}
-<div id="id_view" data-xp="{viewName: 'signup', className: 'SignupBusiness', method: '', callback: ''}" />
+<div id="id_view" data-xp="{viewName: 'signup', callback: ''}" />
 {% endblock %}
 
 {% block pageForm %}
-<form id="form_signup" action="" method="post" data-xp="{className: 'SignupBusiness', method: 'doUser'}" >
+<form id="form_signup" action="" method="post" data-xp="{action: 'doSignupUser'}" >
 {% endblock %}
 
 {% block sectionContent %}
@@ -82,7 +82,7 @@
 {% block buttons %}
 
 <div id="id_pageButton" class="btBar">
-<div id="id_doSignup_comp" data-xp-type="button" data-xp="{form: 'form_signup', align: 'left', text: 'Signup', action: 'pageActionPopUp', type: 'color', method: 'doUser'}" ></div>
+<div id="id_doSignup_comp" data-xp-type="button" data-xp="{form: 'form_signup', align: 'left', text: 'Signup', mode: 'pageActionPopUp', type: 'color', action: 'doSignupUser'}" ></div>
 </div>
 
 {% endblock%}

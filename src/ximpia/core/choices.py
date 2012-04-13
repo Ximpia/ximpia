@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 
 class Choices(object):
+
 	# COUNTRY
 	COUNTRY = (
 		('fr', _('France')),
@@ -25,6 +26,7 @@ class Choices(object):
 		('be', _('Belgium')),
 		('bf', _('Burkina Faso')),		
 		)
+
 	# SEX
 	SEX_MAN = 'male'
 	SEX_WOMAN = 'female'
@@ -32,6 +34,7 @@ class Choices(object):
 		(SEX_MAN, _('Male')),
 		(SEX_WOMAN, _('Female'))
 		)
+
 	# RELATIONSHIP
 	SINGLE = 'single'
 	IN_RELATIONSHIP = 'in_relationship'
@@ -40,6 +43,7 @@ class Choices(object):
 			(SINGLE, _('Single')),
 			(IN_RELATIONSHIP, _('In a Relationship')),
 			(MARRIED, _('Married')))
+
 	# CUSTOM_TYPE
 	CUSTOM_TYPE_INPUT = 'input'
 	CUSTOM_TYPE_COMBO = 'combo'
@@ -47,8 +51,25 @@ class Choices(object):
 		(CUSTOM_TYPE_INPUT, 'Input'),
 		(CUSTOM_TYPE_COMBO, 'Combo'),
 		)
+
 	# LANG
 	LANG_ENGLISH = 'en'
 	LANG = (
 			('en', _('English')),
 			('es', _('Spanish')))
+	# OPERATOR
+	OP = (
+		('eq', _('Equal')),
+		('lt', _('Less Than')),
+		('gt', _('Greater Than')),
+		('ne', _('Not Equal')))
+
+	# BASIC_TYPES
+	BASIC_TYPES = (
+		('int', _('Integer')),
+		('str', _('String')),
+		('bool', _('Boolean')),
+		('long', _('Long')),
+		('float', _('Float')),
+		('date', _('Date')),
+		('time', _('Time')))

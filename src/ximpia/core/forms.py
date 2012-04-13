@@ -32,8 +32,9 @@ class XBaseForm(forms.Form):
 	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
-	bsClass = XpHiddenField(xpType='input.hidden', required=False)
-	method = XpHiddenField(xpType='input.hidden', required=False)
+	"""bsClass = XpHiddenField(xpType='input.hidden', required=False)
+	method = XpHiddenField(xpType='input.hidden', required=False)"""
+	action = XpHiddenField(xpType='input.hidden', required=False)
 	ctx = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}

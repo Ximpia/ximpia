@@ -83,6 +83,11 @@ input.Small, select.Small, textarea.Small {
 	padding-left: 5px;
 }
 
+.InputText.viewSearch {
+	border-radius: 7px;
+	border: 1px solid #aaa;
+}
+
 input.Small, input.SmallMust {
     padding-left: 5px;
 }
@@ -114,7 +119,8 @@ input {
 
 div#Wrapper {
 	text-align: left;
-	width: 870px;
+	/*width: 870px;*/
+	width: 1000px;
 	margin-left: auto;
 	margin-right: auto;
 	padding: 0px;
@@ -158,7 +164,8 @@ div#Wrapper {
 	margin-top:5px; 
 	border-radius: 8px;
 	position: relative;
-	top: 43px;
+	/*top: 43px;*/
+	top: 68px;
 }
 
 #id_sect_loading {
@@ -166,17 +173,20 @@ div#Wrapper {
 	border: 0px solid #000; 
 	visibility: visible; 
 	top: 80px; 
-	width: 870px; 
+	/*width: 870px;*/ 
+	width: 1000px;
 	margin-left: auto;
 	height: 300px; 
 	background: url(../images/loading_big.gif) no-repeat center center; 
 }
 
 header {
-	width:870px;
+	/*width:870px;*/
+	width:1000px;
 	/*width: 100%;*/
 	/*height: 68px;*/
-	height: 40px;
+	/*height: 40px;*/
+	height: 65px;
 	border-bottom: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-right: 1px solid #ccc;
@@ -184,6 +194,8 @@ header {
 	position: fixed;
 	top: 0px;
 	z-index: 9999;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
 }
 
 /*div#Header {
@@ -400,7 +412,8 @@ img#TecorLogo {
 
 footer {
 	background-color: #fafafa;
-	width: 870px;
+	width: 1000px;
+	/*width: 870px;*/
 	line-height:15px;
 }
 
@@ -1299,7 +1312,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 
 /* Button Message Result */
 .btMsg {
-	width: 868px; 
+	width: 1000px;
+	/*width: 868px;*/ 
 	border: 1px solid #ccc; 
 	height: 25px;
 	border-radius: 8px;
@@ -1323,7 +1337,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	margin-top: 5px; 
 	z-index: 10; 
 	position: fixed; 
-	width: 870px; 
+	/*width: 870px;*/ 
+	width: 1000px;
 	bottom: 0p;	
 }
 
@@ -1462,4 +1477,55 @@ legend {
 	font-weight: bold; 
 	/*box-shadow: #ccc 3px 3px 3px;*/
 	font-size: 80%;
+}
+
+.iconMenuBlock div {
+	border: 0px solid; 
+	font-size: 7pt; 
+	line-height: 8pt; 
+	text-align: center; 
+	margin-top: -6px; 
+	color: #646464;
+	width: 60px;
+}
+
+.iconMenuBlock a {
+	text-decoration: none;
+}
+
+.iconMenuBlock {
+	margin-left: 1px;
+	margin-right: 1px; 
+	width: 60px; 
+	margin-top: 2px;
+}
+
+.iconMenuBlock img {
+	margin-left: 5px;
+	margin-right: 5px; 
+	border: 1px solid #ccc; 
+	border-radius: 7px;
+	width: 48px;
+	height: 48px;
+}
+
+.iconMenu:hover, .iconMenu.sfhover {
+	border: 1px solid #646464;
+}
+
+/* ****** */
+/* Icons */
+/* ****** */
+
+.iconBlank {
+	background-color: #fcfcfc;
+}
+
+.iconHome {
+	background: url(../images/home_48.png) no-repeat;
+}
+
+.iconLogout {
+	/*background: url(../images/logout_48.png) no-repeat center center;*/ 
+	background: url(../images/logout_48.png) no-repeat;
 }

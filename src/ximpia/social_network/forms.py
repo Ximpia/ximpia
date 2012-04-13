@@ -22,17 +22,17 @@ from ximpia.settings_visual import SuggestBox, GenericComponent
 
 from django.contrib.auth.models import User, Group
 #from ximpia.core.models import getResultOK, getResultERROR
-from models import UserSocial, Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract
+from models import Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract
 
 from ximpia.core.form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
 from ximpia.core.form_fields import XpChoiceTextField, XpUserField
-
 from ximpia.core.form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
 from ximpia.core.form_fields import XpHiddenDataField
 
 from ximpia.util.js import Form as _jsf
 
 from ximpia.core.validators import validateCaptcha
+from ximpia.core.models import UserSocial
 from ximpia.core.form_fields import XpHiddenField
 from ximpia.core.forms import XBaseForm, AppRegex
 

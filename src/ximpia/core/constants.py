@@ -1,5 +1,6 @@
 
 class CoreConstants(object):
+	USER = 'user'
 	XIMPIA = 'ximpia'
 	TWITTER = 'twitter'
 	FACEBOOK = 'facebook'
@@ -13,3 +14,4 @@ class CoreConstants(object):
 
 class CoreKParam(object):
 	COMMTYPE = 'COMMTYPE'
+	ICON = 'ICON'

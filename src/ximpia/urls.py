@@ -29,8 +29,8 @@ urlpatterns = patterns('',
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
     
     # signupUser
-    (r'^signup/(?P<invitationCode>\w+)$', 'social_network.views.signup'),
-    (r'^signup$', 'social_network.views.signup'),
+    #(r'^signup/(?P<invitationCode>\w+)$', 'social_network.views.signup'),
+    #(r'^signup$', 'social_network.views.signup'),
     
     # signupOrganization
     #(r'^signupOrganization/(?P<invitationCode>\w+)$', 'social_network.views.signupOrganization'),

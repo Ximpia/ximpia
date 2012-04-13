@@ -45,7 +45,7 @@
         	var index = windowWidth.search('px');
         	var iWindowWidth = windowWidth.substr(0, index);
         	var newWidth = iWindowWidth*.97;
-        	$("#id_btPopupMsg").css('width', newWidth + 'px');        	
+        	$("#id_btPopupMsg").css('width', newWidth + 'px');
         }
         /*
          * Get attributes from form
@@ -53,7 +53,7 @@
         var getFormAttrs = function(formId) {
         	$.metadata.setType("attr", "data-xp");
         	var attrs = $("#" + formId).metadata();
-        	return attrs
+        	return attrs;
         };
         /*
          * Get class name for button
@@ -93,9 +93,9 @@
         		console.log(attrs.className + ' ' + obj.method);
         		console.log('**********************************');*/
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
-        		$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button method : ' + obj.method)
-        		$("#id_" + obj.form + "_method").val(obj.method);
+        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
+        		console.log('form :: button action : ' + obj.action)
+        		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         		/*if (obj.clickStatus == 'disable') {
         			$('#' + obj.element.id).disable();
@@ -124,9 +124,9 @@
         		console.log('Form attributes');
         		console.log(attrs);
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
-        		$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button method : ' + obj.method)
-        		$("#id_" + obj.form + "_method").val(obj.method);
+        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
+        		console.log('form :: button action : ' + obj.action)
+        		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         	} else {
 			createPageMsgBar(obj);
@@ -157,9 +157,9 @@
         		// Set form values from data-xp and action
         		var attrs = getFormAttrs(obj.form)
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
-        		$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button method : ' + obj.method)
-        		$("#id_" + obj.form + "_method").val(obj.method);
+        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
+        		console.log('form :: button action : ' + obj.action)
+        		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         	} else {
 			createPopupMsgBar(obj);
@@ -177,12 +177,12 @@
 			/*
 			 * Initialize plugin
 			 */ 
-                	return this.each(function() {        
+                	return this.each(function() {
                     		// If options exist, lets merge them
                     		// with our default settings
-                    		if ( options ) { 
+                    		if ( options ) {
 	                        	$.extend( settings, options );
-                    		}					
+                    		}
                 	});
 		},
 		render: function() {
@@ -205,7 +205,7 @@
 						sStyle = "float: " + attrs.align + "; margin-top: 3px";
 					}
 					// form, action, actionData, type, icon, method, callback, clickStatus
-					var dataXp = "{form: '" + attrs.form + "', action: '" + attrs.action + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', method: '" + attrs.method + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "'}";
+					var dataXp = "{form: '" + attrs.form + "', mode: '" + attrs.mode + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', action: '" + attrs.action + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "'}";
 					console.log('form :: dataXp : ' + dataXp);
 					// buttonIcon, btPop $buttonBefore
 					//<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>
@@ -251,7 +251,7 @@
 					console.log('form :: bind callback : ' + attrs.callback);
 					// Bind options to the bindaction for all types of buttons
 					// callback, choose form callback or button callback
-					if (settings.modes[attrs.action] == 'page') {
+					if (settings.modes[attrs.mode] == 'page') {
 						oForm.bindAction(	{	attrs: attrs, 
 										callback: callback, 
 										idActionComp: idButton,
@@ -260,7 +260,7 @@
 										showPopUp: true,
 										destroyMethod: 'destroyPageMsgBar'
 									});
-					} else if (settings.modes[attrs.action] == 'popup') {
+					} else if (settings.modes[attrs.mode] == 'popup') {
 						oForm.bindAction(	{	attrs: attrs, 
 										callback: callback, 
 										idActionComp: idButton,
@@ -281,7 +281,7 @@
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $(element).metadata();
 			attrs.element = element;
-			var actionType = attrs.action;
+			var actionType = attrs.mode;
 			console.log('actionType: ' + actionType);
 			if (actionType == 'pageActionMsg') {
 				doPageActionMsg(attrs);

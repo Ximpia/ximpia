@@ -11,22 +11,82 @@
 <link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.contextMenu.css" rel="stylesheet" type="text/css" />
 <link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />	
 </head>
 
 <body>
+	
+<ul id="id_menu" class="contextMenu">
+    <li ><a href="#openView" data-xp="{viewName: '', windowType: ''}">Settings</a></li>
+    <li class="separator"><a href="#openView" data-xp="{}">Profile</a></li>
+    <li ><a href="#openView" data-xp="{}">Add Company</a></li>
+    <li ><a href="#openView" data-xp="{}">Admin</a></li>
+    <li ><a href="#openView" data-xp="{}">Apps</a></li>
+    <li class="iconLogoutSmall separator"><a href="#openView" data-xp="{}">Sign out</a></li>
+</ul>
 
-<div id="id_view" data-xp="{viewName: 'login', className: 'LoginBusiness', method: 'login', callback: 'ximpia.site.Login.showLogin'}" />
+<!--<div id="id_view" data-xp="{viewName: 'login', className: 'LoginBusiness', method: 'login', callback: 'ximpia.site.Login.showLogin'}" />--></div>
+
+<div id="id_view" data-xp="{viewName: 'login', callback: 'ximpia.site.Login.showLogin'}" />
 
 <section id="id_data" >
 
-<form id="form_login" action="" method="post" data-xp="{className: 'LoginBusiness', method: 'login'}" >
+<form id="form_login" action="" method="post" data-xp="{}" >
 
 <!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
 
 <div id="Wrapper">
 
 <header id="id_header" >
+	
+<div id="Logo" style="margin-top: 13px">
+<a href="#" onclick="return false"><img id="LogoImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /> </a>
+</div>
+
+<!--<input type="text" id="" name="" class="" class="InputText" style="float: left; height: 25px; margin-top: 5px; width: 200px" />-->
+
+<input type="text" id="" name="" class="InputText viewSearch" style="float: left; width: 270px; margin-right: 5px; margin-top: 15px"  />
+
+<nav>
+
+<!--<div id="id_loginForm"></div>-->
+
+<div id="IconMenu">
+	
+<nav>
+
+<div style="float: left" class="iconMenuBlock">
+	<img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" />
+	<div>Channel</div>
+</div>
+
+<div style="float: left" class="iconMenuBlock">
+	<a href="#" onclick="return false">
+		<img src="http://localhost:8000/site_media/images/blank.png" class="iconHome iconMenu" />
+		<div>Home</div>
+	</a>
+</div>
+
+</nav>
+
+<nav style="margin-right: 5px">
+
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+<div style="float: right" class="iconMenuBlock"><img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" /></div>
+	
+</nav>
+
+
+
+</div>
+</nav>
+
 </header>
 
 <nav id="id_navBar" >
@@ -67,7 +127,7 @@
 <section id="id_sectionButton" class="sectionButton">
 
 <div id="id_pageButton" class="btBar">
-<div id="id_doLogin_comp" data-xp-type="button" data-xp="{form: 'form_login', align: 'left', text: 'Login', action: 'pageActionMsg', type: 'color', method: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
+<div id="id_doLogin_comp" data-xp-type="button" data-xp="{form: 'form_login', align: 'left', text: 'Login', mode: 'pageActionMsg', type: 'color', action: 'doLogin', callback: 'ximpia.site.Login.doLogin'}" ></div>
 </div>
 
 </section>
@@ -96,6 +156,7 @@
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jscrollpane.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.selectBox.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.flexbox.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
@@ -112,7 +173,7 @@
 
 <script>	
 
-jQuery(document).ready(function($){	
+jQuery(document).ready(function($){
 	ximpia.common.Page.init();
 	var viewData = ximpia.common.Window.getViewAttrs();
 	var pageJx = ximpia.common.PageAjax();
@@ -121,7 +182,15 @@ jQuery(document).ready(function($){
 				callback: callback,
 				viewName: viewData.viewName,
 				verbose: true});
-	pageJx.doBusinessGetRequest({ className: viewData.className, method: viewData.method });
+	//pageJx.doBusinessGetRequest({ className: viewData.className, method: viewData.method });
+	pageJx.doBusinessGetRequest({ view: viewData.viewName });
+
+// contextMenu demo
+$('#LogoImg').contextMenu({ menu: 'id_menu', alignElement: true},
+	function(action, el, pos) {
+		console.log(action);
+	});
+
 });
 
 </script>

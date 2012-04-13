@@ -14,13 +14,13 @@ from constants import Constants as K
 from choices import Choices
 
 #from models import Constants, Choices
-from models import UserSocial, SocialNetwork, SocialNetworkUserSocial, GroupSocial, UserDetail, UserProfile, Industry, UserAccount
+from models import SocialNetwork, SocialNetworkUserSocial, GroupSocial, UserDetail, UserProfile, Industry, UserAccount
 from models import Organization, OrganizationGroup, AddressOrganization, Tag, SocialNetworkOrganization, UserAccountContract
 from models import UserAccountRelation, Subscription, Invitation, SignupData, GroupFollow, GroupStream, StatusMessage
 from models import Comment, TagUserTotal, LinkUserTotal, Link, Like, Notification, Skill, SkillGroup, SkillUserAccount, Affiliate, Version
 from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType, SNXmlMessage, SNParam
 from models import Calendar, CalendarInvite, Address
-from ximpia.core.models import parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks, CoreParam
+from ximpia.core.models import parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks, CoreParam, UserSocial
 from ximpia.core.data import CommonDAO, CoreParameterDAO, ApplicationDAO
 import sys
 
@@ -444,11 +444,6 @@ class UserDetailDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(UserDetailDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = UserDetail
-
-class UserSocialDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(UserSocialDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = UserSocial
 
 class GroupSocialDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

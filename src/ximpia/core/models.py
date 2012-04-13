@@ -11,6 +11,7 @@ from django.utils import translation
 #from ximpia.core.validators import *
 
 from choices import Choices
+from constants import CoreConstants as K, CoreKParam
 
 class DeleteManager(models.Manager):
 	def get_query_set(self):
@@ -86,12 +87,203 @@ class Application(BaseModel):
 		verbose_name = _('Developer'), help_text = _('Developer'))
 	developerOrg = models.ForeignKey(GroupSys, null=True, blank=True,
 		verbose_name = _('Organization'), help_text = _('Developer organization'))
+	parent = models.ForeignKey('self', null=True, blank=True,
+		verbose_name = 'Parent Application', help_text = 'Used for application groups. Application which this app is related to')
+	subscription = models.BooleanField(default=False, 
+		verbose_name = _('Subscription'), help_text = _('Is this application subscription based?'))
+	private = models.BooleanField(default=False, 
+		verbose_name = _('Private'), help_text = _('Is this application private to a list of groups?'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
 		db_table = 'CORE_APPLICATION'
 		verbose_name = _('Application')
 		verbose_name_plural = _('Applications')
+
+class ApplicationAccess(BaseModel):
+	"""User that have access to application. Used for subscription and private applications."""
+	application = models.ForeignKey('core.Application',
+				verbose_name = _('Application'), help_text = _('Application'))
+	userSocial = models.ForeignKey('core.UserSocial', 
+				verbose_name = _('User Social'), help_text = _('User Social or social channel needed to access application'))
+	def __unicode__(self):
+		return str(self.userSocial)
+	class Meta:
+		db_table = 'CORE_APP_ACCESS'
+		verbose_name = 'Application Access'
+		verbose_name_plural = "Application Access"
+
+class UserSocial(BaseModel):
+	"""Every user can have one or more social channels. In case social channels are disabled, only one registry will
+	exist for each user."""
+	user = models.ForeignKey(UserSys, 
+				verbose_name = _('User'), help_text = _('User'))
+	groups = models.ManyToManyField(GroupSys,
+				verbose_name = _('Groups'), help_text = _('Groups'))
+	title = models.CharField(max_length=20, 
+				verbose_name = _('Channel Title'), help_text=_('Title for the social channel'))
+	name = models.CharField(max_length=20, default=K.USER,
+				verbose_name = _('Social Channel Name'), help_text = _('Name for the social channel'))
+	isCompany = models.BooleanField(default=False,
+				verbose_name=_('Company'), help_text=_('Is Company?'))
+	def __unicode__(self):
+		return str(self.user.username) + '-' + str(self.name)
+	def getGroupById(self, groupId):
+		"""Get group by id"""
+		groups = self.groups.filter(pk=groupId)
+		if len(groups) != 0:
+			value = groups[0]
+		else:
+			value = None
+		return value
+	def getFullName(self):
+		"""Get full name: firstName lastName"""
+		name = self.user.get_full_name()
+		return name
+	class Meta:
+		db_table = 'CORE_USER'
+		verbose_name = 'User'
+		verbose_name_plural = "Users"
+		unique_together = ("user", "name")
+
+class Menu(BaseModel):
+	"""Menu"""
+	name = models.CharField(max_length=10,
+			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
+	titleShort = models.CharField(max_length=12,
+			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
+	title = models.CharField(max_length=30,
+			verbose_name=_('Menu Title'), help_text=_('Title for menu item'))
+	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreKParam.ICON})
+	parent = models.ForeignKey('self', null=True, blank=True,
+				verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
+	def __unicode__(self):
+		return str(self.title)
+	class Meta:
+		db_table = 'CORE_MENU'
+		verbose_name = 'Menu'
+		verbose_name_plural = "Menus"
+
+class View(BaseModel):
+	"""View"""
+	application = models.ForeignKey('core.Application',
+			verbose_name=_('Application'), help_text=_('Application for the view'))
+	name = models.CharField(max_length=30,
+			verbose_name=_('View Name'), help_text=_('View Name'))
+	implementation = models.CharField(max_length=100,
+			verbose_name=_('Implementation'), help_text=_('Business class and method that will show view'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'CORE_VIEW'
+		verbose_name = 'View'
+		verbose_name_plural = "Views"
+		unique_together = ("application", "name")
+
+class Action(BaseModel):
+	"""Action"""
+	application = models.ForeignKey('core.Application',
+			verbose_name=_('Application'), help_text=_('Application for the action'))
+	name = models.CharField(max_length=30,
+			verbose_name=_('Action Name'), help_text=_('Action Name'))
+	implementation = models.CharField(max_length=100,
+			verbose_name=_('Implementation'), help_text=_('Business class and method that will process action'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'CORE_ACTION'
+		verbose_name = 'Action'
+		verbose_name_plural = "Action"
+		unique_together = ("application", "name")
+
+class ViewMenu(BaseModel):
+	"""Menus associated to a view"""
+	view = models.ForeignKey('core.View',
+			verbose_name=_('View'), help_text=_('View'))
+	menu = models.ForeignKey('core.Menu',
+			verbose_name=_('Menu'), help_text=_('Menu'))
+	order = models.IntegerField(default=10, 
+			verbose_name=_('Order'), help_text=_('Order for the menu item. Start with 10, increment by 10'))
+	separator = models.BooleanField(default=False,
+			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
+	def __unicode__(self):
+		return str(self.view) + '-' + str(self.menu)
+	class Meta:
+		db_table = 'CORE_VIEW_MENU'
+		verbose_name = 'View Menu'
+		verbose_name_plural = "Views for Menus"
+
+class MenuParam(BaseModel):
+	"""Parameters or attributes feeded to views"""
+	menu = models.ForeignKey('core.Menu',
+			verbose_name=_('Menu'), help_text=_('Menu')) 
+	name = models.CharField(max_length=15,
+			verbose_name=_('Param Name'), help_text=_('Name for the parameter or attribute'))
+	value = models.CharField(max_length=20,
+			verbose_name=_('Param Value'), help_text=_('Value for the parameter'))
+	def __unicode__(self):
+		return str(self.menu) + '-' + str(self.name)
+	class Meta:
+		db_table = 'CORE_MENU_PARAM'
+		verbose_name = 'Menu Param'
+		verbose_name_plural = "Menu Params"
+
+class Workflow(BaseModel):
+	"""WorkFlow"""
+	application = models.ForeignKey('core.Application',
+				verbose_name = _('Application'), help_text = _('Application'))
+	viewSource = models.ForeignKey('core.View', related_name='viewSource', null=True, blank=True,
+			verbose_name=_('Source View'), help_text=_('View which starts navigation'))
+	viewTarget = models.ForeignKey('core.View', related_name='viewTarget', 
+			verbose_name=_('target View'), help_text=_('View destiny for navigation'))
+	action = models.ForeignKey('core.Action', related_name='wf_action',
+			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
+	params = models.ManyToManyField('core.WFParam', through='core.WFParamValue', null=True, blank=True,
+			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
+	order = models.IntegerField(default=10,
+			verbose_name=_('Order'), help_text=_('Order'))
+	def __unicode__(self):
+		return str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
+	class Meta:
+		db_table = 'CORE_WF'
+		verbose_name = 'Workflow'
+		verbose_name_plural = "Workflow"
+		unique_together = ('viewSource', 'action', 'viewTarget')
+
+class WFParam(BaseModel):
+	"""Parameters for WF"""
+	application = models.ForeignKey('core.Application', 
+				verbose_name = _('Application'), help_text = _('Application'))
+	name = models.CharField(max_length=15, 
+				verbose_name=_('Name'), help_text=_('Name'))
+	title = models.CharField(max_length=30, 
+				verbose_name=_('Title'), help_text=_('Title text for the parameter'))
+	paramType = models.CharField(max_length=10, choices=Choices.BASIC_TYPES,
+				verbose_name=_('Type'), help_text=_('Type'))
+	def __unicode__(self):
+		return str(self.title)
+	class Meta:
+		db_table = 'CORE_WF_PARAM'
+		verbose_name = 'Workflow Parameter'
+		verbose_name_plural = "Workflow Parameters"
+		unique_together = ('application','name')
+
+class WFParamValue(BaseModel):
+	"""Parameter Values for WF"""
+	flow = models.ForeignKey('core.WorkFlow', related_name='flow', 
+			verbose_name=_('Flow'), help_text=_('Work Flow'))
+	name = models.ForeignKey('core.WFParam', 
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, 
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return str(self.name) + ' ' + str(self.operator) + ' ' + str(self.value)
+	class Meta:
+		db_table = 'CORE_WF_PARAM_VALUE'
+		verbose_name = 'Workflow Parameter Value'
+		verbose_name_plural = "Workflow Parameter Values"
 
 class XpMsgException(Exception):
 	Msg = ''
@@ -118,30 +310,54 @@ class XpMsgException(Exception):
 		#return repr(self.Msg)
 		return self.Msg
 
+class XpRegisterException(Exception):
+	Msg = ''
+	myException = None
+	ArgsDict = {}
+	def __init__(self, exception, msg, **argsDict):
+		"""Doc.
+		@param exception: 
+		@param msg: 
+		@param **argsDict: """
+		self.Msg = msg
+		self.myException = exception
+		self.ArgsDict = argsDict
+	def _log(self, exception, msg, argsDict):
+		"""Will use log facility of django 1.3"""
+		"""txt = repr(self.Exception)
+		for name in self.ArgsDict.keys():
+			txt += name + ':' + self.ArgsDict[name]
+		txt += ' ' + self.Msg"""
+		# Log txt  in error log
+		traceback.print_exc()
+	def __str__(self):
+		#self._log()
+		#return repr(self.Msg)
+		return self.Msg
 
 def getDataDict(form):
 	"""Doc."""
 	try:
-		dict = form.cleaned_data
-		if type(dict) != types.DictType:
-			dict = form.data
+		dd = form.cleaned_data
+		if type(dd) != types.DictType:
+			dd = form.data
 		else:
-			dict = form.cleaned_data
+			dd = form.cleaned_data
 	except:
-		dict = form.data
-	return dict
+		dd = form.data
+	return dd
 
 def getFormDataValue(form, keyName):
 	"""Doc."""
 	try:
-		dict = form.cleaned_data
-		if type(dict) != types.DictType:
-			dict = form.data
+		dd = form.cleaned_data
+		if type(dd) != types.DictType:
+			dd = form.data
 			keyValue = form.data[keyName]
 		else:
-			dict = form.cleaned_data
-			if dict.has_key(keyName):
-				keyValue = dict[keyName]
+			dd = form.cleaned_data
+			if dd.has_key(keyName):
+				keyValue = dd[keyName]
 			else:
 				keyValue = form.data[keyName]
 	except KeyError:
@@ -152,19 +368,19 @@ def setIfNotBlank():
 	"""Doc."""
 	pass
 
-def getFromDict(key, dict):
+def getFromDict(key, dd):
 	"""Get value from a dict for key. If not found, returns blank string."""
 	value = ''
-	if dict.has_key(key):
-		value = dict[key]
+	if dd.has_key(key):
+		value = dd[key]
 	return value
 
 def getPagingStartEnd(page, numberMatches):
 	"""Get tuple (iStart, iEnd)"""
 	iStart = (page-1)*numberMatches
 	iEnd = iStart+numberMatches
-	tuple = (iStart, iEnd)
-	return tuple
+	fields = (iStart, iEnd)
+	return fields
 
 def parseText(content):
 	"""Parse text from content. Useful for indexing fields.

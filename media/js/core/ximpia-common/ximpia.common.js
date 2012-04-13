@@ -557,21 +557,21 @@ ximpia.common.BasicTags = function() {
 				if (contentLength < 1) {
 					htmlI = "<div id=\"Header\" >";
 					htmlI += "<div id=\"Logo\">";
-					htmlI += "<a href=\"http://localhost:8000/\"><img id=\"LogoImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /> </a>";
+					htmlI += "<a href=\"#\" onclick=\"return false\"><img id=\"LogoImg\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" /> </a>";
 					htmlI += "</div>";
 					htmlI += "<nav>";
 					htmlI += "<div id=\"id_loginForm\"></div>";
-					htmlI += "<!--<div id=\"IconMenu\">";
-					htmlI += "<img src=\"http://localhost:8000/site_media/images/add_60.png\" title=\"Signup\" alt=\"Signup\" />";
-					htmlI += "<img src=\"http://localhost:8000/site_media/images/users_two_60.png\" title=\"Friends\" alt=\"Friends\" />";
+					htmlI += "<div id=\"IconMenu\">";
+					htmlI += "<div style=\"border: 1px solid; float: left\"><a href=\"#\" onclick=\"return false\"><img src=\"http://localhost:8000/site_media/images/add_48.png\" style=\"width: 30px, height: 30px\" /></a></div>";
+					htmlI += "<!--<img src=\"http://localhost:8000/site_media/images/users_two_60.png\" title=\"Friends\" alt=\"Friends\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/paper_content_60.png\" title=\"About Us\" alt=\"About Us\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/mail_add_60.png\" title=\"Contact Us\" alt=\"Contact Us\" />";
 					htmlI += "<img src=\"http://localhost:8000/site_media/images/lock_60.png\" title=\"Privacy\" alt=\"Privacy\" />";
-					htmlI += "<img src=\"http://localhost:8000/site_media/images/go_60.png\" title=\"Login\" alt=\"Login\" />";
-					htmlI += "</div>-->";
+					htmlI += "<img src=\"http://localhost:8000/site_media/images/go_60.png\" title=\"Login\" alt=\"Login\" />-->";
+					htmlI += "</div>";
 					htmlI += "</nav>";
 					htmlI += "</div>";
-					$("header").html(htmlI);
+					//$("header").html(htmlI);
 				}
 			},
 			/**
@@ -1358,7 +1358,7 @@ ximpia.common.PageAjax = function() {
 				});
 			},
 			doBusinessGetRequest: function(obj) {
-				_attr.priv.path = _attr.priv.path + '?bsClass=' + obj.className + ';method=' + obj.method;
+				_attr.priv.path = _attr.priv.path + '?view=' + obj.view
 				console.log('path: ' + _attr.priv.path);
 				if (obj.mode == 'popupNoView') {
 					_attr.pub.doFormPopupNoView();

@@ -12,6 +12,10 @@ AFFILIATES = False
 WEBMASTER_EMAIL = '"Webmaster :: Ximpia" <webmaster@ximpia.com>'
 MAIL_HOST = '127.0.0.1:8000'
 
+# Views / Actions
+viewDict = {}
+actionDict = {}
+
 # Ximpia Email
 XP_EMAIL_USERNAME = 'jorge.alegre'
 XP_EMAIL_PASSWORD = 'tarraco24'

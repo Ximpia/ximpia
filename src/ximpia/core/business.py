@@ -9,12 +9,32 @@ from django.utils.translation import ugettext as _
 
 from django.contrib.auth import login, authenticate, logout
 
-from models import getResultOK, getResultERROR, XpMsgException
+from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, View, Action, Application 
 from ximpia.util import ut_email
 from ximpia.util.js import Form as _jsf
 from ximpia.core.models import JsResultDict, Context as Ctx
 
 from ximpia import settings
+
+class ComponentRegister(object):
+	
+	@staticmethod
+	def registerView(viewName, appCode, myClass, method):
+		"""Registers view"""
+		classPath = str(myClass).split("'")[1]
+		app = Application.objects.get(code=appCode)
+		view, created = View.objects.get_or_create(application=app, name=viewName)
+		view.implementation = classPath + '.' + method
+		view.save()
+	
+	@staticmethod
+	def registerAction(actionName, appCode, myClass, method):
+		"""Registers action"""
+		classPath = str(myClass).split("'")[1]
+		app = Application.objects.get(code=appCode)
+		action, created = Action.objects.get_or_create(application=app, name=actionName)
+		action.implementation = classPath + '.' + method
+		action.save()
 
 class CommonBusiness(object):
 	
@@ -26,6 +46,8 @@ class CommonBusiness(object):
 	_postDict = {}
 	_isBusinessOK = False
 	_isFormOK = None
+	_views = {}
+	_actions = {}
 	
 	def __init__(self, ctx):
 		self._ctx = ctx
@@ -163,7 +185,7 @@ class CommonBusiness(object):
 		for dbData in dbDataList:
 			dbObj, qArgs, errName = dbData
 			exists = dbObj.check(**qArgs)
-			print 'exists: ', exists
+			print 'validate Data: ', qArgs, exists, errName
 			if not exists:
 				self.addError(field=errName)
 	
@@ -224,6 +246,80 @@ class EmailBusiness(object):
 		subject, message = ut_email.getMessage(xmlMessage)
 		message = string.Template(message).substitute(**subsDict)
 		send_mail(subject, message, settings.WEBMASTER_EMAIL, recipientList)
+
+
+# ****************************************************
+# **                DECORATORS                      **
+# ****************************************************
+
+class RegisterView(object):
+	"""Register view in settings.viewDict"""
+	_viewName = ''
+	_appCode = ''
+	def __init__(self, *argsTuple, **argsDict):
+		#print 'init...', argsTuple, argsDict
+		self._viewName, self._appCode = argsTuple
+	def __call__(self, f):
+		def wrapped_f(*argsTuple, **argsDict):
+			obj = argsTuple[0]
+			#print 'wrapped_f: ', argsTuple, argsDict
+			try:
+				classPath = str(obj.__class__).split("'")[1]
+				method = f.__name__
+				if not settings.viewDict.has_key(self._appCode):
+					settings.viewDict[self._appCode] = {}
+				if settings.viewDict[self._appCode].has_key(self._viewName):
+					# Check class and method. If not the same, raise exception
+					classPathChk, methodChk = settings.viewDict[self._appCode][self._viewName]
+					if classPath != classPathChk or method != methodChk:
+						raise XpRegisterException(None, _('Error in RegisterView. definition in settings config differ from the provided in method'))
+				else:
+					settings.viewDict[self._appCode][self._viewName] = (classPath, method)
+				f(*argsTuple, **argsDict)
+			except XpMsgException as e:
+				if settings.DEBUG == True:
+					print e
+					print e.myException
+					traceback.print_exc()
+			except Exception as e:
+				raise
+				if settings.DEBUG == True:
+					print e
+					traceback.print_exc()
+		return wrapped_f
+
+class RegisterAction(object):
+	"""Register action in settings.actionDict"""
+	def __init__(self, *argsTuple, **argsDict):
+		pass
+	def __call__(self, f):
+		def wrapped_f(*argsTuple, **argsDict):
+			obj = argsTuple[0]
+			#print 'wrapped_f: ', argsTuple, argsDict
+			try:
+				classPath = str(obj.__class__).split("'")[1]
+				method = f.__name__
+				if not settings.actionDict.has_key(self._appCode):
+					settings.actionDict[self._appCode] = {}
+				if settings.actionDict[self._appCode].has_key(self._viewName):
+					# Check class and method. If not the same, raise exception
+					classPathChk, methodChk = settings.actionDict[self._appCode][self._viewName]
+					if classPath != classPathChk or method != methodChk:
+						raise XpRegisterException(None, _('Error in RegisterAction. definition in settings config differ from the provided in method'))
+				else:
+					settings.actionDict[self._appCode][self._viewName] = (classPath, method)
+				f(*argsTuple, **argsDict)
+			except XpMsgException as e:
+				if settings.DEBUG == True:
+					print e
+					print e.myException
+					traceback.print_exc()
+			except Exception as e:
+				raise
+				if settings.DEBUG == True:
+					print e
+					traceback.print_exc()
+		return wrapped_f
 
 class ShowSrvContent(object):
 	"""Doc."""
@@ -299,10 +395,10 @@ class ValidateFormBusiness(object):
 					else:
 						raise
 					return result
-				except Exception as e:
+				"""except Exception as e:
 					if settings.DEBUG == True:
 						print e
-						traceback.print_exc()
+						traceback.print_exc()"""
 			else:
 				if settings.DEBUG == True:
 					print 'Validation error!!!!!'

@@ -1,5 +1,5 @@
 from models import Comment, GroupFollow, GroupStream, GroupStreamPublic, Like
-from models import SocialNetwork, StatusMessage, StatusShare, Tag, UserSocial, GroupSocial
+from models import SocialNetwork, StatusMessage, StatusShare, Tag, GroupSocial
 
 from models import SocialNetworkUserSocial, UserDetail
 from models import Link, Version
@@ -83,12 +83,6 @@ class TagAdmin(admin.ModelAdmin):
 	list_display = ('id','name','myType','popularity')
 	list_filter = ('myType',)
 	search_fields = ('name',)
-	def save_model(self, request, obj, form, change):
-		obj.UserModifyId = request.user.id
-		obj.save()
-
-class UserSocialAdmin(admin.ModelAdmin):
-	list_display = ('id','user','socialChannel',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -479,7 +473,6 @@ admin.site.register(SocialNetwork, SocialNetworkAdmin)
 admin.site.register(StatusMessage, StatusMessageAdmin)
 admin.site.register(StatusShare, StatusShareAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(UserSocial, UserSocialAdmin)
 admin.site.register(GroupSocial, GroupSocialAdmin)
 admin.site.register(Profile, ProfileAdmin)
 

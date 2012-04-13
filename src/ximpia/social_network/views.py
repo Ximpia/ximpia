@@ -1,49 +1,30 @@
-import facebook
 import oauth2
 import urlparse
 import simplejson as json
 import httplib2
 import types
-import time
-import imp
+import traceback
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest, HttpResponseServerError, HttpResponsePermanentRedirect
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template import Context, loader, Template, RequestContext
-from django.core.urlresolvers import reverse
-from django.core.context_processors import auth, csrf
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.models import User, Group
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.contrib.auth import login, authenticate
 from django.utils import translation
 from django.utils.translation import ugettext as _
 
-#from models import Invitation
-from ximpia.core.models import context, Context, XpTemplate, getResultOK, Context as Ctx, JsResultDict, XpMsgException
-#from choices import Choices
-#from constants import Constants
-#from messages import MsgSignup
-#from data import *
-#from choices import Choices
+from ximpia.core.models import context, Context
+from ximpia.core.data import ActionDAO, ViewDAO
+
+from business import SignupView, LoginView
+from business import SignupAction, LoginAction
+from constants import Constants as K
 import forms
-#from constants import Constants
 
-from data import UserDAO
-from models import Invitation
-
-#from ximpia import util
 from ximpia.util.http import Request
 from ximpia.util.content import getContentRelaseDict
 
 from ximpia import settings
 from yacaptcha.models import Captcha
-
-from business import SignupBusiness, LoginBusiness
-#from data import UserDAO
-#from constants import Constants
-#from sqlalchemy.util import deprecated
-
-from constants import Constants as K
 
 def test(request):
 	return HttpResponse("OK")
@@ -64,8 +45,8 @@ def staticContent(request, templateName='index', **argsDict):
 				}
 	if len(argsDict) != 0:
 		nameList = argsDict.items()
-		for tuple in nameList:
-			name, value = tuple
+		for fields in nameList:
+			name, value = fields
 			ContextDict[name] = value
 	Result = render_to_response(template, ContextDict)
 	return Result
@@ -85,7 +66,7 @@ def formContent(request, templateName):
 		ContextDict['form'] = form
 		if check:
 			action = request.POST['bsAction']
-			result = eval(action)(request, form)
+			eval(action)(request, form)
 			ContextDict['message'] = _('OK, we did it.')
 		else:
 			ContextDict['message'] = _('There was an error in processing the action. Please check your data and try again.')
@@ -116,9 +97,9 @@ def jxContent(request, templateName):
 	"""AJAX html content. jsonData must have only one field. It calls the business action and renders response in html template."""
 	lang = request.session.lang
 	try:
-		list = json.loads(request.POST['jsonData'])
-		if len(list) == 1:
-			action, parameterList, parameterDict = list[0]
+		fields = json.loads(request.POST['jsonData'])
+		if len(fields) == 1:
+			action, parameterList, parameterDict = fields[0]
 			result = eval(action)(parameterList, parameterDict)
 			template = 'social_network' + '/' + lang + '/' + templateName + '.html'
 			ContextDict = {
@@ -137,10 +118,10 @@ def jxAction(request):
 	"""Sequence of actions are executed. Returns either OK or ERROR. jsonData has list of fields action,argsTuple, argsDict."""
 	if request.POST.has_key('jsonData'):
 		try:
-			list = json.loads(request.POST['jsonData'])
-			for tuple in list:
-				action, parameterList, parameterDict = tuple
-				result = eval(action)(parameterList, parameterDict)
+			data = json.loads(request.POST['jsonData'])
+			for fields in data:
+				action, parameterList, parameterDict = fields
+				eval(action)(parameterList, parameterDict)
 				code = 'OK'
 		except:
 			code = 'ERROR'
@@ -156,15 +137,15 @@ def jxJSON(request, **ArgsDict):
 	# Option 1 : Map method, argsTuple, argsDict
 	if request.POST.has_key('jsonData'):
 		try:
-			list = json.loads(request.POST['jsonData'])['jsonDataList']
-			for tuple in list:
-				action, parameterList, parameterDict = tuple
+			data = json.loads(request.POST['jsonData'])['jsonDataList']
+			for fields in data:
+				action, parameterList, parameterDict = fields
 				resultTmp = eval(action)(*parameterList, **parameterDict)
 				if type(resultTmp) == types.ListType:
 					listResult = []
 					for entity in resultTmp:
-						dict = entity.values()
-						listResult.append(dict)
+						dd = entity.values()
+						listResult.append(dd)
 					ctx.rs['status'] = 'OK'
 					ctx.rs['response'] = listResult
 				else:
@@ -183,21 +164,42 @@ def jxBusiness(request, *argsTuple, **argsDict):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
-	print 'jxBusiness...'
-	ctx = argsDict['ctx']
-	print request.REQUEST.items()
-	if request.REQUEST.has_key('bsClass') and request.is_ajax() == True:
-		bsClass = request.REQUEST['bsClass'];
-		method = request.REQUEST['method']
-		if method.find('_') == -1 or method.find('__') == -1: 
-			obj = eval(bsClass)(ctx)
-			result = eval('obj.' + method)()
+	try:
+		print 'jxBusiness...'
+		ctx = argsDict['ctx']
+		print request.REQUEST.items()
+		if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
+			#bsClass = request.REQUEST['bsClass'];
+			#method = request.REQUEST['method']
+			if request.REQUEST.has_key('view'):
+				view = request.REQUEST['view']
+				print 'view: ', view
+				dbView = ViewDAO(ctx)
+				impl = dbView.get(application__code=K.APP, name=view).implementation
+			elif request.REQUEST.has_key('action'):
+				action = request.REQUEST['action']
+				print 'action: ', action
+				dbAction = ActionDAO(ctx)
+				impl = dbAction.get(application__code=K.APP, name=action).implementation
+			print 'Implementation: ', impl
+			implFields = impl.split('.')
+			method = implFields[len(implFields)-1]
+			bsClass = implFields[len(implFields)-2]
+			print 'method: ', method, type(method)
+			print 'class: ', bsClass, type(bsClass)
+			if method.find('_') == -1 or method.find('__') == -1: 
+				obj = eval(bsClass)(ctx)
+				result = eval('obj.' + method)()
+			else:
+				print 'private methods...'
+				raise Http404
 		else:
-			print 'private methods...'
+			print 'Unvalid business request'
 			raise Http404
-	else:
-		print 'Unvalid business request'
-		raise Http404
+	except Exception as e:
+		if settings.DEBUG == True:
+			traceback.print_exc()
+		raise
 	return result
 
 @context
@@ -213,12 +215,12 @@ def jxSuggestList(request, **ArgsDict):
 		params[params['text']] = request.REQUEST['search'];
 		del params['text']
 		obj = eval(dbClass)(ctx)
-		list = eval('obj.filter')(*[], **params)
-		for entity in list:
-			dict = {}
-			dict['id'] = entity.id
-			dict['text'] = entity.getText()
-			resultList.append(dict) 
+		fields = eval('obj.filter')(*[], **params)
+		for entity in fields:
+			dd = {}
+			dd['id'] = entity.id
+			dd['text'] = entity.getText()
+			resultList.append(dd) 
 	return HttpResponse(json.dumps(resultList))
 
 
@@ -227,11 +229,11 @@ def jxSuggestList(request, **ArgsDict):
 ######################################################################
 
 def __buildResultDict():
-	dict = {}
-	dict['status'] = ''
-	dict['errors'] = []
-	dict['response'] = ''
-	return dict
+	dd = {}
+	dd['status'] = ''
+	dd['errors'] = []
+	dd['response'] = ''
+	return dd
 
 def oauth20(request, service):
 	"""Doc."""
@@ -353,118 +355,6 @@ def checkCaptcha(request, value):
 	jsonCheck = json.dumps(check)
 	return jsonCheck
 
-@Context
-def signup(request, invitationCode=None, **argsDict):
-	"""Sign up professional account"""
-	# init
-	ctx = argsDict['ctx']
-	dbUser = UserDAO(ctx)
-	# start
-	signup = SignupBusiness(ctx)
-	if request.method == 'POST':
-		# POST
-		ctx['form'] = forms.UserSignupForm(ctx['post'])
-		ctx['captcha'] = Captcha(request).get()
-		bForm = ctx['form'].is_valid()
-		print 'bForm : ', bForm, ctx['form'].errors, ctx['form']._errors
-		signup = SignupBusiness(ctx)
-		try:
-			result = signup.doUser(ctx)
-		except XpMsgException:
-			errorDict = signup.getErrors()
-			if len(errorDict) != 0:
-				result = signup.buildJSONResult(signup.getErrorResultDict(errorDict))
-			else:
-				raise
-		print result
-	else:
-		#signup.doGet()
-		try:
-			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-			invitation = dbUser.getInvitation(invitationCode, status=K.PENDING)
-			ctx['form'] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-			jsData = getResultOK({})
-			ctx['form'].buildJsData(jsData)
-			jsData['response']['affiliateId'] = affiliateId
-			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
-			result = signup.buildJSONResult(jsData)
-			#print 'keys : ', jsData['response']['form_signup'].keys()
-			#print result
-		except Invitation.DoesNotExist:
-			raise Http404
-	return result
-
-@Context
-@XpTemplate({'main': 'social_network/signup/signupOrganization.html'})
-def signupOrganization(request, invitationCode=None, **argsDict):
-	"""Sign up professional account"""
-	# init
-	ctx = argsDict['ctx']
-	tmplDict = argsDict['tmplDict']
-	dbUser = UserDAO(ctx)
-	# start
-	print 'invitationCode:', invitationCode
-	bFacebookLogin = False 
-	ctx['auth'] = {'facebook': False}
-	if request.COOKIES.has_key(settings.FACEBOOK_APP_COOKIE):
-		ctx['auth']['facebook'] = True
-		bFacebookLogin = True	
-	if request.method == 'POST':
-		# POST
-		form = forms.FrmOrganizationSignup(request.POST)
-		captcha=Captcha(request).get()
-		# Business
-		signup = SignupBusiness(ctx, request)
-		result = signup.doOrganization(form, captcha, bFacebookLogin)
-		print result
-	else:
-		# GET
-		#template = 'social_network/signup/signupOrganization.html'
-		try:
-			affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-			print 'affiliateId : ', affiliateId
-			invitation = dbUser.getInvitation(invitationCode, status=K.PENDING)
-			if settings.PRIVATE_BETA == True and affiliateId == None:
-				ctx['showInvitation'] = True
-			else:
-				ctx['showInvitation'] = False
-			# Captcha
-			Captcha(request).create()
-			# Facebook
-			profileDict = {}
-			fbAccessToken = ''
-			if bFacebookLogin:
-				fbUserDict = facebook.get_user_from_cookie(request.COOKIES, settings.FACEBOOK_APP_ID, settings.FACE_APP_SECRET)
-				fbAccessToken = fbUserDict['access_token']
-				graph = facebook.GraphAPI(fbAccessToken)
-				profileDict = graph.get_object("me");				
-				ctx['auth']['facebook'] = True
-			ctx['form'] = forms.OrganizationSignupForm()
-			#ctx['form'].buildInitialShow(invitationCode, invitation, profileDict, fbAccessToken)		
-			ctx['affiliateId'] = affiliateId
-			result = render_to_response(tmplDict['main'], RequestContext(request, ctx))
-		except Invitation.DoesNotExist, facebook.GraphAPIError:
-			raise Http404
-	return result
-
-@Context
-def activateAccount(request, user, activationCode, **argsDict):
-	"""Activate account, either professional or organization"""
-	# init
-	ctx = argsDict['ctx']
-	# start
-	signup = SignupBusiness(ctx)
-	resultDict = signup.activateAccount(user, activationCode)
-	if resultDict['status'] == 'OK':
-		# login user
-		# Redirect to Ximpia home
-		result = HttpResponse('OK')
-	else:
-		# assume spammer
-		raise Http404
-	return result
-
-
 # ===========================================================================================================
 
 
@@ -477,7 +367,7 @@ def changePassword(request, ximpiaId, reminderId, **argsDict):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
-	login = LoginBusiness(argsDict['ctx'])
+	login = LoginView(argsDict['ctx'])
 	login.showNewPassword(ximpiaId, reminderId)
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, argsDict['ctx']))
 	return result
@@ -487,7 +377,7 @@ def signupUser(request, invitationCode, **argsDict):
 	"""Signup user with invitation."""
 	print 'signupUser...'
 	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-	signup = SignupBusiness(argsDict['ctx'])
+	signup = SignupView(argsDict['ctx'])
 	signup.showSignupUser(invitationCode, affiliateId)
 	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, argsDict['ctx']))
 	return result

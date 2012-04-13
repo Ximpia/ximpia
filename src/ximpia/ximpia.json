@@ -612,10 +612,10 @@
         }
     }, 
     {
-        "pk": "281f89eaaf34dd78f09c79ca9d8a0c50", 
+        "pk": "5742de0cf9e3ab81ad8cb0974f4cd1e1", 
         "model": "sessions.session", 
         "fields": {
-            "expire_date": "2016-12-29 15:21:05", 
+            "expire_date": "2016-12-30 04:26:14", 
             "session_data": "gAJ9cQEuMDAyNjAxNTRhNWFmYzMxZDg5ZmI0N2U0MGYwZjY2NDU=\n"
         }
     }, 
@@ -628,12 +628,129 @@
         }
     }, 
     {
+        "pk": 9, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 14:49:31", 
+            "object_repr": "Msg/SocialNetwork/Login/PasswordReminder/", 
+            "object_id": "4", 
+            "change_message": "Changed body.", 
+            "user": 1, 
+            "content_type": 64
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 14:05:21", 
+            "object_repr": "jalegre_z", 
+            "object_id": "4", 
+            "change_message": "No fields changed.", 
+            "user": 1, 
+            "content_type": 14
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 14:03:03", 
+            "object_repr": "jalegre_z", 
+            "object_id": "4", 
+            "change_message": "Changed hasValidatedEmail.", 
+            "user": 1, 
+            "content_type": 14
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 13:59:45", 
+            "object_repr": "Social Network", 
+            "object_id": "1", 
+            "change_message": "Changed developer.", 
+            "user": 1, 
+            "content_type": 68
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 13:39:26", 
+            "object_repr": "LOGIN - REMINDER_DAYS", 
+            "object_id": "1", 
+            "change_message": "Changed myType.", 
+            "user": 1, 
+            "content_type": 65
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 13:30:40", 
+            "object_repr": "LOGIN - REMINDER_DAYS", 
+            "object_id": "1", 
+            "change_message": "Changed mode.", 
+            "user": 1, 
+            "content_type": 65
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 1, 
+            "action_time": "2012-03-29 13:26:56", 
+            "object_repr": "SN - REMINDER_DAYS", 
+            "object_id": "1", 
+            "change_message": "", 
+            "user": 1, 
+            "content_type": 65
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 1, 
+            "action_time": "2012-03-29 13:22:00", 
+            "object_repr": "Msg/SocialNetwork/Login/PasswordReminder/", 
+            "object_id": "4", 
+            "change_message": "", 
+            "user": 1, 
+            "content_type": 64
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "admin.logentry", 
+        "fields": {
+            "action_flag": 2, 
+            "action_time": "2012-03-29 13:05:43", 
+            "object_repr": "jalegre AAAAAAAAAA", 
+            "object_id": "1", 
+            "change_message": "Changed email and status.", 
+            "user": 1, 
+            "content_type": 47
+        }
+    }, 
+    {
         "pk": 1, 
         "model": "site.table", 
         "fields": {
             "Name": "es", 
             "DateCreate": "2012-03-29 11:35:40", 
-            "DateModify": null, 
+            "DateModify": "2012-03-29 12:59:49", 
             "Value": "Spain", 
             "Mode": "countries", 
             "UserCreateId": 1, 
@@ -722,16 +839,16 @@
             "hasUploadPic": false, 
             "dateCreate": "2012-03-29 11:52:30", 
             "resetPasswordDate": null, 
-            "dateModify": "2012-03-29 11:52:30", 
+            "dateModify": "2012-03-30 01:38:30", 
             "auth": "", 
-            "hasValidatedEmail": false, 
+            "hasValidatedEmail": true, 
             "msgPreference": "ximpia", 
             "reminderId": null, 
             "user": 6, 
             "userCreateId": null, 
             "userModifyId": null, 
             "filesQuota": 2000, 
-            "picExt": null, 
+            "picExt": "", 
             "netProfiles": "", 
             "delete": false
         }
@@ -1260,11 +1377,11 @@
         "pk": 1, 
         "model": "social_network.invitation", 
         "fields": {
-            "status": "used", 
-            "domain": null, 
+            "status": "pending", 
+            "domain": "", 
             "accType": "user", 
             "dateCreate": "2012-03-29 11:35:58", 
-            "dateModify": "2012-03-29 11:52:30", 
+            "dateModify": "2012-03-29 13:05:43", 
             "number": 1, 
             "fromAccount": null, 
             "payType": "free", 
@@ -1273,9 +1390,9 @@
             "userCreateId": null, 
             "userModifyId": null, 
             "fromUser": 1, 
-            "message": null, 
+            "message": "", 
             "invitationCode": "AAAAAAAAAA", 
-            "email": "", 
+            "email": "jorge.alegre34@zoho.com", 
             "delete": false
         }
     }, 
@@ -1404,6 +1521,37 @@
             "dateModify": "2011-09-04 15:21:11", 
             "userCreateId": null, 
             "userModifyId": null, 
+            "delete": false
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "social_network.snxmlmessage", 
+        "fields": {
+            "lang": "en", 
+            "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Password Reminder</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tYou requested to remember you password in Ximpia. You can change your password by clicking on:\t\t\r\n\t\thttp://localhost:8000/view/changePassword/$userAccount/$reminderId\r\n\t\t\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
+            "name": "Msg/SocialNetwork/Login/PasswordReminder/", 
+            "dateCreate": "2012-03-29 13:22:00", 
+            "dateModify": "2012-03-29 14:49:31", 
+            "userCreateId": null, 
+            "userModifyId": null, 
+            "delete": false
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "social_network.snparam", 
+        "fields": {
+            "valueDate": null, 
+            "name": "REMINDER_DAYS", 
+            "dateCreate": "2012-03-29 13:26:56", 
+            "dateModify": "2012-03-29 13:39:26", 
+            "value": "", 
+            "myType": "param", 
+            "mode": "LOGIN", 
+            "userCreateId": null, 
+            "userModifyId": null, 
+            "valueId": 2, 
             "delete": false
         }
     }, 
@@ -1542,11 +1690,11 @@
             "code": "SN", 
             "name": "Social Network", 
             "dateCreate": "2012-03-29 11:35:58", 
-            "dateModify": "2012-03-29 11:35:58", 
+            "dateModify": "2012-03-29 13:59:45", 
             "developerOrg": null, 
             "userCreateId": null, 
             "userModifyId": null, 
-            "developer": null, 
+            "developer": 1, 
             "delete": false
         }
     }, 
@@ -3491,24 +3639,6 @@
         }
     }, 
     {
-        "pk": 1, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "jalegre", 
-            "first_name": "", 
-            "last_name": "", 
-            "is_active": true, 
-            "is_superuser": true, 
-            "is_staff": true, 
-            "last_login": "2012-03-29 12:40:57", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$2c715$520bc26bf3d885b5442ccf7ba179c94ff64b4eac", 
-            "email": "jorge.alegre@tecor.com", 
-            "date_joined": "2012-03-29 11:35:39"
-        }
-    }, 
-    {
         "pk": 6, 
         "model": "auth.user", 
         "fields": {
@@ -3518,12 +3648,12 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": false, 
-            "last_login": "2012-03-29 11:52:30", 
+            "last_login": "2012-03-30 01:38:30", 
             "groups": [
                 1
             ], 
             "user_permissions": [], 
-            "password": "sha1$a75cd$2533ccd94cf4b2e8c2b54691b4de6ab8bea8e376", 
+            "password": "sha1$0b667$7a56c11caabe2e7436cb0a8e803ba44c57463344", 
             "email": "jorge.alegre@zoho.com", 
             "date_joined": "2012-03-29 11:52:30"
         }

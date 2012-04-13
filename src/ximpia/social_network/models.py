@@ -30,7 +30,7 @@ class Address(BaseModel):
 		verbose_name_plural = _('Addresses')
 
 class SocialNetwork(BaseModel):
-	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': 'nets'},
+	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': K},
 				verbose_name = _('Social Network Type'), help_text = _('Type of social network'))
 	def __unicode__(self):
 		return str(self.myType)
@@ -59,36 +59,6 @@ class SocialNetworkUserSocial(models.Model):
 		verbose_name = 'Social Network for User'
 		verbose_name_plural = "Social Networks for User"
 
-class UserSocial(BaseModel):
-	"""Model for UserSocial"""
-	user = models.ForeignKey(UserSys, 
-				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField('GroupSocial',
-				verbose_name = _('Groups'), help_text = _('Groups'))
-	socialChannel = models.CharField(max_length=20, default=K.USER,
-				verbose_name = _('Social Channel'), help_text = _('Social Channel'))
-	profiles = models.ManyToManyField('Profile',
-				verbose_name = _('Profiles'), help_text=_('Profiles for user'))
-	def __unicode__(self):
-		return str(self.user.username) + '-' + str(self.socialChannel)
-	def getGroupById(self, groupId):
-		"""Doc."""
-		groups = self.groups.filter(pk=groupId)
-		if len(groups) != 0:
-			value = groups[0]
-		else:
-			value = None
-		return value
-	def getFullName(self):
-		"""Get full name: firstName lastName"""
-		name = self.user.get_full_name()
-		return name
-	class Meta:
-		db_table = 'SN_USER'
-		verbose_name = 'User'
-		verbose_name_plural = "Users"
-		unique_together = ("user", "socialChannel")
-	
 class UserDetail(BaseModel):
 	"""Model for UserSocial
 	FK : User
@@ -123,6 +93,8 @@ class UserDetail(BaseModel):
 				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files in MB'))
 	resetPasswordDate = models.DateField(null=True, blank=True, 
 				verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
+	showIntro = models.BooleanField(default=True,
+				verbose_name=_('Show Introduction content'), help_text=_('Show introduction content to user for help'))
 	def __unicode__(self):
 		return str(self.user.username)
 	def getSocialNetworkUser(self, socialNetName):
@@ -170,11 +142,11 @@ class GroupSocial(BaseModel):
 				verbose_name = _('Access Groups'), help_text = _('Groups that have access to this group'))
 	tags = models.ManyToManyField('Tag', null=True, blank=True,
 				verbose_name = _('Tags'), help_text = _('Tags'))
-	owner = models.ForeignKey('UserSocial', related_name='group_owner', null=True, blank=True,
+	owner = models.ForeignKey('core.UserSocial', related_name='group_owner', null=True, blank=True,
 				verbose_name = _('Group Owner'), help_text = _('Owner of group'))
-	admins = models.ManyToManyField('UserSocial', related_name='group_admins', null=True, blank=True,
+	admins = models.ManyToManyField('core.UserSocial', related_name='group_admins', null=True, blank=True,
 				verbose_name = _('Administrators'), help_text = _('Administrators'))
-	managers = models.ManyToManyField('UserSocial', related_name='group_managers', null=True, blank=True,
+	managers = models.ManyToManyField('core.UserSocial', related_name='group_managers', null=True, blank=True,
 				verbose_name = _('Managers'), help_text = _('Managers'))
 	def __unicode__(self):
 		if self.account != None:
@@ -236,7 +208,7 @@ class Comment(BaseModel):
 	MN: Tags
 	Message
 	Public"""
-	user = models.ForeignKey(UserSocial,
+	user = models.ForeignKey('core.UserSocial',
 				verbose_name = _('User'), help_text = _('User'))
 	message = models.TextField(verbose_name = _('Comment'), help_text = _('Comment message'))
 	like = models.ManyToManyField('Like', null=True, blank=True,
@@ -261,7 +233,7 @@ class Like(BaseModel):
 	"""Like Model
 	FK: User
 	Number"""
-	user = models.ForeignKey(UserSocial,
+	user = models.ForeignKey('core.UserSocial',
 				verbose_name = _('User'), help_text = _('User'))
 	number = models.IntegerField(default=0,
 				verbose_name = _('Number'), help_text = _('Number'))
@@ -276,7 +248,7 @@ class StatusShare(BaseModel):
 	"""Status share model
 	FK: User
 	Message"""
-	user = models.ForeignKey(UserSocial,
+	user = models.ForeignKey('core.UserSocial',
 				verbose_name = _('User'), help_text = _('User'))
 	message = models.TextField(null=True, blank=True,
 				verbose_name = _('Message'), help_text = _('Message'))
@@ -300,7 +272,7 @@ class GroupStream(BaseModel):
 	Source
 	Public"""
 	postId = models.BigIntegerField(verbose_name = _('Post Id'), help_text = _('Post identification'))
-	user = models.ForeignKey(UserSocial,
+	user = models.ForeignKey('core.UserSocial',
 				verbose_name = _('User'), help_text = _('User'))
 	account = models.ForeignKey('Organization', 'account', null=True, blank=True, related_name='group_stream_account',
 				verbose_name = _('Account'), help_text = _('Account name'))
@@ -336,7 +308,7 @@ class GroupStreamPublic(BaseModel):
 				verbose_name = _('Post Id'), help_text = _('Post identification'))
 	socialNetwork = models.ManyToManyField(SocialNetwork,
 				verbose_name = _('Social Network'), help_text = _('Social Network'))
-	userMadePublic = models.ForeignKey(UserSocial,
+	userMadePublic = models.ForeignKey('core.UserSocial',
 				verbose_name = _('User Public Action'), help_text = _('User that made public message'))
 	dateMadePublic = models.DateTimeField(auto_now_add=True,
 				verbose_name = _('Date Made Public'), help_text = _('Date made public message'))
@@ -933,7 +905,7 @@ class TagUserTotal(BaseModel):
 	"""Tags for User in all Objects Model"""
 	user = models.ForeignKey(UserSys,
 			verbose_name = _('User'), help_text = _('User'))
-	userSocial = models.ForeignKey('UserSocial',
+	userSocial = models.ForeignKey('core.UserSocial',
 			verbose_name = _('Ximpia User'), help_text = _('Ximpia User'))
 	tag = models.ForeignKey(Tag,
 			verbose_name = _('Tag'), help_text = _('Tag'))
@@ -951,7 +923,7 @@ class LinkUserTotal(BaseModel):
 	"""Links for User in all Objects Model"""
 	user = models.ForeignKey(UserSys, 
 			verbose_name = _('User'), help_text = _('User'))
-	userSocial = models.ForeignKey('UserSocial',
+	userSocial = models.ForeignKey('core.UserSocial',
 			verbose_name = _('Ximpia User'), help_text = _('Ximpia User'))
 	link = models.ForeignKey('Link',
 			verbose_name = _('Link'), help_text = _('Link'))
@@ -988,7 +960,7 @@ class Subscription(BaseModel):
 				verbose_name = _('User Account'), help_text = _('User Account'))
 	organization = models.ForeignKey('Organization', null=True, blank=True,
 				verbose_name = _('Organization'), help_text = _('Organization'))
-	app = models.ForeignKey('core.Application',
+	app = models.ForeignKey('core.Application', related_name='subs_app', 
 				verbose_name = _('Application'), help_text = _('Application'))
 	users = models.ManyToManyField(UserSys,
 				verbose_name = _('Users'), help_text = _('Users'))
@@ -1021,7 +993,7 @@ class SubscriptionItemMonth(BaseModel):
 
 class Notification(BaseModel):
 	"""Notifications"""
-	owner = models.ForeignKey('UserSocial', related_name='notification_owner',
+	owner = models.ForeignKey('core.UserSocial', related_name='notification_owner',
 			verbose_name = _('Owner'), help_text = _('Owner'))
 	content = models.CharField(max_length=200,
 			verbose_name = _('Content'), help_text = _('Notification content'))
@@ -1133,7 +1105,7 @@ class Contact(BaseModel):
 	_RANKING_GROUP = 200
 	_RANKING_ORG = 100
 	_RANKING_USER = 50
-	user = models.ForeignKey('social_network.UserSocial', related_name='contact_user', null=True, blank=True,
+	user = models.ForeignKey('core.UserSocial', related_name='contact_user', null=True, blank=True,
 			verbose_name = _('User'), help_text = _('User'))
 	detail = models.ForeignKey('ContactDetail',
 			verbose_name = _('Detail'), help_text = _('Detail'))
@@ -1279,7 +1251,7 @@ class CommunicationTypeContact(BaseModel):
 
 class Calendar(BaseModel):
 	"""Calendar activities: meetings, events, deadlines, tasks, alerts, etc..."""
-	owner = models.ForeignKey('social_network.UserSocial', null=True, blank=True,
+	owner = models.ForeignKey('core.UserSocial', null=True, blank=True,
 			verbose_name = _('Owner'), help_text = _('Owner'))
 	contacts = models.ManyToManyField('social_network.Contact', null=True, blank=True, related_name='calendar_contacts',
 			verbose_name = _('Contacts'), help_text = _('Contacts'))
