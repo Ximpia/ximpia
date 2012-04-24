@@ -182,8 +182,7 @@ jQuery(document).ready(function($){
 				callback: callback,
 				viewName: viewData.viewName,
 				verbose: true});
-	//pageJx.doBusinessGetRequest({ className: viewData.className, method: viewData.method });
-	pageJx.doBusinessGetRequest({ view: viewData.viewName });
+	pageJx.getView({ view: viewData.viewName, params: "{}" });
 
 // contextMenu demo
 $('#LogoImg').contextMenu({ menu: 'id_menu', alignElement: true},

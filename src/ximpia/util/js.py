@@ -1,42 +1,55 @@
+import base64
 import simplejson as json
 from django.core import serializers as _s
 
 class Form(object):
 
 	@staticmethod
-	def buildMsgArray(list=[]):
+	def buildMsgArray(data=[]):
 		"""Encode a message list into array for javascript."""
-		dict = {}
-		if len(list) != 0:
-			insMessage, keyList = list
+		dd = {}
+		if len(data) != 0:
+			insMessage, keyList = data
 			for key in keyList:
 				message = eval('insMessage.' + key)
-				dict[key] = message
-		dictStr = Form.encodeDict(dict)
+				dd[key] = message
+		dictStr = Form.encodeDict(dd)
 		return dictStr
 
 	@staticmethod
 	def buildBlankArray(keyList):
 		"""Build blank array for initial values"""
-		dict = {}
+		dd = {}
 		for key in keyList:
-			dict[key] = ''
-		dictStr = Form.encodeDict(dict)
+			dd[key] = ''
+		dictStr = Form.encodeDict(dd)
 		return dictStr
 	
 	@staticmethod
-	def encodeDict(dict):
-		"""Doc."""
-		dictStr = json.dumps(dict)
+	def encodeDict(dd):
+		"""Encode dictionary into json"""
+		dictStr = json.dumps(dd)
 		return dictStr
 	
 	@staticmethod
-	def encodeObjDict(dict):
+	def encode64Dict(dd):
+		"""Encode dictionary into json and then to base64"""
+		data = base64.encodestring(json.dumps(dd))
+		return data
+	
+	@staticmethod
+	def decode64dict(ddS):
+		"""Decodes serialized json in base64 into a dictionary."""
+		dd = json.loads(base64.decodestring(ddS))
+		return dd
+	
+	@staticmethod
+	def encodeObjDict(dd):
 		"""Encode db instance dictionary into json"""
 		dictNew = {}
-		for key in dict:
+		for key in dd:
 			# Get json object, parse, serialize fields object
-			dictNew[key] = _s.serialize("json", [dict[key]])
+			dictNew[key] = _s.serialize("json", [dd[key]])
 		return dictNew
 	
 	@staticmethod
@@ -48,7 +61,7 @@ class Form(object):
 	@staticmethod
 	def addVarDict(jsArray, name, value):
 		"""Add variable to dict"""
-		dict = json.loads(jsArray)
-		dict[name] = value
-		jsArrayNew = json.dumps(dict)
+		dd = json.loads(jsArray)
+		dd[name] = value
+		jsArrayNew = json.dumps(dd)
 		return jsArrayNew

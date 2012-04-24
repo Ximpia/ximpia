@@ -12,8 +12,9 @@ from django.contrib.auth import login, authenticate
 from django.utils import translation
 from django.utils.translation import ugettext as _
 
-from ximpia.core.models import context, Context
+from ximpia.core.models import context, Context, XpMsgException
 from ximpia.core.data import ActionDAO, ViewDAO
+from ximpia.core.util import getClass
 
 from business import SignupView, LoginView
 from business import SignupAction, LoginAction
@@ -159,47 +160,55 @@ def jxJSON(request, **ArgsDict):
 	response = json.dumps(ctx.rs)
 	return HttpResponse(response)
 
-@Context
-def jxBusiness(request, *argsTuple, **argsDict):
+@Context(app=K.APP)
+def jxBusiness(request, **args):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
-	try:
-		print 'jxBusiness...'
-		ctx = argsDict['ctx']
-		print request.REQUEST.items()
-		if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
-			#bsClass = request.REQUEST['bsClass'];
-			#method = request.REQUEST['method']
-			if request.REQUEST.has_key('view'):
-				view = request.REQUEST['view']
-				print 'view: ', view
-				dbView = ViewDAO(ctx)
-				impl = dbView.get(application__code=K.APP, name=view).implementation
-			elif request.REQUEST.has_key('action'):
-				action = request.REQUEST['action']
-				print 'action: ', action
-				dbAction = ActionDAO(ctx)
-				impl = dbAction.get(application__code=K.APP, name=action).implementation
-			print 'Implementation: ', impl
-			implFields = impl.split('.')
-			method = implFields[len(implFields)-1]
-			bsClass = implFields[len(implFields)-2]
-			print 'method: ', method, type(method)
-			print 'class: ', bsClass, type(bsClass)
-			if method.find('_') == -1 or method.find('__') == -1: 
-				obj = eval(bsClass)(ctx)
+	print 'jxBusiness...'
+	print request.REQUEST.items()
+	request.session.set_test_cookie()
+	request.session.delete_test_cookie()
+	print 'session: ', request.session.items()
+	#print 'session: ', request.session.items(), request.session.session_key
+	if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
+		viewAttrs = {}
+		if request.REQUEST.has_key('view'):
+			view = request.REQUEST['view']
+			print 'view: ', view
+			dbView = ViewDAO(args['ctx'])
+			impl = dbView.get(application__code=K.APP, name=view).implementation
+			# view attributes 
+			viewAttrs = json.loads(request.REQUEST['params'])
+			args['ctx']['viewNameSource'] = view
+		elif request.REQUEST.has_key('action'):
+			action = request.REQUEST['action']
+			print 'action: ', action
+			dbAction = ActionDAO(args['ctx'])
+			dbView = ViewDAO(args['ctx'])
+			actionObj = dbAction.get(application__code=K.APP, name=action)
+			viewObj = dbView.get(name=args['ctx']['viewNameSource'])
+			if actionObj.application.code != viewObj.application.code:
+				raise XpMsgException(None, _('Action is not in same application as view source'))
+			impl = actionObj.implementation
+		implFields = impl.split('.')
+		method = implFields[len(implFields)-1]
+		#bsClass = implFields[len(implFields)-2]
+		classPath = ".".join(implFields[:-1])
+		# TODO: Place this code into core
+		if method.find('_') == -1 or method.find('__') == -1:
+			cls = getClass( classPath ) 
+			obj = cls(args['ctx'])
+			if (len(viewAttrs) == 0) :
 				result = eval('obj.' + method)()
 			else:
-				print 'private methods...'
-				raise Http404
+				result = eval('obj.' + method)(**viewAttrs)
 		else:
-			print 'Unvalid business request'
+			print 'private methods...'
 			raise Http404
-	except Exception as e:
-		if settings.DEBUG == True:
-			traceback.print_exc()
-		raise
+	else:
+		print 'Unvalid business request'
+		raise Http404
 	return result
 
 @context
@@ -357,27 +366,26 @@ def checkCaptcha(request, value):
 
 # ===========================================================================================================
 
-
 # *******************************
 # ****     Server Content     ***
 # *******************************
 
-@Context
+@Context(app=K.APP)
 def changePassword(request, ximpiaId, reminderId, **argsDict):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
 	login = LoginView(argsDict['ctx'])
-	login.showNewPassword(ximpiaId, reminderId)
+	login.showNewPassword(ximpiaId=ximpiaId, reminderId=reminderId)
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, argsDict['ctx']))
 	return result
 
-@Context
+@Context(app=K.APP)
 def signupUser(request, invitationCode, **argsDict):
 	"""Signup user with invitation."""
 	print 'signupUser...'
 	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
 	signup = SignupView(argsDict['ctx'])
-	signup.showSignupUser(invitationCode, affiliateId)
+	signup.showSignupUser(invitationCode=invitationCode, affiliateId=affiliateId)
 	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, argsDict['ctx']))
 	return result

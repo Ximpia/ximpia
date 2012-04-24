@@ -11,7 +11,9 @@ class CoreConstants(object):
 	READ = 'read'
 	UPDATE = 'update'
 	DELETE = 'delete'
+	WF = 'wf'
 
 class CoreKParam(object):
 	COMMTYPE = 'COMMTYPE'
 	ICON = 'ICON'
+	CHANNEL = 'CHANNEL'

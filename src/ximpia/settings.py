@@ -2,9 +2,12 @@
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+DEFAULT_CHARSET = 'utf-8'
 
 #python -m smtpd -n -c DebuggingServer localhost:1025
 #python manage.py dumpdata --indent 4 > ximpia.json
+#python manage.py dumpdata --indent 4 core.Application core.CoreParam core.View core.Workflow > core.json
+#python manage.py dumpdata --indent 4 social_network.Invitation social_network.SNParam social_network.SNXmlMessage > sn.json
 
 # Ximpia Config
 PRIVATE_BETA = True
@@ -138,7 +141,7 @@ SECRET_KEY = '&$xqvgkb-q@g0cyfzhe^euu^0@v_a$x((dobrr&9j4*=y)cb^9'
 
 SESSION_COOKIE_DOMAIN = ''
 SESSION_COOKIE_AGE = 150000000
-SESSION_COOKIE_NAME = 'test-sessionid'
+SESSION_COOKIE_NAME = 'sessionid'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

@@ -139,6 +139,11 @@ class ChangePasswordForm(XBaseForm):
 		self._xpClean()
 		return self.cleaned_data
 
+class StatusForm(XBaseForm):
+	_XP_FORM_ID = 'status'
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+
 class OrganizationSignupForm(XBaseForm):
 	_XP_FORM_ID = 'signupOrg'
 	# Instances

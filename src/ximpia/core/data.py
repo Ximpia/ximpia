@@ -2,7 +2,8 @@ import traceback
 
 from django.utils.translation import ugettext as _
 from ximpia.core.models import XpMsgException, CoreParam, Application, UserSocial, Action, ApplicationAccess, CoreXmlMessage
-from ximpia.core.models import Menu, MenuParam, View, ViewMenu, Workflow, WFParam, WFParamValue 
+from ximpia.core.models import Menu, MenuParam, View, ViewMenu, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
+from ximpia.core.models import WorkflowView 
 
 class CommonDAO(object):	
 
@@ -107,6 +108,15 @@ class CommonDAO(object):
 		except Exception as e:
 			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
 		return data	
+	
+	def search(self, **qsArgs):
+		"""Search model using filter. Support for related objects as FK to model"""
+		try:
+			dbObj = self._processRelated()
+			filterList = dbObj.filter(**qsArgs)
+		except Exception as e:
+			raise XpMsgException(e, _('Error in search operation ') + '' + _(' in model ') + str(self._model))
+		return filterList
 	
 	def create(self, **qsArgs):
 		"""Create object
@@ -256,12 +266,27 @@ class WorkflowDAO(CommonDAO):
 		super(WorkflowDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Workflow
 
-class WFParamDAO(CommonDAO):
+class WorkflowDataDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WFParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = WFParam
+		super(WorkflowDataDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = WorkflowData
+
+class ParamDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Param
 
 class WFParamValueDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(WFParamValueDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = WFParamValue
+
+class WFViewEntryParamDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(WFViewEntryParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = WFViewEntryParam
+
+class WorkflowViewDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(WorkflowViewDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = WorkflowView

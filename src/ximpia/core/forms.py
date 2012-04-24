@@ -21,7 +21,7 @@ class XBaseForm(forms.Form):
 	_db = {}
 	#cleaned_data = None
 	entryFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	copyEntryFields = XpHiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
+	#copyEntryFields = XpHiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
 	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
 	pkFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
@@ -32,9 +32,9 @@ class XBaseForm(forms.Form):
 	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
-	"""bsClass = XpHiddenField(xpType='input.hidden', required=False)
-	method = XpHiddenField(xpType='input.hidden', required=False)"""
 	action = XpHiddenField(xpType='input.hidden', required=False)
+	viewNameSource = XpHiddenField(xpType='input.hidden', required=False)
+	viewNameTarget = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	ctx = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}

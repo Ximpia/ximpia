@@ -196,6 +196,7 @@
 			//console.log('xpForm: ', xpForm);
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			var formId = ximpia.common.Browser.getForm(xpForm);
+			var viewName = formId.split('_')[1];
 			var list = Object.keys(data);
 			//JSON.stringify(data[list[key]]['value'])
 			for (key in list) {
@@ -204,6 +205,10 @@
 					var value = data[list[key]]['value'];
 					$('#' + formId).append("<input type=\"hidden\" id=\"id_" + formId + '_' + list[key] + "\" name=\"" + list[key] + "\"  />");
 					$("#id_" + formId + '_' + list[key]).attr('value', value);
+					// Inject viewNameSource : viewName is same as formId
+					if (list[key] == 'viewNameSource') {
+						$("#id_" + formId + '_' + list[key]).attr('value', viewName);
+					}
 				}				
 			}
 			//console.log($('#' + formId));

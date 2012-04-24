@@ -1321,15 +1321,18 @@ ximpia.common.PageAjax = function() {
 					$("body").before(html);
 				}
 			},
-			doForm: function() {
+			doForm: function( obj ) {
 				/**
 				 * Process forms for view request
 				 */
 				console.log('doForm...');
-				$.getJSON(_attr.priv.path, function(data) {
+				console.log( obj );
+				$.post(_attr.priv.path, obj, function(data) {
+				//$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
 						console.log(data)
 					}
+					console.log('viewName: ' + _attr.priv.viewName);
 					ximpia.common.Browser.setXpDataView(_attr.priv.viewName, data);
 					console.log('foms length: ' + document.forms.length);
 					for (var i = 0; i<document.forms.length; i++) {
@@ -1350,20 +1353,21 @@ ximpia.common.PageAjax = function() {
 					console.log('verbose: ' + _attr.priv.verbose);
 					if (typeof _attr.priv.callback != 'undefined') {
 						_attr.priv.callback(data);
-					}					
-				}).error(function(jqXHR, textStatus, errorThrown) {
+					}
+				}, 'json').error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
 			},
-			doBusinessGetRequest: function(obj) {
-				_attr.priv.path = _attr.priv.path + '?view=' + obj.view
+			getView: function(obj) {
+				//_attr.priv.path = _attr.priv.path + '?view=' + obj.view
 				console.log('path: ' + _attr.priv.path);
 				if (obj.mode == 'popupNoView') {
 					_attr.pub.doFormPopupNoView();
 				} else {
-					_attr.pub.doForm();
+					_attr.pub.doForm( { 	view: obj.view,
+								params: obj.params } );
 				}
 			}
 		}

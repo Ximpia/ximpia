@@ -1,6 +1,6 @@
 from models import CoreParam, Application, CoreXmlMessage, UserSocial, Menu, MenuParam, View, ApplicationAccess, ViewMenu, Action
 #from models import Navigation, NavigationParam, NavigationParamValue, Operation
-from models import Workflow, WFParam, WFParamValue
+from models import Workflow, WFParamValue, Param, WorkflowView
 
 from django.contrib import admin
 
@@ -71,13 +71,20 @@ class ViewMenuAdmin(admin.ModelAdmin):
 		obj.save()
 
 class WorkflowAdmin(admin.ModelAdmin):
-	list_display = ('application','viewSource', 'viewTarget', 'action', 'order')
+	list_display = ('application','code')
+	list_filter = ('application',)
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
+
+class WorkflowViewAdmin(admin.ModelAdmin):
+	list_display = ('flow', 'viewSource', 'viewTarget', 'action', 'order')
 	list_filter = ('action','viewSource','viewTarget')
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
 
-class WFParamAdmin(admin.ModelAdmin):
+class ParamAdmin(admin.ModelAdmin):
 	list_display = ('id',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
@@ -100,5 +107,6 @@ admin.site.register(View, ViewAdmin)
 admin.site.register(Action, ActionAdmin)
 admin.site.register(ViewMenu, ViewMenuAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(WFParam, WFParamAdmin)
+admin.site.register(WorkflowView, WorkflowViewAdmin)
+admin.site.register(Param, ParamAdmin)
 admin.site.register(WFParamValue, WFParamValueAdmin)

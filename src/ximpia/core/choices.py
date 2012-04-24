@@ -58,6 +58,10 @@ class Choices(object):
 			('en', _('English')),
 			('es', _('Spanish')))
 	# OPERATOR
+	OP_EQ = 'eq'
+	OP_LT = 'lt'
+	OP_GT = 'gt'
+	OP_NE = 'ne'
 	OP = (
 		('eq', _('Equal')),
 		('lt', _('Less Than')),
@@ -65,6 +69,13 @@ class Choices(object):
 		('ne', _('Not Equal')))
 
 	# BASIC_TYPES
+	BASIC_TYPE_INT = 'int'
+	BASIC_TYPE_STR = 'str'
+	BASIC_TYPE_BOOL = 'bool'
+	BASIC_TYPE_LONG = 'long'
+	BASIC_TYPE_FLOAT = 'float'
+	BASIC_TYPE_DATE = 'date'
+	BASIC_TYPE_TIME = 'time'
 	BASIC_TYPES = (
 		('int', _('Integer')),
 		('str', _('String')),

@@ -154,13 +154,13 @@
         		ximpia.common.Window.showMessage({
 	            		title: settings.title,
             			message: settings.message,
-            			buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', action: \'closePopup\', icon: \'delete\'}" ></div></div>',
+            			buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
             			effectIn: {style: 'fadeIn', time: 1000},
             			effectOut: {},
             			fadeBackground: true,
             			height: 50
         		});
-            		$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
+            		//$("#id_doClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("[data-xp-type='button']").xpObjButton('render');
 		},
