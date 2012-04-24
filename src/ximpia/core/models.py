@@ -1,8 +1,10 @@
 import types
 import traceback
+import json
 
 from django.db import models
 from django.contrib.auth.models import User as UserSys, Group as GroupSys
+from django.contrib.sessions.models import Session
 from django.utils.translation import ugettext as _
 from ximpia import settings
 from django.utils import translation
@@ -13,9 +15,18 @@ from django.utils import translation
 from choices import Choices
 from constants import CoreConstants as K, CoreKParam
 
+from ximpia.util.js import Form as _jsf
+
+def getBlankWfData(dd):
+	"""Get workflow data inside flowCode by default"""
+	dd['data'] = {}
+	dd['viewName'] = ''
+	#dd['viewNameArgs'] = {}
+	return dd
+
 class DeleteManager(models.Manager):
 	def get_query_set(self):
-		return super(DeleteManager, self).get_query_set().filter(delete=False)
+		return super(DeleteManager, self).get_query_set().filter(isDeleted=False)
 
 class BaseModel(models.Model):
 	"""Abstract Base Model"""
@@ -28,7 +39,7 @@ class BaseModel(models.Model):
 					verbose_name=_('User Create Id'), help_text=_('User that data'))
 	userModifyId = models.IntegerField(null=True, blank=True, editable=False, 
 					verbose_name=_('User Modify Id'), help_text=_('User that madofied data'))
-	delete = models.BooleanField(default=False, editable=False,
+	isDeleted = models.BooleanField(default=False, editable=False,
 				verbose_name=_('Delete'), help_text=_('Field that sets logical deletes'))
 	"""def __init__(self, ctx=None, *argsTuple, **argsDict):
 		self._ctx = ctx if ctx != None else None
@@ -172,6 +183,8 @@ class View(BaseModel):
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100,
 			verbose_name=_('Implementation'), help_text=_('Business class and method that will show view'))
+	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
+			verbose_name=_('Parameters'), help_text=_('View entry parameters'))	
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -231,27 +244,73 @@ class MenuParam(BaseModel):
 class Workflow(BaseModel):
 	"""WorkFlow"""
 	application = models.ForeignKey('core.Application',
-				verbose_name = _('Application'), help_text = _('Application'))
-	viewSource = models.ForeignKey('core.View', related_name='viewSource', null=True, blank=True,
-			verbose_name=_('Source View'), help_text=_('View which starts navigation'))
-	viewTarget = models.ForeignKey('core.View', related_name='viewTarget', 
-			verbose_name=_('target View'), help_text=_('View destiny for navigation'))
-	action = models.ForeignKey('core.Action', related_name='wf_action',
-			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
-	params = models.ManyToManyField('core.WFParam', through='core.WFParamValue', null=True, blank=True,
-			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
-	order = models.IntegerField(default=10,
-			verbose_name=_('Order'), help_text=_('Order'))
+			verbose_name = _('Application'), help_text = _('Application'))
+	code = models.CharField(max_length=15, db_index=True, unique=True, 
+			verbose_name=_('Flow Code'), help_text=_('Flow Code. First window in a flow identified by a flow code will reset wf variables'))
 	def __unicode__(self):
-		return str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
+		return str(self.code)
 	class Meta:
 		db_table = 'CORE_WF'
 		verbose_name = 'Workflow'
 		verbose_name_plural = "Workflow"
-		unique_together = ('viewSource', 'action', 'viewTarget')
 
-class WFParam(BaseModel):
-	"""Parameters for WF"""
+class WorkflowView(BaseModel):
+	"""WorkFlow View"""
+	flow = models.ForeignKey('core.WorkFlow', related_name='flowView', 
+			verbose_name=_('Flow'), help_text=_('Work Flow'))
+	viewSource = models.ForeignKey('core.View', related_name='flowViewSource',
+			verbose_name=_('Source View'), help_text=_('View which starts flow'))
+	viewTarget = models.ForeignKey('core.View', related_name='flowViewTarget', 
+			verbose_name=_('target View'), help_text=_('View destiny for flow'))
+	action = models.ForeignKey('core.Action', related_name='wf_action', unique=True, 
+			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
+	params = models.ManyToManyField('core.Param', through='core.WFParamValue', related_name='flowView_params', null=True, blank=True,
+			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
+	order = models.IntegerField(default=10,
+			verbose_name=_('Order'), help_text=_('Order'))
+	def __unicode__(self):
+		return str(self.code) +  ' - ' + str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
+	class Meta:
+		db_table = 'CORE_WF_VIEW'
+		verbose_name = 'Workflow View'
+		verbose_name_plural = "Workflow View"
+		unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
+
+class WFViewEntryParam(BaseModel):
+	"""Relates flows with view entry parameters."""
+	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewEntryParam', 
+			verbose_name=_('Flow View'), help_text=_('Work Flow Views'))
+	viewParam= models.ForeignKey('core.ViewParamValue', related_name='',
+			verbose_name=_('View Param'), help_text=_('View parameter value'))
+	def __unicode__(self):
+		return str(self.flow) + ' - ' + str(self.viewParam)
+	class Meta:
+		db_table = 'CORE_WF_VIEW_PARAM'
+		verbose_name = 'Workflow View Entry Param'
+		verbose_name_plural = "Workflow View Entry Params"
+
+class WorkflowData(BaseModel):
+	"""Workflow Data"""
+	user = models.ForeignKey(UserSys, blank=True, null=True, 
+			verbose_name = _('User'), help_text = _('User'))
+	session = models.ForeignKey(Session,
+			verbose_name = _('Session'), help_text = _('Session Id'))
+	flow = models.ForeignKey('core.WorkFlow', related_name='flowData', 
+			verbose_name=_('Flow'), help_text=_('Work Flow'))
+	view = models.ForeignKey('core.View', related_name='viewFlowData',
+			verbose_name=_('View'), help_text=_('View in flow. View where users is in flow'))
+	data = models.TextField(default = _jsf.encode64Dict(getBlankWfData({})),
+			verbose_name=_('Data'), help_text=_('Worflow data'))
+	def __unicode__(self):
+		return str(self.user) + ' - ' + str(self.flow)
+	class Meta:
+		db_table = 'CORE_WF_DATA'
+		verbose_name = 'Workflow Data'
+		verbose_name_plural = "Workflow Data"
+		unique_together = ('user', 'flow')
+
+class Param(BaseModel):
+	"""Parameters for WF and Views"""
 	application = models.ForeignKey('core.Application', 
 				verbose_name = _('Application'), help_text = _('Application'))
 	name = models.CharField(max_length=15, 
@@ -260,19 +319,41 @@ class WFParam(BaseModel):
 				verbose_name=_('Title'), help_text=_('Title text for the parameter'))
 	paramType = models.CharField(max_length=10, choices=Choices.BASIC_TYPES,
 				verbose_name=_('Type'), help_text=_('Type'))
+	view = models.BooleanField(default=False,
+				verbose_name=_('View'), help_text=_('Parameter for View?'))
+	workflow = models.BooleanField(default=False,
+				verbose_name=_('Workflow'), help_text=_('Parameter for workflow?'))
 	def __unicode__(self):
 		return str(self.title)
 	class Meta:
-		db_table = 'CORE_WF_PARAM'
-		verbose_name = 'Workflow Parameter'
-		verbose_name_plural = "Workflow Parameters"
+		db_table = 'CORE_PARAM'
+		verbose_name = 'Parameter'
+		verbose_name_plural = "Parameters for views and workflow"
 		unique_together = ('application','name')
+
+
+class ViewParamValue(BaseModel):
+	"""Parameter Values for WF"""
+	view = models.ForeignKey('core.View', related_name='viewParam',
+			verbose_name=_('View'), help_text=_('View for entry parameters'))
+	name = models.ForeignKey('core.Param', 
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, 
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return str(self.name) + ' ' + str(self.operator) + ' ' + str(self.value)
+	class Meta:
+		db_table = 'CORE_VIEW_PARAM_VALUE'
+		verbose_name = 'View Parameter Value'
+		verbose_name_plural = "View Parameter Values"
 
 class WFParamValue(BaseModel):
 	"""Parameter Values for WF"""
-	flow = models.ForeignKey('core.WorkFlow', related_name='flow', 
-			verbose_name=_('Flow'), help_text=_('Work Flow'))
-	name = models.ForeignKey('core.WFParam', 
+	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewParamValue', 
+			verbose_name=_('Flow View'), help_text=_('Work Flow Views'))
+	name = models.ForeignKey('core.Param', 
 			verbose_name=_('Parameter'), help_text=_('Parameter'))
 	operator = models.CharField(max_length=10, choices=Choices.OP, 
 			verbose_name=_('Operator'), help_text=_('Operator'))
@@ -425,6 +506,8 @@ def context(f):
 	return new_f
 
 class Context(object):
+	_app = ''
+	APP = 'app'
 	USER = 'user'
 	LANG = 'lang'
 	SETTINGS = 'settings'
@@ -443,39 +526,65 @@ class Context(object):
 	RAW_REQUEST = 'raw_request'
 	CTX = 'ctx'
 	JS_DATA = 'jsData'
-	def __init__(self, f):
-		self.f = f
-	def __call__(self, *argsTuple, **argsDict):
+	VIEW_NAME_SOURCE = 'viewNameSource'
+	VIEW_NAME_TARGET = 'viewNameTarget'
+	ACTION = 'action'
+	FLOW_CODE = 'flowCode'
+	FLOW_DATA = 'flowData'
+	IS_FLOW = 'isFlow'
+	def __init__(self, **args):
+		if args.has_key('app'):
+			self._app = args['app']
+	def __call__(self, f):
 		"""Decorator call method"""
-		request = argsTuple[0] 
-		langs = ('en')
-		lang = translation.get_language()
-		if lang not in langs:
-			lang = 'en'
-		ctx = {}
-		ctx['user'] = request.user
-		ctx['lang'] = lang
-		ctx['settings'] = settings
-		ctx['session'] = request.session
-		ctx['cookies'] = request.COOKIES
-		ctx['meta'] = request.META
-		ctx['post'] = request.POST
-		ctx['request'] = request.REQUEST
-		ctx['raw_request'] = request
-		ctx['get'] = request.GET
-		ctx['socialChannel'] = ''
-		ctx['userSocial'] = ''
-		ctx['auth'] = {}
-		ctx['form'] = None
-		ctx['forms'] = {}
-		ctx['captcha'] = None
-		ctx[self.JS_DATA] = ''
-		if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
-			ctx['socialChannel'] = request.REQUEST['socialChannel']
-			ctx['userSocial'] = request.REQUEST['userSocial']
-		argsDict['ctx'] = ctx
-		resp = self.f(*argsTuple, **argsDict)
-		return resp
+		def wrapped_f(*argsTuple, **argsDict):
+			try:
+				request = argsTuple[0]
+				REQ = request.REQUEST 
+				langs = ('en')
+				lang = translation.get_language()
+				if lang not in langs:
+					lang = 'en'
+				ctx = {}
+				ctx[self.APP] = self._app
+				ctx['user'] = request.user
+				ctx['lang'] = lang
+				ctx['settings'] = settings
+				ctx['session'] = request.session
+				ctx['cookies'] = request.COOKIES
+				ctx['meta'] = request.META
+				ctx['post'] = request.POST
+				ctx['request'] = REQ
+				ctx['raw_request'] = request
+				ctx['get'] = request.GET
+				ctx['socialChannel'] = ''
+				ctx['userSocial'] = ''
+				ctx['auth'] = {}
+				ctx['form'] = None
+				ctx['forms'] = {}
+				ctx['captcha'] = None 
+				ctx[self.VIEW_NAME_SOURCE] = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
+				ctx[self.VIEW_NAME_TARGET] = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
+				ctx[self.ACTION] = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
+				ctx[self.FLOW_CODE] = ''
+				ctx[self.FLOW_DATA] = ''
+				ctx[self.IS_FLOW] = False
+				ctx[self.JS_DATA] = ''
+				if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
+					ctx['socialChannel'] = request.REQUEST['socialChannel']
+					ctx['userSocial'] = request.REQUEST['userSocial']
+				argsDict['ctx'] = ctx
+				"""print '** ctx **'
+				print ctx.keys()"""
+				resp = f(*argsTuple, **argsDict)
+				return resp
+			except Exception as e:
+				print 'Context :: Exception...'
+				if settings.DEBUG == True:
+					traceback.print_exc()
+					print e.myException
+				raise
+		return wrapped_f
 
 class XpTemplate(object):
 	_tmplDict = {}
