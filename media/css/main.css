@@ -120,7 +120,7 @@ input {
 div#Wrapper {
 	text-align: left;
 	/*width: 870px;*/
-	width: 1000px;
+	width: 1002px;
 	margin-left: auto;
 	margin-right: auto;
 	padding: 0px;
@@ -160,9 +160,11 @@ div#Wrapper {
 	/*border: solid 0px;*/
 	padding-right: 0px;
 	padding-left: 0px;
-	border:solid 1px #ddd; 
+	border:solid 1px #ddd;
 	margin-top:5px; 
 	border-radius: 8px;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
 	position: relative;
 	/*top: 43px;*/
 	top: 68px;
@@ -194,8 +196,12 @@ header {
 	position: fixed;
 	top: 0px;
 	z-index: 9999;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
+	/*border-bottom-left-radius: 5px;*/
+	/*border-bottom-right-radius: 5px;*/
+}
+
+#id_header_extra {
+	display: none;
 }
 
 /*div#Header {
@@ -1308,6 +1314,38 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	margin-bottom: 0px; 
 	margin-left: 0px; 
 	border: 0px solid;
+	visibility: hidden;
+}
+
+/* Title Bar */
+
+.sectionTitle {
+	position: fixed;
+	top: 6px;
+	/*border: 1px solid;*/
+	z-index: 10;
+	width: 1002px;
+	margin-top: 10px;
+	visibility: hidden; 
+}
+
+.titleBar {
+	/*width: 1000px;*/ 
+	background: #eeeeee; 
+	clear: both; 
+	/*border-radius: 8px;*/
+	/*height: 35px;*/
+	min-height: 30px;
+	max-height: 40px; 
+	padding: 2px;
+	padding-left: 5px;
+	margin-bottom: 0px; 
+	margin-left: 0px; 
+	margin-top: 57px;
+	line-height: 30px;
+	/*border: 1px solid;*/
+	/*border-top-left-radius: 8px;
+	border-top-right-radius: 8px;*/
 }
 
 /* Button Message Result */
@@ -1336,10 +1374,10 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	border: 0px solid; 
 	margin-top: 5px; 
 	z-index: 10; 
-	position: fixed; 
-	/*width: 870px;*/ 
-	width: 1000px;
-	bottom: 0p;	
+	position: fixed;  
+	width: 1002px;
+	bottom: 0p;
+	margin-bottom: 0px;	
 }
 
 .warning {

@@ -12,10 +12,10 @@
 	 * form: The form id associated with the action
 	 * align: left | right
 	 * text: Button text, without multi-language. English only
-	 * action: pageActionMsg | pageAction | popupAction | popupActionMsg | closePopup | closePanel | action
+	 * mode: actionMsg | action | closePopup | closeView
+	 * action: Action that executes the button
 	 * type: color | icon | iconPopup | simple
 	 * icon: add | edit | delete | save | email | like | next | star | spark | play
-	 * method: The business method to execute when button is clicked
 	 * callback:  The callback function to execute after button is clicked
 	 * clickStatus : disable
 	 * 
@@ -29,7 +29,8 @@
         var settings = {
         	classButton: "button",
         	classButtonColor: "buttonBlue",
-        	modes: {pageActionMsg: 'page', pageAction: 'page', popupAction: 'popup', popupActionMsg: 'popup', pageActionPopUp: 'page'}
+        	modes: {actionMsg: 'page', action: 'page', popupAction: 'popup', popupActionMsg: 'popup'},
+        	callbacks: {login: 'ximpia.site.Login.doLogin', logout: 'ximpia.site.Login.doLogout'}
         };
         /*
          * Creates the page message bar
@@ -46,6 +47,14 @@
         	var iWindowWidth = windowWidth.substr(0, index);
         	var newWidth = iWindowWidth*.97;
         	$("#id_btPopupMsg").css('width', newWidth + 'px');
+        }
+        /*
+         * Create the title message bar
+         */
+        var createTitleMsgBar = function(obj) {
+        	// TODO: Address the issue of variable height of the title bar
+        	$("#id_titleButton").xpObjButton('createTitleMsgBar');
+        	$("#id_btTitleMsg").css('top', $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()+20);
         }
         /*
          * Get attributes from form
@@ -74,66 +83,41 @@
         	return className;
         };
         /*
-         * Do page action with message popup showing errors and result of actions
+         * Do action with message popup showing errors and result of actions
          */
-        var doPageActionMsg = function(obj) {
-        	console.log('doPageActionMsg...');
+        var doActionMsg = function(obj) {
+        	console.log('doActionMsg...');
         	var oForm = ximpia.common.Form();
         	console.log(obj.form);
-        	var isValid = $("#" + obj.form).valid();
+        	var isValid = $("#" + obj.form).valid(); 
         	console.log('isValid: ' + isValid);
-        	$("#id_btPageMsg_img").xpLoadingSmallIcon();
+        	var objMap = {	page: 'Page', title: 'Title', popup: 'Popup'	};
+        	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon();
         	if (isValid == true) {
-        		createPageMsgBar(obj);
-                	$("#id_btPageMsg_img").xpLoadingSmallIcon('wait');
-        		$("#id_btPageMsg_text").text('Waiting...');
+        		if (obj.viewType == 'page') {
+        			createPageMsgBar(obj);
+        		} else if (obj.viewType == 'title') {
+        			createTitleMsgBar(obj);
+        		}
+                	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
+        		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
         		// Set form values from data-xp and action
         		var attrs = getFormAttrs(obj.form)
-        		/*console.log('***** Business Class Data **********');
-        		console.log(attrs.className + ' ' + obj.method);
-        		console.log('**********************************');*/
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
         		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
         		console.log('form :: button action : ' + obj.action)
         		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
-        		/*if (obj.clickStatus == 'disable') {
-        			$('#' + obj.element.id).disable();
-        		}*/
         	} else {
-			createPageMsgBar(obj);
-			$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
-			$("#id_btPageMsg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
+        		if (obj.viewType == 'page') {
+        			createPageMsgBar(obj);
+        		} else if (obj.viewType == 'title') {
+        			createTitleMsgBar(obj);
+        		}
+			$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('error');
+			$("#id_bt" + objMap[obj.viewType] + "Msg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
         	}
         };
-        /*
-         * Page action is called and result must be shown in popup window with all the errors
-         */
-        var doPageActionPopUp = function(obj) {
-        	console.log('doPageActionPopUp...');
-        	var oForm = ximpia.common.Form();
-        	var isValid = $("#" + obj.form).valid();
-        	console.log('isValid: ' + isValid);
-        	$("#id_btPageMsg_img").xpLoadingSmallIcon();
-        	if (isValid == true) {
-        		createPageMsgBar(obj);
-                	$("#id_btPageMsg_img").xpLoadingSmallIcon('wait');
-        		$("#id_btPageMsg_text").text('Waiting...');
-        		// Set form values from data-xp and action
-        		var attrs = getFormAttrs(obj.form)
-        		console.log('Form attributes');
-        		console.log(attrs);
-        		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
-        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button action : ' + obj.action)
-        		$("#id_" + obj.form + "_action").val(obj.action);
-        		$("#" + obj.form).submit();
-        	} else {
-			createPageMsgBar(obj);
-			$("#id_btPageMsg_img").xpLoadingSmallIcon('error');
-			$("#id_btPageMsg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
-        	}
-        }
         /*
          * Close the Popup
          */
@@ -142,18 +126,24 @@
         	$('body').xpObjPopUp('destroy');
         };
         /*
-         * Execute method of business class defined in form. Show result in message area.
+         * Executes an action and another view is shown
          */
-        var doPopupActionMsg = function(obj) {
-        	console.log('doPopupActionMsg...');
+        var doAction = function(obj) {
+        	console.log('doAction...');
         	var oForm = ximpia.common.Form();
+        	console.log(obj.form);
         	var isValid = $("#" + obj.form).valid();
         	console.log('isValid: ' + isValid);
-        	$("#id_btPageMsg_img").xpLoadingSmallIcon();
+        	var objMap = {	page: 'Page', title: 'Title', popup: 'Popup'	};
+        	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon();
         	if (isValid == true) {
-        		createPopupMsgBar(obj);
-                	$("#id_btPopupMsg_img").xpLoadingSmallIcon('wait');
-        		$("#id_btPopupMsg_text").text('Waiting...');
+        		if (obj.viewType == 'page') {
+        			createPageMsgBar(obj);
+        		} else if (obj.viewType == 'title') {
+        			createTitleMsgBar(obj);
+        		}
+                	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
+        		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
         		// Set form values from data-xp and action
         		var attrs = getFormAttrs(obj.form)
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
@@ -162,16 +152,15 @@
         		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         	} else {
-			createPopupMsgBar(obj);
-			$("#id_btPopupMsg_img").xpLoadingSmallIcon('error');
-			$("#id_btPopupMsg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
-        	}        	
-        };
-        /*
-         * 
-         */
-        var doPopupAction = function(obj) {        	
-        };
+        		if (obj.viewType == 'page') {
+        			createPageMsgBar(obj);
+        		} else if (obj.viewType == 'title') {
+        			createTitleMsgBar(obj);
+        		}
+			$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('error');
+			$("#id_bt" + objMap[obj.viewType] + "Msg_text").text($("#id_" + obj.form + "_ERR_GEN_VALIDATION").attr('value'));
+        	}
+	};
         var methods = {
 		init : function( options ) {
 			/*
@@ -200,12 +189,22 @@
 					var idButton = $(element).attr('id').split('_comp')[0];
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
+					var idParent = $(element).parent().attr('id')
+					console.log('idParent: ' + idParent);
+					if (idParent == 'id_pageButton') {
+						attrs.viewType = 'page';
+					} else if (idParent == 'id_titleButton') {
+						attrs.viewType = 'title';
+					} else if (idParent == 'id_popupButton') {
+						attrs.viewType = 'popup';
+					}
+					console.log('attrs.viewType : ' + attrs.viewType);
 					var sStyle = "float: left; margin-top: 3px";
 					if (attrs.hasOwnProperty('align')) {
 						sStyle = "float: " + attrs.align + "; margin-top: 3px";
 					}
 					// form, action, actionData, type, icon, method, callback, clickStatus
-					var dataXp = "{form: '" + attrs.form + "', mode: '" + attrs.mode + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', action: '" + attrs.action + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "'}";
+					var dataXp = "{form: '" + attrs.form + "', mode: '" + attrs.mode + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', action: '" + attrs.action + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "', viewType: '" + attrs.viewType + "'}";
 					console.log('form :: dataXp : ' + dataXp);
 					// buttonIcon, btPop $buttonBefore
 					//<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>
@@ -245,31 +244,35 @@
 					});
 					// callback : We get method if defined. If none defined, will send undefined
 					var callback = undefined;
+					console.log('callback: ' + attrs.callback + ' ' +  settings.callbacks[attrs.callback]);
 					if (attrs.callback != '') {
-						callback = eval(attrs.callback);
+						callback = eval(settings.callbacks[attrs.callback]);
 					}
 					console.log('form :: bind callback : ' + attrs.callback);
 					// Bind options to the bindaction for all types of buttons
 					// callback, choose form callback or button callback
-					if (settings.modes[attrs.mode] == 'page') {
-						oForm.bindAction(	{	attrs: attrs, 
-										callback: callback, 
-										idActionComp: idButton,
-										isMsg: true,
-										idMsg: 'id_btPageMsg',
-										showPopUp: true,
-										destroyMethod: 'destroyPageMsgBar'
-									});
-					} else if (settings.modes[attrs.mode] == 'popup') {
-						oForm.bindAction(	{	attrs: attrs, 
-										callback: callback, 
-										idActionComp: idButton,
-										isMsg: true,
-										idMsg: 'id_btPopupMsg',
-										showPopUp: false,
-										destroyMethod: 'destroyPopupMsgBar'
-									});
-					}					
+					var obj = {	attrs: attrs, 
+							callback: callback, 
+							idActionComp: idButton};
+					if (attrs.mode == 'actionMsg') {
+						obj.isMsg = true;
+					} else if(attrs.mode == 'action') {
+						obj.isMsg = false;
+					}
+					if (attrs.viewType == 'popup') {
+						obj.idMsg = 'id_btPopupMsg';
+						obj.showPopup = false;
+						obj.destroyMethod = 'destroyPopupMsgBar';
+					} else if (attrs.viewType == 'page') {
+						obj.idMsg = 'id_btPageMsg';
+						obj.showPopup = true;
+						obj.destroyMethod = 'destroyPageMsgBar';
+					} else if (attrs.viewType == 'title') {
+						obj.idMsg = 'id_btPopupMsg';
+						obj.showPopup = true;
+						obj.destroyMethod = 'destroyTitleMsgBar';
+					}
+					oForm.bindAction( obj );		
 				}
 			}
 		},
@@ -283,16 +286,12 @@
 			attrs.element = element;
 			var actionType = attrs.mode;
 			console.log('actionType: ' + actionType);
-			if (actionType == 'pageActionMsg') {
-				doPageActionMsg(attrs);
+			if (actionType == 'actionMsg') {
+				doActionMsg(attrs);
+			} else if (actionType == 'action') {
+				doAction(attrs);
 			} else if (actionType == 'closePopup') {
 				doPopupClose(attrs);
-			} else if (actionType == 'popupActionMsg') {
-				doPopupActionMsg(attrs);
-			} else if (actionType == 'popupAction') {
-				doPopupAction(attrs);
-			} else if (actionType == 'pageActionPopUp') {
-				doPageActionPopUp(attrs);
 			}
 		},
 		disable: function() {
@@ -354,11 +353,30 @@
 				});				
 			}
 		},
+		createTitleBar: function() {
+			if ($("#id_btTitleMsg").length == 0) {
+				var htmlContent = "<div id=\"id_btTitleMsg\" class=\"btMsg\">";
+				htmlContent += "<div style=\"top: -5px; border: 0px solid; height: 25px; margin-top: 0px; padding: 0px; float: left\">";
+				htmlContent += "<img id=\"id_btTitleMsg_img\" src=\"http://localhost:8000/site_media/images/blank.png\" alt=\" \" class=\"AjaxButtonLoading\" style=\"margin-top: -6px\" />";
+				htmlContent += "<span id=\"id_btTitleMsg_text\">Waiting...</span>";
+				htmlContent += "</div>";
+				htmlContent += "<div id=\"id_btTitleMsg_close\" class=\"listFieldDel\" style=\"float: right; margin-right: 7px; margin-top: 5px\">X</div>";
+				htmlContent += "</div>\r\n";
+				$(this).before(htmlContent);
+				// Bind close page message bar
+				$("#id_btTitleMsg_close").click(function() {
+					$(this).xpObjButton('destroyTitleMsgBar');
+				});				
+			}
+		},
 		destroyPageMsgBar: function() {
 			$("#id_btPageMsg").remove();
 		},
 		destroyPopupMsgBar: function() {
 			$("#id_btPopupMsg").remove();
+		},
+		destroyTitleMsgBar: function() {
+			$("#id_btTitleMsg").remove();
 		}
         };
 		

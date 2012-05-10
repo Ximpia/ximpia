@@ -1,4 +1,5 @@
 import base64
+import types
 import simplejson as json
 from django.core import serializers as _s
 
@@ -47,10 +48,25 @@ class Form(object):
 	def encodeObjDict(dd):
 		"""Encode db instance dictionary into json"""
 		dictNew = {}
-		for key in dd:
+		keyList = dd.keys()
+		for key in keyList:
 			# Get json object, parse, serialize fields object
-			dictNew[key] = _s.serialize("json", [dd[key]])
+			if type(dd[key]) == types.ListType:
+				data = dd[key]
+			else:
+				data = [dd[key]]
+			dictNew[key] = _s.serialize("json", data)
 		return dictNew
+	
+	@staticmethod
+	def encodeObj(dataInstance):
+		"""Encode data instance"""
+		if type(dataInstance) == types.ListType:
+			data = dataInstance
+		else:
+			data = [dataInstance]
+		encodedData = _s.serialize("json", data)
+		return encodedData
 	
 	@staticmethod
 	def decodeArray(array):

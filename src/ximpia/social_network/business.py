@@ -202,14 +202,20 @@ class LoginView(CommonBusiness):
 		@param ctx: Context
 		@return: result"""
 		# Check if login:
-		print 'login :: viewDict: ', settings.viewDict
-		print 'login :: actionDict: ', settings.actionDict
 		print 'login...'
 		if self._ctx['user'].is_authenticated():
 			# login: context variable isLogin = True
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', True)
 			self._ctx[Ctx.JS_DATA].addAttr('userid', self._ctx['user'].pk)
 			# Include user_info, a dictionary with user environment data
+			viewName = 'home'
+			self._ctx[Ctx.FORM] = forms.LoginForm()
+			self._ctx[Ctx.VIEW_NAME_TARGET] = viewName
+			print 'ximpiaId: ', self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET)
+			self._putParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))
+			# Get implementation for view
+			home = HomeView(self._ctx)
+			home.showStatus()
 		else:
 			# no login: login form
 			self._ctx[Ctx.FORM] = forms.LoginForm()
@@ -249,6 +255,7 @@ class LoginAction(CommonBusiness):
 		self._dbUserSys = UserSysDAO(ctx)
 		self._dbXmlMessage = XmlMessageDAO(ctx)
 		self._dbUserDetail = UserDetailDAO(ctx)
+		self._dbUserSocial = UserSocialDAO(ctx)
 		self._dbParam = SNParamDAO(ctx)
 	
 	@ValidateFormDecorator(forms.LoginForm)
@@ -261,24 +268,37 @@ class LoginAction(CommonBusiness):
 		print 'doLogin...'
 		#self._f().d('ximpiaId')
 		print 'form: ', self._ctx[Ctx.FORM], self._f().d('ximpiaId')
-		user = self.authenticateUser(	userName = self._f().d('ximpiaId'), 
+		self._ctx[Ctx.USER] = self.authenticateUser(	userName = self._f().d('ximpiaId'), 
 						password = self._f().d('password'), 
 						errorName = 'wrongPassword'	)
 		self.isValid()
-		print 'user: ', user
-		#login(self._ctx[Ctx.RAW_REQUEST], user)
+		print 'user: ', self._ctx[Ctx.USER]
+		login(self._ctx[Ctx.RAW_REQUEST], self._ctx[Ctx.USER])
 		# Include login info
 		# Include user_info, a dictionary with user environment data
 		
 		# Context => viewNameSource, actionName, flowCode (inserted in context by WorkflowView)
 		#self._wf = WorkFlowBusiness(self._ctx)
 		#print 'Will insert into workflow : ximpiaId: ', user.username, self._ctx[Ctx.FLOW_CODE]
-		self._putParams(ximpiaId=user.username.encode(settings.DEFAULT_CHARSET))
+		self._putParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))
 		
 		#print self._wf.getFlowDataDict(self._ctx[], self._ctx[], self._ctx[Ctx.FLOW_CODE])
 		# How we get? viewNameSource, actionName to resolve view??? => Context
 		
-		# Workflow will take control, check that view home must be shown
+		# Workflow will take control, check that view home must be shown		
+		print 'Session: ', self._ctx['session']
+		print 'user: ', self._ctx[Ctx.USER]
+		print 'cookies: ', self._ctx['cookies']
+		if self._ctx['cookies'].has_key('userSocialName'):
+			userSocialName = self._ctx['cookies']['userSocialName']
+			print 'COOKIE :: userSocialName: ', userSocialName
+		else:
+			userSocialName = K.USER
+			self._setCookie('userSocialName', userSocialName)
+		print 'userSocialName: ', userSocialName
+		self._ctx['userSocial'] = self._dbUserSocial.get(user=self._ctx[Ctx.USER], name=userSocialName)
+		self._ctx['session']['userSocial'] = self._ctx['userSocial']
+		print 'userSocial: ', self._ctx['userSocial']
 	
 	@ValidateFormDecorator(forms.PasswordReminderForm)
 	@DoBusinessDecorator(pageError=True)
@@ -324,13 +344,13 @@ class HomeView(CommonBusiness):
 	def __init__(self, ctx):
 		super(HomeView, self).__init__(ctx)
 	
-	@DoBusinessDecorator(form = forms.StatusForm)
+	@DoBusinessDecorator(form = forms.HomeForm)
 	def showStatus(self):
 		"""Status home view"""
 		print 'showStatus...'
 		print 'I do the status and home view...'
 		dd = self._getParams('ximpiaId')
-		print 'values: ', dd
+		print 'showStatus :: param values: ', dd
 
 class ContactBusiness(CommonBusiness):
 

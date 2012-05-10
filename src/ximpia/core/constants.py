@@ -12,6 +12,11 @@ class CoreConstants(object):
 	UPDATE = 'update'
 	DELETE = 'delete'
 	WF = 'wf'
+	ZONE = 'zone'
+	GROUP = 'group'
+	MENU_NAME = 'menuName'
+	VIEW = 'view'
+	SEP = 'sep'
 
 class CoreKParam(object):
 	COMMTYPE = 'COMMTYPE'

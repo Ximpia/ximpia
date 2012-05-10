@@ -83,7 +83,7 @@ class Url:
 		return urlQuote
 	def unquoteSimple(self, urlEncoded):
 		urlUni = unicode(urllib.unquote(urlEncoded),"utf-8")
-		return url
+		return urlUni
 
 	def quotePath(self, urlUni, encoding='utf-8'):
 		"""Quote an url in unicode, coding using urllib the host name and path.
@@ -1041,3 +1041,22 @@ class Score:
 		else:
 			score = 0
 		return score
+
+class Index (object):
+	"""Doc."""
+	@staticmethod
+	def parseText(text):
+		"""Parse text. Spaces will be word separator, as well as "-", "_", ".". Returns list of words 
+		@param text: Text to index
+		@return: wordList : List of words"""
+		# TODO: Try to integrate B+ code for the downgrade characters and filters for words
+		text = re.sub('[-_.]', ' ', text.lower()).strip()
+		list1 = text.split()
+		wordNew = ''
+		listFinal = []
+		for word in list1:
+			wordNew = word.strip()
+			wordNew = re.sub('[,]', '', wordNew).strip()
+			listFinal.append(wordNew)
+		wordList = listFinal
+		return wordList

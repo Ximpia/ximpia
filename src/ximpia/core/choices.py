@@ -84,3 +84,11 @@ class Choices(object):
 		('float', _('Float')),
 		('date', _('Date')),
 		('time', _('Time')))
+	# MENU_ZONE
+	MENU_ZONE_SYS = 'sys'
+	MENU_ZONE_MAIN = 'main'
+	MENU_ZONE_VIEW = 'view'
+	MENU_ZONES = (
+		(MENU_ZONE_SYS, _('System')),
+		(MENU_ZONE_MAIN, _('Main')),
+		(MENU_ZONE_VIEW, _('View')))

@@ -2,8 +2,8 @@ import traceback
 
 from django.utils.translation import ugettext as _
 from ximpia.core.models import XpMsgException, CoreParam, Application, UserSocial, Action, ApplicationAccess, CoreXmlMessage
-from ximpia.core.models import Menu, MenuParam, View, ViewMenu, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
-from ximpia.core.models import WorkflowView 
+from ximpia.core.models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
+from ximpia.core.models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord
 
 class CommonDAO(object):	
 
@@ -109,11 +109,11 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
 		return data	
 	
-	def search(self, **qsArgs):
+	def search(self, *qsTuple, **qsArgs):
 		"""Search model using filter. Support for related objects as FK to model"""
 		try:
 			dbObj = self._processRelated()
-			filterList = dbObj.filter(**qsArgs)
+			filterList = dbObj.filter(*qsTuple, **qsArgs)
 		except Exception as e:
 			raise XpMsgException(e, _('Error in search operation ') + '' + _(' in model ') + str(self._model))
 		return filterList
@@ -140,16 +140,19 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in get or create object ') + str(id) + _(' in model ') + str(self._model))
 		return xpTuple
 	
-	def deleteById(self, xpId):
+	def deleteById(self, xpId, real=False):
 		"""Delete model object by id
 		@param id: Object id
 		@return: Model object"""
 		try:
-			xpList = self._model.objects.filter(id=xpId)
-			xpObject = xpList[0]
-			xpList.delete()
+			xpObject = self._model.objects.get(id=xpId)
+			if real == False:
+				xpObject.isDeleted = True
+				xpObject.save()
+			else:
+				xpObject.delete()
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object by id ') + str(id))
+			raise XpMsgException(e, _('Error delete object by id ') + str(xpId))
 		return xpObject
 	
 	def filterData(self, **argsDict):
@@ -246,6 +249,11 @@ class MenuDAO(CommonDAO):
 		super(MenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Menu
 
+class ViewMenuDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ViewMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = ViewMenu
+
 class MenuParamDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(MenuParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
@@ -255,11 +263,6 @@ class ViewDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ViewDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = View
-
-class ViewMenuDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ViewMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = ViewMenu
 
 class WorkflowDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
@@ -290,3 +293,23 @@ class WorkflowViewDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(WorkflowViewDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = WorkflowView
+
+class SearchIndexDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SearchIndexDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SearchIndex
+
+class SearchIndexParamDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SearchIndexParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SearchIndexParam
+
+class WordDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(WordDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = Word
+
+class SearchIndexWordDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(SearchIndexWordDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = SearchIndexWord

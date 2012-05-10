@@ -90,7 +90,7 @@ class CoreXmlMessage(BaseModel):
 
 class Application(BaseModel):
 	"""Applications"""
-	code = models.CharField(max_length=20,
+	code = models.CharField(max_length=10,
 		verbose_name = _('Code'), help_text = _('Application code'))
 	name = models.CharField(max_length=30,
 		verbose_name = _('Name'), help_text = _('Application name'))
@@ -104,6 +104,8 @@ class Application(BaseModel):
 		verbose_name = _('Subscription'), help_text = _('Is this application subscription based?'))
 	private = models.BooleanField(default=False, 
 		verbose_name = _('Private'), help_text = _('Is this application private to a list of groups?'))
+	users = models.ManyToManyField('core.UserSocial', through='core.ApplicationAccess', related_name='app_access', null=True, blank=True,
+			verbose_name=_('Users'), help_text=_('Users that have access to the application'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -157,23 +159,131 @@ class UserSocial(BaseModel):
 		verbose_name_plural = "Users"
 		unique_together = ("user", "name")
 
+class SearchIndex(BaseModel):
+	"""Index"""
+	application = models.ForeignKey('core.Application',
+			verbose_name=_('Application'), help_text=_('Application for seraching'))
+	view = models.ForeignKey('core.View', null=True, blank=True, related_name='index_view',
+			verbose_name=_('View'), help_text=_('View'))
+	action = models.ForeignKey('core.Action', null=True, blank=True, related_name='index_action',
+			verbose_name=_('Action'), help_text=_('Action'))
+	title = models.CharField(max_length=70,
+			verbose_name=_('Title'), help_text=_('Title'))
+	words = models.ManyToManyField('core.Word', through='core.SearchIndexWord', related_name='index_words', 
+			verbose_name=_('Index Parameters'), help_text=_('Parameters used in the search of content for views and actions'))
+	params = models.ManyToManyField('core.Param', through='core.SearchIndexParam', related_name='index_params', null=True, blank=True,
+			verbose_name=_('Index Parameters'), help_text=_('Parameters used in the search of content for views and actions'))
+	def __unicode__(self):
+		return str(self.title)
+	class Meta:
+		db_table = 'CORE_INDEX'
+		verbose_name = 'Index'
+		verbose_name_plural = "Index"
+		unique_together = ("view", "action")
+
+class SearchIndexWord(BaseModel):
+	"""Index"""
+	index = models.ForeignKey('core.SearchIndex',
+			verbose_name=_('Index'), help_text=_('Index having application, view, action, title and parameters'))
+	word = models.ForeignKey('core.Word',
+			verbose_name=_('Word'), help_text=_('Word'))
+	def __unicode__(self):
+		return str(self.index) + '-' + str(self.word)
+	class Meta:
+		db_table = 'CORE_INDEX_WORD'
+		verbose_name = 'Index Word'
+		verbose_name_plural = "Index Words"
+
+class Word(BaseModel):
+	"""Word"""
+	word = models.CharField(max_length=20, db_index=True, 
+			verbose_name=_('Word'), help_text=_('Word'))
+	def __unicode__(self):
+		return str(self.word)
+	class Meta:
+		db_table = 'CORE_WORD'
+		verbose_name = 'Word'
+		verbose_name_plural = "Words"
+
+class SearchIndexParam(BaseModel):
+	"""Index Parameters"""
+	searchIndex = models.ForeignKey('core.SearchIndex',
+			verbose_name=_('Search Index'), help_text=_('Search Index'))
+	name = models.ForeignKey('core.Param', 
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, 
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return str(self.name) + '-' + str(self.value)
+	class Meta:
+		db_table = 'CORE_INDEX_PARAM'
+		verbose_name = 'Index Parameters'
+		verbose_name_plural = "Index Parameters"
+
 class Menu(BaseModel):
 	"""Menu"""
-	name = models.CharField(max_length=10,
+	application = models.ForeignKey('core.Application',
+			verbose_name=_('Application'), help_text=_('Application for the menu'))
+	name = models.CharField(max_length=10, unique=True, 
 			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
 	titleShort = models.CharField(max_length=12,
 			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
 	title = models.CharField(max_length=30,
 			verbose_name=_('Menu Title'), help_text=_('Title for menu item'))
-	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreKParam.ICON})
-	parent = models.ForeignKey('self', null=True, blank=True,
-				verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
+	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreKParam.ICON},
+			verbose_name=_('Icon'), help_text=_('Icon'))
+	view = models.ForeignKey('core.View', null=True, blank=True, related_name='menu_view',
+			verbose_name=_('View'), help_text=_('View'))
+	action = models.ForeignKey('core.Action', related_name='menu_action', null=True, blank=True,  
+			verbose_name=_('Action'), help_text=_('Action to process when click on menu item'))
+	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
+			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
-		return str(self.title)
+		return str(self.titleShort)
 	class Meta:
 		db_table = 'CORE_MENU'
 		verbose_name = 'Menu'
 		verbose_name_plural = "Menus"
+
+class ViewMenu(BaseModel):
+	"""Menus associated to a view"""
+	parent = models.ForeignKey('self', null=True, blank=True,
+			verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
+	view = models.ForeignKey('core.View',
+			verbose_name=_('View'), help_text=_('View'))
+	menu = models.ForeignKey('core.Menu',
+			verbose_name=_('Menu'), help_text=_('Menu'))
+	order = models.IntegerField(default=10,
+			verbose_name=_('Order'), help_text=_('Order for the menu item. Start with 10, increment by 10'))
+	separator = models.BooleanField(default=False,
+			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
+	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES,
+				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
+	def __unicode__(self):
+		return str(self.view) + '-' + str(self.menu)
+	class Meta:
+		db_table = 'CORE_VIEW_MENU'
+		verbose_name = 'View Menu'
+		verbose_name_plural = "Views for Menus"
+
+class MenuParam(BaseModel):
+	"""Parameters or attributes feeded to views"""
+	menu = models.ForeignKey('core.Menu',
+			verbose_name=_('Menu'), help_text=_('Menu'))
+	name = models.ForeignKey('core.Param', 
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, 
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return str(self.menu) + '-' + str(self.name)
+	class Meta:
+		db_table = 'CORE_MENU_PARAM'
+		verbose_name = 'Menu Param'
+		verbose_name_plural = "Menu Params"
 
 class View(BaseModel):
 	"""View"""
@@ -208,38 +318,6 @@ class Action(BaseModel):
 		verbose_name = 'Action'
 		verbose_name_plural = "Action"
 		unique_together = ("application", "name")
-
-class ViewMenu(BaseModel):
-	"""Menus associated to a view"""
-	view = models.ForeignKey('core.View',
-			verbose_name=_('View'), help_text=_('View'))
-	menu = models.ForeignKey('core.Menu',
-			verbose_name=_('Menu'), help_text=_('Menu'))
-	order = models.IntegerField(default=10, 
-			verbose_name=_('Order'), help_text=_('Order for the menu item. Start with 10, increment by 10'))
-	separator = models.BooleanField(default=False,
-			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
-	def __unicode__(self):
-		return str(self.view) + '-' + str(self.menu)
-	class Meta:
-		db_table = 'CORE_VIEW_MENU'
-		verbose_name = 'View Menu'
-		verbose_name_plural = "Views for Menus"
-
-class MenuParam(BaseModel):
-	"""Parameters or attributes feeded to views"""
-	menu = models.ForeignKey('core.Menu',
-			verbose_name=_('Menu'), help_text=_('Menu')) 
-	name = models.CharField(max_length=15,
-			verbose_name=_('Param Name'), help_text=_('Name for the parameter or attribute'))
-	value = models.CharField(max_length=20,
-			verbose_name=_('Param Value'), help_text=_('Value for the parameter'))
-	def __unicode__(self):
-		return str(self.menu) + '-' + str(self.name)
-	class Meta:
-		db_table = 'CORE_MENU_PARAM'
-		verbose_name = 'Menu Param'
-		verbose_name_plural = "Menu Params"
 
 class Workflow(BaseModel):
 	"""WorkFlow"""
@@ -532,6 +610,7 @@ class Context(object):
 	FLOW_CODE = 'flowCode'
 	FLOW_DATA = 'flowData'
 	IS_FLOW = 'isFlow'
+	SET_COOKIES = 'set_cookies'
 	def __init__(self, **args):
 		if args.has_key('app'):
 			self._app = args['app']
@@ -557,8 +636,8 @@ class Context(object):
 				ctx['request'] = REQ
 				ctx['raw_request'] = request
 				ctx['get'] = request.GET
-				ctx['socialChannel'] = ''
-				ctx['userSocial'] = ''
+				#ctx['socialChannel'] = ''
+				ctx['userSocial'] = None
 				ctx['auth'] = {}
 				ctx['form'] = None
 				ctx['forms'] = {}
@@ -570,9 +649,15 @@ class Context(object):
 				ctx[self.FLOW_DATA] = ''
 				ctx[self.IS_FLOW] = False
 				ctx[self.JS_DATA] = ''
-				if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
-					ctx['socialChannel'] = request.REQUEST['socialChannel']
-					ctx['userSocial'] = request.REQUEST['userSocial']
+				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
+				if request.session.has_key('userSocial') and request.user.is_authenticated():
+					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
+					ctx['userSocial'] = request.REQUEST['userSocial']"""
+					# TODO: Get this from session
+					ctx['userSocial'] = request.session['userSocial']
+					print 'Context :: userSocial: ', ctx['userSocial']
+				# Set cookies
+				ctx[self.SET_COOKIES] = []
 				argsDict['ctx'] = ctx
 				"""print '** ctx **'
 				print ctx.keys()"""
