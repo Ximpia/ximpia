@@ -11,11 +11,18 @@ ximpia.constants = ximpia.constants || {};
  * Main Constants
  */
 ximpia.constants.main = {};
-ximpia.constants.main.MY_CONSTANT = 34;
+ximpia.constants.main.DEBUG_INFO = 'info';
+ximpia.constants.main.DEBUG_WARN = 'warn';
+ximpia.constants.main.DEBUG_ERROR = 'error';
+ximpia.constants.main.DEBUG_DEBUG = 'debug';
+ximpia.constants.main.DEBUG = [	ximpia.constants.main.DEBUG_DEBUG, 
+				ximpia.constants.main.DEBUG_INFO,
+				ximpia.constants.main.DEBUG_ERROR,
+				ximpia.constants.main.DEBUG_WARN];
 
 ximpia.common.List = {};
 ximpia.common.List.getValue = (function(id, key) {
-	console.log('value : ' + $("#" + id).attr('value'));
+	ximpia.console.log('value : ' + $("#" + id).attr('value'));
 	var array = eval($("#" + id).attr('value'));
 	var value = '';
 	for (var i=0; i<array.length; i++) {
@@ -37,15 +44,30 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 	return value;
 });
 
+ximpia.console = {};
+/*
+ * For log for levels: debug, info, warn, errors. If no level is informed, debug is default.
+ * If level is same as debug level defined in constant ximpia.constants.main.DEBUG, we log
+ * logData
+ */
+ximpia.console.log = (function(logData, level) {
+	if (typeof(level) == 'undefined') {
+		level = ximpia.constants.main.DEBUG_DEBUG;
+	}
+	if (ximpia.common.ArrayUtil.hasKey(ximpia.constants.main.DEBUG, level)) {
+		console.log(logData);
+	}	
+});
+
 ximpia.common.ArrayUtil = {};
 /*
  * Checks if array has key
  */
 ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 	var exists = false;
-	//console.log(JSON.stringify(array));
+	//ximpia.console.log(JSON.stringify(array));
 	for (key in array) {
-		//console.log(key + ' ' + array[key] + ' ' + keyTarget);
+		//ximpia.console.log(key + ' ' + array[key] + ' ' + keyTarget);
 		if (array[key] == keyTarget) {
 			exists = true;
 		}
@@ -69,7 +91,7 @@ ximpia.common.ClassType10 = function() {
 			_doSomething: (function() {
 				var a = 3;
 				alert('No soy lo que crees');
-				console.log('Holaaa')
+				ximpia.console.log('Holaaa')
 			})
 		},
 		pub: {
@@ -78,7 +100,7 @@ ximpia.common.ClassType10 = function() {
 				alert('myMethod!!!' + _attr.priv.var1);
 				var d = 2;
 				var j = "Hola";
-				console.log('myMethod1...');
+				ximpia.console.log('myMethod1...');
 				_attr.priv._doSomething();
 			})
 		}
@@ -123,12 +145,12 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         var iHeight = null;
         var isHidden = false;
         functionShow = null;
-        console.log('Will do...');
+        ximpia.console.log('Will do...');
         //var htmlPage = "<!-- START POPUP MESSAGE --><div class=\"Pops\"><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div><!-- END POPUP MESSAGE -->";
-        //console.log(htmlPage);
+        //ximpia.console.log(htmlPage);
         //$("body").before(htmlPage);
-        console.log('messageOptions...');
-        console.log(messageOptions);
+        ximpia.console.log('messageOptions...');
+        ximpia.console.log(messageOptions);
         if (messageOptions.title) sTitle = messageOptions.title;
         if (messageOptions.message) sMessage = messageOptions.message;
         if (messageOptions.buttons) buttons = messageOptions.buttons;
@@ -191,9 +213,9 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
         $("div.MsgText").html(sMessage);
         //$("#PopMsgWrapper .MsgText").html(sMessage);
         //ButtonList = sButtons.split(',');
-        //console.log('sButtons: ' + sButtons);
-        //console.log('ButtonList: ' + ButtonList);
-        console.log('buttons: ' + buttons);
+        //ximpia.console.log('sButtons: ' + sButtons);
+        //ximpia.console.log('ButtonList: ' + ButtonList);
+        ximpia.console.log('buttons: ' + buttons);
         $("div.MsgButtons").text('');
         $("div.MsgButtons").append(buttons);
         /*for (var i=0; i<ButtonList.length; i++) {
@@ -279,7 +301,7 @@ ximpia.common.Window.showPopUp = (function(key) {
         var sMessage = '';
         var iHeight = null;
         functionName = null;
-        console.log('sId : ' + sId);
+        ximpia.console.log('sId : ' + sId);
         if (sId.length != 0) {
             var popUpData = eval($("#" + sId).attr('value'));
             sTitle = popUpData[0];
@@ -407,10 +429,11 @@ ximpia.common.Path.getBusiness = (function() {
 	return path
 })
 /*
+ * Get template for popups and views
  * 
  */
-ximpia.common.Path.getTemplate = (function(app, name) {
-	return ximpia.common.Path.getSiteMedia() + 'html/apps/' + app + '/popup/' + name + '.html';
+ximpia.common.Path.getTemplate = (function(app, name, tmplType) {
+	return ximpia.common.Path.getSiteMedia() + 'html/apps/' + app + '/' + tmplType + '/' + name + '.html';
 });
 
 ximpia.common.Browser = {};
@@ -471,10 +494,17 @@ ximpia.common.Browser.getObject = (function(keyName) {
 	data = JSON.parse(dataS);
 	return data
 })
+/**
+ * Delete key from session storage
+ */
+ximpia.common.Browser.deleteObject = (function(keyName) {
+	sessionStorage.removeItem(keyName);
+});
 /*
  * Get form data from sessionStorage
  */
 ximpia.common.Browser.getFormDataFromSession = (function(xpForm) {
+	//ximpia.console.log('getFormDataFromSession :: xpForm: ' + xpForm);
 	var fields = xpForm.split('.');
 	var data = JSON.parse(sessionStorage.getItem(fields[0]))['response'][fields[1]];
 	return data
@@ -504,6 +534,19 @@ ximpia.common.Browser.setSessionPopUp = (function(data) {
 	sessionStorage.setItem('xpData-popup', JSON.stringify(data));
 });
 
+ximpia.common.Session = {};
+/**
+ * Get object from session
+ */
+ximpia.common.Session.get = (function( keyName ) {
+	var sessionObj = ximpia.common.Browser.getObject('session')
+	var value = '';
+	if (sessionObj.hasOwnProperty(keyName)) {
+		value = sessionObj[keyName];
+	}
+	return value;
+});
+
 ximpia.common.BasicTags = function() {
 	var _attr = {
 		priv: {
@@ -511,7 +554,7 @@ ximpia.common.BasicTags = function() {
 			 * header tag
 			 */
 			head: function() {
-				console.log('head...');
+				ximpia.console.log('head...');
 				$.metadata.setType("attr", "data-xp");
 				var htmlI = $("head").html();
 				var sm = ximpia.common.Path.getSiteMedia();
@@ -530,7 +573,7 @@ ximpia.common.BasicTags = function() {
 			 * header tag
 			 */
 			header: function() {
-				console.log('header...');
+				ximpia.console.log('header...');
 				/**
 				 * <div id="Header" >
 <div id="Logo">
@@ -553,7 +596,7 @@ ximpia.common.BasicTags = function() {
 				var htmlI = $("header").html();
 				var sm = ximpia.common.Path.getSiteMedia();
 				var contentLength = $("header div").length;
-				console.log('contentLength : ' + contentLength);
+				ximpia.console.log('contentLength : ' + contentLength);
 				if (contentLength < 1) {
 					htmlI = "<div id=\"Header\" >";
 					htmlI += "<div id=\"Logo\">";
@@ -578,7 +621,7 @@ ximpia.common.BasicTags = function() {
 			 * footer tag
 			 */
 			footer: function() {
-				console.log('footer...');
+				ximpia.console.log('footer...');
 				/**
 				 * <div id="id_footerContent">
 <div id="id_footerText">
@@ -665,7 +708,7 @@ ximpia.common.Form = function() {
 			 */
 			bindAction: function(obj) {
 				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
-				//console.log('Submit form: ' + $("#" + obj.formId).val());
+				//ximpia.console.log('Submit form: ' + $("#" + obj.formId).val());
 				var idOkMsg = '';
 				var okMsg = '';
 				var doMsgError = false;
@@ -674,8 +717,8 @@ ximpia.common.Form = function() {
                 				$(form).ajaxSubmit({
                     					dataType: 'json',
                     					success: function(response, status) {
-                    						console.log('suscess');
-                    						console.log(response);
+                    						ximpia.console.log('suscess');
+                    						ximpia.console.log(response);
                         					// Set action into session
                         					ximpia.common.Browser.setSessionAction(response);
                         					var responseMap = eval(response);
@@ -683,7 +726,7 @@ ximpia.common.Form = function() {
                         					if (statusCode.indexOf('.') != -1) {
                             						statusCode = statusCode.split('.')[0]
                         					}
-                        					console.log('form :: statusCode : ' + statusCode);
+                        					ximpia.console.log('form :: statusCode : ' + statusCode);
                         					if (statusCode == 'OK') {
                         						if (obj.isMsg == true) {
                         							$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
@@ -691,17 +734,59 @@ ximpia.common.Form = function() {
                         							$("#" + obj.idMsg + "_text").text(okMsg);
                         						} else {
                         							$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+                        							// Get template
+                        							ximpia.console.log(obj.attrs);
+                        							var tmplPath = ximpia.common.PageAjax.getTemplatePath(
+                        								{	app: responseMap['response']['app'],
+                        									name: responseMap['response']['view'],
+                        									viewType: obj.attrs.viewType}	);
+										ximpia.console.log('tmplPath: ' + tmplPath)
+										$.get(tmplPath, function(data) {
+											// Insert title
+											$('#id_sectionTitle').html($(data).filter('#id_sectionTitle').html());
+                        								// Insert section content into DOM
+                        								//$('#id_content').html($(data).filter('#id_data').find('#id_content').html());
+                        								$('#id_content').html($(data).filter('#id_content').html());
+                        								// Insert button section into DOM
+                        								$('#id_sectionButton').html($(data).filter('#id_sectionButton').html());
+                        								// Render template
+                        								ximpia.common.PageAjax.doFormsRender( {viewName: responseMap['response']['view'], data: response} );
+                        								ximpia.common.PageAjax.positionBars();
+                        								// Do menus
+                        								// Update session data into SessionStorage
+                        								if (responseMap['response']['isLogin'] == true) {
+                        									ximpia.common.Browser.setObject('session', responseMap['response']['session']);
+                        								}
+                        								// Process login and logout layout changes
+				                        				if (responseMap['response']['view'] == 'home') {
+				                        					// Enable authen menu
+				                        					// Disable normal menu
+				                        					if ($('#id_header').css('z-index') != '0') {
+				                        						$('#id_header').css('z-index', '0');
+				                        						$('#id_header_menu').css('z-index', '100');
+				                        					}
+				                        				} else if (responseMap['response']['view'] == 'logout') {
+				                        					// Disbale authen menu
+				                        					// Enable normal menu
+				                        					if ($('#id_header_menu').css('z-index') != '0') {
+				                        						$('#id_header').css('z-index', '100');
+				                        						$('#id_header_menu').css('z-index', '0');
+				                        					}
+				                        				}
+										}).error(function(jqXHR, textStatus, errorThrown) {
+											ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
+										});
                         						}
                             						// Put all fields inside form valid that are now errors
                             						$(".error").addClass('valid').removeClass("error");                            						
-                            						console.log('clickStatus: ' + obj.attrs.clickStatus);
+                            						ximpia.console.log('clickStatus: ' + obj.attrs.clickStatus);
                             						if (typeof obj.attrs.clickStatus != 'undefined' && obj.attrs.clickStatus == 'disable') {
-                            							//console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
+                            							//ximpia.console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
                             							$("#" + obj.idActionComp).xpObjButton('disable');					
                             						}
                             						// Callback
                             						if (typeof obj.callback != 'undefined') {
-                            							//console.log('form :: callback : ' + obj.callback);
+                            							//ximpia.console.log('form :: callback : ' + obj.callback);
 	                            						obj.callback();
                             						}
                         					} else {
@@ -709,13 +794,13 @@ ximpia.common.Form = function() {
                         						// Can be associated to fields or not
                             						// Integrate showMessage, popUp, etc...
                             						var list = responseMap['errors'];
-                            						console.log('list errors...');
-                            						console.log(list);
+                            						ximpia.console.log('list errors...');
+                            						ximpia.console.log(list);
                             						if (list.length > 0) {
                             							doMsgError = list[0][2]
                             						}
-                            						console.log('doMsgError: ' + doMsgError);
-                            						console.log('isMsg: ' + obj.isMsg);
+                            						ximpia.console.log('doMsgError: ' + doMsgError);
+                            						ximpia.console.log('isMsg: ' + obj.isMsg);
                             						if (doMsgError == true) {
                             							if (obj.isMsg == true) {
                         								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
@@ -724,7 +809,7 @@ ximpia.common.Form = function() {
                             								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                             							}
                             						} else {
-                            							console.log('form :: errors: ' + list);
+                            							ximpia.console.log('form :: errors: ' + list);
                             							if (obj.showPopUp == true) {
                             								message = '<ul>'
                             								var errorName = "";
@@ -732,14 +817,14 @@ ximpia.common.Form = function() {
                             								for (var i=0; i<list.length; i++) {
 		                                						errorId = list[i][0];
                                 								errorName = $("label[for='" + errorId + "']").text();
-                                								console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
+                                								ximpia.console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
                                 								var errorMessage = list[i][1];
                                 								$("#" + errorId).removeClass("valid");
                                 								$("#" + errorId).addClass("error");
                                 								message = message + '<li><b>' + errorName + '</b> : ' + errorMessage + '</li>';
                             								}
                             								message = message + '</ul>';
-                            								console.log(message);
+                            								ximpia.console.log(message);
                             								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                             								// Show error Message in pop up
                         								$('body').xpObjPopUp({	title: 'Errors Found',
@@ -752,7 +837,7 @@ ximpia.common.Form = function() {
                         					}
                     					},
                     					error: function (data, status, e) {
-                        					console.log(data + ' ' + status + ' ' + e);
+                        					ximpia.console.log(data + ' ' + status + ' ' + e);
                         					var errorMsg = 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks'; 
                         					if (obj.showPopUp == true) {
                         						// All have a waiting message
@@ -771,7 +856,7 @@ ximpia.common.Form = function() {
                     				});
 					},
             				errorPlacement: function(error, element) {
-            					console.log('error placement...');
+            					ximpia.console.log('error placement...');
 	                			element.next("img table").after(error);
             				}
 				});
@@ -797,7 +882,7 @@ ximpia.common.Form = function() {
                         			if (statusCode.indexOf('.') != -1) {
                             				statusCode = statusCode.split('.')[0]
                         			}
-                        			console.log('statusCode : ' + statusCode);
+                        			ximpia.console.log('statusCode : ' + statusCode);
                         			if (statusCode == 'OK') {
                             				$("#" + idImg).xpLoadingSmallIcon('ok');
                             				$("#" + idTxt).text($("#id_msg_ok").attr('value'));
@@ -825,7 +910,7 @@ ximpia.common.Form = function() {
                                 				//var errorId = list[i][0];
                                 				errorId = list[i][0];
                                 				errorName = $("label[for='" + errorId + "']").text();
-                                				console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
+                                				ximpia.console.log('errorName : ' + errorName + ' errorId: ' + errorId); 
                                 				var errorMessage = list[i][1];
                                 				//alert(errorId);
                                 				$("#" + errorId).removeClass("valid");
@@ -842,7 +927,7 @@ ximpia.common.Form = function() {
                     			},
                     			error: function (data, status, e) {
                         			//alert(data + ' ' + status + ' ' + e);
-                        			console.log(data + ' ' + status + ' ' + e);
+                        			ximpia.console.log(data + ' ' + status + ' ' + e);
                         			$("#" + idImg).xpLoadingSmallIcon('errorWithPopUp');
                         			ximpia.common.Window.showPopUp({
                             				title: 'System Error',
@@ -899,7 +984,7 @@ ximpia.common.Form.doRender = (function(element, reRender) {
 	if (typeof $(element).attr('data-xp-render') != 'undefined') {
 		isRender = $(element).attr('data-xp-render');
 	}
-	//console.log('isRender: ', isRender);
+	//ximpia.console.log('isRender: ', isRender);
 	var doRender = false; 
 	if (isRender == false || reRender == true) {
 		doRender = true;
@@ -1052,16 +1137,16 @@ ximpia.common.PageAjax = function() {
 	var _attr = {
 		priv: {
 			callback : null,
-			path: "",
+			path: ximpia.common.Path.getBusiness(),
 			formId: "",
 			sectionId: "",
 			verbose: false,
 			data: {},
 			formData: {},
-			doRenders: (function(xpForm) {
-				console.log('xpForm: ' + xpForm);
+			/*doRenders: (function(xpForm) {
+				ximpia.console.log('xpForm: ' + xpForm);
 				var formId = xpForm.split('.')[1];
-				//console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
+				//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
 				$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
 				$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
 				$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
@@ -1074,25 +1159,25 @@ ximpia.common.PageAjax = function() {
 				$("[data-xp-type='link']").xpObjLink('render');
 				_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
 				//_attr.priv.doLocal();
-			}),
+			}),*/
 			/*
 			 * Process Google maps local
 			 */
 			doLocal: (function() {
-				//console.log($(".gmaps"));
+				//ximpia.console.log($(".gmaps"));
 				/*$(".gmaps").each(function() {	
 				});*/
-				console.log('***************************************');
-				console.log(typeof $(".gmaps"));
-				console.log($(".gmaps").length);
+				ximpia.console.log('***************************************');
+				ximpia.console.log(typeof $(".gmaps"));
+				ximpia.console.log($(".gmaps").length);
 				var values = $(".gmaps");
 				var cityList = [];
 				var countryList = [];
 				$.metadata.setType("attr", "data-xp");
 				var metaObj = {};
 				for (var i=0; i<values.length; i++) {
-					console.log(values[i]);
-					console.log(values[i].id);
+					ximpia.console.log(values[i]);
+					ximpia.console.log(values[i].id);
 					metaObj = $("#" + values[i].id).metadata();
 					if (metaObj.gmaps == 'city') {
 						cityList.push(values[i].id)
@@ -1100,36 +1185,36 @@ ximpia.common.PageAjax = function() {
 						countryList.push(values[i].id)
 					}
 				}
-				console.log('cityList');
-				console.log(cityList);
-				console.log('countryList');
-				console.log(countryList);
+				ximpia.console.log('cityList');
+				ximpia.console.log(cityList);
+				ximpia.console.log('countryList');
+				ximpia.console.log(countryList);
 				if (cityList.length != 0 || countryList.length != 0) {
 					var oGoogleMaps = ximpia.common.GoogleMaps();
 					oGoogleMaps.insertCityCountry(cityList, countryList);
 				}
-			}),
+			})
 			/**
 	 		* Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
 	 		* and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
 	 		* the message of nor validating.
 	 		*/
-			doShowPasswordStrength: (function(userId, passwordId) {
+			/**doShowPasswordStrength: (function(userId, passwordId) {
 	        		// Password Strength
 		        	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
 		        	// TODO: Include validation of strength when clicking on signup button or buttons		        	
 		        	$('.passStrength').passStrengthener({
 					userid: "#" + userId
 					/*strengthCallback:function(score, strength) {
-						console.log('strength : ' + strength)
+						ximpia.console.log('strength : ' + strength)
 						if(strength == 'good' || strength == 'strong') {
 							$("#" + submitId).xpPageButton('enable', ximpia.common.Form().doSubmitButton);
 						} else {
 							$("#" + submitId).xpPageButton('disable');
 						}
-					}*/
+					}
 				});
-			})			
+			})*/
 		},
 		pub: {
 			init: function(obj) {
@@ -1143,17 +1228,17 @@ ximpia.common.PageAjax = function() {
 			doFormOld: function() {
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
-						console.log(data)
+						ximpia.console.log(data)
 					}
-					//console.log(data)
+					//ximpia.console.log(data)
 					// forms
 					var dataForm = data.response[_attr.priv.formId];
-					//console.log('dataForm : ' + dataForm);
+					//ximpia.console.log('dataForm : ' + dataForm);
 					for (var key in dataForm) {
 						var objId = $("#id_" + key).attr('id');
 						var keyAttrs = dataForm[key];
 						var element = keyAttrs.element;
-						//console.log(key + ' : ' + keyAttrs.value );
+						//ximpia.console.log(key + ' : ' + keyAttrs.value );
 						if (element == 'input') {
 							if (objId == null && keyAttrs.type == "hidden") {
 								$("#id_variables").append("<input type=\"hidden\" id=\"id_" + key + "\" name=\"" + key + "\" value=\"\" />");
@@ -1164,10 +1249,10 @@ ximpia.common.PageAjax = function() {
 										if (keyAttr == 'label' && keyAttrs.label != '') {
 											$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
 										} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
-											//console.log('help_text : ' + keyAttrs.help_text);
+											//ximpia.console.log('help_text : ' + keyAttrs.help_text);
 											$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
 										} else {
-											//console.log('attr || ' + keyAttr + ' : ' + keyAttrs[keyAttr]);
+											//ximpia.console.log('attr || ' + keyAttr + ' : ' + keyAttrs[keyAttr]);
 											$("#id_" + key).attr(keyAttr, keyAttrs[keyAttr]);
 										}
 									}
@@ -1175,13 +1260,13 @@ ximpia.common.PageAjax = function() {
 							}
 						} else if (element == 'select') {
 							// label and help_text
-							//console.log(keyAttrs);
+							//ximpia.console.log(keyAttrs);
 							for (keyAttr in keyAttrs) {
 								if (keyAttrs[keyAttr] != null && keyAttr != "type") {					
 									if (keyAttr == 'label' && keyAttrs.label != '') {
 										$("label[for='" + 'id_' + key + "']").html(keyAttrs.label);
 									} else if (keyAttr == 'help_text' && keyAttrs.help_text != '') {
-										//console.log('help_text : ' + keyAttrs.help_text);
+										//ximpia.console.log('help_text : ' + keyAttrs.help_text);
 										$("label[for='" + 'id_' + key + "'].info").attr('data-xp-title', keyAttrs.help_text);
 									} else if (keyAttr == 'choices') {
 										for (choiceIndex in keyAttrs.choices) {
@@ -1193,14 +1278,14 @@ ximpia.common.PageAjax = function() {
 							}
 						}
 					}
-					//console.log('id_variables : ' + $("#id_variables").html());
+					//ximpia.console.log('id_variables : ' + $("#id_variables").html());
 					$("#id_sect_loading").fadeOut('fast');
 					$("#" + _attr.priv.sectionId).css('visibility', 'visible');
 					// Just call a method for the bindings of the page
 					//var obj = ximpia.site.Signup();
 					//obj.doProfessionalBind();
 					_attr.priv.callback();
-					//console.log('invitationCode : ' + $("#id_invitationCode").attr('value'));
+					//ximpia.console.log('invitationCode : ' + $("#id_invitationCode").attr('value'));
 				}).error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
@@ -1239,38 +1324,43 @@ ximpia.common.PageAjax = function() {
 						}
 					}
 				}
-				console.log('doAction : ' + doAction);				
+				ximpia.console.log('doAction : ' + doAction);				
 			},
 			doFade: function() {
-				//console.log('doFade()...');
+				//ximpia.console.log('doFade()...');
 				//$("#id_sect_loading").fadeOut('fast');
 				//$("#" + "id_sect_signupUser").css('visibility', 'visible');
 				//$(":hidden").removeClass('hidden');
 				//$(".sectionComp").css('visibility', 'visible');
-				//console.log('.sectionComp: ' + $(".sectionComp"));
+				//ximpia.console.log('.sectionComp: ' + $(".sectionComp"));
 			},
-			doFormPopupNoView: function() {
-				console.log('doFormPopupNoView...');
-				console.log(document.forms);
-				var data = JSON.parse(sessionStorage.getItem('xpData-view-' + _attr.priv.viewName));
+			doFormPopupNoView: function( view ) {
+				ximpia.console.log('doFormPopupNoView...');
+				ximpia.console.log(document.forms);
+				var data = JSON.parse(sessionStorage.getItem('xpData-view-' + view));
 				for (var i = 0; i<document.forms.length; i++) {
 					var myForm = document.forms[i];
-					var xpForm = 'xpData-view-' + _attr.priv.viewName + '.' + myForm.id;
-					_attr.priv.doRenders(xpForm);
+					var xpForm = 'xpData-view-' + view + '.' + myForm.id;
+					ximpia.common.PageAjax.doRender(xpForm);
+					//_attr.priv.doRenders(xpForm);
 				}
+				$('.btBar').css('visibility', 'visible');
 				ximpia.common.PageAjax.doFade();
 				// Conditions
 				// Post-Page : Page logic
 				var oForm = ximpia.common.Form();
 				oForm.doBindBubbles();
 				//_attr.priv.callback(data);
-				console.log('end doFormPopupNoView()');
+				ximpia.console.log('end doFormPopupNoView()');
 			},
 			doFormPopup: function() {
-				console.log('doFormPopup...');
+				/**
+				 * 
+				 */
+				ximpia.console.log('doFormPopup...');
 				$.getJSON(_attr.priv.path, function(data) {
 					if (_attr.priv.verbose == true) {
-						console.log(data)
+						ximpia.console.log(data)
 					}
 					sessionStorage.setItem('xpData-view-' + _attr.priv.viewName, JSON.stringify(data));
 					
@@ -1281,7 +1371,7 @@ ximpia.common.PageAjax = function() {
 					_attr.priv.doRenders(xpForm);
 					var oForm = ximpia.common.Form();
 					oForm.doBindBubbles();
-					console.log('verbose: ' + _attr.priv.verbose);
+					ximpia.console.log('verbose: ' + _attr.priv.verbose);
 					_attr.priv.callback(data);
 				}).error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
@@ -1294,23 +1384,23 @@ ximpia.common.PageAjax = function() {
 				 * Render forms once context is passed as attribute (data)
 				 */
 				if (_attr.priv.verbose == true) {
-					console.log(data)
+					ximpia.console.log(data)
 				}
 				ximpia.common.Browser.setXpDataViewSerial(_attr.priv.viewName, data);
-				console.log('foms length: ' + document.forms.length);
+				ximpia.console.log('foms length: ' + document.forms.length);
 				// Consider only one form, since this is a server generated content
 				var myForm = document.forms[0];
 				var dataObj = JSON.parse(data);
 				var status = dataObj.status;
 				var errorMsg = '';
-				console.log('status: ' + status);				
+				ximpia.console.log('status: ' + status);				
 				if (status != 'ERROR') {
 					var xpForm = 'xpData-view-' + _attr.priv.viewName +  '.' + myForm.id;
 					_attr.priv.doRenders(xpForm);
 					ximpia.common.PageAjax.doFade();
 					var oForm = ximpia.common.Form();
 					oForm.doBindBubbles();
-					console.log('verbose: ' + _attr.priv.verbose);
+					ximpia.console.log('verbose: ' + _attr.priv.verbose);
 					if (typeof _attr.priv.callback != 'undefined') {
 						_attr.priv.callback(data);
 					}
@@ -1325,50 +1415,112 @@ ximpia.common.PageAjax = function() {
 				/**
 				 * Process forms for view request
 				 */
-				console.log('doForm...');
-				console.log( obj );
+				ximpia.console.log('doForm...');
+				ximpia.console.log( obj );
 				$.post(_attr.priv.path, obj, function(data) {
-				//$.getJSON(_attr.priv.path, function(data) {
-					if (_attr.priv.verbose == true) {
-						console.log(data)
-					}
-					console.log('viewName: ' + _attr.priv.viewName);
-					ximpia.common.Browser.setXpDataView(_attr.priv.viewName, data);
-					console.log('foms length: ' + document.forms.length);
-					for (var i = 0; i<document.forms.length; i++) {
-						var myForm = document.forms[i];
-						var xpForm = 'xpData-view-' + _attr.priv.viewName +  '.' + myForm.id;
-						_attr.priv.doRenders(xpForm);
-					}
-					ximpia.common.PageAjax.doFade();
-					// Conditions
-					// Post-Page : Page logic
-					var oForm = ximpia.common.Form();
-					oForm.doBindBubbles();
-					//oForm.doBindSubmitForm(_attr.priv.formId);
-					$("[data-xp-js='submit']").xpPageButton();
-					$("[data-xp-js='submit']").xpPageButton('render');
-					// Callback
-					//console.log('callback: ' + _attr.priv.callback);
-					console.log('verbose: ' + _attr.priv.verbose);
-					if (typeof _attr.priv.callback != 'undefined') {
-						_attr.priv.callback(data);
-					}
+					// Get responseMap
+					var responseMap = eval(data);
+					var viewName = responseMap['response']['view'];
+					ximpia.console.log('view: ' + obj.view + ' viewNew: ' + responseMap['response']['view']);
+					//if (responseMap['response']['view'] != _attr.priv.viewName) {
+					ximpia.console.log('Views are different');
+					// Get new view template, insert into DOM
+                			var tmplPath = ximpia.common.PageAjax.getTemplatePath(
+                				{	app: responseMap['response']['app'],
+                					name: responseMap['response']['view'],
+                					viewType: 'page'}	);
+					ximpia.console.log('tmplPath: ' + tmplPath)
+					ximpia.console.log('viewName: ' + viewName);
+					$.get(tmplPath, function(dataTmpl) {
+						ximpia.console.log('Got template...');
+						var contentHtml = $(dataTmpl).filter('#id_content').html();
+						$('#id_sectionTitle').html($(dataTmpl).filter('#id_sectionTitle').html());
+                				$('#id_content').html(contentHtml);
+                				$('#id_sectionButton').html($(dataTmpl).filter('#id_sectionButton').html());
+                				$('#id_content').wrap('<form id="form_' + viewName + '" method="post" action="" />');
+                				// Do menus
+                				ximpia.console.log('menus...');
+                				var menuObj = responseMap['response']['menus'];
+                				var menuSessObj = ximpia.common.Browser.getObject('menus');
+                				if (menuSessObj == null) {
+                					menuSessObj = {};
+                				}
+                				if (menuObj.hasOwnProperty('sys')) {
+                					menuSessObj['sys'] = menuObj['sys']
+                				}
+                				if (menuObj.hasOwnProperty('main')) {
+                					menuSessObj['main'] = menuObj['main']
+                				}
+                				menuSessObj['view'] = menuObj['view']
+                				if (responseMap['response']['isLogin'] == false && menuSessObj.hasOwnProperty('sys')) {
+                					delete menuSessObj['sys']
+                				}
+                				ximpia.common.Browser.setObject('menus', menuSessObj);
+                				$("[data-xp-type='icon']").xpObjIcon('renderMenu');
+                				// 
+                				ximpia.common.PageAjax.doFormsRender( {viewName: responseMap['response']['view'], data: data} );
+                				ximpia.common.PageAjax.positionBars();
+                				// Update session data into SessionStorage
+                				if (responseMap['response']['isLogin'] == true) {
+                					ximpia.common.Browser.setObject('session', responseMap['response']['session']);
+                				}
+                				// Process login and logout layout changes
+                				if (responseMap['response']['view'] == 'home') {
+                					// Enable authen menu
+                					// Disable normal menu
+                					$('#id_header_extra').css('display', 'block');
+                					/*if ($('#id_header').css('z-index') != '0') {
+                						$('#id_header').css('z-index', '0');
+                						$('#id_header_menu').css('z-index', '100');
+                					}*/
+                				} else if (responseMap['response']['view'] == 'logout') {
+                					// Disbale authen menu
+                					// Enable normal menu
+                					/*if ($('#id_header_menu').css('z-index') != '0') {
+                						$('#id_header').css('z-index', '100');
+                						$('#id_header_menu').css('z-index', '0');
+                					}*/
+                					$('#id_header_extra').css('display', 'none');
+                				} 
+					}).error(function(jqXHR, textStatus, errorThrown) {
+						ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
+					});
+					/*} else {
+						ximpia.console.log(data)
+						ximpia.console.log('viewName: ' + _attr.priv.viewName);
+						ximpia.console.log('forms length: ' + document.forms.length);
+						ximpia.common.Browser.setXpDataView(_attr.priv.viewName, data);
+						for (var i = 0; i<document.forms.length; i++) {
+							var myForm = document.forms[i];
+							var xpForm = 'xpData-view-' + _attr.priv.viewName +  '.' + myForm.id;
+							ximpia.common.PageAjax.doRender( xpForm );
+						}
+						ximpia.common.PageAjax.doFade();
+						// Conditions
+						// Post-Page : Page logic
+						var oForm = ximpia.common.Form();
+						oForm.doBindBubbles();
+						ximpia.common.PageAjax.positionBars();
+					}*/
 				}, 'json').error(function(jqXHR, textStatus, errorThrown) {
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
 			},
-			getView: function(obj) {
+			getView: function( obj ) {
 				//_attr.priv.path = _attr.priv.path + '?view=' + obj.view
-				console.log('path: ' + _attr.priv.path);
+				ximpia.console.log('path: ' + _attr.priv.path);
 				if (obj.mode == 'popupNoView') {
-					_attr.pub.doFormPopupNoView();
+					_attr.pub.doFormPopupNoView( obj.view );
 				} else {
 					_attr.pub.doForm( { 	view: obj.view,
 								params: obj.params } );
 				}
+			},
+			doAction: function( obj ) {
+				ximpia.console.log('path: ' + _attr.priv.path);
+				_attr.pub.doForm( { 	action: obj.action } );
 			}
 		}
 	}
@@ -1381,7 +1533,142 @@ ximpia.common.PageAjax.doFade = function() {
 	$("#id_sect_loading").fadeOut('fast');
 	$(".sectionComp").css('visibility', 'visible');
 }
-
+/**
+ * Do fade out wait icon and show page
+ */
+ximpia.common.PageAjax.doFadeIn = function() {
+	$("#id_sect_loading").fadeIn('fast');
+	$(".sectionComp").css('visibility', 'hidden');
+	$("#id_titleBar").empty();
+}
+/**
+ * Get template path
+ */
+ximpia.common.PageAjax.getTemplatePath = function( obj ) {
+	var tmplType = '';
+	if (obj.viewType == 'page' || obj.viewType == 'title') {
+		tmplType = 'window';
+	} else  {
+		tmplType = 'popup';
+	}
+	var path = ximpia.common.Path.getTemplate(obj.app, obj.name, tmplType);
+	return path;
+}
+/*
+ * Get template
+ */
+ximpia.common.PageAjax.getTemplate = function( obj ) {
+	var tmplType = '';
+	if (obj.viewType == 'page' || obj.viewType == 'title') {
+		tmplType = 'window';
+	} else  {
+		tmplType = 'popup';
+	}
+	var path = ximpia.common.Path.getTemplate(obj.app, obj.name, tmplType);
+	$.get(path, function(data) {
+		return data;
+	}).error(function(jqXHR, textStatus, errorThrown) {
+		ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
+	});
+}
+/**
+ * Process password strength
+ */
+ximpia.common.PageAjax.doShowPasswordStrength = (function(userId, passwordId) {
+	// Password Strength
+	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
+	// TODO: Include validation of strength when clicking on signup button or buttons		        	
+	$('.passStrength').passStrengthener({
+		userid: "#" + userId
+		/*strengthCallback:function(score, strength) {
+			ximpia.console.log('strength : ' + strength)
+			if(strength == 'good' || strength == 'strong') {
+				$("#" + submitId).xpPageButton('enable', ximpia.common.Form().doSubmitButton);
+			} else {
+				$("#" + submitId).xpPageButton('disable');
+			}
+		}*/
+	});
+	})
+/**
+ * Render content
+ */
+ximpia.common.PageAjax.doRender = function( xpForm ) {
+	ximpia.console.log('xpForm: ' + xpForm);
+	var formId = xpForm.split('.')[1];
+	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
+	$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+	$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
+	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+	$('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	$('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+	$('#' + formId).find("input[data-xp-related='list.field']")
+		.filter("input[data-xp-type='basic.text']")
+		.xpObjListField('bindKeyPress', xpForm);
+	$("[data-xp-type='button']").xpObjButton('render');
+	$("[data-xp-type='link']").xpObjLink('render');
+	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	//_attr.priv.doLocal();
+	$("#id_header_search").jsonSuggest({	url: '/jxSearchHeader', 
+						maxHeight: 200, 
+						minCharacters: 3
+	});
+}
+/**
+ * Do render of forms in a view
+ * Options ( obj ) 
+ * =======
+ * data : 
+ * viewName : 
+ */
+ximpia.common.PageAjax.doFormsRender = (function ( obj ) {
+	ximpia.console.log(obj.data)
+	ximpia.console.log('viewName: ' + obj.viewName);
+	ximpia.common.Browser.setXpDataView(obj.viewName, obj.data);
+	ximpia.console.log('forms length: ' + document.forms.length);
+	for (var i = 0; i<document.forms.length; i++) {
+		var myForm = document.forms[i];
+		var xpForm = 'xpData-view-' + obj.viewName +  '.' + myForm.id;
+		//_attr.priv.doRenders(xpForm);
+		ximpia.common.PageAjax.doRender( xpForm );
+	}
+	ximpia.common.PageAjax.doFade();
+	// Conditions
+	// Post-Page : Page logic
+	var oForm = ximpia.common.Form();
+	oForm.doBindBubbles();
+});
+/**
+ * Position the button bars and content
+ */
+ximpia.common.PageAjax.positionBars = (function ( obj ) {
+	// Place bars and content
+	// Position title bar and content
+	if ($('#id_titleBar').hasOwnProperty('length')) {
+		$('#id_sectionTitle').css('visibility', 'visible');
+		var height = $('#id_titleBar').height();
+		if ($('#id_titleBar').offset().top == $('#id_content').offset().top) {
+			$('#id_content').offset({top: height+$('#id_content').offset().top+4});
+		}		
+		$('#id_content').css('border-top-left-radius', '0px');
+		$('#id_content').css('border-top-right-radius', '0px');
+		$('#id_content').css('border-top', '0px');
+		$('header').css('border-bottom-right-radius', '0px');
+		$('header').css('border-bottom-left-radius', '0px');
+	}
+	// position page button bar
+	if ($('#id_pageButton').hasOwnProperty('length')) {
+		var height = $('#id_content').height();
+		var winHeight = $(window).height();
+		if (height > winHeight) {
+			$('#id_sectionButton').offset({top: $(window).height()-$('#id_pageButton').height()});
+		} else {
+			$('#id_sectionButton').offset({top: height+$('#id_content').offset().top-$('#id_pageButton').height()});
+		}
+		$('#id_pageButton').css('visibility', 'visible');
+	}
+});
 
 ximpia.common.GoogleMaps = function() {
 	var _attr = {
@@ -1389,20 +1676,20 @@ ximpia.common.GoogleMaps = function() {
 		pub:  {
 			init: function() {},
 			insertCityCountry: function(idCityList, idCountryList) {
-				console.log('insertCityCountry...');
+				ximpia.console.log('insertCityCountry...');
   				var data = {};
 				if (navigator.geolocation) {
-					console.log('1');
+					ximpia.console.log('1');
 	  				navigator.geolocation.getCurrentPosition(function(position) {
-	  					console.log('2');
+	  					ximpia.console.log('2');
   						var loc = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-  						console.log('2.1');
+  						ximpia.console.log('2.1');
   						geocoder = new google.maps.Geocoder();
-  						console.log('2.2');
+  						ximpia.console.log('2.2');
   						geocoder.geocode({'latLng': loc}, function(results, status) {
-  							console.log('3');
-  							console.log(status);
-  							console.log(results);
+  							ximpia.console.log('3');
+  							ximpia.console.log(status);
+  							ximpia.console.log(results);
 							var city = "";
   							var countryCode = "";
   							var list =  results[0].address_components;
@@ -1411,14 +1698,14 @@ ximpia.common.GoogleMaps = function() {
   								for (var j=0; j<fields.length; j++) {
 	  								if (fields[j] == "locality") {
   										city = list[i].long_name;
-  										console.log('city: ' + city);
+  										ximpia.console.log('city: ' + city);
   										for (var i=0; i<idCityList.length; i++) {
   											$("#" + idCityList[i]).attr('value', city);
   										}
   										//$("#" + idCity).attr('value', city);
   									} else if (fields[j] == "country") {
 	  									countryCode = list[i].short_name.toLowerCase();
-	  									console.log('country: ' + countryCode);
+	  									ximpia.console.log('country: ' + countryCode);
   										for (var i=0; i<idCountryList.length; i++) {
   											$("#" + idCountryList[i]).xpObjListSelect('setValue', countryCode);
   										}
@@ -1566,8 +1853,8 @@ ximpia.visual.GenericComponentData = function() {
 			 */
 			hasElement: function(searchText) {
             			var array = _attr.pub.getDataList();
-            			console.log('array');
-            			console.log(array);
+            			ximpia.console.log('array');
+            			ximpia.console.log(array);
             			var hasElement = false;
             			for (var i = 0; i< array.length; i++) {
                 			if (array[i].text == searchText) {
@@ -1646,7 +1933,7 @@ ximpia.site.Signup = function() {
 		        	$("#" + passwordId).passStrengthener({
 					userid: "#" + userId,
 					strengthCallback:function(score, strength) {
-						console.log('strength : ' + strength)                       
+						ximpia.console.log('strength : ' + strength)                       
 						if(strength == 'good' || strength == 'strong') {
 							$("#" + submitId).xpPageButton('enable', ximpia.common.Form().doSubmitButton);
 						} else {
@@ -1658,7 +1945,7 @@ ximpia.site.Signup = function() {
 		},
 		pub: {
 			doProfessionalBind: (function(data) {
-				console.log('doProfessionalBind()...');
+				ximpia.console.log('doProfessionalBind()...');
 				// Pre-page : Binding ajax data to form
 				var formData = data.response["form_signup"];
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
@@ -1791,7 +2078,7 @@ ximpia.site.Signup = function() {
 				oGoogleMaps.insertCityCountry("id_city", "id_country");
 			}),
 			doOrganizationBind: (function(data) {
-				console.log('doOrganizationBind()...');
+				ximpia.console.log('doOrganizationBind()...');
 				var formData = data.response["form_signupOrg"];
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
 				sessionStorage.setItem('form_signupOrg', JSON.stringify(formData));
@@ -1848,11 +2135,11 @@ ximpia.site.Login = {};
  * Login Form
  */
 ximpia.site.Login.showLogin = (function() {
-	console.log('Show login...');
+	ximpia.console.log('Show login...');
 });
 /*
  * Do login : After login button has been clicked
  */
 ximpia.site.Login.doLogin = (function() {
-	console.log('Do login...');
+	ximpia.console.log('Do login...');
 });

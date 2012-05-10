@@ -115,6 +115,15 @@ class LoginForm(XBaseForm):
 		self._xpClean()
 		return self.cleaned_data
 
+class HeaderForm(XBaseForm):
+	_XP_FORM_ID = 'header' 
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	def clean(self):
+		"""Clean form"""
+		self._xpClean()
+		return self.cleaned_data
+
 class PasswordReminderForm(XBaseForm):
 	_XP_FORM_ID = 'passwordReminder'
 	_dbUser = User()
@@ -139,8 +148,8 @@ class ChangePasswordForm(XBaseForm):
 		self._xpClean()
 		return self.cleaned_data
 
-class StatusForm(XBaseForm):
-	_XP_FORM_ID = 'status'
+class HomeForm(XBaseForm):
+	_XP_FORM_ID = 'home'
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 

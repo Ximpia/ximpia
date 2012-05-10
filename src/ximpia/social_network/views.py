@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 from ximpia.core.models import context, Context, XpMsgException
 from ximpia.core.data import ActionDAO, ViewDAO
 from ximpia.core.util import getClass
+from ximpia.core.business import Search
 
 from business import SignupView, LoginView
 from business import SignupAction, LoginAction
@@ -232,6 +233,20 @@ def jxSuggestList(request, **ArgsDict):
 			resultList.append(dd) 
 	return HttpResponse(json.dumps(resultList))
 
+@context
+def searchHeader(request, **args):
+	"""Search ximpia for views and actions."""
+	try:
+		print 'searchHeader...'
+		print 'search: ', request.REQUEST['search']
+		# What are params in jxSuggestList?????
+		ctx = args['ctx']
+		searchObj = Search(ctx)
+		results = searchObj.search(request.REQUEST['search'])
+		print 'results: ', results
+	except:
+		traceback.print_exc()
+	return HttpResponse(json.dumps(results))
 
 ######################################################################
 # Signup

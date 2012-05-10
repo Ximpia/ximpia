@@ -11,13 +11,18 @@ from django.utils.translation import ugettext as _
 
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.sessions.models import Session
+from django.db.models import Q
 
 from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, getBlankWfData
-from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView
-from ximpia.util import ut_email
-from ximpia.core.models import JsResultDict, Context as Ctx
-from ximpia.core.constants import CoreConstants as K
-from ximpia.core.data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO
+from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
+	SearchIndex, SearchIndexParam, SearchIndexWord, Word
+from ximpia.util import ut_email, resources
+from ximpia.core.models import JsResultDict, Context as Ctx, CoreParam
+from ximpia.core.constants import CoreConstants as K, CoreKParam
+from ximpia.core.data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO,\
+	ApplicationDAO
+from ximpia.core.data import MenuDAO, MenuParamDAO, ViewMenuDAO, ApplicationAccessDAO, ActionDAO
+from ximpia.core.data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.core.choices import Choices
 from ximpia.core.util import getClass
 
@@ -28,7 +33,7 @@ from ximpia import settings
 class ComponentRegister(object):
 	
 	@staticmethod
-	def registerView(appCode=None, viewName=None, myClass=None, method=None, **argsDict):
+	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], **argsDict):
 		"""Registers view
 		@param appCode: Application code
 		@param viewName: View name
@@ -36,7 +41,7 @@ class ComponentRegister(object):
 		@param method: Method that shows view
 		@param argsDict: Dictionary that contains the view entry parameters. Having format name => [value1, value2, ...]"""
 		# TODO: Validate entry arguments: There is no None arguments, types, etc...
-		# TODO: Register menus for view
+		print 'register views...'
 		classPath = str(myClass).split("'")[1]
 		app = Application.objects.get(code=appCode)
 		view, created = View.objects.get_or_create(application=app, name=viewName)
@@ -48,6 +53,47 @@ class ComponentRegister(object):
 			fields = argsDict[name]
 			for value in fields:
 				tuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value)
+		# Menu
+		print 'View menus...'
+		ViewMenu.objects.filter(view=view).delete()
+		groupDict = {}
+		singleList = []
+		counterDict = {}
+		for dd in menus:
+			if dd.has_key(K.GROUP):
+				if not groupDict.has_key(dd[K.GROUP]):
+					groupDict[dd[K.GROUP]] = []
+				groupDict[dd[K.GROUP]].append(dd)
+			else:
+				singleList.append(dd)
+		# Single Menus - Not Grouped
+		counter = 100
+		for dd in singleList:
+			if not dd.has_key(K.ZONE):
+				dd[K.ZONE] = K.VIEW
+			menu = Menu.objects.get(name=dd[K.MENU_NAME])
+			sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+			print view, menu, sep, dd[K.ZONE], counter
+			viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+										zone=dd[K.ZONE], order=counter)
+			counterDict[dd[K.MENU_NAME]] = counter
+			counter += 100
+		# Grouped Menus
+		for groupName in groupDict:
+			fields = groupDict[groupName]
+			menuParent = Menu.objects.get(name=groupName)
+			viewMenuParent = ViewMenu.objects.get(view=view, menu=menuParent)
+			counter = viewMenuParent.order + 10
+			for dd in fields:
+				if not dd.has_key(K.ZONE):
+					dd[K.ZONE] = K.VIEW
+				menu = Menu.objects.get(name=dd[K.MENU_NAME])
+				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+				print view, menuParent, menu, sep, dd[K.ZONE], counter
+				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
+				counter += 10
+		
 	
 	@staticmethod
 	def registerAction(appCode=None, actionName=None, myClass=None, method=None):
@@ -106,14 +152,75 @@ class ComponentRegister(object):
 		# TODO: Complete entry view parameters
 	
 	@staticmethod
-	def registerMenu():
+	def registerMenu(appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', **argsDict):
 		"""Register menu item"""
-		pass
-	
+		print 'register menus...'
+		paramDict = {}
+		app = Application.objects.get(code=appCode)
+		# Icon
+		icon, created = CoreParam.objects.get_or_create(mode=CoreKParam.ICON, name=iconName, value=iconName)
+		paramDict['application'] = app
+		paramDict['name'] = name
+		paramDict['titleShort'] = titleShort
+		paramDict['title'] = title
+		paramDict['icon'] = icon
+		if actionName != '':
+			action = Action.objects.get(name=actionName)
+			paramDict['action'] = action
+		if viewName != '':
+			view = View.objects.get(name=viewName)
+			paramDict['view'] = view
+		print 'paramDict: ', paramDict
+		try:
+			Menu.objects.get(name=name).delete()
+		except Menu.DoesNotExist:
+			pass
+		menu = Menu.objects.create(**paramDict)
+		"""menu, created = Menu.objects.get_or_create(**paramDict)
+		if not created:
+			if paramDict.has_key('action'):
+				menu.action = paramDict['action']
+			if paramDict.has_key('view'):
+				menu.view = paramDict['view']
+			menu.titleShort = titleShort
+			menu.title = title
+			menu.icon = icon
+			menu.save()"""
+		# MenuParam
+		print 'argsDict: ', argsDict
+		for name in argsDict:
+			operator, value = argsDict[name]
+			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value)
+		
 	@staticmethod
-	def registerAppOperation():
+	def registerSearch(text='', appCode=None, viewName=None, actionName=None, params={}):
 		"""Register application operation. It will be used in view search."""
-		pass
+		wordList = resources.Index.parseText(text)
+		print 'wordList: ', wordList
+		view = View.objects.get(name=viewName) if viewName != None else None
+		action = Action.objects.get(name=actionName) if actionName != None else None
+		app = Application.objects.get(code=appCode)
+		# delete search index
+		try:
+			search = SearchIndex.objects.get(application=app, view=view) if viewName != '' else (None, None)
+			print 'Got view index...', search 
+			search = SearchIndex.objects.get(application=app, action=action) if actionName != '' else (None, None)
+			print 'Got action index...', search
+			search.delete()
+			print 'deleted !!!!!'
+		except SearchIndex.DoesNotExist:
+			pass
+		# Create search index
+		search = SearchIndex.objects.create(application=app, view=view, action=action, title=text)
+		for wordName in wordList:
+			# Word
+			word, created = Word.objects.get_or_create(word=wordName)
+			# SearchIndexWord
+			searchWord = SearchIndexWord.objects.create(word=word, index=search)
+		for paramName in params:
+			param = Param.objects.get_or_create(application=app, name=paramName)
+			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
+								value=params[paramName])
 
 class CommonBusiness(object):
 	
@@ -354,10 +461,17 @@ class CommonBusiness(object):
 		if not self.isBusinessOK():
 			# Here throw the BusinessException
 			raise XpMsgException(None, _('Error in validating business layer'))
+
 	def setOkMsg(self, idOK):
 		"""Sets the ok message id"""
 		msgDict = _jsf.decodeArray(self._f.fields['okMessages'].initial)
 		self._f.fields['msg_ok'].initial = msgDict[idOK]
+	
+	def _setCookie(self, key, value):
+		"""Add to context cookies data. Decorators that build response will set cookie into respose object
+		@param key: Key
+		@param value: Value"""
+		self._ctx[Ctx.SET_COOKIES].append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.now()})
 
 class WorkFlowBusiness (object):	
 	_ctx = {}
@@ -617,8 +731,181 @@ class WorkFlowBusiness (object):
 	def removeData(self, session, user, flowCode):
 		"""Removes the workflow data for user or session."""
 		flowData = self.resolveFlowDataForUser(user, session, flowCode)
-		flowData.delete()
+		self._dbWFData.deleteById(flowData.id, real=True)
 		
+
+class Search( object ):
+	_ctx = None
+	def __init__(self, ctx):
+		"""Search index operations"""
+		self._ctx = ctx
+		self._dbApp = ApplicationDAO(self._ctx)
+		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
+		self._dbAction = ActionDAO(self._ctx, relatedDepth=2)
+		self._dbSearch = SearchIndexDAO(self._ctx, relatedDepth=3)
+		self._dbIndexWord = SearchIndexWordDAO(self._ctx, relatedDepth=2)
+		self._dbWord = WordDAO(self._ctx)
+		self._dbIndexParam = SearchIndexParamDAO(self._ctx, relatedDepth=3)
+		self._dbParam = ParamDAO(self._ctx)
+	def addIndex(self, text, appCode, viewName=None, actionName=None, params={}):
+		"""Add data to search index"""
+		wordList = resources.Index.parseText(text)
+		view = self._dbView.get(name=viewName) if viewName != None else None
+		action = self._dbAction.get(name=actionName) if actionName != None else None
+		app = self._dbApp.get(code=appCode)
+		# delete search index
+		try:
+			search = self._dbSearch.get(application=app, view=view) if viewName != '' else (None, None) 
+			search = self._dbSearch.get(application=app, action=action) if actionName != '' else (None, None)
+			search.delete()
+		except SearchIndex.DoesNotExist:
+			pass
+		# Create search index
+		search = self._dbSearch.create(application=app, view=view, action=action, title=text)
+		for wordName in wordList:
+			# Word
+			word, created = self._dbWord.getCreate(word=wordName)
+			# SearchIndexWord
+			searchWord = self._dbIndexWord.create(word=word, index=search)
+		for paramName in params:
+			param = self._dbParam.getCreate(application=app, name=paramName)
+			indexParam = self._dbIndexParam.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
+								value=params[paramName])
+	def searchOld(self, text):
+		"""Search for views and actions
+		@param text: text to search
+		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
+		# Search first 100 matches
+		# return best 15 matches with titile, link information and application icon
+		# return results in format needed by autocomplete plugin
+		wordList = resources.Index.parseText(text)
+		print 'wordList: ', wordList
+		#results = self._dbIndexWord.search(word__word__in=wordList)[:100]
+		results = self._dbIndexWord.search(word__word__in=wordList)[:100]
+		print 'search :: results: ', results
+		container = {}
+		containerData = {}
+		for data in results:
+			print 'data: ', data
+			if not container.has_key(data.index.pk):
+				container[data.index.pk] = 0
+			container[data.index.pk] += 1
+			#container[data.index.pk] += 1 if container.has_key(data.index.pk) else 1
+			containerData[data.index.pk] = data
+		print 'conatiner: ', container
+		print 'containerData: ', containerData
+		tupleList = []
+		for pk in container:
+			tupleList.append((container[pk], containerData[pk]))
+		tupleList.sort()
+		tupleListFinal = tupleList[:15]
+		resultsFinal = []
+		for tuple in tupleListFinal:
+			data = tuple[1]
+			myDict = {}
+			myDict['id'] = data.index.id
+			myDict['text'] = data.index.title
+			myDict['image'] = ''
+			extraDict = {}
+			extraDict['view'] = data.index.view.name if data.index.view != None else ''
+			extraDict['action'] = data.index.action.name if data.index.action != None else ''
+			params = data.index.params.all()
+			paramDict = {}
+			for param in params:
+				paramDict[param.name] = param.value
+			extraDict['params'] = paramDict
+			extraDict['app'] = data.index.application.code
+			myDict['extra'] = extraDict
+			resultsFinal.append(myDict)
+		return resultsFinal
+	def search(self, text):
+		"""Search for views and actions
+		@param text: text to search
+		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
+		results = self._dbSearch.search(title__icontains=text)[:15]
+		print 'search :: results: ', results
+		resultsFinal = []
+		for data in results:
+			myDict = {}
+			myDict['id'] = data.id
+			myDict['text'] = data.title
+			myDict['image'] = ''
+			extraDict = {}
+			extraDict['view'] = data.view.name if data.view != None else ''
+			extraDict['action'] = data.action.name if data.action != None else ''
+			params = data.params.all()
+			paramDict = {}
+			for param in params:
+				paramDict[param.name] = param.value
+			extraDict['params'] = paramDict
+			extraDict['app'] = data.application.code
+			myDict['extra'] = extraDict
+			resultsFinal.append(myDict)
+		return resultsFinal
+
+class MenuBusiness( object ):
+	_ctx = None
+	def __init__(self, ctx):
+		"""Menu building and operations"""
+		self._ctx = ctx
+		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
+		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
+		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
+		self._dbAppAccess = ApplicationAccessDAO(self._ctx)
+	def getMenus(self, viewName):
+		"""Build menus in a dictionary
+		@param viewName: View name"""
+		view = self._dbView.get(name=viewName)
+		print 'view: ', view
+		# TODO: Play around to get list of codes using common methods
+		print 'userSocial: ', self._ctx['userSocial']
+		userAccessCodeList = []
+		if self._ctx['userSocial'] != None:
+			userAccessList = self._dbAppAccess.search(userSocial=self._ctx['userSocial'])
+			for userAccess in userAccessList:
+				userAccessCodeList.append(userAccess.application.code)
+			print 'userAccessCodeList: ', userAccessCodeList
+		# TODO: Remove the SN code simulator, use the one built from userSocial
+		userAccessCodeList = ['SN']
+		viewMenus = self._dbViewMenu.search( 	Q(menu__application__subscription = False) | 
+							Q(menu__application__subscription = True) & 
+							Q(menu__application__code__in=userAccessCodeList), view=view).order_by('order')
+		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
+		print 'viewMenus: ', viewMenus
+		menuDict = {}
+		menuDict[Choices.MENU_ZONE_SYS] = []
+		menuDict[Choices.MENU_ZONE_MAIN] = []
+		menuDict[Choices.MENU_ZONE_VIEW] = []
+		container = {}
+		for viewMenu in viewMenus:
+			print 'action: ', viewMenu.menu.action
+			print 'view: ', viewMenu.menu.view
+			menuObj = {}
+			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
+			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
+			menuObj['sep'] = viewMenu.separator
+			menuObj['name'] = viewMenu.menu.name
+			menuObj['title'] = viewMenu.menu.title
+			menuObj['titleShort'] = viewMenu.menu.titleShort
+			menuObj['icon'] = viewMenu.menu.icon.value
+			menuObj['zone'] = viewMenu.zone
+			# params
+			params = self._dbMenuParam.search(menu=viewMenu.menu)
+			paramDict = {}
+			# name, operator, value
+			for param in params:
+				if param.operator == Choices.OP_EQ:
+					paramDict[param.name] = param.value
+			menuObj['params'] = paramDict
+			container[viewMenu.menu.name] = menuObj
+			if viewMenu.parent == None:
+				menuObj['items'] = []
+				menuDict[viewMenu.zone].append(menuObj)
+			else:
+				parentMenuObj = container[viewMenu.parent.menu.name]
+				parentMenuObj['items'].append(menuObj)
+		print 'menuDict: ', menuDict
+		return menuDict
 
 class EmailBusiness(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
@@ -700,11 +987,59 @@ class DoBusinessDecorator(object):
 				if self._form != None:
 					obj._ctx[Ctx.FORM] = self._form()
 				f(*argsTuple, **argsDict)
-				obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])
-				#obj._ctx[Ctx.FORM].buildJsData(obj._ctx)
-				result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
-				#print obj._ctx[Ctx.JS_DATA]
-				#print result
+				if not obj._ctx.has_key('_doneResult'):
+					# Menu
+					menu = MenuBusiness(obj._ctx)
+					#menuDict = menu.getMenus(obj._ctx['viewNameSource'])
+					menuDict = menu.getMenus('home')
+					print 'menuDict: ', menuDict
+					obj._ctx[Ctx.JS_DATA]['response']['menus'] = menuDict
+					# Views
+					if obj._ctx['viewNameTarget'] != '':
+						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameTarget']
+					else:
+						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameSource']
+					print 'view: ', obj._ctx[Ctx.JS_DATA]['response']['view']
+					# App
+					obj._ctx[Ctx.JS_DATA]['response']['app'] = obj._ctx['app']
+					# User authenticate and session
+					if obj._ctx[Ctx.USER].is_authenticated():
+						# login: context variable isLogin = True
+						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', True)
+						#obj._ctx[Ctx.JS_DATA].addAttr('userid', self._ctx['user'].pk)
+						keyList = obj._ctx[Ctx.SESSION].keys()
+						session = {}
+						for key in keyList:
+							if key[0] != '_':
+								try:
+									# We try to serialize using django serialize
+									dataEncoded = _jsf.encodeObj(obj._ctx[Ctx.SESSION][key])
+									dataReal = json.loads(dataEncoded)
+									if type(obj._ctx[Ctx.SESSION][key]) == types.ListType:
+										session[key] = dataReal
+									else:
+										session[key] = dataReal[0]								
+								except:
+									# If we cant, we try json encode
+									dataEncoded = json.dumps(obj._ctx[Ctx.SESSION][key]) 
+									session[key] = json.loads(dataEncoded)
+						obj._ctx[Ctx.JS_DATA]['response']['session'] = session
+					else:
+						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
+					# Form
+					obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])
+					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx)
+					# Result
+					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+					#print obj._ctx[Ctx.JS_DATA]
+					print result
+					for cookie in obj._ctx[Ctx.SET_COOKIES]:
+						result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], expires = cookie['expires'])
+						print 'Did set cookie into result...', cookie
+					obj._ctx['_doneResult'] = True
+				else:
+					print 'I skip building response, since I already did it!!!!!'
+					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
 				return result
 			except XpMsgException as e:
 				errorDict = obj.getErrors()
@@ -825,6 +1160,7 @@ class WFActionDecorator(object):
 			# Delete user flow ???
 			if obj._wf.isLastView(obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName, obj._ctx[Ctx.ACTION]):
 				obj._wf.removeData(obj._ctx[Ctx.SESSION], obj._ctx[Ctx.USER], obj._ctx[Ctx.FLOW_CODE])
+			obj._ctx[Ctx.VIEW_NAME_TARGET] = viewName
 			# Show View
 			impl = viewTarget.implementation
 			implFields = impl.split('.')
@@ -879,6 +1215,7 @@ class NavActionDecorator(object):
 			if self._viewNameTarget == '':
 				self._viewNameTarget = obj.getTargetView()
 			viewTarget = dbView.get(name=self._viewNameTarget)
+			obj._ctx[Ctx.VIEW_NAME_TARGET] = self._viewNameTarget
 			# Show View
 			impl = viewTarget.implementation
 			implFields = impl.split('.')
