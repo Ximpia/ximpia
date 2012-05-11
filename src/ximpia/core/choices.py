@@ -54,6 +54,7 @@ class Choices(object):
 
 	# LANG
 	LANG_ENGLISH = 'en'
+	LANG_SPANISH = 'es'
 	LANG = (
 			('en', _('English')),
 			('es', _('Spanish')))
@@ -92,3 +93,17 @@ class Choices(object):
 		(MENU_ZONE_SYS, _('System')),
 		(MENU_ZONE_MAIN, _('Main')),
 		(MENU_ZONE_VIEW, _('View')))
+	# WINDOW_TYPE
+	WIN_TYPE_WINDOW = 'window'
+	WIN_TYPE_POPUP = 'popup'
+	WIN_TYPES = (
+		(WIN_TYPE_WINDOW, _('Window')),
+		(WIN_TYPE_POPUP, _('Popup')))
+	# DEVICES
+	DEVICE_PC = 'PC'
+	DEVICE_TABLET = 'TABLET'
+	DEVICE_PHONE = 'PHONE'
+	DEVICES = (
+		(DEVICE_PC, _('Personal Computer')),
+		(DEVICE_TABLET, _('Tablet')),
+		(DEVICE_PHONE, _('Phone')))

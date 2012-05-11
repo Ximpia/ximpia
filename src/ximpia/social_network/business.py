@@ -208,8 +208,8 @@ class LoginView(CommonBusiness):
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', True)
 			self._ctx[Ctx.JS_DATA].addAttr('userid', self._ctx['user'].pk)
 			# Include user_info, a dictionary with user environment data
-			viewName = 'home'
-			self._ctx[Ctx.FORM] = forms.LoginForm()
+			viewName = 'home'			
+			self._setMainForm(forms.LoginForm())
 			self._ctx[Ctx.VIEW_NAME_TARGET] = viewName
 			print 'ximpiaId: ', self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET)
 			self._putParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))
@@ -218,12 +218,12 @@ class LoginView(CommonBusiness):
 			home.showStatus()
 		else:
 			# no login: login form
-			self._ctx[Ctx.FORM] = forms.LoginForm()
-			self._ctx[Ctx.FORM].buildJsData(self._ctx[Ctx.JS_DATA])
+			self._setMainForm(forms.LoginForm())
+			#self._ctx[Ctx.FORM].buildJsData(self._ctx[Ctx.JS_DATA])
 			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 		# Popup - Password reminder
-		self._ctx[Ctx.FORM] = forms.PasswordReminderForm()
+		self._addForm(forms.PasswordReminderForm())
 		print 'jsData: ', self._ctx[Ctx.JS_DATA]['response'].keys()
 
 	@DoBusinessDecorator(form = forms.ChangePasswordForm)

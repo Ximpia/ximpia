@@ -1,4 +1,4 @@
-from ximpia.core.business import ComponentRegister, Search
+from ximpia.core.business import ComponentRegister
 from constants import Constants as K
 from ximpia.core.choices import Choices as _Ch
 from ximpia.core.constants import CoreConstants as _K
@@ -19,6 +19,7 @@ ComponentRegister.registerParam(appCode=K.APP, name='ximpiaId', title='XimpiaId'
 # Menu
 ###############
 # Ximpia Menu
+ComponentRegister.cleanMenu(K.APP)
 ComponentRegister.registerMenu(appCode=K.APP, name='sys', titleShort='Ximpia', title='Ximpia', iconName='iconLogo')
 ComponentRegister.registerMenu(appCode=K.APP, name='signout', titleShort='Sign out', title='Sign out', iconName='iconLogout')
 # Home Menu
@@ -42,6 +43,13 @@ ComponentRegister.registerView(appCode=K.APP, viewName='home', myClass=HomeView,
 			])
 
 
+#############
+# Templates
+#############
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='home', name='home', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='login', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwordReminder', winType=_Ch.WIN_TYPE_POPUP)
+
 ##########
 # Actions
 ##########
@@ -61,4 +69,5 @@ ComponentRegister.registerFlow(appCode=K.APP, flowCode='login', viewNameSource='
 ##########
 # Search
 ##########
+ComponentRegister.cleanSearch(K.APP)
 ComponentRegister.registerSearch(text='This is a simple sample of text', appCode=K.APP, viewName='home')

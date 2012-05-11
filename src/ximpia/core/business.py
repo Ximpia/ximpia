@@ -15,7 +15,7 @@ from django.db.models import Q
 
 from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
-	SearchIndex, SearchIndexParam, SearchIndexWord, Word
+	SearchIndex, SearchIndexParam, SearchIndexWord, Word, Template, ViewTmpl
 from ximpia.util import ut_email, resources
 from ximpia.core.models import JsResultDict, Context as Ctx, CoreParam
 from ximpia.core.constants import CoreConstants as K, CoreKParam
@@ -152,6 +152,12 @@ class ComponentRegister(object):
 		# TODO: Complete entry view parameters
 	
 	@staticmethod
+	def cleanMenu(appCode=None):
+		"""Clean all menus for application"""
+		Menu.objects.filter(application__code=appCode).delete()
+		print 'deleted all menus for ' + appCode
+	
+	@staticmethod
 	def registerMenu(appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', **argsDict):
 		"""Register menu item"""
 		print 'register menus...'
@@ -171,10 +177,10 @@ class ComponentRegister(object):
 			view = View.objects.get(name=viewName)
 			paramDict['view'] = view
 		print 'paramDict: ', paramDict
-		try:
+		"""try:
 			Menu.objects.get(name=name).delete()
 		except Menu.DoesNotExist:
-			pass
+			pass"""
 		menu = Menu.objects.create(**paramDict)
 		"""menu, created = Menu.objects.get_or_create(**paramDict)
 		if not created:
@@ -193,6 +199,15 @@ class ComponentRegister(object):
 			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value)
 		
 	@staticmethod
+	def cleanSearch(appCode=None):
+		"""Clean Search information for view or action"""
+		try:
+			SearchIndex.objects.filter(application__code=appCode).delete()
+			print 'deleted Search !!!', appCode 
+		except SearchIndex.DoesNotExist:
+			pass
+
+	@staticmethod
 	def registerSearch(text='', appCode=None, viewName=None, actionName=None, params={}):
 		"""Register application operation. It will be used in view search."""
 		wordList = resources.Index.parseText(text)
@@ -200,16 +215,6 @@ class ComponentRegister(object):
 		view = View.objects.get(name=viewName) if viewName != None else None
 		action = Action.objects.get(name=actionName) if actionName != None else None
 		app = Application.objects.get(code=appCode)
-		# delete search index
-		try:
-			search = SearchIndex.objects.get(application=app, view=view) if viewName != '' else (None, None)
-			print 'Got view index...', search 
-			search = SearchIndex.objects.get(application=app, action=action) if actionName != '' else (None, None)
-			print 'Got action index...', search
-			search.delete()
-			print 'deleted !!!!!'
-		except SearchIndex.DoesNotExist:
-			pass
 		# Create search index
 		search = SearchIndex.objects.create(application=app, view=view, action=action, title=text)
 		for wordName in wordList:
@@ -221,6 +226,31 @@ class ComponentRegister(object):
 			param = Param.objects.get_or_create(application=app, name=paramName)
 			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
 								value=params[paramName])
+	
+	@staticmethod
+	def cleanTemplates(appCode=None):
+		"""Clean templates for the application"""
+		pass
+	
+	@staticmethod
+	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=None, device=None):
+		"""Register template"""
+		view = View.objects.get(name=viewName) if viewName != None else None
+		app = Application.objects.get(code=appCode)
+		paramDict = {}
+		paramDict['application'] = app
+		paramDict['name'] = name
+		if language != None:
+			paramDict['language'] = language
+		if country != None:
+			paramDict['country'] = country
+		if winType != None:
+			paramDict['winType'] = winType
+		if device != None:
+			paramDict['device'] = device
+		template = Template.objects.create( **paramDict )
+		# View
+		ViewTmpl.objects.create(view=view, template=template)
 
 class CommonBusiness(object):
 	
@@ -472,6 +502,17 @@ class CommonBusiness(object):
 		@param key: Key
 		@param value: Value"""
 		self._ctx[Ctx.SET_COOKIES].append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.now()})
+
+	def _setMainForm(self, form):
+		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
+		@param form: Form instance"""
+		self._ctx[Ctx.FORM] = form
+		self._ctx[Ctx.FORMS][form.getFormId()] = form
+	
+	def _addForm(self, form):
+		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
+		@param form: Form instance"""
+		self._ctx[Ctx.FORMS][form.getFormId()] = form
 
 class WorkFlowBusiness (object):	
 	_ctx = {}
@@ -1026,8 +1067,13 @@ class DoBusinessDecorator(object):
 						obj._ctx[Ctx.JS_DATA]['response']['session'] = session
 					else:
 						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
+					# Forms
+					for formId in obj._ctx[Ctx.FORMS]:
+						form = obj._ctx[Ctx.FORMS][formId]
+						if not obj._ctx[Ctx.JS_DATA].has_key(formId):
+							form.buildJsData(obj._ctx[Ctx.JS_DATA])					
 					# Form
-					obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])
+					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])					
 					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx)
 					# Result
 					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])

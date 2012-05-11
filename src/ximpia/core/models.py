@@ -238,6 +238,8 @@ class Menu(BaseModel):
 			verbose_name=_('View'), help_text=_('View'))
 	action = models.ForeignKey('core.Action', related_name='menu_action', null=True, blank=True,  
 			verbose_name=_('Action'), help_text=_('Action to process when click on menu item'))
+	language = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, 
+			verbose_name=_('Language'), help_text=_('Language'))
 	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
 			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
@@ -293,6 +295,8 @@ class View(BaseModel):
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100,
 			verbose_name=_('Implementation'), help_text=_('Business class and method that will show view'))
+	templates = models.ManyToManyField('core.Template', through='core.ViewTmpl', related_name='view_templates',
+			verbose_name=_('Templates'), help_text=_('Templates for view'))
 	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
 			verbose_name=_('Parameters'), help_text=_('View entry parameters'))	
 	def __unicode__(self):
@@ -302,6 +306,40 @@ class View(BaseModel):
 		verbose_name = 'View'
 		verbose_name_plural = "Views"
 		unique_together = ("application", "name")
+
+class ViewTmpl(BaseModel):
+	"""View Template"""
+	view = models.ForeignKey('core.View',
+			verbose_name=_('View'), help_text=_('View'))
+	template = models.ForeignKey('core.Template',
+			verbose_name=_('Template'), help_text=_('Template'))
+	def __unicode__(self):
+		return str(self.view) + '-' + str(self.template)
+	class Meta:
+		db_table = 'CORE_VIEW_TMPL'
+		verbose_name = 'View Template'
+		verbose_name_plural = "View Templates"
+
+class Template(BaseModel):
+	"""Template"""
+	application = models.ForeignKey('core.Application',
+			verbose_name=_('Application'), help_text=_('Application for the template'))
+	name = models.CharField(max_length=50, unique=True,
+			verbose_name=_('Name'), help_text=_('Name'))
+	language = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, 
+			verbose_name=_('Language'), help_text=_('Language'))
+	country = models.CharField(max_length=2, choices=Choices.COUNTRY, blank=True, null=True,
+			verbose_name=_('Country'), help_text=_('Country'))
+	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW,
+			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
+	device = models.CharField(max_length=10, choices=Choices.DEVICES, default=Choices.DEVICE_PC,
+			verbose_name=_('Device'), help_text=_('Device: Personal Computer, Tablet, Phone'))
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'CORE_TEMPLATE'
+		verbose_name = 'Template'
+		verbose_name_plural = "Templates"
 
 class Action(BaseModel):
 	"""Action"""
@@ -325,6 +363,12 @@ class Workflow(BaseModel):
 			verbose_name = _('Application'), help_text = _('Application'))
 	code = models.CharField(max_length=15, db_index=True, unique=True, 
 			verbose_name=_('Flow Code'), help_text=_('Flow Code. First window in a flow identified by a flow code will reset wf variables'))
+	resetStart = models.BooleanField(default=False,
+			verbose_name = _('Reset Start'), help_text = _('Reset on start: The flow will be deleted when user displays first view of flow'))
+	deleteOnEnd = models.BooleanField(default=False,
+			verbose_name = _('Delete on End'), help_text = _('Delete On End: Weather flow user data is deleted when user displays last view in flow'))
+	jumpToView = models.BooleanField(default=True,
+			verbose_name = _('Jump to View'), help_text = _('Jump to View: In case user wants to display view and flow is in another view, the flow view will be shown'))
 	def __unicode__(self):
 		return str(self.code)
 	class Meta:
