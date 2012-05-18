@@ -15,6 +15,7 @@ ximpia.constants.main.DEBUG_INFO = 'info';
 ximpia.constants.main.DEBUG_WARN = 'warn';
 ximpia.constants.main.DEBUG_ERROR = 'error';
 ximpia.constants.main.DEBUG_DEBUG = 'debug';
+// Uncomment for production use => ximpia.constants.main.DEBUG = [];
 ximpia.constants.main.DEBUG = [	ximpia.constants.main.DEBUG_DEBUG, 
 				ximpia.constants.main.DEBUG_INFO,
 				ximpia.constants.main.DEBUG_ERROR,
@@ -1629,7 +1630,8 @@ ximpia.common.PageAjax.doRender = function( xpForm ) {
 	//_attr.priv.doLocal();
 	$("#id_header_search").jsonSuggest({	url: '/jxSearchHeader', 
 						maxHeight: 200, 
-						minCharacters: 3
+						minCharacters: 3,
+						onSelect: ximpia.common.Search.doClick
 	});
 }
 /**
@@ -1684,6 +1686,35 @@ ximpia.common.PageAjax.positionBars = (function ( obj ) {
 			$('#id_sectionButton').offset({top: height+$('#id_content').offset().top-$('#id_pageButton').height()});
 		}
 		$('#id_pageButton').css('visibility', 'visible');
+	}
+});
+
+
+ximpia.common.Search = {};
+/**
+ * Click on the search result box
+ */
+ximpia.common.Search.doClick = (function(item) {
+	ximpia.console.log('I clicked on the search result...');
+	ximpia.console.log(item);
+	attrs = item.extra;
+	ximpia.console.log('attrs...');
+	ximpia.console.log(attrs);
+	if (attrs.action != '') {
+		// do action
+		ximpia.console.log('action!!!!');
+		var pageJx = ximpia.common.PageAjax();
+		pageJx.doAction( {action: attrs.action} );
+	} else if (attrs.view != '') {
+		// show view
+		// popupNoView
+		// popupView
+		// view
+		ximpia.console.log('view!!!!');
+		ximpia.console.log('view: ' + attrs.view);
+		ximpia.common.PageAjax.doFadeIn();
+		var pageJx = ximpia.common.PageAjax();
+		pageJx.getView({ view: attrs.view, params: JSON.stringify(attrs.params) });
 	}
 });
 

@@ -904,7 +904,7 @@ class Search( object ):
 			param = self._dbParam.getCreate(application=app, name=paramName)
 			indexParam = self._dbIndexParam.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
 								value=params[paramName])
-	def searchOld(self, text):
+	def search(self, text):
 		"""Search for views and actions
 		@param text: text to search
 		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
@@ -914,8 +914,14 @@ class Search( object ):
 		wordList = resources.Index.parseText(text)
 		print 'wordList: ', wordList
 		#results = self._dbIndexWord.search(word__word__in=wordList)[:100]
-		results = self._dbIndexWord.search(word__word__in=wordList)[:100]
+		# Build Q instance
+		myQ = Q(word__word__startswith=wordList[0])
+		for word in wordList[1:]:
+			myQ = myQ | Q(word__word__startswith=word)
+		print 'Q: ', str(myQ)
+		results = self._dbIndexWord.search(myQ)[:100]
 		print 'search :: results: ', results
+		print results.query
 		container = {}
 		containerData = {}
 		for data in results:
@@ -951,7 +957,7 @@ class Search( object ):
 			myDict['extra'] = extraDict
 			resultsFinal.append(myDict)
 		return resultsFinal
-	def search(self, text):
+	def searchOld(self, text):
 		"""Search for views and actions
 		@param text: text to search
 		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""

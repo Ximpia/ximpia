@@ -102,14 +102,12 @@
 			*/
 			function regexEscape(txt, omit) {
 				var specials = ['/', '.', '*', '+', '?', '|',
-								'(', ')', '[', ']', '{', '}', '\\'];
-				
+								'(', ')', '[', ']', '{', '}', '\\'];				
 				if (omit) {
 					for (var i = 0; i < specials.length; i++) {
 						if (specials[i] === omit) { specials.splice(i,1); }
 					}
-				}
-				
+				}				
 				var escapePatt = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
 				return txt.replace(escapePatt, '\\$1');
 			}
@@ -124,11 +122,13 @@
 			* hide the results again and if set, call the onSelect function.
 			*/
 			function selectResultItem(item) {
-				obj.val(item.text);
+				//obj.val(item.text);
 				$(results).html('').hide();
-				
 				if (typeof settings.onSelect === 'function') {
 					settings.onSelect(item);
+					obj.val('');
+				} else {
+					obj.val(item.text);
 				}
 			}
 
@@ -343,7 +343,7 @@
 				}).
 				focus(function(e) {
 					$(results).css({
-						'top': (obj.position().top + obj.outerHeight()) + 'px',
+						'top': (obj.offset().top + obj.outerHeight()) + 'px',
 						'left': obj.position().left + 'px'
 					});
 				
