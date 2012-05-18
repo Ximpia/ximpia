@@ -376,13 +376,13 @@ span.logo {
 	border-width: 10px;
 }
 
-img#LogoImg {
+/*img#LogoImg {
 	border: 0px solid; 
 	width: 120px;
 	height: 40px;
 	margin: 1px 0px;
 	background: url(../images/ximpia-logo-small-plano.png) 0 0 no-repeat;
-}
+}*/
 
 img#BetaImg {
 	position:relative; 
@@ -1563,7 +1563,10 @@ legend {
 	background: url(../images/home_48.png) no-repeat;
 }
 
-.iconLogout {
-	/*background: url(../images/logout_48.png) no-repeat center center;*/ 
+.iconLogout { 
 	background: url(../images/logout_48.png) no-repeat;
+}
+
+.iconSmall {
+	background-size: 18px;
 }

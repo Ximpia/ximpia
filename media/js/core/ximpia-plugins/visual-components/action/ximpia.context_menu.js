@@ -30,13 +30,20 @@
 			contextMenu += "<ul id=\"" + idMenu + "\" class=\"contextMenu\">";
 			for (ctxI in items) {
 				var ctx = items[ctxI];
+				ximpia.console.log('***************** ctx ******************');
 				ximpia.console.log(ctx);
+        			var paramStr = '{';
+        			for (param in ctx.params) {
+        				paramStr += param + ": '" + ctx.params[param] + "'";
+        			}
+        			paramStr += '}';
 				// data-xp : viewName, actionName, windowType
-				var dataXp = "{windowtype: '" + "window" + "', viewName: '" + ctx.view + "', actionName: '" + 
-					ctx.action + "'}";
+				var dataXp = "{windowtype: '" + "window" + "', view: '" + ctx.view + "', action: '" + 
+					ctx.action + "', params: " + paramStr + "}";
 				var liAttr = (ctx.icon != '') ? "class=\"" + ctx.icon + "Small\"" : '';
 				liAttr += (ctx.sep == true) ? ' separator' : '';
-				var action = (ctx.view != '') ? 'openView' : 'openAction';
+				//var action = (ctx.view != '') ? 'openView' : 'openAction';
+				var action = 'menu-' + ctx.name;
 				contextMenu += "<li " + liAttr + "><a href=\"#" + action + "\" data-xp-type=\"ctxMenuItem\" data-xp=\"" + dataXp + "\" >" + ctx.title + "</a></li>";
 			}
 			contextMenu += "</ul>";
@@ -48,14 +55,36 @@
 			$(this).contextMenu({ menu: idMenu, alignElement: true},
 				function(action, el, pos) {
 					ximpia.console.log('itemAction: ' + action);
-					$(this).xpObjCtxMenu('clickItem');
+					$(this).xpObjCtxMenu('clickItem', action);
 			});
 		},
-		clickItem: function() {
+		clickItem: function(name) {
 			/**
 			 * Click on context menu item
 			 */
-			ximpia.console.log('clickItem!!!!');
+			ximpia.console.log('clickItem!!!! ' + name);
+			ximpia.console.log($("a[href='#" + name + "']"));
+			var clickObj = $("a[href='#" + name + "']");
+			$.metadata.setType("attr", "data-xp");
+			var attrs = clickObj.metadata();
+			ximpia.console.log('attrs...');
+			ximpia.console.log(attrs);
+			if (attrs.action != '') {
+				// do action
+				ximpia.console.log('action!!!!');
+				var pageJx = ximpia.common.PageAjax();
+				pageJx.doAction( {action: attrs.action} );
+			} else if (attrs.view != '') {
+				// show view
+				// popupNoView
+				// popupView
+				// view
+				ximpia.console.log('view!!!!');
+				ximpia.console.log('view: ' + attrs.view);
+				ximpia.common.PageAjax.doFadeIn();
+				var pageJx = ximpia.common.PageAjax();
+				pageJx.getView({ view: attrs.view, params: JSON.stringify(attrs.params) });
+			}
 		}
         };
 		

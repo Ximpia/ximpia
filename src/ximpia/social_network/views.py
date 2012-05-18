@@ -188,9 +188,10 @@ def jxBusiness(request, **args):
 			dbAction = ActionDAO(args['ctx'])
 			dbView = ViewDAO(args['ctx'])
 			actionObj = dbAction.get(application__code=K.APP, name=action)
-			viewObj = dbView.get(name=args['ctx']['viewNameSource'])
-			if actionObj.application.code != viewObj.application.code:
-				raise XpMsgException(None, _('Action is not in same application as view source'))
+			if args['ctx'].has_key('viewNameSource') and len(args['ctx']['viewNameSource']) != 0:
+				viewObj = dbView.get(name=args['ctx']['viewNameSource'])
+				if actionObj.application.code != viewObj.application.code:
+					raise XpMsgException(None, _('Action is not in same application as view source'))
 			impl = actionObj.implementation
 		implFields = impl.split('.')
 		method = implFields[len(implFields)-1]

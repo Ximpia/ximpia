@@ -78,7 +78,7 @@ class WorkflowAdmin(admin.ModelAdmin):
 		obj.save()
 
 class WorkflowDataAdmin(admin.ModelAdmin):
-	list_display = ('id','flow', 'user', 'session')
+	list_display = ('id','flow', 'userId')
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()

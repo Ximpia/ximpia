@@ -4,6 +4,8 @@ import string
 import simplejson as json
 import types
 import datetime
+import time
+import random
 
 from django.http import HttpResponse
 from django.core.mail import send_mail
@@ -15,12 +17,12 @@ from django.db.models import Q
 
 from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
-	SearchIndex, SearchIndexParam, SearchIndexWord, Word, Template, ViewTmpl
+	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl
 from ximpia.util import ut_email, resources
 from ximpia.core.models import JsResultDict, Context as Ctx, CoreParam
 from ximpia.core.constants import CoreConstants as K, CoreKParam
 from ximpia.core.data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO,\
-	ApplicationDAO
+	ApplicationDAO, TemplateDAO, ViewTmplDAO
 from ximpia.core.data import MenuDAO, MenuParamDAO, ViewMenuDAO, ApplicationAccessDAO, ActionDAO
 from ximpia.core.data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.core.choices import Choices
@@ -33,26 +35,11 @@ from ximpia import settings
 class ComponentRegister(object):
 	
 	@staticmethod
-	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], **argsDict):
-		"""Registers view
-		@param appCode: Application code
-		@param viewName: View name
-		@param myClass: Class that shows view
-		@param method: Method that shows view
-		@param argsDict: Dictionary that contains the view entry parameters. Having format name => [value1, value2, ...]"""
-		# TODO: Validate entry arguments: There is no None arguments, types, etc...
-		print 'register views...'
-		classPath = str(myClass).split("'")[1]
+	def registerViewMenu(appCode=None, viewName=None, menus=[], **argsDict):
+		"""Doc."""
+		print 'register view Menus...'
 		app = Application.objects.get(code=appCode)
-		view, created = View.objects.get_or_create(application=app, name=viewName)
-		view.implementation = classPath + '.' + method
-		view.save()
-		# Parameters
-		for name in argsDict:
-			param = Param.objects.get(application=app, name=name)
-			fields = argsDict[name]
-			for value in fields:
-				tuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value)
+		view = View.objects.get(application=app, name=viewName)
 		# Menu
 		print 'View menus...'
 		ViewMenu.objects.filter(view=view).delete()
@@ -93,6 +80,68 @@ class ComponentRegister(object):
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
 				counter += 10
+	
+	@staticmethod
+	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], **argsDict):
+		"""Registers view
+		@param appCode: Application code
+		@param viewName: View name
+		@param myClass: Class that shows view
+		@param method: Method that shows view
+		@param argsDict: Dictionary that contains the view entry parameters. Having format name => [value1, value2, ...]"""
+		# TODO: Validate entry arguments: There is no None arguments, types, etc...
+		print 'register views...'
+		classPath = str(myClass).split("'")[1]
+		app = Application.objects.get(code=appCode)
+		view, created = View.objects.get_or_create(application=app, name=viewName)
+		view.implementation = classPath + '.' + method
+		view.save()
+		# Parameters
+		for name in argsDict:
+			param = Param.objects.get(application=app, name=name)
+			fields = argsDict[name]
+			for value in fields:
+				tuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value)
+		"""# Menu
+		print 'View menus...'
+		ViewMenu.objects.filter(view=view).delete()
+		groupDict = {}
+		singleList = []
+		counterDict = {}
+		for dd in menus:
+			if dd.has_key(K.GROUP):
+				if not groupDict.has_key(dd[K.GROUP]):
+					groupDict[dd[K.GROUP]] = []
+				groupDict[dd[K.GROUP]].append(dd)
+			else:
+				singleList.append(dd)
+		# Single Menus - Not Grouped
+		counter = 100
+		for dd in singleList:
+			if not dd.has_key(K.ZONE):
+				dd[K.ZONE] = K.VIEW
+			menu = Menu.objects.get(name=dd[K.MENU_NAME])
+			sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+			print view, menu, sep, dd[K.ZONE], counter
+			viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+										zone=dd[K.ZONE], order=counter)
+			counterDict[dd[K.MENU_NAME]] = counter
+			counter += 100
+		# Grouped Menus
+		for groupName in groupDict:
+			fields = groupDict[groupName]
+			menuParent = Menu.objects.get(name=groupName)
+			viewMenuParent = ViewMenu.objects.get(view=view, menu=menuParent)
+			counter = viewMenuParent.order + 10
+			for dd in fields:
+				if not dd.has_key(K.ZONE):
+					dd[K.ZONE] = K.VIEW
+				menu = Menu.objects.get(name=dd[K.MENU_NAME])
+				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+				print view, menuParent, menu, sep, dd[K.ZONE], counter
+				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
+				counter += 10"""
 		
 	
 	@staticmethod
@@ -125,9 +174,21 @@ class ComponentRegister(object):
 			param.view = isView
 			param.workflow = isWorkflow
 			param.save()
+
+	@staticmethod
+	def registerFlow(appCode=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
+		"""Reister flow
+		@param appCode: Application code
+		@param flowcode: Flow code"""
+		app = Application.objects.get(code=appCode)
+		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode)
+		flow.resetStart = resetStart
+		flow.deleteOnEnd = deleteOnEnd
+		flow.jumpToView = jumpToView
+		flow.save()
 		
 	@staticmethod
-	def registerFlow(appCode=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
+	def registerFlowView(appCode=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
 			paramDict={}, viewParamDict={}):
 		"""Reister flow
 		@param appCode: Application code
@@ -141,7 +202,7 @@ class ComponentRegister(object):
 		viewSource = View.objects.get(application=app, name=viewNameSource)
 		viewTarget = View.objects.get(application=app, name=viewNameTarget)
 		action = Action.objects.get(application=app, name=actionName)
-		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode)
+		flow = Workflow.objects.get(code=flowCode)
 		flowView, created = WorkflowView.objects.get_or_create(flow=flow, viewSource=viewSource, viewTarget=viewTarget, 
 								action=action, order=order)
 		# Parameters
@@ -248,7 +309,11 @@ class ComponentRegister(object):
 			paramDict['winType'] = winType
 		if device != None:
 			paramDict['device'] = device
-		template = Template.objects.create( **paramDict )
+		try:
+			XpTemplate.objects.get(name=name).delete()
+		except XpTemplate.DoesNotExist:
+			pass
+		template = XpTemplate.objects.create( **paramDict )
 		# View
 		ViewTmpl.objects.create(view=view, template=template)
 
@@ -267,6 +332,7 @@ class CommonBusiness(object):
 	_actions = {}
 	_wf = None
 	_f = None
+	_wfUserId = ''
 	
 	def __init__(self, ctx):
 		self._ctx = ctx
@@ -277,6 +343,7 @@ class CommonBusiness(object):
 		self._isFormOK = None
 		self._wf = WorkFlowBusiness(self._ctx)
 		self._viewNameTarget = ''
+		self._wfUserId = ''
 	
 	def buildJSONResult(self, resultDict):
 		"""Builds json result
@@ -300,13 +367,14 @@ class CommonBusiness(object):
 	def _putParams(self, **args):
 		"""Put parameters into workflow or navigation system.
 		@param args: Arguments to insert into persistence"""
-		if self._ctx[Ctx.IS_FLOW]:
+		self._wf.putParams(**args)
+		"""if self._ctx[Ctx.IS_FLOW]:
 			self._wf.putParams(**args)
 		else:
 			dd = json.loads(self._ctx[Ctx.FORM].base_fields['entryFields'].initial)
 			for name in args:
 				dd[name] = args[name]
-			self._ctx[Ctx.FORM].base_fields['entryFields'].initial = json.dumps(dd)
+			self._ctx[Ctx.FORM].base_fields['entryFields'].initial = json.dumps(dd)"""
 	
 	def _setTargetView(self, viewName):
 		"""Set the target view for navigation."""
@@ -319,8 +387,15 @@ class CommonBusiness(object):
 	def _getParams(self, *nameList):
 		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
 		@param nameList: List of parameters to fetch"""
-		valueDict = {}
-		if self._ctx[Ctx.IS_FLOW]:
+		print 'wfUserId: ', self._ctx[Ctx.WF_USER_ID], ' flowCode: ', self._ctx[Ctx.FLOW_CODE]
+		valueDict = self._wf.getFlowDataDict(self._ctx[Ctx.WF_USER_ID], self._ctx[Ctx.FLOW_CODE])['data']
+		print 'valueDict: ', valueDict
+		"""valueDict = {}
+		for name in nameList:
+			#value = self._wf.getParam(name)
+			value = self._wf.getParamFromCtx(name)
+			valueDict[name] = value"""
+		"""if self._ctx[Ctx.IS_FLOW]:
 			print 'flow!!!!'
 			for name in nameList:
 				#value = self._wf.getParam(name)
@@ -331,9 +406,18 @@ class CommonBusiness(object):
 			dd = json.loads(self._ctx[Ctx.FORM].base_fields['entryFields'].initial)
 			for name in nameList:
 				if dd.has_key(name):
-					valueDict[name] = dd[name]
+					valueDict[name] = dd[name]"""
 		return valueDict
-		
+	
+	def _getWFUser(self):
+		"""Get Workflow user."""
+		if self._ctx[Ctx.COOKIES].has_key('wfUserId'):
+			self._ctx[Ctx.WF_USER_ID] = self._ctx[Ctx.COOKIES]['wfUserId']
+		else:
+			self._ctx[Ctx.WF_USER_ID] = self._wf.genUserId()
+			self._setCookie('wfUserId', self._ctx[Ctx.WF_USER_ID])
+		self._wfUserId = self._ctx[Ctx.WF_USER_ID]
+		return self._wfUserId
 	
 	def getErrorResultDict(self, errorDict, pageError=False):
 		"""Get sorted error list to show in pop-up window
@@ -501,7 +585,7 @@ class CommonBusiness(object):
 		"""Add to context cookies data. Decorators that build response will set cookie into respose object
 		@param key: Key
 		@param value: Value"""
-		self._ctx[Ctx.SET_COOKIES].append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.now()})
+		self._ctx[Ctx.SET_COOKIES].append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
 
 	def _setMainForm(self, form):
 		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
@@ -529,27 +613,36 @@ class WorkFlowBusiness (object):
 		self._dbWFViewParam = WFViewEntryParamDAO(ctx, relatedDepth=2)
 		self.__wfData = getBlankWfData({})
 	
-	def resolveFlowDataForUser(self, user, session, flowCode):
+	def genUserId(self):
+		"""Generate workflow user id.
+		@return: userId"""
+		userId = ''
+		while len(userId) < 40:
+			userId += random.choice('0123456789abcde')
+		return userId
+	
+	def get(self, flowCode):
+		"""Get flow."""
+		flow = self._dbWorkflow.get(code=flowCode)
+		return flow
+	
+	def resolveFlowDataForUser(self, wfUserId, flowCode):
 		"""Resolves flow for user and session key.
-		@param user: User
-		@param session: Session object
+		@param wfUserId: Workflow User Id
 		@param flowCode: Flow code
 		@return: resolvedFlow : Resolved flow for flow code , login user or session"""
 		resolvedFlow = None
-		sessionObj = Session.objects.get(session_key=session.session_key)
-		if user.is_authenticated():
-			flows = self._dbWFData.search(flow__code=flowCode, user=user)
-			if len(flows) > 0:
-				resolvedFlow = flows[0]
+		flows = self._dbWFData.search(flow__code=flowCode, userId=wfUserId)
+		print 'flows: ', flows
+		print 'All: ', self._dbWFData.getAll()
+		if len(flows) > 0:
+			resolvedFlow = flows[0]
 		else:
-			flows = self._dbWFData.search(flow__code=flowCode, session=sessionObj)
-			if len(flows) > 0:
-				resolvedFlow = flows[0]
-		if resolvedFlow == None:
 			raise XpMsgException(None, _('Error in resolving workflow for user'))
+		print 'resolvedFlow: ', resolvedFlow
 		return resolvedFlow
 
-	def resolveView(self, session, user, appCode, flowCode, viewNameSource, actionName):
+	def resolveView(self, wfUserId, appCode, flowCode, viewNameSource, actionName):
 		"""Search destiny views with origin viewSource and operation actionName
 		@param viewNameSource: Origin view
 		@param actionName: Action name
@@ -563,7 +656,7 @@ class WorkFlowBusiness (object):
 			if not paramFlowDict.has_key(param.flowView.flow.code):
 				paramFlowDict[param.flowView.flow.code] = []
 			paramFlowDict[param.flowView.flow.code].append(param)
-		wfDict = self.getFlowDataDict(session, user, flowCode)
+		wfDict = self.getFlowDataDict(wfUserId, flowCode)
 		print 'wfDict: ', wfDict
 		if len(flowViews) == 1:
 			viewTarget = flowViews[0].viewTarget
@@ -621,6 +714,7 @@ class WorkFlowBusiness (object):
 					checkType = paramType == types.StringType
 				elif paramDbType == Choices.BASIC_TYPE_TIME:
 					checkType = paramType is datetime.time
+				#paramValue, created = self._dbWFParams.getCreate()
 				if checkType == True:
 					self.__wfData['data'][name] = argsDict[name]
 				else:
@@ -628,28 +722,19 @@ class WorkFlowBusiness (object):
 		else:
 			raise XpMsgException(None, _('Parameters "') + ''.join(nameList) + _('" have not been registered'))
 	
-	def save(self, session, user, flowCode):
+	def save(self, wfUserId, flowCode):
 		"""Saves the workflow into database for user
 		@param user: User
 		@param flowCode: Flow code"""
 		print '__wfData: ', self.__wfData
-		if user.is_authenticated():
-			flows = self._dbWFData.search(user=user, flow__code=flowCode)
-			flow = flows[0]
-			if flows > 0:
-				flowData = _jsf.decode64dict(flow.data)
-				for name in self.__wfData['data']:
-					flowData['data'][name] = self.__wfData['data'][name]
+		flows = self._dbWFData.search(userId=wfUserId, flow__code=flowCode)
+		flow = flows[0]
+		if flows > 0:
+			flowData = _jsf.decode64dict(flow.data)
+			for name in self.__wfData['data']:
+				flowData['data'][name] = self.__wfData['data'][name]
 		else:
-			sessionObj = Session.objects.get(session_key=session.session_key)
-			flows = self._dbWFData.search(session=sessionObj, flow__code=flowCode)
-			flow = flows[0]
-			if flows > 0:
-				flowData = _jsf.decode64dict(flow.data)
-				for name in self.__wfData['data']:
-					flowData['data'][name] = self.__wfData['data'][name]
-			else:
-				raise XpMsgException(None, _('Flow data not found'))
+			raise XpMsgException(None, _('Flow data not found'))
 		#if self.__wfData['viewName'] != '':
 		flowData['viewName'] = self.__wfData['viewName']
 		view = self._dbView.get(name=self.__wfData['viewName'])
@@ -659,12 +744,12 @@ class WorkFlowBusiness (object):
 		flow.save()
 		return flow
 	
-	def resetFlow(self, session, user, flowCode, viewName):
+	def resetFlow(self, wfUserId, flowCode, viewName):
 		"""Reset flow. It deletes all workflow variables and view name
-		@param user: User
+		@param wfUserId: Workflow User Id
 		@param flowCode: Flow code"""
 		try:
-			flowData = self.resolveFlowDataForUser(user, session, flowCode)
+			flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
 			print 'resetFlow :: flowData: ', flowData
 			self.__wfData = getBlankWfData({})
 			self.__wfData['viewName'] = viewName
@@ -676,20 +761,13 @@ class WorkFlowBusiness (object):
 			flowData.save()
 		except XpMsgException:
 			# Create flow data
-			print 'create flow...', str(session), str(user)
+			print 'create flow...', wfUserId
 			self.__wfData = getBlankWfData({})
 			self.__wfData['viewName'] = viewName
 			print '__wfData: ', self.__wfData
 			view = self._dbView.get(name=viewName)
 			workflow = self._dbWorkflow.get(code=flowCode)
-			sessionObj = Session.objects.get(session_key=session.session_key)
-			print 'session Model: ', Session.objects.get(session_key=session.session_key)
-			if user.is_authenticated():
-				self._dbWFData.create(session=sessionObj, user=user, flow=workflow, data = _jsf.encode64Dict(self.__wfData),
-						view=view)
-			else:
-				self._dbWFData.create(session=sessionObj, flow=workflow, data = _jsf.encode64Dict(self.__wfData),
-						view=view)
+			self._dbWFData.create(userId=wfUserId, flow=workflow, data = _jsf.encode64Dict(self.__wfData), view=view)
 
 	def setViewName(self, viewName):
 		"""Set view name in Workflow
@@ -710,10 +788,14 @@ class WorkFlowBusiness (object):
 		return self.__wfData['data'][name]
 	
 	def getParamFromCtx(self, name):
-		"""Doc."""
+		"""Get flow parameter from context.
+		@param name: Parameter name
+		@return: Parameter value"""
 		flowDataDict = self._ctx[Ctx.FLOW_DATA]
+		print 'flowDataDict: ', flowDataDict, type(flowDataDict)
+		print 'wfData: ', self.__wfData
 		return flowDataDict['data'][name]
-	
+		
 	def buildFlowDataDict(self, flowData):
 		"""Build the flow data dictionary having the flowData instance.
 		@param flowData: Flow data
@@ -722,12 +804,12 @@ class WorkFlowBusiness (object):
 		print 'build :: flowDataDict: ', flowDataDict
 		return flowDataDict
 	
-	def getFlowDataDict(self, session, user, flowCode):
+	def getFlowDataDict(self, wfUserId, flowCode):
 		"""Get flow data dictionary for user and flow code
 		@param user: User
 		@param flowCode: flowCode
 		@return: flowData : Dictionary"""
-		flowData = self.resolveFlowDataForUser(user, session, flowCode)
+		flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
 		flowDataDict = _jsf.decode64dict(flowData.data)
 		print 'get :: flowDataDict: ', flowDataDict
 		return flowDataDict
@@ -739,12 +821,12 @@ class WorkFlowBusiness (object):
 		flowView = self._dbWFView.get(action__name=actionName)
 		return flowView
 	
-	def getView(self, session, user, flowCode):
+	def getView(self, wfUserId, flowCode):
 		"""Get view from flow
 		@param user: User
 		@param flowCode: Flow code
 		@return: viewName"""
-		flowDataDict = self.getFlowDataDict(session, user, flowCode)
+		flowDataDict = self.getFlowDataDict(wfUserId, flowCode)
 		viewName = flowDataDict['viewName']
 		return viewName
 	
@@ -769,9 +851,19 @@ class WorkFlowBusiness (object):
 			isLastView = True
 		return isLastView
 	
-	def removeData(self, session, user, flowCode):
+	def isFirstView(self, flowCode, viewName):
+		"""Checks if view is first in flow. It uses field 'order' to determine if is first view."""
+		check = False
+		flowViewStart = self._dbWFView.get(flow__code=flowCode, order=10)		
+		if flowViewStart.viewSource.name == viewName:
+			check = True
+		else:
+			check = False
+		return check
+	
+	def removeData(self, wfUserId, flowCode):
 		"""Removes the workflow data for user or session."""
-		flowData = self.resolveFlowDataForUser(user, session, flowCode)
+		flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
 		self._dbWFData.deleteById(flowData.id, real=True)
 		
 
@@ -884,6 +976,33 @@ class Search( object ):
 			resultsFinal.append(myDict)
 		return resultsFinal
 
+class Template( object ):
+	"""Logic for templates"""
+	_ctx = None
+	def __init__(self, ctx):
+		"""Menu building and operations"""
+		self._ctx = ctx
+		self._dbViewTmpl = ViewTmplDAO(self._ctx, relatedDepth=2)
+		self._dbTemplate = TemplateDAO(self._ctx)
+	def resolve(self, viewName):
+		"""Resolve template """
+		# Context: device, lang, country
+		tmplName = ''
+		if self._ctx[Ctx.LANG] != 'en' or self._ctx[Ctx.COUNTRY] != '' or self._ctx[Ctx.DEVICE] != Choices.DEVICE_PC:
+			# TODO: Complete for language and device templates
+			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
+			if len(tmplList) > 1:
+				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
+			else:
+				tmplName = tmplList[0].template.name
+		else:
+			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
+			if len(tmplList) > 1:
+				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
+			else:
+				tmplName = tmplList[0].template.name
+		return tmplName
+
 class MenuBusiness( object ):
 	_ctx = None
 	def __init__(self, ctx):
@@ -913,6 +1032,7 @@ class MenuBusiness( object ):
 							Q(menu__application__code__in=userAccessCodeList), view=view).order_by('order')
 		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
 		print 'viewMenus: ', viewMenus
+		print 'viewMenus All: ', self._dbViewMenu.getAll()
 		menuDict = {}
 		menuDict[Choices.MENU_ZONE_SYS] = []
 		menuDict[Choices.MENU_ZONE_MAIN] = []
@@ -1033,14 +1153,13 @@ class DoBusinessDecorator(object):
 					menu = MenuBusiness(obj._ctx)
 					#menuDict = menu.getMenus(obj._ctx['viewNameSource'])
 					menuDict = menu.getMenus('home')
-					print 'menuDict: ', menuDict
 					obj._ctx[Ctx.JS_DATA]['response']['menus'] = menuDict
 					# Views
 					if obj._ctx['viewNameTarget'] != '':
 						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameTarget']
 					else:
 						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameSource']
-					print 'view: ', obj._ctx[Ctx.JS_DATA]['response']['view']
+					print 'DoBusinessDecorator :: view: ', obj._ctx[Ctx.JS_DATA]['response']['view']
 					# App
 					obj._ctx[Ctx.JS_DATA]['response']['app'] = obj._ctx['app']
 					# User authenticate and session
@@ -1062,25 +1181,33 @@ class DoBusinessDecorator(object):
 										session[key] = dataReal[0]								
 								except:
 									# If we cant, we try json encode
-									dataEncoded = json.dumps(obj._ctx[Ctx.SESSION][key]) 
+									dataEncoded = json.dumps(obj._ctx[Ctx.SESSION][key])
 									session[key] = json.loads(dataEncoded)
 						obj._ctx[Ctx.JS_DATA]['response']['session'] = session
 					else:
 						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
+					# Tenplate
+					tmpl = Template(obj._ctx)
+					tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
+					print 'tmplName: ', tmplName
+					obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = tmplName
 					# Forms
 					for formId in obj._ctx[Ctx.FORMS]:
 						form = obj._ctx[Ctx.FORMS][formId]
 						if not obj._ctx[Ctx.JS_DATA].has_key(formId):
-							form.buildJsData(obj._ctx[Ctx.JS_DATA])					
+							form.buildJsData(obj._ctx[Ctx.JS_DATA])
 					# Form
 					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])					
 					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx)
+					print obj._ctx[Ctx.JS_DATA]['response'].keys()
 					# Result
 					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
 					#print obj._ctx[Ctx.JS_DATA]
 					print result
 					for cookie in obj._ctx[Ctx.SET_COOKIES]:
-						result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], expires = cookie['expires'])
+						maxAge = 5*12*30*24*60*60
+						result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
+								expires = cookie['expires'], max_age=maxAge)
 						print 'Did set cookie into result...', cookie
 					obj._ctx['_doneResult'] = True
 				else:
@@ -1164,8 +1291,110 @@ class ValidateFormDecorator(object):
 				return result
 		return wrapped_f
 
+class WFViewDecorator( object ):
+	
+	__flowCode = ''
+
+	def __init__(self, *argsTuple, **argsDict):
+		"""resetStart, jumpToView"""
+		self.__flowCode = argsTuple[0]
+
+	def __call__(self, f):
+		"""Doc."""
+		def wrapped_f(*argsTuple, **argsDict):
+			#print 'WFViewstartDecorator :: ', argsTuple, argsDict
+			obj = argsTuple[0]
+			#obj._wf = WorkFlowBusiness(obj._ctx)
+			obj._ctx[Ctx.FLOW_CODE] = self.__flowCode
+			obj._ctx[Ctx.IS_FLOW] = True
+			print 'flowCode: ', self.__flowCode
+			flow = obj._wf.get(self.__flowCode)
+			viewName = obj._ctx[Ctx.VIEW_NAME_SOURCE]
+			print 'View Current: ', obj._ctx[Ctx.VIEW_NAME_SOURCE]
+			# Worhflow User Id
+			if obj._ctx[Ctx.COOKIES].has_key('wfUserId'):
+				obj._ctx[Ctx.WF_USER_ID] = obj._ctx[Ctx.COOKIES]['wfUserId']
+				print 'COOKIE :: WF User Id: ', obj._ctx[Ctx.WF_USER_ID]
+			else:
+				obj._ctx[Ctx.WF_USER_ID] = obj._wf.genUserId()
+				obj._setCookie('wfUserId', obj._ctx[Ctx.WF_USER_ID])
+				print 'WF UserId: ', obj._ctx[Ctx.WF_USER_ID]
+			hasFlow = True
+			try:
+				flowData = obj._wf.getFlowDataDict(obj._ctx[Ctx.WF_USER_ID], self.__flowCode)
+				print 'flowData: ', flowData
+			except XpMsgException:
+				hasFlow = False
+			print 'hasFlow: ', hasFlow
+			if flow.jumpToView == True and hasFlow == True:
+				# Get flow data, display view in flow data
+				try:
+					viewName = obj._wf.getView(obj._ctx[Ctx.WF_USER_ID], self.__flowCode)
+					print 'Jump to View: ', obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName
+				except XpMsgException:
+					pass
+			else:
+				isFirstView = obj._wf.isFirstView(self.__flowCode, obj._ctx[Ctx.VIEW_NAME_SOURCE])
+				print 'Flow Data: ', hasFlow, isFirstView
+				# Check that this view is first in flow
+				if hasFlow == False and isFirstView == True:
+					print 'reset Flow... no flow and first window'
+					obj._wf.resetFlow(obj._ctx[Ctx.WF_USER_ID], self.__flowCode, obj._ctx[Ctx.VIEW_NAME_SOURCE])
+				elif isFirstView == True and flow.resetStart == True:
+					print 'reset Flow... resetStart=True and first view in flow...'
+					obj._wf.resetFlow(obj._ctx[Ctx.WF_USER_ID], self.__flowCode, obj._ctx[Ctx.VIEW_NAME_SOURCE])
+			obj._ctx['viewNameTarget'] = viewName
+			# Jump to View in case jumpToView = True and viewName resolved from flow is different from current view
+			#print 'Jumps... ', viewName, obj._ctx[Ctx.VIEW_NAME_SOURCE]
+			if viewName != obj._ctx[Ctx.VIEW_NAME_SOURCE]:
+				print 'redirect to ...', viewName				
+				dbView = ViewDAO(obj._ctx)
+				view = dbView.get(name=viewName)
+				viewAttrs = obj._wf.getViewParams(self.__flowCode, viewName)
+				# Show View
+				impl = view.implementation
+				implFields = impl.split('.')
+				method = implFields[len(implFields)-1]
+				classPath = ".".join(implFields[:-1])
+				cls = getClass( classPath )
+				objView = cls(obj._ctx)
+				obj._ctx[Ctx.VIEW_NAME_SOURCE] = viewName
+				if (len(viewAttrs) == 0) :
+					result = eval('objView.' + method)()
+				else:
+					result = eval('objView.' + method)(**viewAttrs)
+			else:
+				result = f(*argsTuple, **argsDict)
+			return result
+		return wrapped_f
+
+class MenuAction(object):
+	__viewName = ''
+	def __init__(self, *argsTuple, **argsDict):
+		self.__viewName = argsTuple[0]
+	def __call__(self, f):
+		"""Decorator call method"""
+		def wrapped_f(*argsTuple, **argsDict):
+			obj = argsTuple[0]
+			f(*argsTuple, **argsDict)			
+			# Show View
+			dbView = ViewDAO(obj._ctx)
+			view = dbView.get(name=self.__viewName)
+			print 'MenuAction :: ', view.name
+			obj._ctx['viewNameSource'] = view.name
+			impl = view.implementation
+			implFields = impl.split('.')
+			method = implFields[len(implFields)-1]
+			classPath = ".".join(implFields[:-1])
+			cls = getClass( classPath )
+			objView = cls(obj._ctx)
+			result = eval('objView.' + method)()			
+			return result
+		return wrapped_f
+
 class WFActionDecorator(object):
-	_app = ''
+	__app = ''
+	__flowCode = ''
 	def __init__(self, *argsTuple, **argsDict):
 		"""
 		Options
@@ -1173,8 +1402,10 @@ class WFActionDecorator(object):
 		app: String : Application code
 		"""
 		# Sent by decorator
-		if argsDict.has_key('app'):
-			self._app = argsDict['app']
+		"""if argsDict.has_key('app'):
+			self._app = argsDict['app']"""
+		#self.__flowCode = argsTuple[0]
+		pass
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
@@ -1184,14 +1415,19 @@ class WFActionDecorator(object):
 			#print 'actionName: ', obj._ctx[Ctx.ACTION]
 			#obj._wf = WorkFlowBusiness()
 			actionName = obj._ctx[Ctx.ACTION]
-			obj._ctx[Ctx.FLOW_CODE] = obj._wf.getFlowViewByAction(actionName).flow.code
+			flow = obj._wf.getFlowViewByAction(actionName).flow
+			self.__app = flow.application.code
+			print 'app: ', self.__app
+			obj._ctx[Ctx.FLOW_CODE] = flow.code
 			obj._ctx[Ctx.IS_FLOW] = True
 			#print 'WFActionDecorator :: flowCode: ', obj._ctx[Ctx.FLOW_CODE]
+			obj._ctx[Ctx.WF_USER_ID] = obj._ctx[Ctx.COOKIES]['wfUserId']
+			print 'COOKIE :: WF User Id: ', obj._ctx[Ctx.WF_USER_ID]
 			result = f(*argsTuple, **argsDict)
 			# Resolve View
 			#print 'session', 
-			viewTarget = obj._wf.resolveView(obj._ctx[Ctx.SESSION], obj._ctx[Ctx.USER], 
-						self._app, obj._ctx[Ctx.FLOW_CODE], obj._ctx[Ctx.VIEW_NAME_SOURCE], obj._ctx[Ctx.ACTION])
+			viewTarget = obj._wf.resolveView(obj._ctx[Ctx.WF_USER_ID], self.__app, obj._ctx[Ctx.FLOW_CODE], 
+							obj._ctx[Ctx.VIEW_NAME_SOURCE], obj._ctx[Ctx.ACTION])
 			viewName = viewTarget.name
 			#print 'viewName: ', viewName
 			# Insert view into workflow
@@ -1199,13 +1435,13 @@ class WFActionDecorator(object):
 			viewAttrs = obj._wf.getViewParams(obj._ctx[Ctx.FLOW_CODE], viewName)
 			#print 'viewAttrs: ', viewAttrs
 			# Save workflow
-			flowData = obj._wf.save(obj._ctx[Ctx.SESSION], obj._ctx[Ctx.USER], obj._ctx[Ctx.FLOW_CODE])
+			flowData = obj._wf.save(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
 			# Set Flow data dictionary into context
 			obj._ctx[Ctx.FLOW_DATA] = obj._wf.buildFlowDataDict(flowData)
 			#print 'flowDataDict: ', obj._ctx[Ctx.FLOW_DATA]
-			# Delete user flow ???
-			if obj._wf.isLastView(obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName, obj._ctx[Ctx.ACTION]):
-				obj._wf.removeData(obj._ctx[Ctx.SESSION], obj._ctx[Ctx.USER], obj._ctx[Ctx.FLOW_CODE])
+			# Delete user flow if deleteOnEnd = True
+			if flow.deleteOnEnd == True and obj._wf.isLastView(obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName, obj._ctx[Ctx.ACTION]):
+				obj._wf.removeData(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
 			obj._ctx[Ctx.VIEW_NAME_TARGET] = viewName
 			# Show View
 			impl = viewTarget.implementation
@@ -1218,57 +1454,5 @@ class WFActionDecorator(object):
 				result = eval('objView.' + method)()
 			else:
 				result = eval('objView.' + method)(**viewAttrs)
-			return result
-		return wrapped_f
-
-class WFViewStartDecorator(object):
-	_flows = []
-	def __init__(self, *argsTuple, **argsDict):
-		# Sent by decorator
-		self._flows = argsDict['flows']
-	def __call__(self, f):
-		"""Decorator call method"""
-		def wrapped_f(*argsTuple, **argsDict):
-			#print 'WFViewstartDecorator :: ', argsTuple, argsDict
-			obj = argsTuple[0]
-			#obj._wf = WorkFlowBusiness(obj._ctx)
-			for flowCode in self._flows:
-				obj._wf.resetFlow(obj._ctx[Ctx.SESSION], obj._ctx[Ctx.USER], flowCode, obj._ctx[Ctx.VIEW_NAME_SOURCE])
-			result = f(*argsTuple, **argsDict)
-			return result
-		return wrapped_f
-
-class NavActionDecorator(object):
-	"""Navigation from a view to another view using actionName and action method."""
-	_viewNameTarget = ''
-	def __init__(self, *argsTuple, **argsDict):
-		"""
-		Options
-		=======
-		viewNameTarget: String : The view name end point of navigation
-		"""
-		# Sent by decorator
-		if argsDict.has_key('viewNameTarget'):
-			self._viewNameTarget = argsDict['viewNameTarget']
-	def __call__(self, f):
-		"""Decorator call method"""
-		def wrapped_f(*argsTuple, **argsDict):
-			obj = argsTuple[0]
-			# Do action
-			f(*argsTuple, **argsDict)
-			# Get view
-			dbView = ViewDAO(obj._ctx)
-			if self._viewNameTarget == '':
-				self._viewNameTarget = obj.getTargetView()
-			viewTarget = dbView.get(name=self._viewNameTarget)
-			obj._ctx[Ctx.VIEW_NAME_TARGET] = self._viewNameTarget
-			# Show View
-			impl = viewTarget.implementation
-			implFields = impl.split('.')
-			method = implFields[len(implFields)-1]
-			classPath = ".".join(implFields[:-1])
-			cls = getClass( classPath )
-			objView = cls(obj._ctx)
-			result = eval('objView.' + method)()
 			return result
 		return wrapped_f

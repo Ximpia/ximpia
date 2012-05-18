@@ -48,10 +48,12 @@
 			ximpia.console.log('Parse sys...');
 			ximpia.console.log(menus['sys']);
 			if (menus.hasOwnProperty('sys')) {
-				var menuObj = menus['sys'][0];
-				ximpia.console.log('menuObj: ' + menuObj);
-				var items = menuObj['items'];
-				$('#LogoImg').xpObjCtxMenu('render', 'id_ctx_menu_sys', items);
+				if (menus['sys'].length > 0) {
+					var menuObj = menus['sys'][0];
+					ximpia.console.log('menuObj: ' + menuObj);
+					var items = menuObj['items'];
+					$('#LogoImg').xpObjCtxMenu('render', 'id_ctx_menu_sys', items);					
+				}
 			}			
 			
 			// Parse main
@@ -107,7 +109,7 @@
 			
 			// Click event
 			$("[data-xp-type='icon']").click(function() {
-				$($(this)).xpObjIcon('clickMenu');	
+				$(this).xpObjIcon('clickMenu');	
 			});
 			
 			/*for (var i=0; i<$(this).length; i++) {

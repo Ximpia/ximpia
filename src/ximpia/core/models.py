@@ -8,9 +8,6 @@ from django.contrib.sessions.models import Session
 from django.utils.translation import ugettext as _
 from ximpia import settings
 from django.utils import translation
-#from ximpia.core.choices import Choices
-#from ximpia.core.constants import Constants
-#from ximpia.core.validators import *
 
 from choices import Choices
 from constants import CoreConstants as K, CoreKParam
@@ -291,11 +288,11 @@ class View(BaseModel):
 	"""View"""
 	application = models.ForeignKey('core.Application',
 			verbose_name=_('Application'), help_text=_('Application for the view'))
-	name = models.CharField(max_length=30,
+	name = models.CharField(max_length=30, 
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100,
 			verbose_name=_('Implementation'), help_text=_('Business class and method that will show view'))
-	templates = models.ManyToManyField('core.Template', through='core.ViewTmpl', related_name='view_templates',
+	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
 			verbose_name=_('Templates'), help_text=_('Templates for view'))
 	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
 			verbose_name=_('Parameters'), help_text=_('View entry parameters'))	
@@ -311,7 +308,7 @@ class ViewTmpl(BaseModel):
 	"""View Template"""
 	view = models.ForeignKey('core.View',
 			verbose_name=_('View'), help_text=_('View'))
-	template = models.ForeignKey('core.Template',
+	template = models.ForeignKey('core.XpTemplate',
 			verbose_name=_('Template'), help_text=_('Template'))
 	def __unicode__(self):
 		return str(self.view) + '-' + str(self.template)
@@ -320,7 +317,7 @@ class ViewTmpl(BaseModel):
 		verbose_name = 'View Template'
 		verbose_name_plural = "View Templates"
 
-class Template(BaseModel):
+class XpTemplate(BaseModel):
 	"""Template"""
 	application = models.ForeignKey('core.Application',
 			verbose_name=_('Application'), help_text=_('Application for the template'))
@@ -391,7 +388,7 @@ class WorkflowView(BaseModel):
 	order = models.IntegerField(default=10,
 			verbose_name=_('Order'), help_text=_('Order'))
 	def __unicode__(self):
-		return str(self.code) +  ' - ' + str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
+		return str(self.flow) +  ' - ' + str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
 	class Meta:
 		db_table = 'CORE_WF_VIEW'
 		verbose_name = 'Workflow View'
@@ -413,10 +410,12 @@ class WFViewEntryParam(BaseModel):
 
 class WorkflowData(BaseModel):
 	"""Workflow Data"""
-	user = models.ForeignKey(UserSys, blank=True, null=True, 
-			verbose_name = _('User'), help_text = _('User'))
-	session = models.ForeignKey(Session,
-			verbose_name = _('Session'), help_text = _('Session Id'))
+	"""user = models.ForeignKey(UserSys, blank=True, null=True, 
+			verbose_name = _('User'), help_text = _('User'))"""
+	"""session = models.ForeignKey(Session,
+			verbose_name = _('Session'), help_text = _('Session Id'))"""
+	userId = models.CharField(max_length=40,
+			verbose_name = _('Workflow User Id'), help_text = _('User Id saved as a cookie for workflow'))
 	flow = models.ForeignKey('core.WorkFlow', related_name='flowData', 
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
 	view = models.ForeignKey('core.View', related_name='viewFlowData',
@@ -424,12 +423,12 @@ class WorkflowData(BaseModel):
 	data = models.TextField(default = _jsf.encode64Dict(getBlankWfData({})),
 			verbose_name=_('Data'), help_text=_('Worflow data'))
 	def __unicode__(self):
-		return str(self.user) + ' - ' + str(self.flow)
+		return str(self.userId) + ' - ' + str(self.flow)
 	class Meta:
 		db_table = 'CORE_WF_DATA'
 		verbose_name = 'Workflow Data'
 		verbose_name_plural = "Workflow Data"
-		unique_together = ('user', 'flow')
+		unique_together = ('userId', 'flow')
 
 class Param(BaseModel):
 	"""Parameters for WF and Views"""
@@ -655,6 +654,11 @@ class Context(object):
 	FLOW_DATA = 'flowData'
 	IS_FLOW = 'isFlow'
 	SET_COOKIES = 'set_cookies'
+	DEVICE = 'device'
+	COUNTRY = 'country'
+	WIN_TYPE = 'winType'
+	TMPL = 'tmpl'
+	WF_USER_ID = 'wfUserId'
 	def __init__(self, **args):
 		if args.has_key('app'):
 			self._app = args['app']
@@ -666,12 +670,13 @@ class Context(object):
 				REQ = request.REQUEST 
 				langs = ('en')
 				lang = translation.get_language()
+				print 'lang django: ', lang
 				if lang not in langs:
 					lang = 'en'
 				ctx = {}
 				ctx[self.APP] = self._app
 				ctx['user'] = request.user
-				ctx['lang'] = lang
+				ctx[self.LANG] = lang
 				ctx['settings'] = settings
 				ctx['session'] = request.session
 				ctx['cookies'] = request.COOKIES
@@ -680,6 +685,10 @@ class Context(object):
 				ctx['request'] = REQ
 				ctx['raw_request'] = request
 				ctx['get'] = request.GET
+				ctx[self.DEVICE] = Choices.DEVICE_PC
+				ctx[self.COUNTRY] = ''
+				ctx[self.WIN_TYPE] = Choices.WIN_TYPE_WINDOW
+				ctx[self.TMPL] = ''
 				#ctx['socialChannel'] = ''
 				ctx['userSocial'] = None
 				ctx['auth'] = {}
@@ -693,6 +702,7 @@ class Context(object):
 				ctx[self.FLOW_DATA] = ''
 				ctx[self.IS_FLOW] = False
 				ctx[self.JS_DATA] = ''
+				ctx[self.WF_USER_ID] = ''
 				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
 				if request.session.has_key('userSocial') and request.user.is_authenticated():
 					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
@@ -715,7 +725,7 @@ class Context(object):
 				raise
 		return wrapped_f
 
-class XpTemplate(object):
+class XpTemplateDeprec(object):
 	_tmplDict = {}
 	def __init__(self, tmplDict, *argsTuple, **argsDict):
 		self._tmplDict = tmplDict

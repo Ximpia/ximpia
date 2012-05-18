@@ -39,6 +39,7 @@
 .contextMenu li.hover a {
 	color: #fff;
 	background-color: #3399ff;
+	z-index: 0;
 }
 
 .contextMenu li.disabled a {
@@ -68,8 +69,12 @@
 .contextMenu li.delete a { background-image: url(images/page_white_delete.png); }
 .contextMenu li.quit a { background-image: url(images/door.png); }*/
 
-/* *******/
-/* Icons */
-/* *******/
 
-.contextMenu li.iconLogoutSmall a { background-image: url(../images/logout_16.png);}
+.contextMenu li.iconHomeSmall a { 
+	background-image: url(../images/home_48.png);
+	background-size: 18px; 
+}
+.contextMenu li.iconLogoutSmall a { 
+	background-image: url(../images/logout_48.png);
+	background-size: 18px; 
+}

@@ -28,8 +28,7 @@ from ximpia.util import ut_email
 from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx, UserSocial,\
 	Workflow
 from ximpia.core.business import CommonBusiness, EmailBusiness, WorkFlowBusiness
-from ximpia.core.business import ValidateFormDecorator, ShowSrvDecorator, WFActionDecorator, WFViewStartDecorator, NavActionDecorator, \
-	DoBusinessDecorator
+from ximpia.core.business import ValidateFormDecorator, ShowSrvDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuAction
 from ximpia.core.data import CoreParameterDAO, UserSocialDAO
 from ximpia.core.constants import CoreConstants as CoreK, CoreKParam
 
@@ -195,7 +194,7 @@ class LoginView(CommonBusiness):
 		self._dbUserDetail = UserDetailDAO(ctx)
 		self._dbParam = SNParamDAO(ctx)
 	
-	#@WFViewStartDecorator(flows=['login'])
+	@WFViewDecorator('login')
 	@DoBusinessDecorator(pageError=True)
 	def showLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
@@ -203,12 +202,12 @@ class LoginView(CommonBusiness):
 		@return: result"""
 		# Check if login:
 		print 'login...'
-		if self._ctx['user'].is_authenticated():
+		"""if self._ctx['user'].is_authenticated():
 			# login: context variable isLogin = True
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', True)
 			self._ctx[Ctx.JS_DATA].addAttr('userid', self._ctx['user'].pk)
 			# Include user_info, a dictionary with user environment data
-			viewName = 'home'			
+			viewName = 'home'
 			self._setMainForm(forms.LoginForm())
 			self._ctx[Ctx.VIEW_NAME_TARGET] = viewName
 			print 'ximpiaId: ', self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET)
@@ -216,15 +215,20 @@ class LoginView(CommonBusiness):
 			# Get implementation for view
 			home = HomeView(self._ctx)
 			home.showStatus()
-		else:
+			pass"""
+		if not self._ctx['user'].is_authenticated():
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
 			#self._ctx[Ctx.FORM].buildJsData(self._ctx[Ctx.JS_DATA])
 			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
-		# Popup - Password reminder
-		self._addForm(forms.PasswordReminderForm())
-		print 'jsData: ', self._ctx[Ctx.JS_DATA]['response'].keys()
+			# Popup - Password reminder
+			self._addForm(forms.PasswordReminderForm())
+
+	@DoBusinessDecorator(pageError=True)
+	def showLogout(self):
+		"""Show logout view"""
+		self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 
 	@DoBusinessDecorator(form = forms.ChangePasswordForm)
 	def showNewPassword(self, ximpiaId=None, reminderId=None):
@@ -259,8 +263,7 @@ class LoginAction(CommonBusiness):
 		self._dbParam = SNParamDAO(ctx)
 	
 	@ValidateFormDecorator(forms.LoginForm)
-	#@WFActionDecorator(app=K.APP)
-	@NavActionDecorator(viewNameTarget='home')
+	@WFActionDecorator()
 	def doLogin(self):
 		"""Performs the login action
 		@param ctx: Context
@@ -285,20 +288,29 @@ class LoginAction(CommonBusiness):
 		#print self._wf.getFlowDataDict(self._ctx[], self._ctx[], self._ctx[Ctx.FLOW_CODE])
 		# How we get? viewNameSource, actionName to resolve view??? => Context
 		
-		# Workflow will take control, check that view home must be shown		
-		print 'Session: ', self._ctx['session']
+		# Workflow will take control, check that view home must be shown
+		print 'Session: ', self._ctx[Ctx.SESSION]
 		print 'user: ', self._ctx[Ctx.USER]
-		print 'cookies: ', self._ctx['cookies']
-		if self._ctx['cookies'].has_key('userSocialName'):
-			userSocialName = self._ctx['cookies']['userSocialName']
+		print 'cookies: ', self._ctx[Ctx.COOKIES]
+		if self._ctx[Ctx.COOKIES].has_key('userSocialName'):
+			userSocialName = self._ctx[Ctx.COOKIES]['userSocialName']
 			print 'COOKIE :: userSocialName: ', userSocialName
 		else:
 			userSocialName = K.USER
 			self._setCookie('userSocialName', userSocialName)
 		print 'userSocialName: ', userSocialName
-		self._ctx['userSocial'] = self._dbUserSocial.get(user=self._ctx[Ctx.USER], name=userSocialName)
-		self._ctx['session']['userSocial'] = self._ctx['userSocial']
+		self._ctx[Ctx.USER_SOCIAL] = self._dbUserSocial.get(user=self._ctx[Ctx.USER], name=userSocialName)
+		self._ctx[Ctx.SESSION]['userSocial'] = self._ctx['userSocial']
 		print 'userSocial: ', self._ctx['userSocial']
+
+	@MenuAction('logout')
+	def doLogout(self):
+		"""Logout user"""
+		print 'doLogout...'
+		logout(self._ctx[Ctx.RAW_REQUEST])
+		print 'doLogout :: WF Data: ', self._getWFUser()
+		self._wf.removeData(self._getWFUser(), 'login')
+		print 'did logout...'
 	
 	@ValidateFormDecorator(forms.PasswordReminderForm)
 	@DoBusinessDecorator(pageError=True)
@@ -344,6 +356,7 @@ class HomeView(CommonBusiness):
 	def __init__(self, ctx):
 		super(HomeView, self).__init__(ctx)
 	
+	@WFViewDecorator('login')
 	@DoBusinessDecorator(form = forms.HomeForm)
 	def showStatus(self):
 		"""Status home view"""
