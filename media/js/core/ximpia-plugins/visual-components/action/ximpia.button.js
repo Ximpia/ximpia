@@ -41,11 +41,11 @@
         };
         var createPopupMsgBar = function(obj) {
         	$("#id_popupButton").xpObjButton('createPopupMsgBar');
-        	$("#id_btPopupMsg").css('top', $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()-20);
+        	$("#id_btPopupMsg").css('top', $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()-10);
         	var windowWidth = $("div#PopMsgWrapper").css('width');
         	var index = windowWidth.search('px');
         	var iWindowWidth = windowWidth.substr(0, index);
-        	var newWidth = iWindowWidth*.97;
+        	var newWidth = iWindowWidth*.99;
         	$("#id_btPopupMsg").css('width', newWidth + 'px');
         }
         /*
@@ -93,9 +93,12 @@
         	console.log('isValid: ' + isValid);
         	var objMap = {	page: 'Page', title: 'Title', popup: 'Popup'	};
         	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon();
+        	ximpia.console.log('viewType: ' + obj.viewType);
         	if (isValid == true) {
         		if (obj.viewType == 'page') {
         			createPageMsgBar(obj);
+        		} else if (obj.viewType == 'popup') {
+        			createPopupMsgBar(obj);
         		} else if (obj.viewType == 'title') {
         			createTitleMsgBar(obj);
         		}
@@ -201,7 +204,8 @@
 					console.log('attrs.viewType : ' + attrs.viewType);
 					var sStyle = "float: left; margin-top: 3px";
 					if (attrs.hasOwnProperty('align')) {
-						sStyle = "float: " + attrs.align + "; margin-top: 3px";
+						//sStyle = "float: " + attrs.align + "; margin-top: 3px";
+						sStyle = "float: " + attrs.align;
 					}
 					// form, action, actionData, type, icon, method, callback, clickStatus
 					var dataXp = "{form: '" + attrs.form + "', mode: '" + attrs.mode + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', action: '" + attrs.action + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "', viewType: '" + attrs.viewType + "'}";

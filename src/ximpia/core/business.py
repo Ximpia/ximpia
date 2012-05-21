@@ -531,7 +531,7 @@ class CommonBusiness(object):
 		for dbData in dbDataList:
 			dbObj, qArgs, errName = dbData
 			exists = dbObj.check(**qArgs)
-			print 'validate Data: ', qArgs, exists, errName
+			print 'validate Exists Data: args: ', qArgs, ' exists: ' + str(exists), ' errName: ' + str(errName)
 			if not exists:
 				self.addError(field=errName)
 	
@@ -578,8 +578,8 @@ class CommonBusiness(object):
 
 	def setOkMsg(self, idOK):
 		"""Sets the ok message id"""
-		msgDict = _jsf.decodeArray(self._f.fields['okMessages'].initial)
-		self._f.fields['msg_ok'].initial = msgDict[idOK]
+		msgDict = _jsf.decodeArray(self._ctx[Ctx.FORM].fields['okMessages'].initial)
+		self._ctx[Ctx.FORM].fields['msg_ok'].initial = msgDict[idOK]
 	
 	def _setCookie(self, key, value):
 		"""Add to context cookies data. Decorators that build response will set cookie into respose object
@@ -1000,13 +1000,19 @@ class Template( object ):
 			if len(tmplList) > 1:
 				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
 			else:
-				tmplName = tmplList[0].template.name
+				if len(tmplList) != 0:
+					tmplName = tmplList[0].template.name
+				else:
+					pass
 		else:
 			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
 			if len(tmplList) > 1:
 				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
 			else:
-				tmplName = tmplList[0].template.name
+				if len(tmplList) != 0:
+					tmplName = tmplList[0].template.name
+				else:
+					pass
 		return tmplName
 
 class MenuBusiness( object ):
@@ -1024,9 +1030,9 @@ class MenuBusiness( object ):
 		view = self._dbView.get(name=viewName)
 		print 'view: ', view
 		# TODO: Play around to get list of codes using common methods
-		print 'userSocial: ', self._ctx['userSocial']
+		print 'userSocial: ', self._ctx[Ctx.USER_SOCIAL]
 		userAccessCodeList = []
-		if self._ctx['userSocial'] != None:
+		if self._ctx[Ctx.USER_SOCIAL] != None:
 			userAccessList = self._dbAppAccess.search(userSocial=self._ctx['userSocial'])
 			for userAccess in userAccessList:
 				userAccessCodeList.append(userAccess.application.code)
@@ -1067,7 +1073,11 @@ class MenuBusiness( object ):
 			container[viewMenu.menu.name] = menuObj
 			if viewMenu.parent == None:
 				menuObj['items'] = []
-				menuDict[viewMenu.zone].append(menuObj)
+				if viewMenu.zone in ['sys','main']:
+					if self._ctx[Ctx.IS_LOGIN]:
+						menuDict[viewMenu.zone].append(menuObj)
+				else:
+					menuDict[viewMenu.zone].append(menuObj)
 			else:
 				parentMenuObj = container[viewMenu.parent.menu.name]
 				parentMenuObj['items'].append(menuObj)
@@ -1131,12 +1141,14 @@ class DoBusinessDecorator(object):
 	"""Build response from jsData"""
 	_pageError = False
 	_form = None
+	_jsResult = False
 	def __init__(self, *argsTuple, **argsDict):
 		"""
 		Options
 		=======
 		pageError: Show error detail as a list in a popup or show error in a message bar. pageError=True : Show error message bar
 		form: Form class attached to the view
+		jsResult: True | False : If result is jsData or Http json representation
 		"""
 		if argsDict.has_key('pageError'):
 			self._pageError = argsDict['pageError']
@@ -1144,6 +1156,8 @@ class DoBusinessDecorator(object):
 			self._pageError = False
 		if argsDict.has_key('form'):
 			self._form = argsDict['form']
+		if argsDict.has_key('jsResult'):
+			self._jsResult = argsDict['jsResult']
 	def __call__(self, f):
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
@@ -1152,7 +1166,8 @@ class DoBusinessDecorator(object):
 				#print 'DoBusinessDecorator :: ctx: ', obj._ctx.keys() 
 				obj._ctx[Ctx.JS_DATA] = JsResultDict()
 				if self._form != None:
-					obj._ctx[Ctx.FORM] = self._form()
+					#obj._ctx[Ctx.FORM] = self._form()
+					obj._setMainForm(self._form())
 				f(*argsTuple, **argsDict)
 				if not obj._ctx.has_key('_doneResult'):
 					# Menu
@@ -1165,7 +1180,7 @@ class DoBusinessDecorator(object):
 						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameTarget']
 					else:
 						obj._ctx[Ctx.JS_DATA]['response']['view'] = obj._ctx['viewNameSource']
-					print 'DoBusinessDecorator :: view: ', obj._ctx[Ctx.JS_DATA]['response']['view']
+					print 'DoBusinessDecorator :: view: ', '*' + obj._ctx[Ctx.JS_DATA]['response']['view'] + '*'
 					# App
 					obj._ctx[Ctx.JS_DATA]['response']['app'] = obj._ctx['app']
 					# User authenticate and session
@@ -1184,7 +1199,7 @@ class DoBusinessDecorator(object):
 									if type(obj._ctx[Ctx.SESSION][key]) == types.ListType:
 										session[key] = dataReal
 									else:
-										session[key] = dataReal[0]								
+										session[key] = dataReal[0]
 								except:
 									# If we cant, we try json encode
 									dataEncoded = json.dumps(obj._ctx[Ctx.SESSION][key])
@@ -1192,33 +1207,43 @@ class DoBusinessDecorator(object):
 						obj._ctx[Ctx.JS_DATA]['response']['session'] = session
 					else:
 						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
-					# Tenplate
+					# Template
 					tmpl = Template(obj._ctx)
-					tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
-					print 'tmplName: ', tmplName
-					obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = tmplName
+					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
+						tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
+						print 'tmplName: ', tmplName
+						obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = tmplName
+					else:
+						# In case we show only msg with no view, no template
+						print 'no View, no template...'
+						obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = ''
 					# Forms
+					print 'forms: ', obj._ctx[Ctx.FORMS]
 					for formId in obj._ctx[Ctx.FORMS]:
 						form = obj._ctx[Ctx.FORMS][formId]
 						if not obj._ctx[Ctx.JS_DATA].has_key(formId):
 							form.buildJsData(obj._ctx[Ctx.JS_DATA])
-					# Form
-					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx[Ctx.JS_DATA])					
-					#obj._ctx[Ctx.FORM].buildJsData(obj._ctx)
 					print obj._ctx[Ctx.JS_DATA]['response'].keys()
 					# Result
-					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
-					#print obj._ctx[Ctx.JS_DATA]
-					print result
-					for cookie in obj._ctx[Ctx.SET_COOKIES]:
-						maxAge = 5*12*30*24*60*60
-						result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
-								expires = cookie['expires'], max_age=maxAge)
-						print 'Did set cookie into result...', cookie
+					if self._jsResult == False:
+						result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+						#print obj._ctx[Ctx.JS_DATA]
+						print result
+						for cookie in obj._ctx[Ctx.SET_COOKIES]:
+							maxAge = 5*12*30*24*60*60
+							result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
+									expires = cookie['expires'], max_age=maxAge)
+							print 'Did set cookie into result...', cookie
+					else:
+						result = obj._ctx[Ctx.JS_DATA]
+						print result
 					obj._ctx['_doneResult'] = True
 				else:
 					print 'I skip building response, since I already did it!!!!!'
-					result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+					if self._jsResult == False:
+						result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+					else:
+						result = obj._ctx[Ctx.JS_DATA]
 				return result
 			except XpMsgException as e:
 				errorDict = obj.getErrors()
@@ -1262,6 +1287,7 @@ class ValidateFormDecorator(object):
 			bForm = obj._ctx[Ctx.FORM].is_valid()
 			#obj._ctx[Ctx.FORM] = obj._f
 			if bForm == True:
+				obj._setMainForm(obj._ctx[Ctx.FORM])
 				result = f(*argsTuple, **argsDict)
 				return result
 				"""try:
@@ -1374,7 +1400,7 @@ class WFViewDecorator( object ):
 			return result
 		return wrapped_f
 
-class MenuAction(object):
+class MenuActionDecorator(object):
 	__viewName = ''
 	def __init__(self, *argsTuple, **argsDict):
 		self.__viewName = argsTuple[0]

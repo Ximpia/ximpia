@@ -659,6 +659,7 @@ class Context(object):
 	WIN_TYPE = 'winType'
 	TMPL = 'tmpl'
 	WF_USER_ID = 'wfUserId'
+	IS_LOGIN = 'isLogin'
 	def __init__(self, **args):
 		if args.has_key('app'):
 			self._app = args['app']
@@ -708,8 +709,12 @@ class Context(object):
 					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
 					ctx['userSocial'] = request.REQUEST['userSocial']"""
 					# TODO: Get this from session
-					ctx['userSocial'] = request.session['userSocial']
-					print 'Context :: userSocial: ', ctx['userSocial']
+					ctx[self.USER_SOCIAL] = request.session['userSocial']
+					print 'Context :: userSocial: ', ctx[self.USER_SOCIAL]
+				if request.user.is_authenticated():
+					ctx[self.IS_LOGIN] = True
+				else:
+					ctx[self.IS_LOGIN] = False
 				# Set cookies
 				ctx[self.SET_COOKIES] = []
 				argsDict['ctx'] = ctx

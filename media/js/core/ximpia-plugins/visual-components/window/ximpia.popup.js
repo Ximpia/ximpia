@@ -50,8 +50,9 @@
         	});
             	$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
             	$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
-            	ximpia.console.log('id_pops');
+            	ximpia.console.log('id_pops...');
             	ximpia.console.log($('#id_pops'));
+            	ximpia.console.log('viewName: ' + viewData.viewName),
 		pageJx.getView({ view: viewData.viewName, mode: 'popupNoView' });
             	ximpia.console.log('I am done!!!');
         };

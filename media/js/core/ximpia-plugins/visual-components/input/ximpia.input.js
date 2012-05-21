@@ -196,7 +196,7 @@
 			//ximpia.console.log('xpForm: ', xpForm);
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			var formId = ximpia.common.Browser.getForm(xpForm);
-			var viewName = formId.split('_')[1];
+			var viewName = ximpia.common.Browser.getView(xpForm);
 			//ximpia.console.log('data length : ' + data.length());
 			if (typeof data != 'undefined') {
 				var list = Object.keys(data);

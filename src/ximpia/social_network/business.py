@@ -28,7 +28,7 @@ from ximpia.util import ut_email
 from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx, UserSocial,\
 	Workflow
 from ximpia.core.business import CommonBusiness, EmailBusiness, WorkFlowBusiness
-from ximpia.core.business import ValidateFormDecorator, ShowSrvDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuAction
+from ximpia.core.business import ValidateFormDecorator, ShowSrvDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator
 from ximpia.core.data import CoreParameterDAO, UserSocialDAO
 from ximpia.core.constants import CoreConstants as CoreK, CoreKParam
 
@@ -230,7 +230,7 @@ class LoginView(CommonBusiness):
 		"""Show logout view"""
 		self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 
-	@DoBusinessDecorator(form = forms.ChangePasswordForm)
+	@DoBusinessDecorator(form = forms.ChangePasswordForm, jsResult=True)
 	def showNewPassword(self, ximpiaId=None, reminderId=None):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param ximpiaId: ximpiaId
@@ -238,17 +238,17 @@ class LoginView(CommonBusiness):
 		# validate that ximpiaId and reminderId are informed
 		days = self._dbParam.get(mode=KParam.LOGIN, name=KParam.REMINDER_DAYS).valueId
 		newDate = date.today() + timedelta(days=days)
-		print 'New Password Data : ', ximpiaId, newDate, ximpiaId
+		print 'New Password Data : ', ximpiaId, newDate, reminderId
 		# Show actual password, new password and confirm new password
 		self.validateExists([
 					[self._dbUserSys, {'username': ximpiaId}, 'changePassword'],
 					[self._dbUserDetail, {	'user__username': ximpiaId, 
-								'reminderId': ximpiaId, 
+								'reminderId': reminderId, 
 								'resetPasswordDate__lte' : newDate}, 'changePassword'],
 					])		
 		# validate
 		self.isValid()
-		self._f.putParamList(ximpiaId=ximpiaId)
+		self._f().putParamList(ximpiaId=ximpiaId)
 
 
 class LoginAction(CommonBusiness):
@@ -303,7 +303,7 @@ class LoginAction(CommonBusiness):
 		self._ctx[Ctx.SESSION]['userSocial'] = self._ctx['userSocial']
 		print 'userSocial: ', self._ctx['userSocial']
 
-	@MenuAction('logout')
+	@MenuActionDecorator('logout')
 	def doLogout(self):
 		"""Logout user"""
 		print 'doLogout...'
@@ -342,7 +342,7 @@ class LoginAction(CommonBusiness):
 	@DoBusinessDecorator(pageError=True)
 	def doNewPassword(self):
 		"""Saves new password, it does authenticate and login user."""
-		user = self._dbUserSys.get(username= self._f.getParam('ximpiaId'))
+		user = self._dbUserSys.get(username= self._f().getParam('ximpiaId'))
 		user.set_password(self._f().d('newPassword'))
 		user.save()
 		userDetail = self._dbUserDetail.get(user=user)

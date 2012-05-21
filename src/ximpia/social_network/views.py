@@ -189,6 +189,7 @@ def jxBusiness(request, **args):
 			dbView = ViewDAO(args['ctx'])
 			actionObj = dbAction.get(application__code=K.APP, name=action)
 			if args['ctx'].has_key('viewNameSource') and len(args['ctx']['viewNameSource']) != 0:
+				print 'viewNameSource', args['ctx']['viewNameSource']
 				viewObj = dbView.get(name=args['ctx']['viewNameSource'])
 				if actionObj.application.code != viewObj.application.code:
 					raise XpMsgException(None, _('Action is not in same application as view source'))
@@ -387,21 +388,24 @@ def checkCaptcha(request, value):
 # *******************************
 
 @Context(app=K.APP)
-def changePassword(request, ximpiaId, reminderId, **argsDict):
+def changePassword(request, ximpiaId, reminderId, **args):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
-	login = LoginView(argsDict['ctx'])
-	login.showNewPassword(ximpiaId=ximpiaId, reminderId=reminderId)
-	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, argsDict['ctx']))
+	args['ctx']['viewNameSource'] = 'newPassword'
+	login = LoginView(args['ctx'])
+	resultJs = login.showNewPassword(ximpiaId=ximpiaId, reminderId=reminderId)
+	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, {	'result': json.dumps(resultJs),
+														'settings': settings
+													}))
 	return result
 
 @Context(app=K.APP)
-def signupUser(request, invitationCode, **argsDict):
+def signupUser(request, invitationCode, **args):
 	"""Signup user with invitation."""
 	print 'signupUser...'
 	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-	signup = SignupView(argsDict['ctx'])
+	signup = SignupView(args['ctx'])
 	signup.showSignupUser(invitationCode=invitationCode, affiliateId=affiliateId)
-	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, argsDict['ctx']))
+	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, args['ctx']))
 	return result

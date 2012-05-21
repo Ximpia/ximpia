@@ -18,14 +18,38 @@
 {% block id_view %}
 {% endblock %}
 
-<section id="id_data" >
-
-{% block pageForm %}
-{% endblock %}
-
 <div id="Wrapper">
 
 <header id="id_header" >
+
+<form id="form_header" action="" method="post" >
+
+<div id="Logo" style="margin-top: 13px">
+<a href="#" onclick="return false"><img id="LogoImg" src="http://localhost:8000/site_media/images/ximpia-logo-small-plano.png" alt=" " style="width: 105px;height: 35px;margin: 1px 10px;" /> </a>
+</div>
+
+<div id="id_header_extra">
+
+<input type="text" id="id_header_search" name="search" class="InputText viewSearch" style="float: left; width: 270px; margin-right: 5px; margin-top: 15px" x-webkit-speech  />
+
+<div id="IconMenu">	
+
+<nav id="id_mainIcons">
+</nav>
+
+<nav id="id_viewIcons" style="margin-right: 5px">
+</nav>
+
+</div>
+
+</div>
+
+<nav>
+
+</nav>
+
+</form>
+
 </header>
 
 <nav id="id_navBar" >
@@ -34,11 +58,14 @@
 <section id="id_sect_loading" >
 </section>
 
+<section id="id_sectionTitle" class="sectionTitle">
+</section>
+
 <section id="id_content" class="sectionContent">
 
 {% block sectionContent %}
 {% endblock%}
-	
+
 </section>
 
 <section id="id_sectionButton" class="sectionButton">
@@ -47,7 +74,7 @@
 {% endblock %}
 
 </section>
-    
+
 </div>
 
 <br/>
@@ -76,6 +103,7 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jscrollpane.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.selectBox.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.flexbox.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
 
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
@@ -84,6 +112,8 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.button.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.link.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/window/ximpia.popup.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.icon.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.context_menu.js"></script>
 
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.qtip.js"></script>
 <!--<script type="text/javascript" src="{{settings.MEDIA_URL}}js/json.js"></script>-->
@@ -96,6 +126,16 @@
 jQuery(document).ready(function($){
 
 	ximpia.common.Page.init();
+	//var viewData = ximpia.common.Window.getViewAttrs();
+	//ximpia.console.log('viewData...');
+	//ximpia.console.log(viewData);
+	var pageJx = ximpia.common.PageAjax();
+	var data = $('[name="result"]').val();
+	ximpia.console.log('data...');
+	ximpia.console.log(data);
+	pageJx.renderCtx(data);
+
+	/*ximpia.common.Page.init();
 	var viewData = ximpia.common.Window.getViewAttrs();
 	var pageJx = ximpia.common.PageAjax();
 	var callback = eval(viewData.callback);
@@ -104,16 +144,12 @@ jQuery(document).ready(function($){
 			viewName: viewData.viewName,
 			callback: callback,
 			verbose: true});
-	pageJx.renderCtx(data)
+	pageJx.renderCtx(data)*/
 });
 
 </script>
 
-<input type="hidden" name="ctx" value="{{ctx}}" />
-
-</form>
-
-</section>
+<!--</section>-->
 
 </body>
 

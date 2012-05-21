@@ -35,7 +35,7 @@ class XBaseForm(forms.Form):
 	action = XpHiddenField(xpType='input.hidden', required=False)
 	viewNameSource = XpHiddenField(xpType='input.hidden', required=False)
 	viewNameTarget = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
-	ctx = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
+	result = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}
 	_argsDict = {}
