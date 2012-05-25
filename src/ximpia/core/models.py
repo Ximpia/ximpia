@@ -726,7 +726,7 @@ class Context(object):
 				print 'Context :: Exception...'
 				if settings.DEBUG == True:
 					traceback.print_exc()
-					print e.myException
+					#print e.myException
 				raise
 		return wrapped_f
 

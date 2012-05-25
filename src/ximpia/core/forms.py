@@ -14,7 +14,7 @@ from constants import CoreConstants as K
 
 from form_fields import XpHiddenField
 
-class XBaseForm(forms.Form):
+class XBaseForm( forms.Form ):
 	ERROR_INVALID = 'invalid'
 	_request = None
 	_ctx = None
@@ -62,6 +62,7 @@ class XBaseForm(forms.Form):
 					if type(field.initial) == types.StringType and field.instance:
 						field.initial = eval('self.' + instanceName + '.' + instanceFieldName)
 						field.instance = eval('self.' + instanceName)
+						#print instanceFieldName + ' => ' + field.initial
 				except AttributeError:
 					pass
 			# Set instance too
@@ -82,6 +83,7 @@ class XBaseForm(forms.Form):
 				# Get json object, parse, serialize fields object
 				jsonObj = _s.serialize("json", [self._argsDict['instances'][key]])
 				obj = json.loads(jsonObj)[0]
+				#print key, obj
 				d[key] = obj['fields']
 				self.base_fields['objects'].initial = json.dumps(d)
 	def setViewMode(self, viewList):
@@ -178,6 +180,9 @@ class XBaseForm(forms.Form):
 		if len(self.errors.keys()) != 0:
 			bError = True
 		return bError
+	def __getitem__(self, name):
+		"""Get item from object, like a dictionary. Can do form[fieldName]"""
+		return self.d(name)
 	def d(self, name):
 		"""Get cleaned data, after form has been validated"""
 		value = ''
@@ -198,6 +203,7 @@ class XBaseForm(forms.Form):
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
 		#print 'self.initial : ', self.initial
 		fieldsDict = self.fields
+		#print 'base_fields: ', self.base_fields
 		for field in fieldsDict:
 			oField = fieldsDict[field]
 			attrs = oField.widget.attrs
@@ -212,6 +218,8 @@ class XBaseForm(forms.Form):
 			attrs['label'] = oField.label
 			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
+			"""print 'field: ', field
+			print attrs"""
 			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
 
 class AppRegex(object):

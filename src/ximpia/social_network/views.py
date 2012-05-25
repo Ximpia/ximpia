@@ -392,7 +392,7 @@ def changePassword(request, ximpiaId, reminderId, **args):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
 	print 'changePassword...'
-	args['ctx']['viewNameSource'] = 'newPassword'
+	args['ctx'][Context.VIEW_NAME_SOURCE] = 'newPassword'
 	login = LoginView(args['ctx'])
 	resultJs = login.showNewPassword(ximpiaId=ximpiaId, reminderId=reminderId)
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, {	'result': json.dumps(resultJs),
@@ -404,8 +404,11 @@ def changePassword(request, ximpiaId, reminderId, **args):
 def signupUser(request, invitationCode, **args):
 	"""Signup user with invitation."""
 	print 'signupUser...'
+	args['ctx'][Context.VIEW_NAME_SOURCE] = 'signup'
 	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
 	signup = SignupView(args['ctx'])
-	signup.showSignupUser(invitationCode=invitationCode, affiliateId=affiliateId)
-	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, args['ctx']))
+	resultJs = signup.showSignupUser(invitationCode=invitationCode, affiliateId=affiliateId)
+	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, {		'result': json.dumps(resultJs),
+														'settings': settings
+													}))
 	return result
