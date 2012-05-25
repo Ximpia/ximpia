@@ -28,7 +28,7 @@ from ximpia.util import ut_email
 from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx, UserSocial,\
 	Workflow
 from ximpia.core.business import CommonBusiness, EmailBusiness, WorkFlowBusiness
-from ximpia.core.business import ValidateFormDecorator, ShowSrvDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator
+from ximpia.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator
 from ximpia.core.data import CoreParameterDAO, UserSocialDAO
 from ximpia.core.constants import CoreConstants as CoreK, CoreKParam
 
@@ -153,20 +153,20 @@ class SignupValidationBusiness(BaseValidationBusiness):
 		try:
 			# Get organization user
 			form = self._ctx['form']
-			user = UserSys.objects.get(username=form.d('ximpiaId'))
+			user = UserSys.objects.get(username=form['ximpiaId'])
 			self.addError(field='ximpiaId')			
 		except UserSys.DoesNotExist:
 			pass	
 	def validateSameEmail(self, dbUser):
 		"""Validates same email"""
 		form = self._ctx['form']
-		if dbUser.checkSameEmail(form.d('email')):
+		if dbUser.checkSameEmail(form['email']):
 			self.addError(field='email')
 	def validateSameAccount(self, dbOrganization):
 		"""Validates same account"""
 		try:
 			form = self._ctx['form']
-			organization = dbOrganization.getByAccount(form.d('account'))
+			organization = dbOrganization.getByAccount(form['account'])
 			self.addError(field='account')
 		except:
 			pass
@@ -230,7 +230,7 @@ class LoginView(CommonBusiness):
 		"""Show logout view"""
 		self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 
-	@DoBusinessDecorator(form = forms.ChangePasswordForm, jsResult=True)
+	@DoBusinessDecorator(form = forms.ChangePasswordForm, isServerTmpl=True)
 	def showNewPassword(self, ximpiaId=None, reminderId=None):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param ximpiaId: ximpiaId
@@ -240,14 +240,14 @@ class LoginView(CommonBusiness):
 		newDate = date.today() + timedelta(days=days)
 		print 'New Password Data : ', ximpiaId, newDate, reminderId
 		# Show actual password, new password and confirm new password
-		self.validateExists([
+		self._validateExists([
 					[self._dbUserSys, {'username': ximpiaId}, 'changePassword'],
 					[self._dbUserDetail, {	'user__username': ximpiaId, 
 								'reminderId': reminderId, 
 								'resetPasswordDate__lte' : newDate}, 'changePassword'],
 					])		
 		# validate
-		self.isValid()
+		self._isValid()
 		self._f().putParamList(ximpiaId=ximpiaId)
 
 
@@ -269,35 +269,27 @@ class LoginAction(CommonBusiness):
 		@param ctx: Context
 		@return: result"""
 		print 'doLogin...'
-		#self._f().d('ximpiaId')
-		print 'form: ', self._ctx[Ctx.FORM], self._f().d('ximpiaId')
-		self._ctx[Ctx.USER] = self.authenticateUser(	userName = self._f().d('ximpiaId'), 
-						password = self._f().d('password'), 
+		#self._f()['ximpiaId']
+		print 'form: ', self._ctx[Ctx.FORM], self._f()['ximpiaId']
+		self._ctx[Ctx.USER] = self._authenticateUser(	userName = self._f()['ximpiaId'], 
+						password = self._f()['password'], 
 						errorName = 'wrongPassword'	)
-		self.isValid()
+		self._isValid()
 		print 'user: ', self._ctx[Ctx.USER]
-		login(self._ctx[Ctx.RAW_REQUEST], self._ctx[Ctx.USER])
+		self._login()
 		# Include login info
-		# Include user_info, a dictionary with user environment data
-		
+		# Include user_info, a dictionary with user environment data		
 		# Context => viewNameSource, actionName, flowCode (inserted in context by WorkflowView)
 		#self._wf = WorkFlowBusiness(self._ctx)
 		#print 'Will insert into workflow : ximpiaId: ', user.username, self._ctx[Ctx.FLOW_CODE]
-		self._putParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))
-		
+		self._putFlowParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))		
 		#print self._wf.getFlowDataDict(self._ctx[], self._ctx[], self._ctx[Ctx.FLOW_CODE])
-		# How we get? viewNameSource, actionName to resolve view??? => Context
-		
+		# How we get? viewNameSource, actionName to resolve view??? => Context		
 		# Workflow will take control, check that view home must be shown
 		print 'Session: ', self._ctx[Ctx.SESSION]
 		print 'user: ', self._ctx[Ctx.USER]
 		print 'cookies: ', self._ctx[Ctx.COOKIES]
-		if self._ctx[Ctx.COOKIES].has_key('userSocialName'):
-			userSocialName = self._ctx[Ctx.COOKIES]['userSocialName']
-			print 'COOKIE :: userSocialName: ', userSocialName
-		else:
-			userSocialName = K.USER
-			self._setCookie('userSocialName', userSocialName)
+		userSocialName = self._getUserSocialName()
 		print 'userSocialName: ', userSocialName
 		self._ctx[Ctx.USER_SOCIAL] = self._dbUserSocial.get(user=self._ctx[Ctx.USER], name=userSocialName)
 		self._ctx[Ctx.SESSION]['userSocial'] = self._ctx['userSocial']
@@ -307,7 +299,7 @@ class LoginAction(CommonBusiness):
 	def doLogout(self):
 		"""Logout user"""
 		print 'doLogout...'
-		logout(self._ctx[Ctx.RAW_REQUEST])
+		self._logout()
 		print 'doLogout :: WF Data: ', self._getWFUser()
 		self._wf.removeData(self._getWFUser(), 'login')
 		print 'did logout...'
@@ -317,12 +309,12 @@ class LoginAction(CommonBusiness):
 	def doPasswordReminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
 		# Checks that email sent is in system
-		self.validateExists([
-					[self._dbUserSys, {'email': self._f().d('email')}, 'emailDoesNotExist']
+		self._validateExists([
+					[self._dbUserSys, {'email': self._f()['email']}, 'emailDoesNotExist']
 				])
-		self.isValid()
+		self._isValid()
 		# Update User
-		user = self._dbUserSys.get(email = self._f().d('email'))
+		user = self._dbUserSys.get(email = self._f()['email'])
 		userDetail = self._dbUserDetail.get(user=user) 
 		days = self._dbParam.get(mode=KParam.LOGIN, name=KParam.REMINDER_DAYS).valueId
 		newDate = date.today() + timedelta(days=days)
@@ -335,7 +327,7 @@ class LoginAction(CommonBusiness):
 		# Send email with link to reset password. Link has time validation
 		xmlMessage = self._dbXmlMessage.get(name='Msg/SocialNetwork/Login/PasswordReminder/', lang='en').body
 		EmailBusiness.send(xmlMessage, {'firstName': user.first_name, 'userAccount': user.username,
-						'reminderId': userDetail.reminderId}, [self._f().d('email')])
+						'reminderId': userDetail.reminderId}, [self._f()['email']])
 		self.setOkMsg('OK_PASSWORD_REMINDER')
 	
 	@ValidateFormDecorator(forms.ChangePasswordForm)
@@ -343,7 +335,7 @@ class LoginAction(CommonBusiness):
 	def doNewPassword(self):
 		"""Saves new password, it does authenticate and login user."""
 		user = self._dbUserSys.get(username= self._f().getParam('ximpiaId'))
-		user.set_password(self._f().d('newPassword'))
+		user.set_password(self._f()['newPassword'])
 		user.save()
 		userDetail = self._dbUserDetail.get(user=user)
 		userDetail.reminderId = None
@@ -362,10 +354,10 @@ class HomeView(CommonBusiness):
 		"""Status home view"""
 		print 'showStatus...'
 		print 'I do the status and home view...'
-		dd = self._getParams('ximpiaId')
+		dd = self._getFlowParams('ximpiaId')
 		print 'showStatus :: param values: ', dd
 
-class ContactBusiness(CommonBusiness):
+class ContactBusiness( CommonBusiness ):
 
 	def __init__(self, ctx):
 		super(ContactBusiness, self).__init__(ctx)
@@ -377,11 +369,12 @@ class ContactBusiness(CommonBusiness):
 		self._dbContact = ContactDAO(ctx)
 		self._dbGroupSocial = GroupSocialDAO(ctx)
 	
-	def createDirectoryUser(self, form, user, userSocial):
+	def createDirectoryUser(self, user, userSocial):
 		"""Create user in directory"""
 		# ContactDetail
-		contactDetail = self._dbContactDetail.create(user=user, firstName=form.d('firstName'), 
-				lastName=form.d('lastName'), name=form.d('firstName') + ' ' + form.d('lastName'))
+		form = self._ctx[Ctx.FORM]
+		contactDetail = self._dbContactDetail.create(user=user, firstName=form['firstName'], 
+				lastName=form['lastName'], name=form['firstName'] + ' ' + form['lastName'])
 		groupList = userSocial.groups.all()
 		for group in groupList:
 			groupSocial = self._dbGroupSocial.get(group=group)
@@ -390,12 +383,12 @@ class ContactBusiness(CommonBusiness):
 			else:
 				contactDetail.groups.add(groupSocial)
 		# City and Country
-		address, bCreate = self._dbAddress.getCreate(city=form.d('city'), country=form.d('country'))
+		address, bCreate = self._dbAddress.getCreate(city=form['city'], country=form['country'])
 		self._dbAddressContact.create(addressType=Choices.ADDRESS_TYPE_HOME, contact=contactDetail, address=address)
 		# Email
 		communicationTypeEmail = self._dbCoreParam.get(mode=CoreKParam.COMMTYPE, name=CoreK.EMAIL)
 		comContact = self._dbCommunicationTypeContact.create(communicationType=communicationTypeEmail,
-					contact=contactDetail, value=form.d('email'))
+					contact=contactDetail, value=form['email'])
 		# Contact
 		contact, bCreate = self._dbContact.getCreate(user=userSocial, detail=contactDetail)
 		return contactDetail
@@ -408,17 +401,16 @@ class SignupView(CommonBusiness):
 		self._dbInvitation = InvitationDAO(ctx)
 		self._dbUser = UserDAO(ctx)
 	
-	@DoBusinessDecorator(pageError=True, form=UserSignupForm)
+	@DoBusinessDecorator(pageError=True, form=forms.UserSignupForm, isServerTmpl=True)
 	def showSignupUser(self, invitationCode=None, affiliateId=None):
 		"""Show signup form. Get get invitation code.""" 
-		self.validateNotExists([
+		self._validateNotExists([
 				[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.USED}, 'invitationUsed']
 				])
-		self.isValid()
+		self._isValid() 
 		invitation = self._dbUser.getInvitation(invitationCode, status=K.PENDING)
 		self._ctx['affiliateid'] = json.dumps(affiliateId)
-		#self._f = forms.UserSignupForm(instances = {'dbInvitation': invitation})
-		self._ctx[Ctx.FORM] = forms.UserSignupForm(instances = {'dbInvitation': invitation})
+		self._setMainForm(forms.UserSignupForm(instances = {'dbInvitation': invitation}))
 
 class SignupAction(CommonBusiness):
 
@@ -442,33 +434,33 @@ class SignupAction(CommonBusiness):
 		"""Signup professional user
 		@param ctx: Context"""
 		# Validation
-		self.validateNotExists([
-				[self._dbUserSys, {'username': self._f().d('ximpiaId')}, 'ximpiaId'],
-				[self._dbUserSys, {'email': self._f().d('email')}, 'email']
+		self._validateNotExists([
+				[self._dbUserSys, {'username': self._f()['ximpiaId']}, 'ximpiaId'],
+				[self._dbUserSys, {'email': self._f()['email']}, 'email']
 				])
-		self.validateExists([
-				[self._dbInvitation, {'invitationCode': self._f().d('invitationCode')}, 'invitationCode']
+		self._validateExists([
+				[self._dbInvitation, {'invitationCode': self._f()['invitationCode']}, 'invitationCode']
 				])
-		self.isValid()
+		self._isValid()
 		# Business
 		# Invitation
-		invitation = self._dbInvitation.get(invitationCode=self._f().d('invitationCode'))
+		invitation = self._dbInvitation.get(invitationCode=self._f()['invitationCode'])
 		# System User
-		user = self._dbUserSys.create(username=self._f().d('ximpiaId'), email=self._f().d('email'), 
-						first_name=self._f().d('firstName'), last_name=self._f().d('lastName'))
-		user.set_password(self._f().d('password'))
+		user = self._dbUserSys.create(username=self._f()['ximpiaId'], email=self._f()['email'], 
+						first_name=self._f()['firstName'], last_name=self._f()['lastName'])
+		user.set_password(self._f()['password'])
 		user.save()
 		# Ximpia User
-		userSocial = self._dbUserSocial.create(user=user, name=K.PROFESSIONAL, title=self._f().d('firstName'), userCreateId=user.id)
-		userDetail = self._dbUserDetail.create(user=user, name=self._f().d('firstName') + ' ' + self._f().d('lastName'), hasValidatedEmail=True)
+		userSocial = self._dbUserSocial.create(user=user, name=K.USER, title=self._f()['firstName'], userCreateId=user.id)
+		userDetail = self._dbUserDetail.create(user=user, name=self._f()['firstName'] + ' ' + self._f()['lastName'], hasValidatedEmail=True)
 		# Groups
-		userGroupId = json.loads(self._f().d('params'))['userGroup']
+		userGroupId = json.loads(self._f()['params'])['userGroup']
 		group = self._dbGroupSys.get(id=userGroupId)
 		groupSocial = self._dbGroupSocial.get(group__id=group.id)
 		user.groups.add(group)
 		userSocial.groups.add(group)
 		# Directory
-		contactDetail = self._contact.createDirectoryUser(self._f, user, userSocial)
+		contactDetail = self._contact.createDirectoryUser(user, userSocial)
 		# InvitedBy
 		invitedByUser = None
 		invitedByOrg = None
@@ -499,7 +491,6 @@ class SignupBusiness(CommonBusiness):
 		self._dbUserAccount = UserAccountDAO(ctx)
 		self._dbUser = UserDAO(ctx)
 		self._contact = ContactBusiness(ctx)
-		self._f = ctx[Ctx.FORM]
 	
 	#def activateAccount(self, user, activationCode):
 		"""Activate account

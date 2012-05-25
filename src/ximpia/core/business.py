@@ -317,7 +317,7 @@ class ComponentRegister(object):
 		# View
 		ViewTmpl.objects.create(view=view, template=template)
 
-class CommonBusiness(object):
+class CommonBusiness( object ):
 	
 	_ctx = None
 	_request = None
@@ -325,13 +325,12 @@ class CommonBusiness(object):
 	_resultDict = {}
 	_form = None
 	_postDict = {}
-	_isBusinessOK = False
+	_businessOK = False
 	_viewNameTarget = ''
 	_isFormOK = None
 	_views = {}
 	_actions = {}
 	_wf = None
-	_f = None
 	_wfUserId = ''
 	
 	def __init__(self, ctx):
@@ -345,7 +344,7 @@ class CommonBusiness(object):
 		self._viewNameTarget = ''
 		self._wfUserId = ''
 	
-	def buildJSONResult(self, resultDict):
+	def _buildJSONResult(self, resultDict):
 		"""Builds json result
 		@param resultDict: dict : Dictionary with json data
 		@return: result : HttpResponse"""
@@ -355,7 +354,7 @@ class CommonBusiness(object):
 		result = HttpResponse(sResult)
 		return result
 	
-	def _addError(self, idError, form, errorField):
+	def _addErrorFields(self, idError, form, errorField):
 		"""Add error
 		@param idError: String : Id of error
 		@param form: Form
@@ -364,7 +363,7 @@ class CommonBusiness(object):
 			self._errorDict[idError] = {}
 		self._errorDict[idError] = form.fields[errorField].initial
 	
-	def _putParams(self, **args):
+	def _putFlowParams(self, **args):
 		"""Put parameters into workflow or navigation system.
 		@param args: Arguments to insert into persistence"""
 		self._wf.putParams(**args)
@@ -384,7 +383,7 @@ class CommonBusiness(object):
 		"""Get target view."""
 		return self._viewNameTarget
 	
-	def _getParams(self, *nameList):
+	def _getFlowParams(self, *nameList):
 		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
 		@param nameList: List of parameters to fetch"""
 		print 'wfUserId: ', self._ctx[Ctx.WF_USER_ID], ' flowCode: ', self._ctx[Ctx.FLOW_CODE]
@@ -419,7 +418,7 @@ class CommonBusiness(object):
 		self._wfUserId = self._ctx[Ctx.WF_USER_ID]
 		return self._wfUserId
 	
-	def getErrorResultDict(self, errorDict, pageError=False):
+	def _getErrorResultDict(self, errorDict, pageError=False):
 		"""Get sorted error list to show in pop-up window
 		@return: self._resultDict : ResultDict"""
 		#dict = self._errorDict
@@ -461,25 +460,25 @@ class CommonBusiness(object):
 			result = self._buildJSONResult(self._getErrorResultDict())
 			return result"""
 	
-	def getForm(self):
+	def _getForm(self):
 		"""Get form"""
 		#print 'form: ', self._ctx[Ctx.FORM]
 		return self._ctx[Ctx.FORM]
 	
-	def setForm(self, form):
-		"""Sets the form"""
-		self._ctx[Ctx.FORM] = form
+	def _setForm(self, formInstance):
+		"""Sets the form instance"""
+		self._ctx[Ctx.FORM] = formInstance
 	
-	def getPostDict(self):
+	def _getPostDict(self):
 		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
 		return self._postDict
 	
-	def isBusinessOK(self):
+	def _isBusinessOK(self):
 		"""Checks that no errors have been generated in the validation methods
 		@return: isOK : boolean"""
-		if len(self._errorDict.keys()) == 0:
-			self._isBusinessOK = True
-		return self._isBusinessOK
+		if len(self._errorDict) == 0:
+			self._businessOK = True
+		return self._businessOK
 	
 	def _isFormValid(self):
 		"""Is form valid?"""
@@ -500,28 +499,30 @@ class CommonBusiness(object):
 		"""Returns form from context"""
 		return self._ctx[Ctx.FORM]
 	
-	def addError(self, field):
+	def _addError(self, field):
 		"""Add error
 		@param idError: String : Id of error
 		@param form: Form
 		@param errorField: String : The field inside class form"""
-		form = self.getForm()
-		#print 'form: ', form
+		form = self._getForm()
+		print 'form: ', form
 		msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
 		idError = 'id_' + field
 		if not self._errorDict.has_key(idError):
 			self._errorDict[idError] = {}
 		self._errorDict[idError] = msgDict['ERR_' + field]
 		print '_errorDict : ', self._errorDict
-	def getErrors(self):
+
+	def _getErrors(self):
 		"""Get error dict
 		@return: errorDict : Dictionary"""
 		return self._errorDict	
-	def getPost(self):
+
+	def _getPost(self):
 		"""Get post dictionary"""
 		return self._ctx[Ctx.POST]
 	
-	def validateExists(self, dbDataList):
+	def _validateExists(self, dbDataList):
 		"""Validates that db data provided exists. Error is shown in case does not exist.
 		Db data contains data instance, query arguments in a dictionary
 		and errorName for error message display at the front
@@ -533,9 +534,9 @@ class CommonBusiness(object):
 			exists = dbObj.check(**qArgs)
 			print 'validate Exists Data: args: ', qArgs, ' exists: ' + str(exists), ' errName: ' + str(errName)
 			if not exists:
-				self.addError(field=errName)
+				self._addError(field=errName)
 	
-	def validateNotExists(self, dbDataList):
+	def _validateNotExists(self, dbDataList):
 		"""Validates that db data provided does not exist. Error is shown in case exists.
 		Db data contains data instance, query arguments in a dictionary
 		and errorName for error message display at the front
@@ -545,18 +546,19 @@ class CommonBusiness(object):
 		for dbData in dbDataList:
 			dbObj, qArgs, errName = dbData
 			exists = dbObj.check(**qArgs)
-			print 'exists : ', exists
+			print 'Exists : ', exists
 			if exists:
-				self.addError(field=errName)
+				print 'I add error: ', errName
+				self._addError(field=errName)
 		
-	def validateContext(self, ctxDataList):
+	def _validateContext(self, ctxDataList):
 		"""Validates context variable. [[name, value, errName],...]"""
 		for ctxData in ctxDataList:
 			name, value, errName = ctxData
 			if self._ctx[name] != value:
-				self.addError(errName)
+				self._addError(errName)
 		
-	def authenticateUser(self, **dd):
+	def _authenticateUser(self, **dd):
 		"""Authenticates user and password
 		dd: {'userName': $userName, 'password': $password, 'errorName': $errorName}"""
 		qArgs = {'username': dd['userName'], 'password': dd['password']}
@@ -564,19 +566,20 @@ class CommonBusiness(object):
 		if user:
 			pass
 		else:
-			self.addError(dd['errorName'])
+			self._addError(dd['errorName'])
 		return user
 	
-	def isValid(self):
+	def _isValid(self):
 		"""Checks if no errors have been written to error container.
 		If not, raises XpMsgException """
-		self._errorDict = self.getErrors()
-		print 'errorDict : ', self._errorDict
-		if not self.isBusinessOK():
+		self._errorDict = self._getErrors()
+		print '_isValid() :: errorDict : ', self._errorDict, self._isBusinessOK()
+		if not self._isBusinessOK():
 			# Here throw the BusinessException
+			print 'I raise error on business validation!!!!!!!!!!!!!!!!!!'
 			raise XpMsgException(None, _('Error in validating business layer'))
 
-	def setOkMsg(self, idOK):
+	def _setOkMsg(self, idOK):
 		"""Sets the ok message id"""
 		msgDict = _jsf.decodeArray(self._ctx[Ctx.FORM].fields['okMessages'].initial)
 		self._ctx[Ctx.FORM].fields['msg_ok'].initial = msgDict[idOK]
@@ -587,16 +590,36 @@ class CommonBusiness(object):
 		@param value: Value"""
 		self._ctx[Ctx.SET_COOKIES].append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
 
-	def _setMainForm(self, form):
+	def _setMainForm(self, formInstance):
 		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
-		@param form: Form instance"""
-		self._ctx[Ctx.FORM] = form
-		self._ctx[Ctx.FORMS][form.getFormId()] = form
+		@param formInstance: Form instance"""
+		self._ctx[Ctx.FORM] = formInstance
+		self._ctx[Ctx.FORMS][formInstance.getFormId()] = formInstance
 	
-	def _addForm(self, form):
+	def _addForm(self, formInstance):
 		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
-		@param form: Form instance"""
-		self._ctx[Ctx.FORMS][form.getFormId()] = form
+		@param formInstance: Form instance"""
+		self._ctx[Ctx.FORMS][formInstance.getFormId()] = formInstance
+	
+	def _getUserSocialName(self):
+		"""Get user social name"""
+		if self._ctx[Ctx.COOKIES].has_key('userSocialName'):
+			userSocialName = self._ctx[Ctx.COOKIES]['userSocialName']
+			print 'COOKIE :: userSocialName: ', userSocialName
+		else:
+			userSocialName = K.USER
+			self._setCookie('userSocialName', userSocialName)
+		return userSocialName
+	
+	def _login(self):
+		"""Do login"""
+		login(self._ctx[Ctx.RAW_REQUEST], self._ctx[Ctx.USER])
+		self._ctx[Ctx.IS_LOGIN] = True
+	
+	def _logout(self):
+		"""Do logout"""
+		logout(self._ctx[Ctx.RAW_REQUEST])
+		self._ctx[Ctx.IS_LOGIN] = False
 
 class WorkFlowBusiness (object):	
 	_ctx = {}
@@ -1101,54 +1124,18 @@ class EmailBusiness(object):
 # **                DECORATORS                      **
 # ****************************************************
 
-
-class ShowSrvDecorator(object):
-	"""Doc."""
-	def __init__(self, *argsTuple, **argsDict):
-		"""Doc."""
-		self._form = argsTuple[0]
-	def __call__(self, f):
-		"""Doc."""
-		def wrapped_f(*argsTuple, **argsDict):
-			obj = argsTuple[0]
-			obj._ctx[Ctx.FORM] = self._form()
-			obj._f = self._form()
-			try:
-				f(*argsTuple, **argsDict)
-				jsData = JsResultDict()
-				obj._ctx[Ctx.FORM] = obj._f
-				obj._ctx[Ctx.FORM].buildJsData(jsData)
-				obj._ctx[Ctx.CTX] = json.dumps(jsData)
-			except XpMsgException as e:
-				if settings.DEBUG == True:
-					print e
-					print e.myException
-					traceback.print_exc()
-				errorDict = obj.getErrors()
-				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
-				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
-			except Exception as e:
-				raise
-				if settings.DEBUG == True:
-					print e
-					traceback.print_exc()
-				errorDict = {'': _('I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks')}
-				resultDict = obj.getErrorResultDict(errorDict, pageError=True)
-				obj._ctx[Ctx.CTX] = json.dumps(resultDict)
-		return wrapped_f
-
 class DoBusinessDecorator(object):
 	"""Build response from jsData"""
 	_pageError = False
 	_form = None
-	_jsResult = False
+	_isServerTmpl = False
 	def __init__(self, *argsTuple, **argsDict):
 		"""
 		Options
 		=======
 		pageError: Show error detail as a list in a popup or show error in a message bar. pageError=True : Show error message bar
 		form: Form class attached to the view
-		jsResult: True | False : If result is jsData or Http json representation
+		isServerTmpl: True | False : If result is jsData or Http json representation
 		"""
 		if argsDict.has_key('pageError'):
 			self._pageError = argsDict['pageError']
@@ -1156,8 +1143,8 @@ class DoBusinessDecorator(object):
 			self._pageError = False
 		if argsDict.has_key('form'):
 			self._form = argsDict['form']
-		if argsDict.has_key('jsResult'):
-			self._jsResult = argsDict['jsResult']
+		if argsDict.has_key('isServerTmpl'):
+			self._isServerTmpl = argsDict['isServerTmpl'] 
 	def __call__(self, f):
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
@@ -1225,8 +1212,9 @@ class DoBusinessDecorator(object):
 							form.buildJsData(obj._ctx[Ctx.JS_DATA])
 					print obj._ctx[Ctx.JS_DATA]['response'].keys()
 					# Result
-					if self._jsResult == False:
-						result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+					print 'isServerTmpl: ', self._isServerTmpl
+					if self._isServerTmpl == False:
+						result = obj._buildJSONResult(obj._ctx[Ctx.JS_DATA])
 						#print obj._ctx[Ctx.JS_DATA]
 						print result
 						for cookie in obj._ctx[Ctx.SET_COOKIES]:
@@ -1240,21 +1228,26 @@ class DoBusinessDecorator(object):
 					obj._ctx['_doneResult'] = True
 				else:
 					print 'I skip building response, since I already did it!!!!!'
-					if self._jsResult == False:
-						result = obj.buildJSONResult(obj._ctx[Ctx.JS_DATA])
+					if self._isServerTmpl == False:
+						result = obj._buildJSONResult(obj._ctx[Ctx.JS_DATA])
 					else:
 						result = obj._ctx[Ctx.JS_DATA]
 				return result
 			except XpMsgException as e:
-				errorDict = obj.getErrors()
-				if settings.DEBUG == True:
-					print errorDict
-					print e
-					print e.myException
-					traceback.print_exc()
+				print 'ERROR!!!! DoBusinessDecorator!!!!!'
+				errorDict = obj._getErrors()
 				if len(errorDict) != 0:
-					result = obj.buildJSONResult(obj.getErrorResultDict(errorDict, pageError=self._pageError))
+					if self._isServerTmpl == False:
+						result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
+					else:
+						result = obj._getErrorResultDict(errorDict, pageError=self._pageError)
+					print result
 				else:
+					if settings.DEBUG == True:
+						print errorDict
+						print e
+						print e.myException
+						traceback.print_exc()
 					raise
 				return result
 		return wrapped_f
@@ -1282,10 +1275,12 @@ class ValidateFormDecorator(object):
 			"""Doc."""
 			#print 'ValidateFormDecorator :: ', argsTuple, argsDict
 			obj = argsTuple[0]
+			#result = f(*argsTuple, **argsDict)
 			obj._ctx[Ctx.JS_DATA] = JsResultDict()
 			obj._ctx[Ctx.FORM] = self._form(obj._ctx[Ctx.POST])
 			bForm = obj._ctx[Ctx.FORM].is_valid()
 			#obj._ctx[Ctx.FORM] = obj._f
+			print 'Form Validation: ', bForm
 			if bForm == True:
 				obj._setMainForm(obj._ctx[Ctx.FORM])
 				result = f(*argsTuple, **argsDict)
@@ -1319,7 +1314,7 @@ class ValidateFormDecorator(object):
 					print obj._ctx[Ctx.FORM].errors
 					traceback.print_exc()
 				errorDict = {'': 'Error validating your data. Check it out and send again'}
-				result = obj.buildJSONResult(obj.getErrorResultDict(errorDict, pageError=True))
+				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
 				return result
 		return wrapped_f
 
@@ -1343,14 +1338,16 @@ class WFViewDecorator( object ):
 			flow = obj._wf.get(self.__flowCode)
 			viewName = obj._ctx[Ctx.VIEW_NAME_SOURCE]
 			print 'View Current: ', obj._ctx[Ctx.VIEW_NAME_SOURCE]
-			# Worhflow User Id
-			if obj._ctx[Ctx.COOKIES].has_key('wfUserId'):
+			# WorKflow User Id
+			"""if obj._ctx[Ctx.COOKIES].has_key('wfUserId'):
 				obj._ctx[Ctx.WF_USER_ID] = obj._ctx[Ctx.COOKIES]['wfUserId']
 				print 'COOKIE :: WF User Id: ', obj._ctx[Ctx.WF_USER_ID]
 			else:
 				obj._ctx[Ctx.WF_USER_ID] = obj._wf.genUserId()
 				obj._setCookie('wfUserId', obj._ctx[Ctx.WF_USER_ID])
-				print 'WF UserId: ', obj._ctx[Ctx.WF_USER_ID]
+				print 'WF UserId: ', obj._ctx[Ctx.WF_USER_ID]"""
+			obj._ctx[Ctx.WF_USER_ID] = obj._getWFUser()
+			print 'WF UserId: ', obj._ctx[Ctx.WF_USER_ID]
 			hasFlow = True
 			try:
 				flowData = obj._wf.getFlowDataDict(obj._ctx[Ctx.WF_USER_ID], self.__flowCode)
@@ -1442,49 +1439,63 @@ class WFActionDecorator(object):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
-			#print 'viewNameSource: ', obj._ctx[Ctx.VIEW_NAME_SOURCE]
-			#print 'viewNameTarget: ', obj._ctx[Ctx.VIEW_NAME_TARGET]
-			#print 'actionName: ', obj._ctx[Ctx.ACTION]
-			#obj._wf = WorkFlowBusiness()
-			actionName = obj._ctx[Ctx.ACTION]
-			flow = obj._wf.getFlowViewByAction(actionName).flow
-			self.__app = flow.application.code
-			print 'app: ', self.__app
-			obj._ctx[Ctx.FLOW_CODE] = flow.code
-			obj._ctx[Ctx.IS_FLOW] = True
-			#print 'WFActionDecorator :: flowCode: ', obj._ctx[Ctx.FLOW_CODE]
-			obj._ctx[Ctx.WF_USER_ID] = obj._ctx[Ctx.COOKIES]['wfUserId']
-			print 'COOKIE :: WF User Id: ', obj._ctx[Ctx.WF_USER_ID]
-			result = f(*argsTuple, **argsDict)
-			# Resolve View
-			#print 'session', 
-			viewTarget = obj._wf.resolveView(obj._ctx[Ctx.WF_USER_ID], self.__app, obj._ctx[Ctx.FLOW_CODE], 
-							obj._ctx[Ctx.VIEW_NAME_SOURCE], obj._ctx[Ctx.ACTION])
-			viewName = viewTarget.name
-			#print 'viewName: ', viewName
-			# Insert view into workflow
-			obj._wf.setViewName(viewName)
-			viewAttrs = obj._wf.getViewParams(obj._ctx[Ctx.FLOW_CODE], viewName)
-			#print 'viewAttrs: ', viewAttrs
-			# Save workflow
-			flowData = obj._wf.save(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
-			# Set Flow data dictionary into context
-			obj._ctx[Ctx.FLOW_DATA] = obj._wf.buildFlowDataDict(flowData)
-			#print 'flowDataDict: ', obj._ctx[Ctx.FLOW_DATA]
-			# Delete user flow if deleteOnEnd = True
-			if flow.deleteOnEnd == True and obj._wf.isLastView(obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName, obj._ctx[Ctx.ACTION]):
-				obj._wf.removeData(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
-			obj._ctx[Ctx.VIEW_NAME_TARGET] = viewName
-			# Show View
-			impl = viewTarget.implementation
-			implFields = impl.split('.')
-			method = implFields[len(implFields)-1]
-			classPath = ".".join(implFields[:-1])
-			cls = getClass( classPath )
-			objView = cls(obj._ctx)
-			if (len(viewAttrs) == 0) :
-				result = eval('objView.' + method)()
-			else:
-				result = eval('objView.' + method)(**viewAttrs)
+			try:
+				#print 'viewNameSource: ', obj._ctx[Ctx.VIEW_NAME_SOURCE]
+				#print 'viewNameTarget: ', obj._ctx[Ctx.VIEW_NAME_TARGET]
+				#print 'actionName: ', obj._ctx[Ctx.ACTION]
+				#obj._wf = WorkFlowBusiness()
+				actionName = obj._ctx[Ctx.ACTION]
+				flow = obj._wf.getFlowViewByAction(actionName).flow
+				self.__app = flow.application.code
+				print 'app: ', self.__app
+				obj._ctx[Ctx.FLOW_CODE] = flow.code
+				obj._ctx[Ctx.IS_FLOW] = True
+				#print 'WFActionDecorator :: flowCode: ', obj._ctx[Ctx.FLOW_CODE]
+				obj._ctx[Ctx.WF_USER_ID] = obj._ctx[Ctx.COOKIES]['wfUserId']
+				print 'COOKIE :: WF User Id: ', obj._ctx[Ctx.WF_USER_ID]
+				result = f(*argsTuple, **argsDict)
+				# Resolve View
+				#print 'session', 
+				viewTarget = obj._wf.resolveView(obj._ctx[Ctx.WF_USER_ID], self.__app, obj._ctx[Ctx.FLOW_CODE], 
+								obj._ctx[Ctx.VIEW_NAME_SOURCE], obj._ctx[Ctx.ACTION])
+				viewName = viewTarget.name
+				#print 'viewName: ', viewName
+				# Insert view into workflow
+				obj._wf.setViewName(viewName)
+				viewAttrs = obj._wf.getViewParams(obj._ctx[Ctx.FLOW_CODE], viewName)
+				#print 'viewAttrs: ', viewAttrs
+				# Save workflow
+				flowData = obj._wf.save(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
+				# Set Flow data dictionary into context
+				obj._ctx[Ctx.FLOW_DATA] = obj._wf.buildFlowDataDict(flowData)
+				#print 'flowDataDict: ', obj._ctx[Ctx.FLOW_DATA]
+				# Delete user flow if deleteOnEnd = True
+				if flow.deleteOnEnd == True and obj._wf.isLastView(obj._ctx[Ctx.VIEW_NAME_SOURCE], viewName, obj._ctx[Ctx.ACTION]):
+					obj._wf.removeData(obj._ctx[Ctx.WF_USER_ID], obj._ctx[Ctx.FLOW_CODE])
+				obj._ctx[Ctx.VIEW_NAME_TARGET] = viewName
+				# Show View
+				impl = viewTarget.implementation
+				implFields = impl.split('.')
+				method = implFields[len(implFields)-1]
+				classPath = ".".join(implFields[:-1])
+				cls = getClass( classPath )
+				objView = cls(obj._ctx)
+				if (len(viewAttrs) == 0) :
+					result = eval('objView.' + method)()
+				else:
+					result = eval('objView.' + method)(**viewAttrs)
+			except XpMsgException as e:
+				print 'ERROR!!!! WFActionDecorator!!!!!'
+				errorDict = obj._getErrors()
+				if len(errorDict) != 0:
+					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+					print result
+				else:
+					if settings.DEBUG == True:
+						print errorDict
+						print e
+						print e.myException
+						traceback.print_exc()
+					raise
 			return result
 		return wrapped_f

@@ -730,7 +730,7 @@ ximpia.common.Form = function() {
 			 * destroyMethod: 	Button plugin method to use to destroy message area.
 			 * 
 			 */
-			bindAction: function(obj) {
+			bindAction: function( obj ) {
 				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
 				//ximpia.console.log('Submit form: ' + $("#" + obj.formId).val());
 				var idOkMsg = '';
@@ -840,14 +840,18 @@ ximpia.common.Form = function() {
                             						ximpia.console.log('doMsgError: ' + doMsgError);
                             						ximpia.console.log('isMsg: ' + obj.isMsg);
                             						if (doMsgError == true) {
+                								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
+                								$("#" + obj.idMsg + "_text").text(list[0][1]);
+                            							/*obj.isMsg = true;
                             							if (obj.isMsg == true) {
                         								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
                         								$("#" + obj.idMsg + "_text").text(list[0][1]);
                             							} else {
                             								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
-                            							}
+                            							}*/
                             						} else {
                             							ximpia.console.log('form :: errors: ' + list);
+                            							obj.showPopUp = true;
                             							if (obj.showPopUp == true) {
                             								message = '<ul>'
                             								var errorName = "";
@@ -863,10 +867,15 @@ ximpia.common.Form = function() {
                             								}
                             								message = message + '</ul>';
                             								ximpia.console.log(message);
+                        								//$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
+                        								//$("#" + obj.idMsg + "_text").text('Error!!!');
                             								$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
                             								// Show error Message in pop up
                         								$('body').xpObjPopUp({	title: 'Errors Found',
-                        									message: message}).xpObjPopUp('createMsg');
+                        											message: message,
+                        											height: 160
+                        										})
+                        											.xpObjPopUp('createMsg');
                             							} else {
                         								$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
                         								$("#" + obj.idMsg + "_text").text('Error!!!');
@@ -1434,6 +1443,8 @@ ximpia.common.PageAjax = function() {
 					}
 				}
 				ximpia.console.log('myForm: ' + myForm);
+				ximpia.console.log('data...');
+				ximpia.console.log(data);
 				var dataObj = JSON.parse(data);
 				var viewName = dataObj.response.view;
 				ximpia.common.Browser.setXpDataViewSerial(viewName, data);

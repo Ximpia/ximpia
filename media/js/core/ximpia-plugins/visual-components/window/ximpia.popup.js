@@ -13,7 +13,6 @@
          * 
          */
         var doCreateMessage = function(obj) {
-        	
         };
         /**
          * 
@@ -129,10 +128,10 @@
 				ximpia.common.Browser.setObject('xpData-popup-tmpl', data);
 				var idViewList = $(data).find('#id_view');
 				if (idViewList.length == 0) {
-					ximpia.console.log('No View!!!!!!!!');
+					ximpia.console.log('Popup No View!!!!!!!!');
 					doCreateNoView({data: data, settings: settings});
 				} else {
-					ximpia.console.log('View!!!!!!!!!');
+					ximpia.console.log('Popup View!!!!!!!!!');
 					doCreateView({data: data, settings: settings});
 				}
 			}).error(function(jqXHR, textStatus, errorThrown) {
@@ -146,6 +145,11 @@
 			ximpia.console.log('create message popup!!!');
 			var settings = $(this).prop('settings');
 			ximpia.console.log(settings);
+			var height = 50;
+			if (settings.hasOwnProperty('height')) {
+				height = settings.height;
+			}
+			ximpia.console.log('createMsg :: height: ' + height);
         		ximpia.common.Window.showMessage({
 	            		title: settings.title,
             			message: settings.message,
@@ -153,11 +157,14 @@
             			effectIn: {style: 'fadeIn', time: 1000},
             			effectOut: {},
             			fadeBackground: true,
-            			height: 50
+            			height: height
         		});
+        		// height: 50
             		//$("#id_doClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
+            		$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("[data-xp-type='button']").xpObjButton('render');
+            		$('div#id_popupButton.btBar').css('visibility', 'visible');
 		},
 		destroy: function() {
 			ximpia.console.log('Will destroy popup...');
