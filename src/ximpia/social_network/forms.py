@@ -139,7 +139,8 @@ class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
 	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Your New Password'))
-	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', help_text = _('Write again your password to make sure there are no errors'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', 
+					help_text = _('Write again your password to make sure there are no errors'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 	def clean(self):
@@ -152,6 +153,21 @@ class HomeForm(XBaseForm):
 	_XP_FORM_ID = 'home'
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+
+class UserChangePasswordForm( XBaseForm ):
+	_XP_FORM_ID = 'userChangePassword'
+	_dbUser = User()
+	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='New Password', help_text = _('Your New Password'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', 
+					help_text = _('Write again your password'))
+	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Current password'))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_passwordValidate']]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	def clean(self):
+		"""Clean form"""
+		self._validateSameFields([('newPassword','newPasswordConfirm')])
+		self._xpClean()
+		return self.cleaned_data
 
 class OrganizationSignupForm(XBaseForm):
 	_XP_FORM_ID = 'signupOrg'

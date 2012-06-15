@@ -53,12 +53,7 @@ urlpatterns = patterns('',
     #(r'^', 'social_network.views.test'),
     (r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),        
     
-    # Ajax
-    
-    # User profile
-    
-    # Organization profile
-    
-    # Social Network    
+    #(r'^view/', include('ximpia.site.urls')),
     (r'^view/', include('ximpia.social_network.urls')),    
+    
 )

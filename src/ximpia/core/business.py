@@ -82,7 +82,7 @@ class ComponentRegister(object):
 				counter += 10
 	
 	@staticmethod
-	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], **argsDict):
+	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, **argsDict):
 		"""Registers view
 		@param appCode: Application code
 		@param viewName: View name
@@ -95,6 +95,7 @@ class ComponentRegister(object):
 		app = Application.objects.get(code=appCode)
 		view, created = View.objects.get_or_create(application=app, name=viewName)
 		view.implementation = classPath + '.' + method
+		view.winType = winType
 		view.save()
 		# Parameters
 		for name in argsDict:
@@ -294,7 +295,7 @@ class ComponentRegister(object):
 		pass
 	
 	@staticmethod
-	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=None, device=None):
+	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=None, device=None, alias=None):
 		"""Register template"""
 		view = View.objects.get(name=viewName) if viewName != None else None
 		app = Application.objects.get(code=appCode)
@@ -309,6 +310,10 @@ class ComponentRegister(object):
 			paramDict['winType'] = winType
 		if device != None:
 			paramDict['device'] = device
+		if alias != None:
+			paramDict['alias'] = alias
+		else:
+			paramDict['alias'] = viewName		
 		try:
 			XpTemplate.objects.get(name=name).delete()
 		except XpTemplate.DoesNotExist:
@@ -1016,27 +1021,34 @@ class Template( object ):
 	def resolve(self, viewName):
 		"""Resolve template """
 		# Context: device, lang, country
-		tmplName = ''
+		#tmplName = ''
+		templates = {}
 		if self._ctx[Ctx.LANG] != 'en' or self._ctx[Ctx.COUNTRY] != '' or self._ctx[Ctx.DEVICE] != Choices.DEVICE_PC:
 			# TODO: Complete for language and device templates
-			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
+			"""tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
 			if len(tmplList) > 1:
 				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
 			else:
 				if len(tmplList) != 0:
 					tmplName = tmplList[0].template.name
 				else:
-					pass
+					pass"""
 		else:
 			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx[Ctx.LANG])
-			if len(tmplList) > 1:
-				tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
+			for viewTmpl in tmplList:
+				tmpl = viewTmpl.template
+				templates[tmpl.alias] = tmpl.name
+			"""if len(tmplList) > 1:
+				#tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
+				tmpl = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template
+				templates[tmpl.alias] = tmpl.name
 			else:
 				if len(tmplList) != 0:
 					tmplName = tmplList[0].template.name
 				else:
-					pass
-		return tmplName
+					pass"""
+		print 'templates: ', templates
+		return templates
 
 class MenuBusiness( object ):
 	_ctx = None
@@ -1079,6 +1091,7 @@ class MenuBusiness( object ):
 			menuObj = {}
 			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
 			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
+			menuObj['winType'] = viewMenu.menu.view.winType if viewMenu.menu.view != None else ''
 			menuObj['sep'] = viewMenu.separator
 			menuObj['name'] = viewMenu.menu.name
 			menuObj['title'] = viewMenu.menu.title
@@ -1170,6 +1183,12 @@ class DoBusinessDecorator(object):
 					print 'DoBusinessDecorator :: view: ', '*' + obj._ctx[Ctx.JS_DATA]['response']['view'] + '*'
 					# App
 					obj._ctx[Ctx.JS_DATA]['response']['app'] = obj._ctx['app']
+					# winType
+					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
+						dbView = ViewDAO(obj._ctx)
+						view = dbView.get(name=obj._ctx[Ctx.JS_DATA]['response']['view'])
+						print 'winType: ', view.winType
+						obj._ctx[Ctx.JS_DATA]['response']['winType'] = view.winType
 					# User authenticate and session
 					if obj._ctx[Ctx.USER].is_authenticated():
 						# login: context variable isLogin = True
@@ -1197,9 +1216,11 @@ class DoBusinessDecorator(object):
 					# Template
 					tmpl = Template(obj._ctx)
 					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
-						tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
+						templates = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
+						tmplName = templates[obj._ctx[Ctx.JS_DATA]['response']['view']]
+						#tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
 						print 'tmplName: ', tmplName
-						obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = tmplName
+						obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = templates
 					else:
 						# In case we show only msg with no view, no template
 						print 'no View, no template...'
@@ -1252,6 +1273,19 @@ class DoBusinessDecorator(object):
 				return result
 		return wrapped_f
 
+class ValidationDecorator(object):
+	"""Business validation"""
+	_pageError = False
+	_form = None
+	_isServerTmpl = False
+	def __init__(self, *argsTuple, **argsDict):
+		pass
+	def __call__(self, f):
+		def wrapped_f(*argsTuple, **argsDict):
+			obj = argsTuple[0]
+			f(*argsTuple, **argsDict)
+			obj._isValid()
+		return wrapped_f
 
 class ValidateFormDecorator(object):
 	"""Checks that form is valid, builds result, builds errors"""

@@ -17,10 +17,10 @@ from ximpia.core.data import ActionDAO, ViewDAO
 from ximpia.core.util import getClass
 from ximpia.core.business import Search
 
-from business import SignupView, LoginView
-from business import SignupAction, LoginAction
 from constants import Constants as K
 import forms
+
+import business
 
 from ximpia.util.http import Request
 from ximpia.util.content import getContentRelaseDict
@@ -391,9 +391,10 @@ def checkCaptcha(request, value):
 def changePassword(request, ximpiaId, reminderId, **args):
 	"""View to show change password form. User will enter new password and click save. New password then would be saved
 	and user logged in"""
+	# TODO: Integrate decorator
 	print 'changePassword...'
 	args['ctx'][Context.VIEW_NAME_SOURCE] = 'newPassword'
-	login = LoginView(args['ctx'])
+	login = business.LoginBusiness(args['ctx'])
 	resultJs = login.showNewPassword(ximpiaId=ximpiaId, reminderId=reminderId)
 	result = render_to_response('social_network/login/changePassword.html', RequestContext(request, {	'result': json.dumps(resultJs),
 														'settings': settings
@@ -403,10 +404,11 @@ def changePassword(request, ximpiaId, reminderId, **args):
 @Context(app=K.APP)
 def signupUser(request, invitationCode, **args):
 	"""Signup user with invitation."""
+	# TODO: Integrate decorator
 	print 'signupUser...'
 	args['ctx'][Context.VIEW_NAME_SOURCE] = 'signup'
 	affiliateId = Request.getReqParams(request, ['aid:int'])[0]
-	signup = SignupView(args['ctx'])
+	signup = business.SignupBusiness(args['ctx'])
 	resultJs = signup.showSignupUser(invitationCode=invitationCode, affiliateId=affiliateId)
 	result = render_to_response('social_network/signup/signupUser.html', RequestContext(request, {		'result': json.dumps(resultJs),
 														'settings': settings

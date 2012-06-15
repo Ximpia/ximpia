@@ -223,7 +223,7 @@ class Menu(BaseModel):
 	"""Menu"""
 	application = models.ForeignKey('core.Application',
 			verbose_name=_('Application'), help_text=_('Application for the menu'))
-	name = models.CharField(max_length=10, unique=True, 
+	name = models.CharField(max_length=20, unique=True, 
 			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
 	titleShort = models.CharField(max_length=12,
 			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
@@ -295,7 +295,9 @@ class View(BaseModel):
 	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
 			verbose_name=_('Templates'), help_text=_('Templates for view'))
 	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
-			verbose_name=_('Parameters'), help_text=_('View entry parameters'))	
+			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
+	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW,
+			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -321,8 +323,10 @@ class XpTemplate(BaseModel):
 	"""Template"""
 	application = models.ForeignKey('core.Application',
 			verbose_name=_('Application'), help_text=_('Application for the template'))
-	name = models.CharField(max_length=50, unique=True,
+	name = models.CharField(max_length=50,
 			verbose_name=_('Name'), help_text=_('Name'))
+	alias = models.CharField(max_length=20,
+			verbose_name=_('Alias'), help_text=_('Alias'))
 	language = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, 
 			verbose_name=_('Language'), help_text=_('Language'))
 	country = models.CharField(max_length=2, choices=Choices.COUNTRY, blank=True, null=True,
@@ -337,6 +341,7 @@ class XpTemplate(BaseModel):
 		db_table = 'CORE_TEMPLATE'
 		verbose_name = 'Template'
 		verbose_name_plural = "Templates"
+		unique_together = ("application", "name")
 
 class Action(BaseModel):
 	"""Action"""

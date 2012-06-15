@@ -1,12 +1,9 @@
 from ximpia.core.business import ComponentRegister
-from constants import Constants as K
 from ximpia.core.choices import Choices as _Ch
 from ximpia.core.constants import CoreConstants as _K
 
-from business import LoginView, SignupView, HomeView
-from business import LoginAction, SignupAction
-
-# TODO: Is commit safe????
+from constants import Constants as K
+import business
 
 #################################################
 # Parameters used in Menu, Views and Workflow
@@ -19,24 +16,29 @@ ComponentRegister.registerParam(appCode=K.APP, name='ximpiaId', title='XimpiaId'
 # Views
 ##########
 # login
-ComponentRegister.registerView(appCode=K.APP, viewName='login', myClass=LoginView, method='showLogin')
-ComponentRegister.registerView(appCode=K.APP, viewName='newPassword', myClass=LoginView, method='showNewPassword')
-ComponentRegister.registerView(appCode=K.APP, viewName='logout', myClass=LoginView, method='showLogout')
+ComponentRegister.registerView(appCode=K.APP, viewName='login', myClass=business.LoginBusiness, method='showLogin')
+ComponentRegister.registerView(appCode=K.APP, viewName='newPassword', myClass=business.LoginBusiness, method='showNewPassword')
+ComponentRegister.registerView(appCode=K.APP, viewName='logout', myClass=business.LoginBusiness, method='showLogout')
 # signup
-ComponentRegister.registerView(appCode=K.APP, viewName='signup', myClass=SignupView, method='showSignupUser')
+ComponentRegister.registerView(appCode=K.APP, viewName='signup', myClass=business.SignupBusiness, method='showSignupUser')
 # home
-ComponentRegister.registerView(appCode=K.APP, viewName='home', myClass=HomeView, method='showStatus')
+ComponentRegister.registerView(appCode=K.APP, viewName='home', myClass=business.HomeBusiness, method='showStatus')
+# user
+ComponentRegister.registerView(appCode=K.APP, viewName='changePassword', myClass=business.UserBusiness, method='showChangePassword', 
+			winType=_Ch.WIN_TYPE_POPUP)
 
 ##########
 # Actions
 ##########
 # login
-ComponentRegister.registerAction(appCode=K.APP, actionName='doLogin', myClass=LoginAction, method='doLogin')
-ComponentRegister.registerAction(appCode=K.APP, actionName='doNewPassword', myClass=LoginAction, method='doNewPassword')
-ComponentRegister.registerAction(appCode=K.APP, actionName='doPasswordReminder', myClass=LoginAction, method='doPasswordReminder')
-ComponentRegister.registerAction(appCode=K.APP, actionName='doLogout', myClass=LoginAction, method='doLogout')
+ComponentRegister.registerAction(appCode=K.APP, actionName='doLogin', myClass=business.LoginBusiness, method='doLogin')
+ComponentRegister.registerAction(appCode=K.APP, actionName='doNewPassword', myClass=business.LoginBusiness, method='doNewPassword')
+ComponentRegister.registerAction(appCode=K.APP, actionName='doPasswordReminder', myClass=business.LoginBusiness, method='doPasswordReminder')
+ComponentRegister.registerAction(appCode=K.APP, actionName='doLogout', myClass=business.LoginBusiness, method='doLogout')
 # signup
-ComponentRegister.registerAction(appCode=K.APP, actionName='doSignupUser', myClass=SignupAction, method='doUser')
+ComponentRegister.registerAction(appCode=K.APP, actionName='doSignupUser', myClass=business.SignupBusiness, method='doUser')
+# user
+ComponentRegister.registerAction(appCode=K.APP, actionName='doChangePassword', myClass=business.UserBusiness, method='doChangePassword')
 
 
 ###############
@@ -47,6 +49,8 @@ ComponentRegister.cleanMenu(K.APP)
 ComponentRegister.registerMenu(appCode=K.APP, name='sys', titleShort='Ximpia', title='Ximpia', iconName='iconLogo')
 ComponentRegister.registerMenu(appCode=K.APP, name='signout', titleShort='Sign out', title='Sign out', iconName='iconLogout', 
 			actionName='doLogout')
+ComponentRegister.registerMenu(appCode=K.APP, name='changePassword', titleShort='New Password', title='Change Password', iconName='', 
+			viewName='changePassword')
 # Home Menu
 ComponentRegister.registerMenu(appCode=K.APP, name='home', titleShort='Home', title='Home', iconName='iconHome', viewName='home')
 
@@ -57,6 +61,7 @@ ComponentRegister.registerMenu(appCode=K.APP, name='home', titleShort='Home', ti
 ComponentRegister.registerViewMenu(appCode=K.APP, viewName='home', menus=[
 				{_K.ZONE: 'sys', _K.MENU_NAME: 'sys'},
 				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'home'},
+				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
 				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'signout'},
 				{_K.ZONE: 'main', _K.MENU_NAME: 'home'}
 			])
@@ -66,8 +71,11 @@ ComponentRegister.registerViewMenu(appCode=K.APP, viewName='home', menus=[
 #############
 ComponentRegister.registerTemplate(appCode=K.APP, viewName='home', name='home', winType=_Ch.WIN_TYPE_WINDOW)
 ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='login', winType=_Ch.WIN_TYPE_WINDOW)
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwordReminder', winType=_Ch.WIN_TYPE_POPUP)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwordReminder', winType=_Ch.WIN_TYPE_POPUP, 
+				alias='passwordReminder')
 ComponentRegister.registerTemplate(appCode=K.APP, viewName='logout', name='logout', winType=_Ch.WIN_TYPE_WINDOW)
+# user
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='changePassword', name='changePassword', winType=_Ch.WIN_TYPE_POPUP)
 
 
 ##########
@@ -77,10 +85,9 @@ ComponentRegister.registerTemplate(appCode=K.APP, viewName='logout', name='logou
 ComponentRegister.registerFlow(appCode=K.APP, flowCode='login')
 ComponentRegister.registerFlowView(appCode=K.APP, flowCode='login', viewNameSource='login', viewNameTarget='home', 
 				actionName='doLogin', order=10)
-#ComponentRegister.registerFlowView(appCode=K.APP, flowCode='login', viewNameSource='home', viewNameTarget='logout', actionName='doLogout')
 
 ##########
 # Search
 ##########
 ComponentRegister.cleanSearch(K.APP)
-ComponentRegister.registerSearch(text='This is a simple sample of text', appCode=K.APP, viewName='home')
+ComponentRegister.registerSearch(text='Change Password', appCode=K.APP, viewName='changePassword')

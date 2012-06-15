@@ -130,6 +130,24 @@ class XpCharField(XpBaseCharField):
 		super(XpCharField, self).__init__(**argsDict)
 
 
+class XpOptionField(XpBaseCharField):
+	"""OptionField"""
+	def __init__(self, instance, insField, req=True, init=None, jsReq=None, xpType='input.option', **argsDict):
+		self._doInstanceInit(instance, insField)
+		fieldMaxLength = self._getMaxLength()
+		argsDict['validators'] = [validateTxtField]
+		argsDict['max_length'] = max if max != None else fieldMaxLength
+		argsDict['min_length'] = min if min != None else None
+		argsDict['req'], argsDict['jsReq'] = self._doRequired(req, jsReq) 
+		classStr = 'fieldMust' if req == True else 'field'
+		attrDict = self._doAttrs(argsDict, {	'class': classStr,
+							'maxlength': str(argsDict['max_length']),
+							'xpType': xpType})
+		
+		if not argsDict.has_key('widget'):
+			argsDict['widget'] = XpTextInputWidget(attrs=attrDict)
+		super(XpCharField, self).__init__(**argsDict)
+
 class XpHiddenDataField(XpBaseCharField):
 	"""Hidden Field"""
 	def __init__(self, instance, insField, req=True, init=None, jsReq=None, xpType='', **argsDict):
@@ -290,7 +308,7 @@ class XpChoiceField(ChoiceField):
 			if not argsDict.has_key('help_text'):
 				argsDict['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text if instance else argsDict['help_text']
 			argsDict['initial'] = init if init != '' else eval('instance' + '.' + self.instanceFieldName)
-		#argsDict['choices'] = choices if choices != None else None		
+		#argsDict['choices'] = choices if choices != None else None
 		#argsDict['choicesId'] = choicesId if choicesId != '' else ''
 		#print 'choicesId : ', choicesId
 		attrDict = self._doAttrs(argsDict, {	'class': classStr,

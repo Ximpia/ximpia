@@ -1,38 +1,31 @@
-import base64
-import time
-import os
-import cPickle
-import random
+import types
+import traceback
 
 from django.db import models
 from django.contrib.auth.models import User as UserSys, Group as GroupSys
-from django.contrib.sessions.backends.db import SessionStore
-from django.contrib.sessions.models import Session
-from django.utils.hashcompat import md5_constructor
-from django.http import HttpResponse
-
+from django.utils.translation import ugettext as _
 from ximpia import settings
+from django.utils import translation
+from choices import Choices
+from constants import Constants as K
+from ximpia.core.models import BaseModel
 
-class DeleteManager(models.Manager):
-	def get_query_set(self):
-		return super(DeleteManager, self).get_query_set().filter(Delete=False)
-
-class Table(models.Model):
-	Mode = models.CharField(max_length=20)
-	Name = models.CharField(max_length=20)
-	Value = models.CharField(max_length=100, null=True, blank=True)
-	ValueId = models.IntegerField(null=True, blank=True)
-	DateCreate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-	DateModify = models.DateTimeField(auto_now=True, null=True, blank=True)
-	UserCreateId = models.IntegerField(null=True, blank=True)
-	UserModifyId = models.IntegerField(null=True, blank=True)
-	Delete = models.BooleanField(default=False)
-	objects = DeleteManager()
-	objects_del = models.Manager()
+class Media(BaseModel):
+	"""Media"""
+	embedCode = models.CharField(max_length=500,
+			verbose_name = _('Embed Code'), help_text = _('Embed code from Video provider'))
+	name = models.CharField(max_length=30,
+			verbose_name = _('Name'), help_text = _('Media name'))
+	title = models.CharField(max_length=50,
+			verbose_name = _('Title'), help_text = _('Media Title'))
+	description = models.CharField(max_length=500,
+			verbose_name = _('Description'), help_text = _('Media Description, shown in search'))
+	isFeatured = models.BooleanField(default=False,
+			verbose_name = _('Is Featured?'), help_text = _('Is media shown as featured? Will be placed first on search and bigger'))
 	def __unicode__(self):
-		if self.ValueId:
-			return str(self.ValueId)
-		else:
-			return str(self.Value)
+		return str(self.name)
 	class Meta:
-		db_table = 'MN_TABLES'
+		db_table = 'SITE_MEDIA'
+		verbose_name = _('Media')
+		verbose_name_plural = _('Media')
+		ordering = ['-isFeatured']

@@ -11,10 +11,6 @@ from models import Notification, Profile, SNParam, SNXmlMessage
 
 from django.contrib import admin
 
-"""Copyright (c) 2011 Jorge Alegre Vilches
-All rights reserved."""
-
-
 class SNXmlMessageAdmin(admin.ModelAdmin):
 	list_display = ('id','name','lang')
 	def save_model(self, request, obj, form, change):

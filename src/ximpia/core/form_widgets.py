@@ -13,6 +13,21 @@ from django.utils.encoding import force_unicode
 #from ximpia.util.basic_types import DictUtil
 #from validators import validateUserId, validateEmail, validateTxtField, validatePassword 
 
+class XpCheckboxWidget ( Widget ):
+	"""Widget for checkbox"""
+	def render(self, name, value, attrs=None):
+		final_attrs = self.build_attrs(attrs, type='checkbox', name=name)
+		try:
+			result = self.check_test(value)
+		except: # Silently catch exceptions
+			result = False
+		if result:
+			final_attrs['checked'] = 'checked'
+		if value not in ('', True, False, None):
+			# Only add the 'value' attribute if a value is non-empty.
+			final_attrs['value'] = force_unicode(value)
+		return mark_safe(u'<input%s />' % flatatt(final_attrs))
+
 class XpInputWidget(Widget):
 	"""
 	Base class for all <input> widgets (except type='checkbox' and

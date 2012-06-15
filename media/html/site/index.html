@@ -120,14 +120,8 @@
 
 <br/>
 
-<!-- Link Component: Open new panel (task) or open in modal mode -->
-<div id="id_passwordReminderLink_comp" data-xp-type="link" data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password'}"></div>
-
-<!--
-<div id="id_passwordReminderLink_comp" data-xp-type="link">
-<a href="javascript:return void(false)" id="id_passwordReminderLink"  alt="Remember password" data-xp="">Remember your password</a>
-</div>
--->
+<!-- Link Component: Open new panel (task) or open in modal mode here -->
+<div id="id_passwordReminderLink_comp" data-xp-type="link" data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password', viewName: 'login'}"></div>
 
 </div>
 </fieldset>
@@ -153,6 +147,51 @@
 
 <br/>
 
+<!--
+<br/>
+Holaaaaa
+<form >-->
+
+<!--
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false, value: ''}">Option 1</div>
+
+Text should come from server
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false, values: {'1': 'Option 1', '2': 'Option 2'}}"></div>
+
+Get values and text from form
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false}"></div>
+
+XpOptionField | Choices?????
+values = {value: text,...}
+
+-->
+<!--	
+	<div style="float:left">
+		<label for="id_optName_1">Mi Label</label>: <input id="id_optName_1" type="checkbox" name="optName" value="1" />Option 1
+	</div>
+	<div style="float:left">
+		<input type="checkbox" name="optName" value="2" />Option 2
+	</div>
+
+<br/>
+<ul>
+	<li>
+		<div>
+			<input type="checkbox" name="optNameUL" value="1" />Option 1
+		</div>
+	</li>
+	<li>
+		<div>
+			<input type="checkbox" name="optNameUL" value="2" />Option 2
+		</div>
+	</li>
+	
+</ul>
+
+-->
+
+</form>
+
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
 <script type="text/javascript" src="http://localhost:8000/site_media/js/jquery/jquery-1.6.min.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.metadata.js"></script>
@@ -176,9 +215,10 @@
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
 
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.option.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
-<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.button.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.link.js"></script>
 <script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/window/ximpia.popup.js"></script>

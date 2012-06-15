@@ -1,5 +1,11 @@
 from django.contrib import admin
 
-"""Copyright (c) 2010 Jorge Alegre Vilches
-All rights reserved."""
+from models import Media
 
+class MediaAdmin(admin.ModelAdmin):
+	list_display = ('name','title','isFeatured')
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
+
+admin.site.register(Media, MediaAdmin)

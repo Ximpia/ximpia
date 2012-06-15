@@ -12,6 +12,16 @@
         var doOpenPopup = function(obj) {
         	//console.log('Link Open Popup!!!!');
         	//console.log(obj);
+        	// TODO: Call openPopup method in PageAjax
+        	// This should call request view and normal popups
+        	ximpia.console.log('tmplAlias length: ' + obj.tmplAlias.length);
+        	if (obj.tmplAlias.length != 0) {
+        		obj.isPopupReqView = false;
+        	} else {
+        		obj.isPopupReqView = true;
+        	}
+        	//obj.isPopupReqView = false;
+        	ximpia.console.log('link :: doOpenPopup :: obj.isPopupReqView: ' + obj.isPopupReqView);
         	$('body').xpObjPopUp(obj).xpObjPopUp('create');
         };
         var methods = {
@@ -31,9 +41,18 @@
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					var idLink = $(element).attr('id').split('_comp')[0];
+					ximpia.console.log('idLink: ' + idLink);
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					var dataXp = "{op: '" + attrs.op + "', app: '" + attrs.app + "', name: '" + attrs.name + "', content: '" + attrs.content + "'}";
+					ximpia.console.log('Link Attrs...');
+					ximpia.console.log(attrs);
+					attrs.viewName = 'login';
+					attrs.tmplAlias = 'passwordReminder';
+					//ximpia.console.log($(element));
+					// TODO: We should give these to open popup: tmplAlias
+					// TODO: Way to get application code
+					// tmplAlias should resolve into a tmpl using the result context
+					var dataXp = "{op: '" + attrs.op + "', app: '" + attrs.app + "', name: '" + attrs.name + "', viewName: '" + attrs.viewName + "', tmplAlias: '" + attrs.tmplAlias + "'}";
 					var htmlContent = "<a href=\"javascript:return void(false)\" id=\"" + idLink + "\"  alt=\"" + attrs.alt + "\" data-xp=\"" + dataXp + "\">" + attrs.linkText + "</a>";
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));

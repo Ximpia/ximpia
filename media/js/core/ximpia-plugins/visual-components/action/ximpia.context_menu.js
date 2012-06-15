@@ -38,7 +38,7 @@
         			}
         			paramStr += '}';
 				// data-xp : viewName, actionName, windowType
-				var dataXp = "{windowtype: '" + "window" + "', view: '" + ctx.view + "', action: '" + 
+				var dataXp = "{winType: '" + ctx.winType + "', view: '" + ctx.view + "', action: '" + 
 					ctx.action + "', params: " + paramStr + "}";
 				var liAttr = (ctx.icon != '') ? "class=\"" + ctx.icon + "Small\"" : '';
 				liAttr += (ctx.sep == true) ? ' separator' : '';
@@ -81,9 +81,12 @@
 				// view
 				ximpia.console.log('view!!!!');
 				ximpia.console.log('view: ' + attrs.view);
-				ximpia.common.PageAjax.doFadeIn();
+				ximpia.console.log('winType: ' + attrs.winType);
+				if (attrs.winType != 'popup') {
+					ximpia.common.PageAjax.doFadeIn();
+				}
 				var pageJx = ximpia.common.PageAjax();
-				pageJx.getView({ view: attrs.view, params: JSON.stringify(attrs.params) });
+				pageJx.getView({ view: attrs.view, params: JSON.stringify(attrs.params), winType: attrs.winType });
 			}
 		}
         };
