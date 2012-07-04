@@ -46,7 +46,7 @@ class CommonDAO(object):
 			if sKey.find('xp') == 0:
 				pass
 			else:
-				dictNew[sKey] = dict[sKey]
+				dictNew[sKey] = dd[sKey]
 		return dictNew
 	
 	def _getPagingStartEnd(self, page, numberMatches):
@@ -55,6 +55,28 @@ class CommonDAO(object):
 		iEnd = iStart+numberMatches
 		values = (iStart, iEnd)
 		return values
+	
+	def _getCtx(self):
+		"""Get context"""
+		return self._ctx
+
+	def _doManyById(self, model, idList, field):
+		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
+		@param idList: List
+		@param object: Model"""
+		xpDict = self.getMap(idList, userModel=model)
+		for idTarget in xpDict.keys():
+			addModel = xpDict[idTarget]
+			field.add(addModel)
+	
+	def _doManyByName(self, model, nameList, field):
+		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
+		@param idList: List
+		@param object: Model"""
+		for value in nameList:
+			fields = model.objects.get_or_create(name=value)
+			nameModel = fields[0]
+			field.add(nameModel)
 	
 	def getMap(self, idList):
 		"""Get object map for a list of ids 
@@ -157,7 +179,9 @@ class CommonDAO(object):
 	
 	def filterData(self, **argsDict):
 		"""Search a model table with ordering support and paging
-		@param bFull: boolean : Follows all foreign keys
+		@param xpNumberMatches: Number of matches
+		@param xpPage: Page
+		@param xpOrderBy: Tuple of fields to order by
 		@return: list : List of model objects"""
 		try:
 			iNumberMatches = self._numberMatches
@@ -174,10 +198,10 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			if len(orderByTuple) != 0:
 				dbObj = self._model.objects.order_by(*orderByTuple)
-			xpList = dbObj.filter(**ArgsDict)[iStart:iEnd]			
+			xpList = dbObj.filter(**ArgsDict)[iStart:iEnd]
 		except Exception as e:
 			raise XpMsgException(e, _('Error in search table model ') + str(self._model))
-		return xpList	
+		return xpList
 		
 	def getAll(self):
 		"""Get all rows from table
@@ -190,27 +214,18 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model))
 		return xpList
 	
-	def _getCtx(self):
-		"""Get context"""
-		return self._ctx
-
-	def _doManyById(self, model, idList, field):
-		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
-		@param idList: List
-		@param object: Model"""
-		xpDict = self.getMap(idList, userModel=model)
-		for idTarget in xpDict.keys():
-			addModel = xpDict[idTarget]
-			field.add(addModel)
-	
-	def _doManyByName(self, model, nameList, field):
-		"""Does request for map for list of ids (one query). Then processes map and adds to object obtained objects.
-		@param idList: List
-		@param object: Model"""
-		for value in nameList:
-			fields = model.objects.get_or_create(name=value)
-			nameModel = fields[0]
-			field.add(nameModel)
+	def searchFields(self, fields, iPage=1, numberResults=100, orderBy=[], **args):
+		"""Search table with paging, ordering for set of fields. listMap allows mapping from keys to model fields.
+		@param fields: List of fields, like ['field1','field2', ... ]
+		@param iPage: Page to be returned. Default=1
+		@param numberResults: Number of results returned: Default: 100
+		@param orderBy: Tuple of fields to order by: Default: []
+		@return: xpList: ValuesQuerySet."""
+		try:
+			xpList = self.filterData(xpPage=iPage, xpNumberMatches=numberResults, xpOrderBy=orderBy, **args).values(*fields)
+			return xpList
+		except Exception as e:
+			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model))
 
 	ctx = property(_getCtx, None)
 

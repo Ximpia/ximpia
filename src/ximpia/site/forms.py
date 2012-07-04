@@ -32,3 +32,8 @@ from ximpia.core.validators import validateCaptcha
 from ximpia.core.models import UserSocial
 from ximpia.core.form_fields import XpHiddenField
 from ximpia.core.forms import XBaseForm, AppRegex
+
+class HomeForm(XBaseForm):
+	_XP_FORM_ID = 'home'
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))

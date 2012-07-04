@@ -1,6 +1,6 @@
 
 class Constants(object):
-	APP = 'site'
+	APP = 'SITE'
 	XIMPIA = 'ximpia'
 	TWITTER = 'twitter'
 	FACEBOOK = 'facebook'

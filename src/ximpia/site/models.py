@@ -1,16 +1,8 @@
-import types
-import traceback
-
 from django.db import models
-from django.contrib.auth.models import User as UserSys, Group as GroupSys
 from django.utils.translation import ugettext as _
-from ximpia import settings
-from django.utils import translation
-from choices import Choices
-from constants import Constants as K
 from ximpia.core.models import BaseModel
 
-class Media(BaseModel):
+class Video(BaseModel):
 	"""Media"""
 	embedCode = models.CharField(max_length=500,
 			verbose_name = _('Embed Code'), help_text = _('Embed code from Video provider'))
@@ -25,7 +17,7 @@ class Media(BaseModel):
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
-		db_table = 'SITE_MEDIA'
-		verbose_name = _('Media')
-		verbose_name_plural = _('Media')
+		db_table = 'SITE_VIDEO'
+		verbose_name = _('Video')
+		verbose_name_plural = _('Videos')
 		ordering = ['-isFeatured']

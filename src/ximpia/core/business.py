@@ -14,6 +14,8 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.sessions.models import Session
 from django.db.models import Q
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
@@ -33,6 +35,12 @@ from ximpia.util.js import Form as _jsf
 from ximpia import settings
 
 class ComponentRegister(object):
+	
+	@staticmethod
+	def registerApp(code=None, name=None):
+		"""Register application"""
+		app, created = Application.objects.get_or_create(code=code, name=name)
+		print 'Register application: ', app, created
 	
 	@staticmethod
 	def registerViewMenu(appCode=None, viewName=None, menus=[], **argsDict):
@@ -236,7 +244,7 @@ class ComponentRegister(object):
 			action = Action.objects.get(name=actionName)
 			paramDict['action'] = action
 		if viewName != '':
-			view = View.objects.get(name=viewName)
+			view = View.objects.get(application__code=appCode, name=viewName)
 			paramDict['view'] = view
 		print 'paramDict: ', paramDict
 		"""try:
@@ -297,8 +305,8 @@ class ComponentRegister(object):
 	@staticmethod
 	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=None, device=None, alias=None):
 		"""Register template"""
-		view = View.objects.get(name=viewName) if viewName != None else None
 		app = Application.objects.get(code=appCode)
+		view = View.objects.get(application=app, name=viewName) if viewName != None else None
 		paramDict = {}
 		paramDict['application'] = app
 		paramDict['name'] = name
@@ -625,6 +633,17 @@ class CommonBusiness( object ):
 		"""Do logout"""
 		logout(self._ctx[Ctx.RAW_REQUEST])
 		self._ctx[Ctx.IS_LOGIN] = False
+	
+	def _addList(self, name, values):
+		"""Add name to list_$name in the result JSON object"""
+		dictList = []
+		for entry in values:
+			dd = {}
+			keys = entry.keys()
+			for key in keys:
+				dd[key] = entry[key]
+			dictList.append(dd)
+		self._ctx[Ctx.JS_DATA].addAttr('list_' + name, dictList)
 
 class WorkFlowBusiness (object):	
 	_ctx = {}
@@ -1062,7 +1081,9 @@ class MenuBusiness( object ):
 	def getMenus(self, viewName):
 		"""Build menus in a dictionary
 		@param viewName: View name"""
-		view = self._dbView.get(name=viewName)
+		print 'getMenus...'
+		print 'appCode: ', self._ctx[Ctx.APP]
+		view = self._dbView.get(name=viewName, application__code=self._ctx[Ctx.APP])
 		print 'view: ', view
 		# TODO: Play around to get list of codes using common methods
 		print 'userSocial: ', self._ctx[Ctx.USER_SOCIAL]
@@ -1107,11 +1128,15 @@ class MenuBusiness( object ):
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
 			container[viewMenu.menu.name] = menuObj
+			#print 'menuObj: ', menuObj
 			if viewMenu.parent == None:
 				menuObj['items'] = []
 				if viewMenu.zone in ['sys','main']:
 					if self._ctx[Ctx.IS_LOGIN]:
 						menuDict[viewMenu.zone].append(menuObj)
+					else:
+						if viewMenu.menu.name == 'siteHome':
+							menuDict[viewMenu.zone].append(menuObj) 
 				else:
 					menuDict[viewMenu.zone].append(menuObj)
 			else:
@@ -1186,7 +1211,7 @@ class DoBusinessDecorator(object):
 					# winType
 					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
 						dbView = ViewDAO(obj._ctx)
-						view = dbView.get(name=obj._ctx[Ctx.JS_DATA]['response']['view'])
+						view = dbView.get(application__code=obj._ctx[Ctx.APP], name=obj._ctx[Ctx.JS_DATA]['response']['view'])
 						print 'winType: ', view.winType
 						obj._ctx[Ctx.JS_DATA]['response']['winType'] = view.winType
 					# User authenticate and session
@@ -1217,9 +1242,12 @@ class DoBusinessDecorator(object):
 					tmpl = Template(obj._ctx)
 					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
 						templates = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
-						tmplName = templates[obj._ctx[Ctx.JS_DATA]['response']['view']]
-						#tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
-						print 'tmplName: ', tmplName
+						if templates.has_key(obj._ctx[Ctx.JS_DATA]['response']['view']):
+							tmplName = templates[obj._ctx[Ctx.JS_DATA]['response']['view']]
+							#tmplName = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
+							print 'tmplName: ', tmplName
+						else:
+							raise XpMsgException(None, _('Error in resolving template for view'))
 						obj._ctx[Ctx.JS_DATA]['response'][Ctx.TMPL] = templates
 					else:
 						# In case we show only msg with no view, no template
@@ -1531,5 +1559,33 @@ class WFActionDecorator(object):
 						print e.myException
 						traceback.print_exc()
 					raise
+			return result
+		return wrapped_f
+
+class ViewDecorator ( object ):
+	""""Deprecated, no decorator used for views"""
+	__viewName = ''
+	__APP = ''
+	def __init__(self, appCode, viewName, *argsTuple, **argsDict):
+		self.__APP = appCode
+		self.__viewName = viewName
+	def __call__(self, f):
+		"""Decorator call method"""
+		def wrapped_f(*argsTuple, **args):
+			request = argsTuple[0]
+			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
+			resultJs = f(*argsTuple, **args)
+			#print 'resultJs: ', resultJs
+			template = Template(args['ctx'])
+			templates = template.resolve(self.__viewName)
+			if templates.has_key(self.__viewName):
+				tmplName = templates[self.__viewName]
+				#print 'tmplName: ', tmplName
+				result = render_to_response( self.__APP + '/' + tmplName + '.html', RequestContext(request, 
+													{	'result': json.dumps(resultJs),
+														'settings': settings
+													}))
+			else:
+				raise XpMsgException(None, _('Error in resolving template for view'))
 			return result
 		return wrapped_f

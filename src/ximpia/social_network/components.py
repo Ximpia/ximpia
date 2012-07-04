@@ -76,6 +76,9 @@ ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwo
 ComponentRegister.registerTemplate(appCode=K.APP, viewName='logout', name='logout', winType=_Ch.WIN_TYPE_WINDOW)
 # user
 ComponentRegister.registerTemplate(appCode=K.APP, viewName='changePassword', name='changePassword', winType=_Ch.WIN_TYPE_POPUP)
+# Signup
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='signup', name='signupUser', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='newPassword', name='changePassword', winType=_Ch.WIN_TYPE_WINDOW)
 
 
 ##########

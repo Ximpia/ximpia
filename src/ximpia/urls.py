@@ -7,6 +7,11 @@ admin.autodiscover()
 #from django.views.static import serve
 
 urlpatterns = patterns('',
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
+	(r'^captcha/', include('yacaptcha.urls')),
+)
+
+urlpatterns += patterns('ximpia',
     
     # Example:
     # (r'^ximpia/', include('ximpia.foo.urls')),
@@ -18,15 +23,16 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
     
+    # Home
+    (r'^$', 'site.views.home'),
+    
     (r'^oauth/(?P<service>.*)$', 'social_network.views.oauth'),
     (r'^oauth2/(?P<service>.*)$', 'social_network.views.oauth20'),
-    
-    (r'^captcha/', include('yacaptcha.urls')),
     
     # Media
     #(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': '/mnt/django_projects/ximpia/media'}),
     #(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': '/media/truecrypt1/workspace/Ximpia/media'}),
-    (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
+    #(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
     
     # signupUser
     #(r'^signup/(?P<invitationCode>\w+)$', 'social_network.views.signup'),
@@ -49,11 +55,10 @@ urlpatterns = patterns('',
     (r'^jxSearchHeader$', 'social_network.views.searchHeader'),
 
     # Social network and applications
-    (r'^$', 'social_network.views.staticContent'),
+    #(r'^$', 'social_network.views.staticContent'),
     #(r'^', 'social_network.views.test'),
     (r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),        
     
-    #(r'^view/', include('ximpia.site.urls')),
-    (r'^view/', include('ximpia.social_network.urls')),    
+    (r'^view/', include('ximpia.social_network.urls')),
     
 )
