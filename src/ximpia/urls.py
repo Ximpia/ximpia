@@ -23,11 +23,17 @@ urlpatterns += patterns('ximpia',
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
     
+    # backdoor?????
+    #(r'^backDoor/', include(admin.site.urls)),
+    
+    # Show Server View
+    (r'^apps/(?P<app>.*)/(?P<viewName>.*)/(?P<viewAttrs>.*)$', 'core.views.showView'),
+    
     # Home
     (r'^$', 'site.views.home'),
     
-    (r'^oauth/(?P<service>.*)$', 'social_network.views.oauth'),
-    (r'^oauth2/(?P<service>.*)$', 'social_network.views.oauth20'),
+    #(r'^oauth/(?P<service>.*)$', 'social_network.views.oauth'),
+    #(r'^oauth2/(?P<service>.*)$', 'social_network.views.oauth20'),
     
     # Media
     #(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': '/mnt/django_projects/ximpia/media'}),
@@ -46,7 +52,7 @@ urlpatterns += patterns('ximpia',
     #(r'^activateUser/(?P<user>.*)/(?P<activationCode>[0-9]+)$', 'social_network.views.activateAccount'),
 
     # Reload captcha
-    (r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),
+    #(r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),
     
     # Ajax Urls
     (r'^jxSuggestList$', 'social_network.views.jxSuggestList'),
@@ -57,8 +63,9 @@ urlpatterns += patterns('ximpia',
     # Social network and applications
     #(r'^$', 'social_network.views.staticContent'),
     #(r'^', 'social_network.views.test'),
-    (r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),        
-    
+    #(r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),
     (r'^view/', include('ximpia.social_network.urls')),
     
+    # Where $appUrlName will be the url friendly name for the application
+    #(r'^view/$appUrlName/', include('ximpia.social_network.urls')),
 )

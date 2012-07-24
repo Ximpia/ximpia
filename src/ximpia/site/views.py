@@ -12,10 +12,10 @@ from django.contrib.auth import login, authenticate
 from django.utils import translation
 from django.utils.translation import ugettext as _
 
-from ximpia.core.models import context, Context, XpMsgException
+from ximpia.core.models import context, Context, ContextNew, XpMsgException
 from ximpia.core.data import ActionDAO, ViewDAO
 from ximpia.core.util import getClass
-from ximpia.core.business import Search, ViewDecorator
+from ximpia.core.business import Search, ViewDecorator, ViewDecoratorNew
 from constants import Constants as K
 import forms
 import business
@@ -24,8 +24,8 @@ from ximpia.util.content import getContentRelaseDict
 from ximpia import settings
 from yacaptcha.models import Captcha
 
-@Context(app=K.APP)
-@ViewDecorator(K.APP, 'home')
+@ContextNew()
+@ViewDecoratorNew()
 def home(request, **args):
 	print 'home....'
 	video = business.VideoBusiness(args['ctx'])

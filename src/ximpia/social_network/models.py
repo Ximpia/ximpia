@@ -2,7 +2,7 @@ import types
 import traceback
 
 from django.db import models
-from django.contrib.auth.models import User as UserSys, Group as GroupSys
+from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext as _
 from ximpia import settings
 from django.utils import translation
@@ -63,7 +63,7 @@ class UserDetail(BaseModel):
 	"""Model for UserSocial
 	FK : User
 	MN: SocialNetworks"""
-	user = models.ForeignKey(UserSys,
+	user = models.ForeignKey(User,
 				verbose_name = _('User'), help_text = _('User'))
 	name = models.CharField(max_length=60,
 				verbose_name = _('Name'), help_text = _('Name'))
@@ -122,7 +122,7 @@ class GroupSocial(BaseModel):
 	SocialGroup
 	OrgGroup
 	Public"""
-	group = models.ForeignKey(GroupSys, unique=True,
+	group = models.ForeignKey(Group, unique=True,
 				verbose_name = _('Group'), help_text = _('Group'))
 	groupNameId = models.CharField(max_length=20, null=True, blank=True,
 				verbose_name = _('Group Name Id'), help_text = _('Identification for group'))
@@ -276,7 +276,7 @@ class GroupStream(BaseModel):
 				verbose_name = _('User'), help_text = _('User'))
 	account = models.ForeignKey('Organization', 'account', null=True, blank=True, related_name='group_stream_account',
 				verbose_name = _('Account'), help_text = _('Account name'))
-	group = models.ForeignKey(GroupSys, null=True, blank=True,
+	group = models.ForeignKey(Group, null=True, blank=True,
 				verbose_name = _('Group'), help_text = _('Group'))
 	message = models.ForeignKey('StatusMessage',
 				verbose_name = _('Message'), help_text = _('Message'))
@@ -482,7 +482,7 @@ class UserProfile(BaseModel):
 
 class Organization(BaseModel):
 	"""Organization Model"""
-	invitedByUser = models.ForeignKey(UserSys, null=True, blank=True,
+	invitedByUser = models.ForeignKey(User, null=True, blank=True,
 			verbose_name = _('Invited By User'), help_text = _('Invited by user'))
 	invitedByOrg = models.ForeignKey('Organization', 'account', null=True, blank=True,
 			verbose_name = _('Invited By Organization'), help_text = _('Invited by Organization'))
@@ -580,7 +580,7 @@ class UserAccount(BaseModel):
 	[...]"""
 	user = models.ForeignKey('UserDetail',
 				verbose_name = _('User'), help_text = _('User'))
-	invitedByUser = models.ForeignKey(UserSys, null=True, blank=True,
+	invitedByUser = models.ForeignKey(User, null=True, blank=True,
 				verbose_name = _('Invited by User'), help_text = _('Invited by user'))
 	invitedByOrg = models.ForeignKey('Organization', 'account', null=True, blank=True,
 				verbose_name = _('Invited by Organization'), help_text = _('Invited for organization'))
@@ -856,7 +856,7 @@ class Invitation(BaseModel):
 	"""Invitation Model
 	FK: User
 	FK: Contact"""
-	fromUser = models.ForeignKey(UserSys,
+	fromUser = models.ForeignKey(User,
 				verbose_name = _('From User'), help_text = _('Invitation from user'))
 	fromAccount = models.ForeignKey('Organization', 'account', null=True, blank=True,
 				verbose_name = _('From Account'), help_text = _('Invitation from account name'))
@@ -903,7 +903,7 @@ class Affiliate(BaseModel):
 
 class TagUserTotal(BaseModel):
 	"""Tags for User in all Objects Model"""
-	user = models.ForeignKey(UserSys,
+	user = models.ForeignKey(User,
 			verbose_name = _('User'), help_text = _('User'))
 	userSocial = models.ForeignKey('core.UserSocial',
 			verbose_name = _('Ximpia User'), help_text = _('Ximpia User'))
@@ -921,7 +921,7 @@ class TagUserTotal(BaseModel):
 
 class LinkUserTotal(BaseModel):
 	"""Links for User in all Objects Model"""
-	user = models.ForeignKey(UserSys, 
+	user = models.ForeignKey(User, 
 			verbose_name = _('User'), help_text = _('User'))
 	userSocial = models.ForeignKey('core.UserSocial',
 			verbose_name = _('Ximpia User'), help_text = _('Ximpia User'))
@@ -962,7 +962,7 @@ class Subscription(BaseModel):
 				verbose_name = _('Organization'), help_text = _('Organization'))
 	app = models.ForeignKey('core.Application', related_name='subs_app', 
 				verbose_name = _('Application'), help_text = _('Application'))
-	users = models.ManyToManyField(UserSys,
+	users = models.ManyToManyField(User,
 				verbose_name = _('Users'), help_text = _('Users'))
 	subscriptionStatus = models.CharField(max_length=10, choices= Choices.SUBSCRIPTION, default=Choices.SUBSCRIPTION_TRIAL,
 				verbose_name = _('Subscription Status'), help_text = _('Subscription status : pending, used'))
@@ -1007,7 +1007,7 @@ class Notification(BaseModel):
 
 class SignupData(BaseModel):
 	"""SignUp Data"""
-	invitationByUser = models.ForeignKey(UserSys, blank=True, null=True,
+	invitationByUser = models.ForeignKey(User, blank=True, null=True,
 			verbose_name = _('Invited by user'), help_text = _('User that sent invitation'))
 	invitationByOrg = models.ForeignKey('Organization', 'account', null=True, blank=True,
 			verbose_name = _('Invited by account'), help_text = _('Organization that sent invitation'))
@@ -1132,7 +1132,7 @@ class ContactDetail(BaseModel):
 			verbose_name = _('Group Owner'), help_text = _('Group that owns the contact'))
 	ownerOrg = models.ForeignKey('social_network.Organization', related_name='contact_owner_org', null=True, blank=True,
 			verbose_name = _('Organizattion Owner'), help_text = _('Organization that owns the contact'))
-	user = models.ForeignKey(UserSys, unique=True, null=True, blank=True,
+	user = models.ForeignKey(User, unique=True, null=True, blank=True,
 			verbose_name = _('User'), help_text = _('User'))
 	firstName = models.CharField(max_length=100,
 			verbose_name = _('First Name'), help_text = _('First Name'))
