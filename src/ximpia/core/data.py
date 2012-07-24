@@ -106,7 +106,7 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			obj = dbObj.get(id=fieldId)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get object by id ') + str(fieldId) + _(' in model ') + str(self._model))
 		return obj
 	
 	def check(self, **qsArgs):
@@ -117,7 +117,7 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			exists = dbObj.filter(**qsArgs).exists()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(id) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in check object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
 		return exists
 	
 	def get(self, **qsArgs):
@@ -128,7 +128,7 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			data = dbObj.get(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object ') + str(id) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
 		return data	
 	
 	def search(self, *qsTuple, **qsArgs):
@@ -137,7 +137,7 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			filterList = dbObj.filter(*qsTuple, **qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in search operation ') + '' + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in search operation. qsTuple: ') + str(qsTuple) + ' . Args: ' + str(qsArgs) + _(' in model ') + str(self._model))
 		return filterList
 	
 	def create(self, **qsArgs):
@@ -148,7 +148,7 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			data = dbObj.create(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in create object ') + str(id) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
 		return data
 	
 	def getCreate(self, **qsArgs):
@@ -159,7 +159,7 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			xpTuple = dbObj.get_or_create(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get or create object ') + str(id) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
 		return xpTuple
 	
 	def deleteById(self, xpId, real=False):

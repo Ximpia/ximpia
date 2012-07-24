@@ -25,7 +25,7 @@ from constants import Constants as K, KParam
 
 from ximpia.util import ut_email
 
-from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, Context as Ctx, UserSocial,\
+from ximpia.core.models import getResultOK, getResultERROR, XpMsgException, JsResultDict, ContextDecorator as Ctx, UserSocial,\
 	Workflow
 from ximpia.core.business import CommonBusiness, EmailBusiness, WorkFlowBusiness
 from ximpia.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator,\
@@ -204,8 +204,6 @@ class LoginBusiness(CommonBusiness):
 		if not self._ctx['user'].is_authenticated():
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
-			#self._ctx[Ctx.FORM].buildJsData(self._ctx[Ctx.JS_DATA])
-			#print invitation.invitationCode, jsData['response']['form_signup']['invitationCode']
 			self._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 			# Popup - Password reminder
 			self._addForm(forms.PasswordReminderForm())
@@ -415,7 +413,9 @@ class SignupBusiness(CommonBusiness):
 	
 	@DoBusinessDecorator(pageError=True, form=forms.UserSignupForm, isServerTmpl=True)
 	def showSignupUser(self, invitationCode=None, affiliateId=None):
-		"""Show signup form. Get get invitation code.""" 
+		"""Show signup form. Get get invitation code."""
+		print 'invitationCode: ', invitationCode
+		print 'affiliateId: ', affiliateId 
 		self._validateNotExists([
 				[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.USED}, 'invitationUsed']
 				])

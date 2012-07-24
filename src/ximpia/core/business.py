@@ -21,7 +21,7 @@ from models import getResultOK, getResultERROR, XpMsgException, XpRegisterExcept
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl
 from ximpia.util import ut_email, resources
-from ximpia.core.models import JsResultDict, Context as Ctx, CoreParam
+from ximpia.core.models import JsResultDict, ContextDecorator as Ctx, CoreParam
 from ximpia.core.constants import CoreConstants as K, CoreKParam
 from ximpia.core.data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO,\
 	ApplicationDAO, TemplateDAO, ViewTmplDAO
@@ -1562,8 +1562,8 @@ class WFActionDecorator(object):
 			return result
 		return wrapped_f
 
-class ViewDecorator ( object ):
-	""""Deprecated, no decorator used for views"""
+class ViewOldDecorator ( object ):
+	""""Old"""
 	__viewName = ''
 	__APP = ''
 	def __init__(self, appCode, viewName, *argsTuple, **argsDict):
@@ -1575,6 +1575,38 @@ class ViewDecorator ( object ):
 			request = argsTuple[0]
 			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
 			resultJs = f(*argsTuple, **args)
+			#print 'resultJs: ', resultJs
+			template = Template(args['ctx'])
+			templates = template.resolve(self.__viewName)
+			if templates.has_key(self.__viewName):
+				tmplName = templates[self.__viewName]
+				#print 'tmplName: ', tmplName
+				result = render_to_response( self.__APP + '/' + tmplName + '.html', RequestContext(request, 
+													{	'result': json.dumps(resultJs),
+														'settings': settings
+													}))
+			else:
+				raise XpMsgException(None, _('Error in resolving template for view'))
+			return result
+		return wrapped_f
+
+class ViewDecorator ( object ):
+	""""Decorator for django views in core module."""
+	__viewName = ''
+	__APP = ''
+	def __init__(self, *argsTuple, **argsDict):
+		pass
+	def __call__(self, f):
+		"""Decorator call method"""
+		def wrapped_f(request, **args):
+			if args.has_key('app') and len(args['app']) != 0:
+				self.__APP = args['app']
+				self.__viewName = args['viewName'] if args.has_key('viewName') else ''
+			else:
+				self.__APP = 'SITE'
+				self.__viewName = 'home'
+			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
+			resultJs = f(request, **args)
 			#print 'resultJs: ', resultJs
 			template = Template(args['ctx'])
 			templates = template.resolve(self.__viewName)

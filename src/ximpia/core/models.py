@@ -3,7 +3,7 @@ import traceback
 import json
 
 from django.db import models
-from django.contrib.auth.models import User as UserSys, Group as GroupSys
+from django.contrib.auth.models import User, Group
 from django.contrib.sessions.models import Session
 from django.utils.translation import ugettext as _
 from ximpia import settings
@@ -91,9 +91,9 @@ class Application(BaseModel):
 		verbose_name = _('Code'), help_text = _('Application code'))
 	name = models.CharField(max_length=30,
 		verbose_name = _('Name'), help_text = _('Application name'))
-	developer = models.ForeignKey(UserSys, null=True, blank=True,
+	developer = models.ForeignKey(User, null=True, blank=True,
 		verbose_name = _('Developer'), help_text = _('Developer'))
-	developerOrg = models.ForeignKey(GroupSys, null=True, blank=True,
+	developerOrg = models.ForeignKey(Group, null=True, blank=True,
 		verbose_name = _('Organization'), help_text = _('Developer organization'))
 	parent = models.ForeignKey('self', null=True, blank=True,
 		verbose_name = 'Parent Application', help_text = 'Used for application groups. Application which this app is related to')
@@ -126,9 +126,9 @@ class ApplicationAccess(BaseModel):
 class UserSocial(BaseModel):
 	"""Every user can have one or more social channels. In case social channels are disabled, only one registry will
 	exist for each user."""
-	user = models.ForeignKey(UserSys, 
+	user = models.ForeignKey(User, 
 				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField(GroupSys,
+	groups = models.ManyToManyField(Group,
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	title = models.CharField(max_length=20, 
 				verbose_name = _('Channel Title'), help_text=_('Title for the social channel'))
@@ -415,7 +415,7 @@ class WFViewEntryParam(BaseModel):
 
 class WorkflowData(BaseModel):
 	"""Workflow Data"""
-	"""user = models.ForeignKey(UserSys, blank=True, null=True, 
+	"""user = models.ForeignKey(User, blank=True, null=True, 
 			verbose_name = _('User'), help_text = _('User'))"""
 	"""session = models.ForeignKey(Session,
 			verbose_name = _('Session'), help_text = _('Session Id'))"""
@@ -631,7 +631,7 @@ def context(f):
 		return resp
 	return new_f
 
-class Context(object):
+class ContextDecorator(object):
 	_app = ''
 	APP = 'app'
 	USER = 'user'
@@ -689,7 +689,7 @@ class Context(object):
 				ctx['meta'] = request.META
 				ctx['post'] = request.POST
 				ctx['request'] = REQ
-				ctx['raw_request'] = request
+				#ctx['raw_request'] = request
 				ctx['get'] = request.GET
 				ctx[self.DEVICE] = Choices.DEVICE_PC
 				ctx[self.COUNTRY] = ''
@@ -726,6 +726,118 @@ class Context(object):
 				"""print '** ctx **'
 				print ctx.keys()"""
 				resp = f(*argsTuple, **argsDict)
+				return resp
+			except Exception as e:
+				print 'Context :: Exception...'
+				if settings.DEBUG == True:
+					traceback.print_exc()
+					#print e.myException
+				raise
+		return wrapped_f
+
+
+class ContextViewDecorator(object):
+	_app = ''
+	APP = 'app'
+	USER = 'user'
+	LANG = 'lang'
+	SETTINGS = 'settings'
+	SESSION = 'session'
+	COOKIES = 'cookies'
+	META = 'meta'
+	POST = 'post'
+	REQUEST = 'request'
+	GET = 'get'
+	SOCIAL_CHANNEL = 'socialChannel'
+	USER_SOCIAL = 'userSocial'
+	AUTH = 'auth'
+	FORM = 'form'
+	FORMS = 'forms'
+	CAPTCHA = 'captcha'
+	RAW_REQUEST = 'raw_request'
+	CTX = 'ctx'
+	JS_DATA = 'jsData'
+	VIEW_NAME_SOURCE = 'viewNameSource'
+	VIEW_NAME_TARGET = 'viewNameTarget'
+	ACTION = 'action'
+	FLOW_CODE = 'flowCode'
+	FLOW_DATA = 'flowData'
+	IS_FLOW = 'isFlow'
+	SET_COOKIES = 'set_cookies'
+	DEVICE = 'device'
+	COUNTRY = 'country'
+	WIN_TYPE = 'winType'
+	TMPL = 'tmpl'
+	WF_USER_ID = 'wfUserId'
+	IS_LOGIN = 'isLogin'
+	def __init__(self, **args):
+		"""if args.has_key('app'):
+			self._app = args['app']"""
+		pass
+	def __call__(self, f):
+		"""Decorator call method"""
+		def wrapped_f(request, **args):
+			try:
+				print 'ContextNew :: args: ', args
+				if args.has_key('app') and len(args['app']) != 0:
+					self._app = args['app']
+					self.__viewName = args['viewName'] if args.has_key('viewName') else ''
+				else:
+					self._app = 'SITE'
+					self.__viewName = 'home'
+				REQ = request.REQUEST 
+				langs = ('en')
+				lang = translation.get_language()
+				print 'lang django: ', lang
+				if lang not in langs:
+					lang = 'en'
+				ctx = {}
+				ctx[self.APP] = self._app
+				ctx['user'] = request.user
+				ctx[self.LANG] = lang
+				ctx['settings'] = settings
+				ctx['session'] = request.session
+				ctx['cookies'] = request.COOKIES
+				ctx['meta'] = request.META
+				ctx['post'] = request.POST
+				ctx['request'] = REQ
+				#ctx['raw_request'] = request
+				ctx['get'] = request.GET
+				ctx[self.DEVICE] = Choices.DEVICE_PC
+				ctx[self.COUNTRY] = ''
+				ctx[self.WIN_TYPE] = Choices.WIN_TYPE_WINDOW
+				ctx[self.TMPL] = ''
+				#ctx['socialChannel'] = ''
+				ctx['userSocial'] = None
+				ctx['auth'] = {}
+				ctx['form'] = None
+				ctx['forms'] = {}
+				ctx['captcha'] = None 
+				ctx[self.VIEW_NAME_SOURCE] = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
+				ctx[self.VIEW_NAME_TARGET] = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
+				ctx[self.ACTION] = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
+				ctx[self.FLOW_CODE] = ''
+				ctx[self.FLOW_DATA] = ''
+				ctx[self.IS_FLOW] = False
+				ctx[self.JS_DATA] = ''
+				ctx[self.WF_USER_ID] = ''
+				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
+				if request.session.has_key('userSocial') and request.user.is_authenticated():
+					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
+					ctx['userSocial'] = request.REQUEST['userSocial']"""
+					# TODO: Get this from session
+					ctx[self.USER_SOCIAL] = request.session['userSocial']
+					print 'Context :: userSocial: ', ctx[self.USER_SOCIAL]
+				if request.user.is_authenticated():
+					ctx[self.IS_LOGIN] = True
+				else:
+					ctx[self.IS_LOGIN] = False
+				# Set cookies
+				ctx[self.SET_COOKIES] = []
+				args['ctx'] = ctx
+				"""print '** ctx **'
+				print ctx.keys()"""
+				resp = f(request, **args)
 				return resp
 			except Exception as e:
 				print 'Context :: Exception...'
