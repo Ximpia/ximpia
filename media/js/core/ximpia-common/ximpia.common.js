@@ -7,6 +7,8 @@ ximpia.constants = ximpia.constants || {};
 /*
  * Constants
  */
+
+
 /*
  * Main Constants
  */
@@ -1110,6 +1112,7 @@ ximpia.common.Form.appendAttrs = (function(idElement, attr, valueNew) {
  * dataAttrs: Attributes from server
  * attrs: Attributes from component in metadata
  * idElement: Id of form element to include attributes to
+ * skipName: True|False . Weather skip assign name attribute
  * 
  */
 ximpia.common.Form.doAttributes = (function(obj) {
@@ -1118,10 +1121,14 @@ ximpia.common.Form.doAttributes = (function(obj) {
 	var valueNew = "";
 	var valueOld = "";
 	var value = '';
+	ximpia.console.log('skipName: ' + obj.skipName);
 	for (attr in obj.dataAttrs) {
 		if (ximpia.common.ArrayUtil.hasKey(obj.djangoAttrs, attr) == false) {
 			if (ximpia.common.ArrayUtil.hasKey(obj.htmlAttrs, attr) == true) {
-				ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.dataAttrs[attr])				
+				if (attr != 'name' || (attr == 'name' && obj.hasOwnProperty('skipName') && obj.skipName != true)) {
+					ximpia.console.log('attr: ' + attr);
+					ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.dataAttrs[attr])
+				}
 			} else {
 				if (attr.search('data') == 0) {
 					ximpia.common.Form.appendAttrs(obj.idElement, attr, obj.dataAttrs[attr])
@@ -1537,6 +1544,7 @@ ximpia.common.PageAjax = function() {
 					// Get responseMap
 					var responseMap = eval(data);
 					var viewName = responseMap['response']['view'];
+					var app = responseMap['response']['app'];
 					var tmplName = responseMap['response']['tmpl'][viewName];
 					ximpia.console.log('tmpl: ' + tmplName);
 					ximpia.console.log('view: ' + obj.view + ' viewNew: ' + responseMap['response']['view']);
@@ -1581,12 +1589,13 @@ ximpia.common.PageAjax = function() {
         				$('body').xpObjPopUp(obj).xpObjPopUp('create');
 				} else {
 					_attr.pub.doForm( { 	view: obj.view,
+								app: obj.app,
 								params: obj.params } );
 				}
 			},
 			doAction: function( obj ) {
 				ximpia.console.log('path: ' + _attr.priv.path);
-				_attr.pub.doForm( { 	action: obj.action } );
+				_attr.pub.doForm( { 	app: obj.app, action: obj.action } );
 			}
 		}
 	}

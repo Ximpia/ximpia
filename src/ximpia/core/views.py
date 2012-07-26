@@ -12,9 +12,10 @@ from django.http import Http404
 from yacaptcha.models import Captcha
 
 from ximpia.core.util import getClass
-from models import context, ContextViewDecorator
-from business import Search, ViewDecorator
-from data import ViewDAO
+from models import context, ContextViewDecorator, ContextDecorator
+from business import Search, ViewDecorator, XpMsgException
+from data import ViewDAO, ActionDAO
+import constants as K
 
 from ximpia import settings
 
@@ -180,7 +181,7 @@ def jxSuggestList(request, **ArgsDict):
 		params = json.loads(request.REQUEST['params']);
 		params[params['text']] = request.REQUEST['search'];
 		del params['text']
-		obj = eval(dbClass)(ctx)
+		obj = eval(dbClass)(ctx) #@UnusedVariable
 		fields = eval('obj.filter')(*[], **params)
 		for entity in fields:
 			dd = {}
@@ -204,6 +205,59 @@ def searchHeader(request, **args):
 		traceback.print_exc()
 	return HttpResponse(json.dumps(results))
 
+@ContextDecorator()
+def jxBusiness(request, **args):
+	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
+	@param request: Request
+	@param result: Result"""
+	print 'jxBusiness...'
+	print request.REQUEST.items()
+	request.session.set_test_cookie()
+	request.session.delete_test_cookie()
+	print 'session: ', request.session.items()
+	#print 'session: ', request.session.items(), request.session.session_key
+	if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
+		viewAttrs = {}
+		if request.REQUEST.has_key('view'):
+			app = request.REQUEST['app']
+			view = request.REQUEST['view']
+			print 'view: ', view
+			dbView = ViewDAO(args['ctx'])
+			impl = dbView.get(application__code=app, name=view).implementation
+			# view attributes 
+			viewAttrs = json.loads(request.REQUEST['params'])
+			args['ctx']['viewNameSource'] = view
+		elif request.REQUEST.has_key('action'):
+			app = request.REQUEST['app']
+			action = request.REQUEST['action']
+			print 'action: ', action
+			dbAction = ActionDAO(args['ctx'])
+			dbView = ViewDAO(args['ctx'])
+			actionObj = dbAction.get(application__code=app, name=action)
+			if args['ctx'].has_key('viewNameSource') and len(args['ctx']['viewNameSource']) != 0:
+				# Get view name and check its application code with application code of action
+				print 'viewNameSource', args['ctx']['viewNameSource']
+				viewObj = dbView.get(application__code=app, name=args['ctx']['viewNameSource'])
+				if actionObj.application.code != viewObj.application.code:
+					raise XpMsgException(None, _('Action is not in same application as view source'))
+			impl = actionObj.implementation
+		implFields = impl.split('.')
+		method = implFields[len(implFields)-1]
+		classPath = ".".join(implFields[:-1])
+		if method.find('_') == -1 or method.find('__') == -1:
+			cls = getClass( classPath ) 
+			obj = cls(args['ctx']) #@UnusedVariable
+			if (len(viewAttrs) == 0) :
+				result = eval('obj.' + method)()
+			else:
+				result = eval('obj.' + method)(**viewAttrs)
+		else:
+			print 'private methods...'
+			raise Http404
+	else:
+		print 'Unvalid business request'
+		raise Http404
+	return result
 
 @ContextViewDecorator()
 @ViewDecorator()
@@ -240,7 +294,7 @@ def showView(request, app, viewName, viewAttrs, **args):
 	# Instance and call method for view, get result
 	if method.find('_') == -1 or method.find('__') == -1:
 		cls = getClass( classPath )
-		obj = cls(args['ctx'])
+		obj = cls(args['ctx']) #@UnusedVariable
 		if (len(viewAttrTuple) == 0):	
 			result = eval('obj.' + method)()
 		else:

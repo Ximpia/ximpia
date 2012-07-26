@@ -93,7 +93,8 @@
 						excludeList: settings.excludeList,
 						dataAttrs: dataAttrs,
 						attrs: attrs,
-						idElement: idInput
+						idElement: idInput,
+						skipName: true
 					});					
 					// Label
 					$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
@@ -106,8 +107,6 @@
 					}
 					/*console.log($("#" + idInput));*/
 					console.log($(element));
-					console.log($('#id_country').val());
-					console.log($('#id_country_input').val());
 				}
 			}
 		},

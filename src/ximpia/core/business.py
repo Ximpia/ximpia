@@ -1,10 +1,8 @@
-import re
 import traceback
 import string
 import simplejson as json
 import types
 import datetime
-import time
 import random
 
 from django.http import HttpResponse
@@ -12,20 +10,20 @@ from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.sessions.models import Session
 from django.db.models import Q
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from models import getResultOK, getResultERROR, XpMsgException, XpRegisterException, getBlankWfData
+from models import getResultERROR, XpMsgException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl
 from ximpia.util import ut_email, resources
 from ximpia.core.models import JsResultDict, ContextDecorator as Ctx, CoreParam
-from ximpia.core.constants import CoreConstants as K, CoreKParam
+from ximpia.core import constants as K
+
 from ximpia.core.data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO,\
 	ApplicationDAO, TemplateDAO, ViewTmplDAO
-from ximpia.core.data import MenuDAO, MenuParamDAO, ViewMenuDAO, ApplicationAccessDAO, ActionDAO
+from ximpia.core.data import MenuParamDAO, ViewMenuDAO, ApplicationAccessDAO, ActionDAO
 from ximpia.core.data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.core.choices import Choices
 from ximpia.core.util import getClass
@@ -37,9 +35,9 @@ from ximpia import settings
 class ComponentRegister(object):
 	
 	@staticmethod
-	def registerApp(code=None, name=None):
+	def registerApp(code=None, name=None, isAdmin=False):
 		"""Register application"""
-		app, created = Application.objects.get_or_create(code=code, name=name)
+		app, created = Application.objects.get_or_create(code=code, name=name, isAdmin=isAdmin)
 		print 'Register application: ', app, created
 	
 	@staticmethod
@@ -69,7 +67,7 @@ class ComponentRegister(object):
 			menu = Menu.objects.get(name=dd[K.MENU_NAME])
 			sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 			print view, menu, sep, dd[K.ZONE], counter
-			viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+			viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter)
 			counterDict[dd[K.MENU_NAME]] = counter
 			counter += 100
@@ -85,12 +83,13 @@ class ComponentRegister(object):
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				print view, menuParent, menu, sep, dd[K.ZONE], counter
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
+				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
 				counter += 10
 	
 	@staticmethod
-	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, **argsDict):
+	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
+			hasAuth=True, **argsDict):
 		"""Registers view
 		@param appCode: Application code
 		@param viewName: View name
@@ -101,56 +100,18 @@ class ComponentRegister(object):
 		print 'register views...'
 		classPath = str(myClass).split("'")[1]
 		app = Application.objects.get(code=appCode)
-		view, created = View.objects.get_or_create(application=app, name=viewName)
+		view, created = View.objects.get_or_create(application=app, name=viewName) #@UnusedVariable
 		view.implementation = classPath + '.' + method
 		view.winType = winType
+		view.isUrl = hasUrl
+		view.isAuth = hasAuth
 		view.save()
 		# Parameters
 		for name in argsDict:
 			param = Param.objects.get(application=app, name=name)
 			fields = argsDict[name]
 			for value in fields:
-				tuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value)
-		"""# Menu
-		print 'View menus...'
-		ViewMenu.objects.filter(view=view).delete()
-		groupDict = {}
-		singleList = []
-		counterDict = {}
-		for dd in menus:
-			if dd.has_key(K.GROUP):
-				if not groupDict.has_key(dd[K.GROUP]):
-					groupDict[dd[K.GROUP]] = []
-				groupDict[dd[K.GROUP]].append(dd)
-			else:
-				singleList.append(dd)
-		# Single Menus - Not Grouped
-		counter = 100
-		for dd in singleList:
-			if not dd.has_key(K.ZONE):
-				dd[K.ZONE] = K.VIEW
-			menu = Menu.objects.get(name=dd[K.MENU_NAME])
-			sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-			print view, menu, sep, dd[K.ZONE], counter
-			viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
-										zone=dd[K.ZONE], order=counter)
-			counterDict[dd[K.MENU_NAME]] = counter
-			counter += 100
-		# Grouped Menus
-		for groupName in groupDict:
-			fields = groupDict[groupName]
-			menuParent = Menu.objects.get(name=groupName)
-			viewMenuParent = ViewMenu.objects.get(view=view, menu=menuParent)
-			counter = viewMenuParent.order + 10
-			for dd in fields:
-				if not dd.has_key(K.ZONE):
-					dd[K.ZONE] = K.VIEW
-				menu = Menu.objects.get(name=dd[K.MENU_NAME])
-				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				print view, menuParent, menu, sep, dd[K.ZONE], counter
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, 
-										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
-				counter += 10"""
+				theTuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value) #@UnusedVariable
 		
 	
 	@staticmethod
@@ -162,7 +123,7 @@ class ComponentRegister(object):
 		@param method: Method that executes action"""
 		classPath = str(myClass).split("'")[1]
 		app = Application.objects.get(code=appCode)
-		action, created = Action.objects.get_or_create(application=app, name=actionName)
+		action, created = Action.objects.get_or_create(application=app, name=actionName) #@UnusedVariable
 		action.implementation = classPath + '.' + method
 		action.save()
 	
@@ -190,7 +151,7 @@ class ComponentRegister(object):
 		@param appCode: Application code
 		@param flowcode: Flow code"""
 		app = Application.objects.get(code=appCode)
-		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode)
+		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode) #@UnusedVariable
 		flow.resetStart = resetStart
 		flow.deleteOnEnd = deleteOnEnd
 		flow.jumpToView = jumpToView
@@ -212,12 +173,12 @@ class ComponentRegister(object):
 		viewTarget = View.objects.get(application=app, name=viewNameTarget)
 		action = Action.objects.get(application=app, name=actionName)
 		flow = Workflow.objects.get(code=flowCode)
-		flowView, created = WorkflowView.objects.get_or_create(flow=flow, viewSource=viewSource, viewTarget=viewTarget, 
+		flowView, created = WorkflowView.objects.get_or_create(flow=flow, viewSource=viewSource, viewTarget=viewTarget, #@UnusedVariable
 								action=action, order=order)
 		# Parameters
 		for name in paramDict:
 			operator, value = paramDict[name]
-			wfParamValue, created = WFParamValue.objects.get_or_create(flow=flow, name=name, operator=operator, value=value)
+			wfParamValue, created = WFParamValue.objects.get_or_create(flow=flow, name=name, operator=operator, value=value) #@UnusedVariable
 		# Entry View parameters
 		# TODO: Complete entry view parameters
 	
@@ -234,7 +195,7 @@ class ComponentRegister(object):
 		paramDict = {}
 		app = Application.objects.get(code=appCode)
 		# Icon
-		icon, created = CoreParam.objects.get_or_create(mode=CoreKParam.ICON, name=iconName, value=iconName)
+		icon, created = CoreParam.objects.get_or_create(mode=K.PARAM_ICON, name=iconName, value=iconName) #@UnusedVariable
 		paramDict['application'] = app
 		paramDict['name'] = name
 		paramDict['titleShort'] = titleShort
@@ -266,7 +227,7 @@ class ComponentRegister(object):
 		print 'argsDict: ', argsDict
 		for name in argsDict:
 			operator, value = argsDict[name]
-			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value)
+			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
 		
 	@staticmethod
 	def cleanSearch(appCode=None):
@@ -289,12 +250,12 @@ class ComponentRegister(object):
 		search = SearchIndex.objects.create(application=app, view=view, action=action, title=text)
 		for wordName in wordList:
 			# Word
-			word, created = Word.objects.get_or_create(word=wordName)
+			word, created = Word.objects.get_or_create(word=wordName) #@UnusedVariable
 			# SearchIndexWord
-			searchWord = SearchIndexWord.objects.create(word=word, index=search)
+			searchWord = SearchIndexWord.objects.create(word=word, index=search) #@UnusedVariable
 		for paramName in params:
 			param = Param.objects.get_or_create(application=app, name=paramName)
-			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
+			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
 								value=params[paramName])
 	
 	@staticmethod
@@ -614,15 +575,15 @@ class CommonBusiness( object ):
 		@param formInstance: Form instance"""
 		self._ctx[Ctx.FORMS][formInstance.getFormId()] = formInstance
 	
-	def _getUserSocialName(self):
+	def _getUserChannelName(self):
 		"""Get user social name"""
-		if self._ctx[Ctx.COOKIES].has_key('userSocialName'):
-			userSocialName = self._ctx[Ctx.COOKIES]['userSocialName']
-			print 'COOKIE :: userSocialName: ', userSocialName
+		if self._ctx[Ctx.COOKIES].has_key('userChannelName'):
+			userChannelName = self._ctx[Ctx.COOKIES]['userChannelName']
+			print 'COOKIE :: userChannelName: ', userChannelName
 		else:
-			userSocialName = K.USER
-			self._setCookie('userSocialName', userSocialName)
-		return userSocialName
+			userChannelName = K.USER
+			self._setCookie('userChannelName', userChannelName)
+		return userChannelName
 	
 	def _login(self):
 		"""Do login"""
@@ -734,7 +695,7 @@ class WorkFlowBusiness (object):
 		@param flowCode: Flow code
 		@param argsDict: Argument dictionary"""
 		flowCode = self._ctx[Ctx.FLOW_CODE]
-		flow = self._dbWorkflow.get(code=flowCode)
+		flow = self._dbWorkflow.get(code=flowCode) #@UnusedVariable
 		if not self.__wfData:
 			self.__wfData = getBlankWfData({})
 		nameList = argsDict.keys()
@@ -944,12 +905,12 @@ class Search( object ):
 		search = self._dbSearch.create(application=app, view=view, action=action, title=text)
 		for wordName in wordList:
 			# Word
-			word, created = self._dbWord.getCreate(word=wordName)
+			word, created = self._dbWord.getCreate(word=wordName) #@UnusedVariable
 			# SearchIndexWord
-			searchWord = self._dbIndexWord.create(word=word, index=search)
+			searchWord = self._dbIndexWord.create(word=word, index=search) #@UnusedVariable
 		for paramName in params:
 			param = self._dbParam.getCreate(application=app, name=paramName)
-			indexParam = self._dbIndexParam.create(searchIndex=search, name=param, operator=Choices.OP_EQ, 
+			indexParam = self._dbIndexParam.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
 								value=params[paramName])
 	def search(self, text):
 		"""Search for views and actions
@@ -986,8 +947,8 @@ class Search( object ):
 		tupleList.sort()
 		tupleListFinal = tupleList[:15]
 		resultsFinal = []
-		for tuple in tupleListFinal:
-			data = tuple[1]
+		for theTuple in tupleListFinal:
+			data = theTuple[1]
 			myDict = {}
 			myDict['id'] = data.index.id
 			myDict['text'] = data.index.title
@@ -1086,14 +1047,15 @@ class MenuBusiness( object ):
 		view = self._dbView.get(name=viewName, application__code=self._ctx[Ctx.APP])
 		print 'view: ', view
 		# TODO: Play around to get list of codes using common methods
-		print 'userSocial: ', self._ctx[Ctx.USER_SOCIAL]
+		print 'userChannel: ', self._ctx[Ctx.USER_CHANNEL]
 		userAccessCodeList = []
-		if self._ctx[Ctx.USER_SOCIAL] != None:
-			userAccessList = self._dbAppAccess.search(userSocial=self._ctx['userSocial'])
+		if self._ctx[Ctx.USER_CHANNEL] != None:
+			userAccessList = self._dbAppAccess.search(userChannel=self._ctx[Ctx.USER_CHANNEL])
 			for userAccess in userAccessList:
 				userAccessCodeList.append(userAccess.application.code)
 			print 'userAccessCodeList: ', userAccessCodeList
-		# TODO: Remove the SN code simulator, use the one built from userSocial
+		# TODO: Remove the SN code simulator, use the one built from userChannel
+		# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		userAccessCodeList = ['SN']
 		viewMenus = self._dbViewMenu.search( 	Q(menu__application__subscription = False) | 
 							Q(menu__application__subscription = True) & 
@@ -1119,6 +1081,7 @@ class MenuBusiness( object ):
 			menuObj['titleShort'] = viewMenu.menu.titleShort
 			menuObj['icon'] = viewMenu.menu.icon.value
 			menuObj['zone'] = viewMenu.zone
+			menuObj['app'] = viewMenu.menu.view.application.code
 			# params
 			params = self._dbMenuParam.search(menu=viewMenu.menu)
 			paramDict = {}
@@ -1259,6 +1222,7 @@ class DoBusinessDecorator(object):
 						form = obj._ctx[Ctx.FORMS][formId]
 						if not obj._ctx[Ctx.JS_DATA].has_key(formId):
 							form.buildJsData(obj._ctx[Ctx.JS_DATA])
+							form.setApp(obj._ctx[Ctx.APP])
 					print obj._ctx[Ctx.JS_DATA]['response'].keys()
 					# Result
 					print 'isServerTmpl: ', self._isServerTmpl
@@ -1448,7 +1412,7 @@ class WFViewDecorator( object ):
 				method = implFields[len(implFields)-1]
 				classPath = ".".join(implFields[:-1])
 				cls = getClass( classPath )
-				objView = cls(obj._ctx)
+				objView = cls(obj._ctx) #@UnusedVariable
 				obj._ctx[Ctx.VIEW_NAME_SOURCE] = viewName
 				if (len(viewAttrs) == 0) :
 					result = eval('objView.' + method)()
@@ -1478,7 +1442,7 @@ class MenuActionDecorator(object):
 			method = implFields[len(implFields)-1]
 			classPath = ".".join(implFields[:-1])
 			cls = getClass( classPath )
-			objView = cls(obj._ctx)
+			objView = cls(obj._ctx) #@UnusedVariable
 			result = eval('objView.' + method)()			
 			return result
 		return wrapped_f
@@ -1541,7 +1505,7 @@ class WFActionDecorator(object):
 				method = implFields[len(implFields)-1]
 				classPath = ".".join(implFields[:-1])
 				cls = getClass( classPath )
-				objView = cls(obj._ctx)
+				objView = cls(obj._ctx) #@UnusedVariable
 				if (len(viewAttrs) == 0) :
 					result = eval('objView.' + method)()
 				else:
@@ -1603,7 +1567,7 @@ class ViewDecorator ( object ):
 				self.__APP = args['app']
 				self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 			else:
-				self.__APP = 'SITE'
+				self.__APP = 'site'
 				self.__viewName = 'home'
 			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
 			resultJs = f(request, **args)
