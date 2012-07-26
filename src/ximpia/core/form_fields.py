@@ -1,21 +1,12 @@
-from django.forms.widgets import Widget
+
 from django.forms import Field, ChoiceField, MultipleChoiceField, CharField
-from django.forms.util import flatatt
-from django.utils import formats
-from django.utils.html import escape, conditional_escape
-from itertools import chain
-from django.utils.safestring import mark_safe
-from django.utils.datastructures import MultiValueDict, MergeDict
-from django.utils.encoding import force_unicode
 import json
 
 from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
 from ximpia.util.basic_types import DictUtil
 from validators import validateUserId, validateEmail, validateTxtField, validatePassword
 
-from form_widgets import XpHiddenWidget, XpInputWidget, XpMultipleHiddenWidget, XpMultipleWidget, XpPasswordWidget, XpSelectWidget 
-from form_widgets import XpTextareaWidget, XpTextInputWidget
-
+from form_widgets import XpHiddenWidget, XpMultipleWidget, XpPasswordWidget, XpSelectWidget, XpTextInputWidget 
 
 class XpSocialIconField(Field):
 	def __init__(self, network=None, version=None, *argsTuple, **argsDict):
@@ -287,12 +278,12 @@ class XpChoiceField(ChoiceField):
 		@param argsDict: 
 		@param attrDict: 
 		@return: dict"""
-		dict = {}
+		d = {}
 		if argsDict.has_key('attrs'):
-			dict = DictUtil.addDicts([argsDict['attrs'], attrDict])
+			d = DictUtil.addDicts([argsDict['attrs'], attrDict])
 		else:
-			dict = attrDict
-		return dict
+			d = attrDict
+		return d
 	def __init__(self, instance, insField, req=True, init='', choicesId='', xpType='list.select', **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
@@ -337,12 +328,12 @@ class XpMultiField(MultipleChoiceField):
 		@param argsDict: 
 		@param attrDict: 
 		@return: dict"""
-		dict = {}
+		d = {}
 		if argsDict.has_key('attrs'):
-			dict = DictUtil.addDicts([argsDict['attrs'], attrDict])
+			d = DictUtil.addDicts([argsDict['attrs'], attrDict])
 		else:
-			dict = attrDict
-		return dict
+			d = attrDict
+		return d
 	def __init__(self, instance, insField, req=True, init=[], choices=None, multiple=False, **argsDict):
 		if insField.find('.') != -1:
 			instanceName, instanceFieldName = insField.split('.')
@@ -360,10 +351,10 @@ class XpMultiField(MultipleChoiceField):
 				argsDict['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text		
 		if len(init) == 0 and instance:
 			listRaw = eval('instance' + '.' + self.instanceFieldName + '.all()')
-			list = []
+			l = []
 			for obj in listRaw:
-				list.append(obj.pk)
-			argsDict['initial'] = list
+				l.append(obj.pk)
+			argsDict['initial'] = l
 		else:
 			argsDict['initial'] = init
 		argsDict['choices'] = choices if choices != None else None

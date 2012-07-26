@@ -1,0 +1,94 @@
+{% extends "base/base_5.html" %}
+
+{% load i18n %}
+
+{% block js %}
+
+<script language="JavaScript">
+</script>
+
+{% endblock %}
+
+{% block title %}Ximpia - {% trans "Signup" %}{% endblock %}
+
+{% block sectionTitle %}
+{% endblock %}
+
+{% block sectionContent %}
+
+<div id="id_signup" class="sectionComp">
+
+<form id="form_signup" action="" method="post" data-xp="{}" >
+
+<fieldset>
+<legend>XimpiaId</legend>
+
+<div class="formBlock" style="margin-top: 0px">
+
+<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
+
+<div id="id_showPassword">
+
+<div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2', class: 'passStrength'}" ></div>
+<div id="id_passwordVerify_comp" data-xp-type="basic.text" data-xp="{type: 'password', tabindex: '3'}" ></div>
+
+</div>
+
+</div>
+
+</fieldset>
+
+<div id="id_userData" style=" clear: both; padding-top: 5px">
+
+<fieldset>
+<legend>You</legend>
+
+<div id="id_info" class="formBlock" style="margin-top: 0px">
+
+<div class="frmLeft">
+
+<!-- Data -->
+
+<div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '4'}" ></div>
+<div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '6','readonly': 'readonly'}" ></div>
+<div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '8', gmaps: 'country', class: 'gmaps'}" ></div>
+
+<br/>
+</div>	
+<div class="frmRight">
+
+<div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '5'}" ></div>
+<div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '7', gmaps: 'city', class: 'gmaps'}" ></div>
+
+<br/>
+</div>
+</div><!-- Info -->
+
+</fieldset>
+
+<br/><br/><br/>
+<br/><br/><br/>
+<br/><br/><br/>
+	
+</div><!-- UserData -->
+
+<input type="hidden" name="result" value="{{result}}" />
+
+</form>
+
+</div>
+
+{% endblock %}
+
+{% block buttons %}
+
+<div id="id_pageButton" class="btBar">
+<div id="id_doSignup_comp" data-xp-type="button" data-xp="{form: 'form_signup', align: 'left', text: 'Signup', mode: 'actionMsg', type: 'color', action: 'doSignupUser'}" ></div>
+</div>
+
+{% endblock%}
+
+{% block scripts %}
+<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/google_maps.js"></script>-->
+{% endblock %}

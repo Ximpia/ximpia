@@ -1,5 +1,4 @@
 from django.forms.widgets import Widget
-#from django.forms import Field, ChoiceField, MultipleChoiceField, CharField
 from django.forms.util import flatatt
 from django.utils import formats
 from django.utils.html import escape, conditional_escape
@@ -7,11 +6,6 @@ from itertools import chain
 from django.utils.safestring import mark_safe
 from django.utils.datastructures import MultiValueDict, MergeDict
 from django.utils.encoding import force_unicode
-#import json
-
-#from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
-#from ximpia.util.basic_types import DictUtil
-#from validators import validateUserId, validateEmail, validateTxtField, validatePassword 
 
 class XpCheckboxWidget ( Widget ):
 	"""Widget for checkbox"""

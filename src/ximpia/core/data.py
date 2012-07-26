@@ -1,7 +1,5 @@
-import traceback
-
 from django.utils.translation import ugettext as _
-from ximpia.core.models import XpMsgException, CoreParam, Application, UserSocial, Action, ApplicationAccess, CoreXmlMessage
+from ximpia.core.models import XpMsgException, CoreParam, Application, Action, ApplicationAccess, CoreXmlMessage
 from ximpia.core.models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
 from ximpia.core.models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
@@ -238,11 +236,6 @@ class ApplicationDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ApplicationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Application
-
-class UserSocialDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(UserSocialDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = UserSocial
 
 class ActionDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

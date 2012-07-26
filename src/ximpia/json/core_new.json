@@ -1,24 +1,6 @@
 [
     {
         "pk": 1, 
-        "model": "core.usersocial", 
-        "fields": {
-            "groups": [
-                1
-            ], 
-            "name": "user", 
-            "title": "Jorge", 
-            "isCompany": false, 
-            "dateCreate": "2012-04-24 14:56:02", 
-            "dateModify": "2012-04-24 14:56:02", 
-            "user": 1, 
-            "userCreateId": null, 
-            "userModifyId": null, 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 1, 
         "model": "core.coreparam", 
         "fields": {
             "valueDate": null, 
@@ -186,7 +168,7 @@
             "dateCreate": "2012-04-24 14:57:53", 
             "dateModify": "2012-04-24 14:57:53", 
             "application": 1, 
-            "userSocial": 1, 
+            "userChannel": 1, 
             "userCreateId": null, 
             "userModifyId": null, 
             "isDeleted": false

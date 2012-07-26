@@ -1,11 +1,7 @@
-from models import CoreParam, Application, CoreXmlMessage, UserSocial, Menu, MenuParam, View, ApplicationAccess, ViewMenu, Action
-#from models import Navigation, NavigationParam, NavigationParamValue, Operation
+from models import CoreParam, Application, CoreXmlMessage, Menu, MenuParam, View, ApplicationAccess, ViewMenu, Action
 from models import Workflow, WFParamValue, Param, WorkflowView, WorkflowData
 
 from django.contrib import admin
-
-"""Copyright (c) 2011 Jorge Alegre Vilches
-All rights reserved."""
 
 class CoreParamAdmin(admin.ModelAdmin):
 	list_display = ('id','mode','name','value','valueId', 'valueDate')
@@ -22,7 +18,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 		obj.save()
 
 class ApplicationAccessAdmin(admin.ModelAdmin):
-	list_display = ('application','userSocial')
+	list_display = ('application','userChannel')
 	list_filter = ('application',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
@@ -106,7 +102,6 @@ admin.site.register(CoreParam, CoreParamAdmin)
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(ApplicationAccess, ApplicationAccessAdmin)
 admin.site.register(CoreXmlMessage, CoreXmlMessageAdmin)
-admin.site.register(UserSocial, UserSocialAdmin)
 admin.site.register(Menu, MenuAdmin)
 admin.site.register(MenuParam, MenuParamAdmin)
 admin.site.register(View, ViewAdmin)

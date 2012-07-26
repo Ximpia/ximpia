@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from ximpia.util.js import Form as _jsf
 from ximpia import settings
 
-from constants import CoreConstants as K
+import constants as K
 
 from form_fields import XpHiddenField
 
@@ -33,6 +33,7 @@ class XBaseForm( forms.Form ):
 	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
 	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
 	action = XpHiddenField(xpType='input.hidden', required=False)
+	app = XpHiddenField(xpType='input.hidden', required=False)
 	viewNameSource = XpHiddenField(xpType='input.hidden', required=False)
 	viewNameTarget = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
 	result = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
@@ -67,6 +68,7 @@ class XBaseForm( forms.Form ):
 					pass
 			# Set instance too
 		self._buildObjects()
+		#self.app = argsDict['app'] if argsDict.has_key('app') else ''
 		if argsDict.has_key('ctx'):
 			del argsDict['ctx']
 		if argsDict.has_key('dbDict'):
@@ -198,6 +200,9 @@ class XBaseForm( forms.Form ):
 	def getFormId(self):
 		"""Get form id"""
 		return self._XP_FORM_ID
+	def setApp(self, app):
+		"""Set application code to form."""
+		self.base_fields['app'].initial = app
 	def buildJsData(self, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}

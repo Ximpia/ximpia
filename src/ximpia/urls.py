@@ -55,16 +55,16 @@ urlpatterns += patterns('ximpia',
     #(r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),
     
     # Ajax Urls
-    (r'^jxSuggestList$', 'social_network.views.jxSuggestList'),
-    (r'^jxJSON$', 'social_network.views.jxJSON'),
-    (r'^jxBusiness$', 'social_network.views.jxBusiness'),
-    (r'^jxSearchHeader$', 'social_network.views.searchHeader'),
+    (r'^jxSuggestList$', 'core.views.jxSuggestList'),
+    (r'^jxJSON$', 'core.views.jxJSON'),
+    (r'^jxBusiness$', 'core.views.jxBusiness'),
+    (r'^jxSearchHeader$', 'core.views.searchHeader'),
 
     # Social network and applications
     #(r'^$', 'social_network.views.staticContent'),
     #(r'^', 'social_network.views.test'),
     #(r'^(?P<templateName>\w+)$', 'social_network.views.staticContent'),
-    (r'^view/', include('ximpia.social_network.urls')),
+    #(r'^view/', include('ximpia.social_network.urls')),
     
     # Where $appUrlName will be the url friendly name for the application
     #(r'^view/$appUrlName/', include('ximpia.social_network.urls')),

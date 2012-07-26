@@ -1,16 +1,14 @@
 import types
 import traceback
-import json
 
 from django.db import models
 from django.contrib.auth.models import User, Group
-from django.contrib.sessions.models import Session
 from django.utils.translation import ugettext as _
 from ximpia import settings
 from django.utils import translation
 
 from choices import Choices
-from constants import CoreConstants as K, CoreKParam
+import constants as K
 
 from ximpia.util.js import Form as _jsf
 
@@ -18,7 +16,6 @@ def getBlankWfData(dd):
 	"""Get workflow data inside flowCode by default"""
 	dd['data'] = {}
 	dd['viewName'] = ''
-	#dd['viewNameArgs'] = {}
 	return dd
 
 class DeleteManager(models.Manager):
@@ -101,8 +98,10 @@ class Application(BaseModel):
 		verbose_name = _('Subscription'), help_text = _('Is this application subscription based?'))
 	private = models.BooleanField(default=False, 
 		verbose_name = _('Private'), help_text = _('Is this application private to a list of groups?'))
-	users = models.ManyToManyField('core.UserSocial', through='core.ApplicationAccess', related_name='app_access', null=True, blank=True,
+	users = models.ManyToManyField('site.UserChannel', through='core.ApplicationAccess', related_name='app_access', null=True, blank=True,
 			verbose_name=_('Users'), help_text=_('Users that have access to the application'))
+	isAdmin = models.BooleanField(default=False,
+		verbose_name = _('Is Admin?'), help_text = _('Is this application an admin backdoor?'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -114,47 +113,14 @@ class ApplicationAccess(BaseModel):
 	"""User that have access to application. Used for subscription and private applications."""
 	application = models.ForeignKey('core.Application',
 				verbose_name = _('Application'), help_text = _('Application'))
-	userSocial = models.ForeignKey('core.UserSocial', 
+	userChannel = models.ForeignKey('site.UserChannel', 
 				verbose_name = _('User Social'), help_text = _('User Social or social channel needed to access application'))
 	def __unicode__(self):
-		return str(self.userSocial)
+		return str(self.userChannel)
 	class Meta:
 		db_table = 'CORE_APP_ACCESS'
 		verbose_name = 'Application Access'
 		verbose_name_plural = "Application Access"
-
-class UserSocial(BaseModel):
-	"""Every user can have one or more social channels. In case social channels are disabled, only one registry will
-	exist for each user."""
-	user = models.ForeignKey(User, 
-				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField(Group,
-				verbose_name = _('Groups'), help_text = _('Groups'))
-	title = models.CharField(max_length=20, 
-				verbose_name = _('Channel Title'), help_text=_('Title for the social channel'))
-	name = models.CharField(max_length=20, default=K.USER,
-				verbose_name = _('Social Channel Name'), help_text = _('Name for the social channel'))
-	isCompany = models.BooleanField(default=False,
-				verbose_name=_('Company'), help_text=_('Is Company?'))
-	def __unicode__(self):
-		return str(self.user.username) + '-' + str(self.name)
-	def getGroupById(self, groupId):
-		"""Get group by id"""
-		groups = self.groups.filter(pk=groupId)
-		if len(groups) != 0:
-			value = groups[0]
-		else:
-			value = None
-		return value
-	def getFullName(self):
-		"""Get full name: firstName lastName"""
-		name = self.user.get_full_name()
-		return name
-	class Meta:
-		db_table = 'CORE_USER'
-		verbose_name = 'User'
-		verbose_name_plural = "Users"
-		unique_together = ("user", "name")
 
 class SearchIndex(BaseModel):
 	"""Index"""
@@ -229,7 +195,7 @@ class Menu(BaseModel):
 			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
 	title = models.CharField(max_length=30,
 			verbose_name=_('Menu Title'), help_text=_('Title for menu item'))
-	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreKParam.ICON},
+	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': K.PARAM_ICON},
 			verbose_name=_('Icon'), help_text=_('Icon'))
 	view = models.ForeignKey('core.View', null=True, blank=True, related_name='menu_view',
 			verbose_name=_('View'), help_text=_('View'))
@@ -298,6 +264,10 @@ class View(BaseModel):
 			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
 	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW,
 			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
+	hasUrl = models.BooleanField(default=False,
+			verbose_name = _('Url enabled'), help_text = _('View can be called using an url'))
+	hasAuth = models.BooleanField(default=True,
+			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -415,10 +385,6 @@ class WFViewEntryParam(BaseModel):
 
 class WorkflowData(BaseModel):
 	"""Workflow Data"""
-	"""user = models.ForeignKey(User, blank=True, null=True, 
-			verbose_name = _('User'), help_text = _('User'))"""
-	"""session = models.ForeignKey(Session,
-			verbose_name = _('Session'), help_text = _('Session Id'))"""
 	userId = models.CharField(max_length=40,
 			verbose_name = _('Workflow User Id'), help_text = _('User Id saved as a cookie for workflow'))
 	flow = models.ForeignKey('core.WorkFlow', related_name='flowData', 
@@ -531,10 +497,6 @@ class XpRegisterException(Exception):
 		self.ArgsDict = argsDict
 	def _log(self, exception, msg, argsDict):
 		"""Will use log facility of django 1.3"""
-		"""txt = repr(self.Exception)
-		for name in self.ArgsDict.keys():
-			txt += name + ':' + self.ArgsDict[name]
-		txt += ' ' + self.Msg"""
 		# Log txt  in error log
 		traceback.print_exc()
 	def __str__(self):
@@ -624,8 +586,8 @@ def context(f):
 		# Context
 		ctx = ContextObj(request.user, lang, contextDict, request.session, request.COOKIES, request.META)
 		# userSocial and socialChannel
-		if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
-			ctx.socialChannel = request.REQUEST['socialChannel']			
+		if request.REQUEST.has_key('userChannel') and request.user.is_authenticated():
+			ctx.userChannel = request.REQUEST['userChannel']			
 		ArgsDict['ctx'] = ctx
 		resp = f(*ArgsTuple, **ArgsDict)
 		return resp
@@ -643,8 +605,7 @@ class ContextDecorator(object):
 	POST = 'post'
 	REQUEST = 'request'
 	GET = 'get'
-	SOCIAL_CHANNEL = 'socialChannel'
-	USER_SOCIAL = 'userSocial'
+	USER_CHANNEL = 'userChannel'
 	AUTH = 'auth'
 	FORM = 'form'
 	FORMS = 'forms'
@@ -666,14 +627,16 @@ class ContextDecorator(object):
 	WF_USER_ID = 'wfUserId'
 	IS_LOGIN = 'isLogin'
 	def __init__(self, **args):
-		if args.has_key('app'):
-			self._app = args['app']
+		"""if args.has_key('app'):
+			self._app = args['app']"""
+		pass
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			try:
 				request = argsTuple[0]
-				REQ = request.REQUEST 
+				REQ = request.REQUEST
+				self._app = request.REQUEST['app'] if request.REQUEST.has_key('app') else ''
 				langs = ('en')
 				lang = translation.get_language()
 				print 'lang django: ', lang
@@ -696,7 +659,7 @@ class ContextDecorator(object):
 				ctx[self.WIN_TYPE] = Choices.WIN_TYPE_WINDOW
 				ctx[self.TMPL] = ''
 				#ctx['socialChannel'] = ''
-				ctx['userSocial'] = None
+				ctx[self.USER_CHANNEL] = None
 				ctx['auth'] = {}
 				ctx['form'] = None
 				ctx['forms'] = {}
@@ -710,12 +673,10 @@ class ContextDecorator(object):
 				ctx[self.JS_DATA] = ''
 				ctx[self.WF_USER_ID] = ''
 				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
-				if request.session.has_key('userSocial') and request.user.is_authenticated():
-					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
-					ctx['userSocial'] = request.REQUEST['userSocial']"""
+				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
-					ctx[self.USER_SOCIAL] = request.session['userSocial']
-					print 'Context :: userSocial: ', ctx[self.USER_SOCIAL]
+					ctx[self.USER_CHANNEL] = request.session['userChannel']
+					print 'Context :: userChannel: ', ctx[self.USER_CHANNEL]
 				if request.user.is_authenticated():
 					ctx[self.IS_LOGIN] = True
 				else:
@@ -723,11 +684,9 @@ class ContextDecorator(object):
 				# Set cookies
 				ctx[self.SET_COOKIES] = []
 				argsDict['ctx'] = ctx
-				"""print '** ctx **'
-				print ctx.keys()"""
 				resp = f(*argsTuple, **argsDict)
 				return resp
-			except Exception as e:
+			except Exception as e: #@UnusedVariable
 				print 'Context :: Exception...'
 				if settings.DEBUG == True:
 					traceback.print_exc()
@@ -748,8 +707,7 @@ class ContextViewDecorator(object):
 	POST = 'post'
 	REQUEST = 'request'
 	GET = 'get'
-	SOCIAL_CHANNEL = 'socialChannel'
-	USER_SOCIAL = 'userSocial'
+	USER_CHANNEL = 'userChannel'
 	AUTH = 'auth'
 	FORM = 'form'
 	FORMS = 'forms'
@@ -783,7 +741,7 @@ class ContextViewDecorator(object):
 					self._app = args['app']
 					self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 				else:
-					self._app = 'SITE'
+					self._app = 'site'
 					self.__viewName = 'home'
 				REQ = request.REQUEST 
 				langs = ('en')
@@ -808,7 +766,7 @@ class ContextViewDecorator(object):
 				ctx[self.WIN_TYPE] = Choices.WIN_TYPE_WINDOW
 				ctx[self.TMPL] = ''
 				#ctx['socialChannel'] = ''
-				ctx['userSocial'] = None
+				ctx[self.USER_CHANNEL] = None
 				ctx['auth'] = {}
 				ctx['form'] = None
 				ctx['forms'] = {}
@@ -822,12 +780,10 @@ class ContextViewDecorator(object):
 				ctx[self.JS_DATA] = ''
 				ctx[self.WF_USER_ID] = ''
 				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
-				if request.session.has_key('userSocial') and request.user.is_authenticated():
-					"""ctx['socialChannel'] = request.REQUEST['socialChannel']
-					ctx['userSocial'] = request.REQUEST['userSocial']"""
+				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
-					ctx[self.USER_SOCIAL] = request.session['userSocial']
-					print 'Context :: userSocial: ', ctx[self.USER_SOCIAL]
+					ctx[self.USER_CHANNEL] = request.session['userChannel']
+					print 'Context :: userChannel: ', ctx[self.USER_CHANNEL]
 				if request.user.is_authenticated():
 					ctx[self.IS_LOGIN] = True
 				else:
@@ -835,11 +791,9 @@ class ContextViewDecorator(object):
 				# Set cookies
 				ctx[self.SET_COOKIES] = []
 				args['ctx'] = ctx
-				"""print '** ctx **'
-				print ctx.keys()"""
 				resp = f(request, **args)
 				return resp
-			except Exception as e:
+			except Exception as e: #@UnusedVariable
 				print 'Context :: Exception...'
 				if settings.DEBUG == True:
 					traceback.print_exc()
@@ -926,8 +880,8 @@ class ContextObj(object):
 		"""Doc."""
 		self._socialChannel = socialChannel
 	def __str__(self):
-		dict = {'user': self._user, 'lang': self._lang, 'session': self._session, 'cookies': self._cookies, 'META': self._META, 'context': self._context}
-		return str(dict)
+		d = {'user': self._user, 'lang': self._lang, 'session': self._session, 'cookies': self._cookies, 'META': self._META, 'context': self._context}
+		return str(d)
 	user = property(_getUser, _setUser)
 	lang = property(_getLang, _setLang)
 	context = property(_getContextDict, _setContextDict)
