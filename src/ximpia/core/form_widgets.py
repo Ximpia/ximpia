@@ -1,4 +1,4 @@
-from django.forms.widgets import Widget
+from django.forms.widgets import Widget, RadioSelect
 from django.forms.util import flatatt
 from django.utils import formats
 from django.utils.html import escape, conditional_escape
@@ -22,7 +22,15 @@ class XpCheckboxWidget ( Widget ):
 			final_attrs['value'] = force_unicode(value)
 		return mark_safe(u'<input%s />' % flatatt(final_attrs))
 
-class XpInputWidget(Widget):
+class XpOptionWidget( Widget ):
+	"""Widget for radio buttons (option visual component)"""
+	_element = 'input'
+	input_type = 'radio'
+	def __init__(self, attrs=None, hasInfo=False):
+		super(XpOptionWidget, self).__init__(attrs)
+		self.hasInfo = hasInfo
+
+class XpInputWidget( Widget ):
 	"""
 	Base class for all <input> widgets (except type='checkbox' and
 	type='radio', which are special).
@@ -50,18 +58,18 @@ class XpInputWidget(Widget):
 			html += mark_safe(u' <img id="id_img_' + name + '" src="/site_media/images/blank.png" class="ImgInfo" />')
 		return html
 
-class XpTextInputWidget(XpInputWidget):
+class XpTextInputWidget( XpInputWidget ):
 	_element = 'input'
 	input_type = 'text'
 	def __init__(self, attrs=None, hasInfo=False):
 		super(XpTextInputWidget, self).__init__(attrs, hasInfo)
 
-class XpHiddenWidget(XpInputWidget):
+class XpHiddenWidget( XpInputWidget ):
 	input_type = 'hidden'
 	_element = 'input'
 	is_hidden = True
 
-class XpMultipleHiddenWidget(XpHiddenWidget):
+class XpMultipleHiddenWidget( XpHiddenWidget ):
 	"""
 	A widget that handles <input type="hidden"> for fields that have a list
 	of values.
@@ -89,7 +97,7 @@ class XpMultipleHiddenWidget(XpHiddenWidget):
 			return data.getlist(name)
 		return data.get(name, None)
 
-class XpPasswordWidget(XpInputWidget):
+class XpPasswordWidget( XpInputWidget ):
 	_element = 'input'
 	input_type = 'password'
 	def __init__(self, attrs=None, render_value=True, hasInfo=False):
@@ -99,7 +107,7 @@ class XpPasswordWidget(XpInputWidget):
 		if not self.render_value: value=None
 		return super(XpPasswordWidget, self).render(name, value, attrs)
 
-class XpTextareaWidget(Widget):
+class XpTextareaWidget( Widget ):
 	_element = 'textarea'
 	def __init__(self, attrs=None):
 		# The 'rows' and 'cols' attributes are required for HTML correctness.
@@ -114,7 +122,7 @@ class XpTextareaWidget(Widget):
 		return mark_safe(u'<textarea%s>%s</textarea>' % (flatatt(final_attrs),
 			conditional_escape(force_unicode(value))))
 
-class XpSelectWidget(Widget):
+class XpSelectWidget( Widget ):
 	_element = 'select'
 	show_info = False
 	def __init__(self, attrs=None, choices=(), hasInfo=False):
@@ -155,7 +163,7 @@ class XpSelectWidget(Widget):
 				output.append(render_option(option_value, option_label))
 		return u'\n'.join(output)
 
-class XpMultipleWidget(XpSelectWidget):
+class XpMultipleWidget( XpSelectWidget ):
 	_element = 'select'
 	show_info = False
 	def render(self, name, value, attrs=None, choices=()):
