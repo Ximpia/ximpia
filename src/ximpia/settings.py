@@ -194,15 +194,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.humanize',
     'ximpia.site',
-    #'ximpia.social_network',
     'ximpia.core',
-    #'ximpia.tasks',
-    #'ximpia.notes',
-    #'ximpia.messages',
-    #'ximpia.sales',
-    #'ximpia.support',
-    #'ximpia.human_resources',
-    #'ximpia.business',
-    #'ximpia.data',
     'ximpia.util'
 )
