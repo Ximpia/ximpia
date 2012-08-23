@@ -7,7 +7,7 @@ admin.autodiscover()
 #from django.views.static import serve
 
 urlpatterns = patterns('',
-	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia/media'}),
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia Front/media'}),
 	(r'^captcha/', include('yacaptcha.urls')),
 )
 
