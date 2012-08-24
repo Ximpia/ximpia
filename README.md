@@ -1,7 +1,7 @@
 ximpia
 ======
 
-Community version of Ximpia application framework
+Community version of Ximpia application framework for Django.
 
 ============================================================================
 
