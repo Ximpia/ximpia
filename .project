@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Ximpia</name>
+	<name>XimpiaDjango</name>
 	<comment></comment>
 	<projects>
 		<project>Misc</project>
 		<project>Site Packages</project>
+		<project>Test App</project>
+		<project>XimpiaFront</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
