@@ -24,17 +24,17 @@ from django.contrib.auth.models import User, Group
 #from ximpia.core.models import getResultOK, getResultERROR
 from models import Invitation, Address, ContactDetail, Organization, Tag, UserAccountContract
 
-from ximpia.core.form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
-from ximpia.core.form_fields import XpChoiceTextField, XpUserField
-from ximpia.core.form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
-from ximpia.core.form_fields import XpHiddenDataField
+from ximpia_core.core.form_fields import XpMultiField, XpCharField, XpEmailField, XpPasswordField, XpSocialIconField, XpChoiceField, XpTextChoiceField
+from ximpia_core.core.form_fields import XpChoiceTextField, XpUserField
+from ximpia_core.core.form_widgets import XpHiddenWidget, XpPasswordWidget, XpSelectWidget, XpTextareaWidget, XpTextInputWidget, XpMultipleWidget
+from ximpia_core.core.form_fields import XpHiddenDataField
 
-from ximpia.util.js import Form as _jsf
+from ximpia_core.util.js import Form as _jsf
 
-from ximpia.core.validators import validateCaptcha
-from ximpia.core.models import UserSocial
-from ximpia.core.form_fields import XpHiddenField
-from ximpia.core.forms import XBaseForm, AppRegex
+from ximpia_core.core.validators import validateCaptcha
+from ximpia_core.core.models import UserSocial
+from ximpia_core.core.form_fields import XpHiddenField
+from ximpia_core.core.forms import XBaseForm, AppRegex
 
 class UserSignupForm(XBaseForm):
 	_XP_FORM_ID = 'signup'

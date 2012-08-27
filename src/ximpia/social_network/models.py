@@ -8,7 +8,7 @@ from ximpia import settings
 from django.utils import translation
 from choices import Choices
 from constants import Constants as K
-from ximpia.core.models import BaseModel
+from ximpia_core.core.models import BaseModel
 
 class Address(BaseModel):
 	"""Address"""

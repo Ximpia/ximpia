@@ -195,5 +195,6 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'ximpia_core.core',
     'ximpia_core.util',
-    'ximpia.site'
+    'ximpia.site',
+    'ximpia.testApp'
 )

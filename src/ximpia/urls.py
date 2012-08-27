@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, include
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -7,10 +7,22 @@ admin.autodiscover()
 #from django.views.static import serve
 
 urlpatterns = patterns('',
-	(r'^front_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),
+		
+	# Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+	# to INSTALLED_APPS to enable admin documentation:
+	(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+	
+	# Uncomment the next line to enable the admin:
+	(r'^admin/', include(admin.site.urls)),
+	
+	# Frontend
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),	
+	# XimpiaDjango
 	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
-	(r'^site_media/apps/testApp/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/TestDjango/media'}),
-	(r'^captcha/', include('yacaptcha.urls')),
+	# CoreDjango
+	(r'^site_media/apps/core/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/CoreDjango/media/apps/core'}),
+	# captcha
+	(r'^captcha/', include('yacaptcha.urls')),	
 )
 
 urlpatterns += patterns('ximpia',
@@ -18,18 +30,8 @@ urlpatterns += patterns('ximpia',
     # Example:
     # (r'^ximpia/', include('ximpia.foo.urls')),
 
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
-    # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    (r'^admin/', include(admin.site.urls)),
-    
     # backdoor?????
     #(r'^backDoor/', include(admin.site.urls)),
-    
-    # Show Server View
-    (r'^apps/(?P<app>.*)/(?P<viewName>.*)/(?P<viewAttrs>.*)$', 'core.views.showView'),
     
     # Home
     (r'^$', 'site.views.home'),
@@ -54,13 +56,7 @@ urlpatterns += patterns('ximpia',
     #(r'^activateUser/(?P<user>.*)/(?P<activationCode>[0-9]+)$', 'social_network.views.activateAccount'),
 
     # Reload captcha
-    #(r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),
-    
-    # Ajax Urls
-    (r'^jxSuggestList$', 'core.views.jxSuggestList'),
-    (r'^jxJSON$', 'core.views.jxJSON'),
-    (r'^jxBusiness$', 'core.views.jxBusiness'),
-    (r'^jxSearchHeader$', 'core.views.searchHeader'),
+    #(r'^reloadCaptcha$', 'social_network.views.reloadCaptcha'),    
 
     # Social network and applications
     #(r'^$', 'social_network.views.staticContent'),
@@ -70,4 +66,16 @@ urlpatterns += patterns('ximpia',
     
     # Where $appUrlName will be the url friendly name for the application
     #(r'^view/$appUrlName/', include('ximpia.social_network.urls')),
+)
+
+urlpatterns += patterns('ximpia_core',
+		
+    # Show Server View
+    (r'^apps/(?P<app>.*)/(?P<viewName>.*)/(?P<viewAttrs>.*)$', 'core.views.showView'),
+    
+    # Ajax Urls
+    (r'^jxSuggestList$', 'core.views.jxSuggestList'),
+    (r'^jxJSON$', 'core.views.jxJSON'),
+    (r'^jxBusiness$', 'core.views.jxBusiness'),
+    (r'^jxSearchHeader$', 'core.views.searchHeader'),        
 )

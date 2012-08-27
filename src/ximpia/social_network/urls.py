@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns
 
 # http://buscaplus.com/view/*
 urlpatterns = patterns('social_network.views',
