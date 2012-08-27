@@ -2,11 +2,11 @@ from django import forms
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
-from ximpia.util.js import Form as _jsf
-from ximpia.core.form_fields import XpUserField, XpPasswordField, XpEmailField, XpCharField, XpChoiceField, XpHiddenField
-from ximpia.core.form_fields import XpHiddenDataField
-from ximpia.core.form_widgets import XpHiddenWidget
-from ximpia.core.forms import XBaseForm
+from ximpia_core.util.js import Form as _jsf
+from ximpia_core.core.form_fields import XpUserField, XpPasswordField, XpEmailField, XpCharField, XpChoiceField, XpHiddenField
+from ximpia_core.core.form_fields import XpHiddenDataField
+from ximpia_core.core.form_widgets import XpHiddenWidget
+from ximpia_core.core.forms import XBaseForm
 
 import messages as _m 
 import constants as K
@@ -22,7 +22,7 @@ class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId'))
-	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, help_text = _('Your Password'))
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, help_text = _('Your Password'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
@@ -53,8 +53,8 @@ class PasswordReminderForm(XBaseForm):
 class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
-	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Your New Password'))
-	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', 
+	newPassword = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Password', help_text = _('Your New Password'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Confirm Password', 
 					help_text = _('Write again your password to make sure there are no errors'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
@@ -67,10 +67,10 @@ class ChangePasswordForm(XBaseForm):
 class UserChangePasswordForm( XBaseForm ):
 	_XP_FORM_ID = 'userChangePassword'
 	_dbUser = User()
-	newPassword = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='New Password', help_text = _('Your New Password'))
-	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Confirm Password', 
+	newPassword = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='New Password', help_text = _('Your New Password'))
+	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Confirm Password', 
 					help_text = _('Write again your password'))
-	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, label='Password', help_text = _('Current password'))
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Password', help_text = _('Current password'))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_passwordValidate']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
@@ -88,9 +88,9 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbInvitation = Invitation()
 	# Fields
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
-	password = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsReq=True,  
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsReq=True,  
 		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
-	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', min=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
+	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
 					label= _('Password Verify'))
 	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'readonly': 'readonly'})
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')

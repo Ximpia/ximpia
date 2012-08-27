@@ -3,6 +3,7 @@
 	<name>XimpiaDjango</name>
 	<comment></comment>
 	<projects>
+		<project>CoreDjango</project>
 		<project>Misc</project>
 		<project>Site Packages</project>
 		<project>Test App</project>

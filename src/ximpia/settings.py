@@ -10,29 +10,29 @@ DEFAULT_CHARSET = 'utf-8'
 #python manage.py dumpdata --indent 4 social_network.Invitation social_network.SNParam social_network.SNXmlMessage > sn.json
 
 # Ximpia Config
-PRIVATE_BETA = True
-AFFILIATES = False
-WEBMASTER_EMAIL = '"Webmaster :: Ximpia" <webmaster@ximpia.com>'
-MAIL_HOST = '127.0.0.1:8000'
+XIMPIA_PRIVATE_BETA = True
+XIMPIA_AFFILIATES = False
+XIMPIA_WEBMASTER_EMAIL = '"Webmaster :: Ximpia" <webmaster@ximpia.com>'
+XIMPIA_MAIL_HOST = '127.0.0.1:8000'
 
 # Views / Actions
 viewDict = {}
 actionDict = {}
 
 # Ximpia Email
-XP_EMAIL_USERNAME = 'jorge.alegre'
-XP_EMAIL_PASSWORD = 'tarraco24'
-XP_EMAIL_HOST = 'smtp.zoho.com'
+XIMPIA_EMAIL_USERNAME = 'jorge.alegre'
+XIMPIA_EMAIL_PASSWORD = 'tarraco24'
+XIMPIA_EMAIL_HOST = 'smtp.zoho.com'
 # Real Email server
-#EMAIL_HOST = 'smtp.zoho.com'
-#EMAIL_PORT = 465
-#EMAIL_HOST_USER = 'jorge.alegre'
-#EMAIL_HOST_PASSWORD = 'tarraco24'
-#EMAIL_USE_TLS = True
+#XIMPIA_EMAIL_HOST = 'smtp.zoho.com'
+#XIMPIA_EMAIL_PORT = 465
+#XIMPIA_EMAIL_HOST_USER = 'jorge.alegre'
+#XIMPIA_EMAIL_HOST_PASSWORD = 'tarraco24'
+#XIMPIA_EMAIL_USE_TLS = True
 
 # Dumb email server
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
+XIMPIA_EMAIL_DUMB_HOST = 'localhost'
+XIMPIA_EMAIL_DUMB_PORT = 1025
 
 # Facebook
 FACEBOOK_APP_COOKIE = 'fbs_180219935334975'
@@ -45,13 +45,13 @@ OAUTH2_REDIRECT = 'http://localhost:8000/oauth2/'
 FACEBOOK_SCOPE = 'email,user_birthday'
 
 # CONSUMER_DICT
-CONSUMER_DICT = {}
+"""CONSUMER_DICT = {}
 CONSUMER_DICT['linkedin'] = ('UqqNxkAHjuhRzW4PMdyq2H-_MqWyFTDmTtTOfa6TiIX_Nu73_f7YdWNtI__yUnl5','Gy75y7RJrq1T5_JJrTs55B6r04_ntUgSpoy-9WwMoFdFBTF1EikomP1dbWxxtYXv','1.0')
 CONSUMER_DICT['twitter'] = ('IKVUuIYtnNRCTyCksySXkg', 'fqsB8GAz8xtqvirPyaEFLTCGUPMHQ5h2rAiASkpsg', '1.0')
-CONSUMER_DICT['facebook'] = ('180219935334975', '59cd2a9eafc76ed2262d317a25059daa', '2.0')
+CONSUMER_DICT['facebook'] = ('180219935334975', '59cd2a9eafc76ed2262d317a25059daa', '2.0')"""
 
 # OAUTH_URL_DICT
-OAUTH_URL_DICT = {}
+"""OAUTH_URL_DICT = {}
 OAUTH_URL_DICT['linkedin'] = {
                  'request': ('https://api.linkedin.com/uas/oauth/requestToken', 'POST'),
                  'access': ('https://api.linkedin.com/uas/oauth/accessToken','POST'),
@@ -65,7 +65,7 @@ OAUTH_URL_DICT['twitter'] = {
 OAUTH_URL_DICT['facebook'] = {
                  'authorize': ('https://graph.facebook.com/oauth/authorize?client_id=180219935334975&display=popup&redirect_uri=' + OAUTH2_REDIRECT + 'facebook&scope=' + FACEBOOK_SCOPE, ''),
                  'access': ('https://graph.facebook.com/oauth/access_token','')
-                 }
+                 }"""
 #https://graph.facebook.com/oauth/authorize?client_id=180219935334975&redirect_uri=http://localhost:8000/oauth2/facebook
 
 
@@ -147,7 +147,7 @@ SESSION_COOKIE_NAME = 'sessionid'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -179,7 +179,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "H:/workspace/Ximpia/templates"
+    #"H:/workspace/XimpiaDjango/templates"
     #"/home/jalegre/workspace/Ximpia/templates"
     #"/media/truecrypt1/workspace/Ximpia/templates"
 )
@@ -193,7 +193,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.humanize',
-    'ximpia.site',
-    'ximpia.core',
-    'ximpia.util'
+    'ximpia_core.core',
+    'ximpia_core.util',
+    'ximpia.site'
 )

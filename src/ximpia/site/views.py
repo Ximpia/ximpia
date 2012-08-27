@@ -1,5 +1,5 @@
-from ximpia.core.models import ContextViewDecorator
-from ximpia.core.business import ViewDecorator
+from ximpia_core.core.models import ContextViewDecorator
+from ximpia_core.core.business import ViewDecorator
 
 import business
 

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Ximpia</title>
+<link rel="stylesheet" href="http://localhost:8000/site_media/jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
+<link href="http://localhost:8000/site_media/css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/ximpia.contextMenu.css" rel="stylesheet" type="text/css" />
+<link href="http://localhost:8000/site_media/css/main.css" rel="stylesheet" type="text/css" />	
+</head>
+
+<body>
+
+<!--
+<ul id="id_menu" class="contextMenu">
+    <li ><a href="#openView" data-xp="{viewName: '', windowType: ''}">Settings</a></li>
+    <li class="separator"><a href="#openView" data-xp="{}">Profile</a></li>
+    <li ><a href="#openView" data-xp="{}">Add Company</a></li>
+    <li ><a href="#openView" data-xp="{}">Admin</a></li>
+    <li ><a href="#openView" data-xp="{}">Apps</a></li>
+    <li class="iconLogoutSmall separator"><a href="#openView" data-xp="{}">Sign out</a></li>
+</ul>
+-->
+
+
+<!--<div id="id_view" data-xp="{viewName: 'login', className: 'LoginBusiness', method: 'login', callback: 'ximpia.site.Login.showLogin'}" />--></div>
+
+<div id="id_view" data-xp="{viewName: 'login', callback: 'ximpia.site.Login.showLogin'}" ></div>
+
+<section id="id_data" >
+
+<!--<div id="id_csrf" style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='34da5827441cb0672f8c7896b8bf6522' /></div>-->
+
+<div id="Wrapper">
+
+<!--
+<header id="id_header"  style="z-index: 100">
+<div id="Logo" style="margin-top: 13px;">
+<a href="#" onclick="return false"><img id="LogoImg" src="http://localhost:8000/site_media/images/blank.png" alt=" " /> </a>
+</div>
+</header>
+-->
+
+<header id="id_header" >
+
+<form id="form_header" action="" method="post" >
+
+<div id="Logo" style="margin-top: 13px">
+<a href="#" onclick="return false"><img id="LogoImg" src="http://localhost:8000/site_media/images/ximpia-logo-small-plano.png" alt=" " style="width: 105px;height: 35px;margin: 1px 10px;" /> </a>
+</div>
+
+<div id="id_header_extra">
+
+<input type="text" id="id_header_search" name="search" class="InputText viewSearch" style="float: left; width: 270px; margin-right: 5px; margin-top: 15px" x-webkit-speech  />
+<!-- x-webkit-speech -->
+
+<div id="IconMenu">	
+
+<nav id="id_mainIcons">
+
+<!--
+<div style="float: left" class="iconMenuBlock">
+	<img src="http://localhost:8000/site_media/images/blank.png" class="iconBlank" />
+	<div>Channel</div>
+</div>
+-->
+
+</nav>
+
+<nav id="id_viewIcons" style="margin-right: 5px">
+</nav>
+
+</div>
+
+</div>
+
+<nav>
+
+</nav>
+
+</form>
+
+</header>
+
+<nav id="id_navBar" >
+</nav>
+
+<section id="id_sect_loading" >
+</section>
+
+<section id="id_sectionTitle" class="sectionTitle">
+
+<!--
+<div id="id_titleBar" class="titleBar">
+<div id="id_titleBar_title" style="float: left"><b>This is the view title</b></div>
+<div style="float: right"class="titleBarComps"> Buttons...	</div>
+</div>
+-->
+
+</section>
+
+<section id="id_content" class="sectionContent">
+
+<form id="form_login" action="" method="post" data-xp="{}" >
+
+<div id="id_login" class="sectionComp">
+	
+<fieldset>
+<legend>You</legend>
+<div class="formBlock" style="margin-top: 0px;">
+<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
+<br/>
+<div id="id_password_comp" data-xp-type="basic.text" data-xp="{info: true, type: 'password', tabindex: '2'}" ></div>
+
+<br/>
+
+<!-- Link Component: Open new panel (task) or open in modal mode here -->
+<div id="id_passwordReminderLink_comp" data-xp-type="link" data-xp="{op: 'openPopup', app: 'SN', name: 'passwordReminder', content: 'email', alt: 'Remember Password', linkText: 'Remember your password', viewName: 'login'}"></div>
+
+</div>
+</fieldset>
+
+<!--
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+-->
+
+</div>
+
+</form>
+
+</section>
+
+<section id="id_sectionButton" class="sectionButton">
+<div id="id_pageButton" class="btBar">
+<div id="id_doLogin_comp" data-xp-type="button" data-xp="{form: 'form_login', align: 'left', text: 'Login', mode: 'action', type: 'color', action: 'doLogin', callback: 'login'}" ></div>
+</div>
+</section>
+    
+</div>
+
+<br/>
+
+<!--
+<br/>
+Holaaaaa
+<form >-->
+
+<!--
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false, value: ''}">Option 1</div>
+
+Text should come from server
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false, values: {'1': 'Option 1', '2': 'Option 2'}}"></div>
+
+Get values and text from form
+<div id="id_optName_comp" data-xp-type="input.option" data-xp="{align: 'left', multi: false}"></div>
+
+XpOptionField | Choices?????
+values = {value: text,...}
+
+-->
+<!--	
+	<div style="float:left">
+		<label for="id_optName_1">Mi Label</label>: <input id="id_optName_1" type="checkbox" name="optName" value="1" />Option 1
+	</div>
+	<div style="float:left">
+		<input type="checkbox" name="optName" value="2" />Option 2
+	</div>
+
+<br/>
+<ul>
+	<li>
+		<div>
+			<input type="checkbox" name="optNameUL" value="1" />Option 1
+		</div>
+	</li>
+	<li>
+		<div>
+			<input type="checkbox" name="optNameUL" value="2" />Option 2
+		</div>
+	</li>
+	
+</ul>
+
+-->
+
+</form>
+
+<!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
+<script type="text/javascript" src="http://localhost:8000/site_media/js/jquery/jquery-1.6.min.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.metadata.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jqDock.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-common/ximpia.common.js"></script>
+<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>-->
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/google_maps.js"></script>-->
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.passStrengthener.js"></script>
+
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.form.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.validate.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jsonSuggest.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.networkIcon.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.loading.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.pageButton.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.mousewheel.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.mwheelIntent.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.jscrollpane.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.selectBox.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.flexbox.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
+
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/input/ximpia.option.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.button.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.link.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/window/ximpia.popup.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.icon.js"></script>
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/visual-components/action/ximpia.context_menu.js"></script>
+
+<script type="text/javascript" src="http://localhost:8000/site_media/js/core/ximpia-plugins/ximpia.qtip.js"></script>
+<!--<script type="text/javascript" src="http://localhost:8000/site_media/js/json.js"></script>-->
+<!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
+<!-- x-webkit-speech -->
+
+<script>	
+
+jQuery(document).ready(function($){
+	ximpia.common.Page.init();
+	var pageJx = ximpia.common.PageAjax();
+	pageJx.getView({ view: 'login', params: "{}" });
+});
+
+</script>
+
+</section>
+
+</body>
+</html>

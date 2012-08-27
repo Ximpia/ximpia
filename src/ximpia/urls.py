@@ -7,7 +7,9 @@ admin.autodiscover()
 #from django.views.static import serve
 
 urlpatterns = patterns('',
-	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/Ximpia Front/media'}),
+	(r'^front_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
+	(r'^site_media/apps/testApp/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/TestDjango/media'}),
 	(r'^captcha/', include('yacaptcha.urls')),
 )
 
