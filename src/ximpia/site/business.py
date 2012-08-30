@@ -23,6 +23,7 @@ class VideoBusiness ( CommonBusiness ):
 	@DoBusinessDecorator(form = forms.HomeForm, pageError=True, isServerTmpl=True)
 	def showHome(self):
 		"""Show videos in the home view"""
+		print 'VideoBusiness :: showHome...'
 		self._addList('featuredVideos', self._dbVideo.searchFields( 	['embedCode', 'name', 'title', 'description', 'isFeatured'], 
 										isFeatured=True  ) )
 		self._addList('videos', self._dbVideo.searchFields( 	['embedCode', 'name', 'title', 'description', 'isFeatured'], 
@@ -34,11 +35,10 @@ class LoginBusiness ( CommonBusiness ):
 	
 	def __init__(self, ctx):
 		super(LoginBusiness, self).__init__(ctx)
-		#self._dbUserAccount = UserAccountDAO(ctx)
 		self._dbUserSys = UserDAO(ctx)
 		self._dbXmlMessage = XmlMessageDAO(ctx)
-		#self._dbUserDetail = UserDetailDAO(ctx)
-		#self._dbUserSocial = UserSocialDAO(ctx)
+		self._dbUserDetail = UserDetailDAO(ctx)
+		self._dbUserChannel = UserChannelDAO(ctx)
 		self._dbParam = ParamDAO(ctx)	
 	
 	@WFViewDecorator('login')
@@ -105,9 +105,9 @@ class LoginBusiness ( CommonBusiness ):
 		print 'cookies: ', self._ctx[Ctx.COOKIES]
 		userChannelName = self._getUserChannelName()
 		print 'userChannelName: ', userChannelName
-		self._ctx[Ctx.USER_CHANNEL] = self._dbUserSocial.get(user=self._ctx[Ctx.USER], name=userChannelName)
-		self._ctx[Ctx.SESSION]['userSocial'] = self._ctx['userSocial']
-		print 'userSocial: ', self._ctx['userSocial']
+		self._ctx[Ctx.USER_CHANNEL] = self._dbUserChannel.get(user=self._ctx[Ctx.USER], name=userChannelName)
+		self._ctx[Ctx.SESSION]['userChannel'] = self._ctx['userChannel']
+		print 'userChannel: ', self._ctx['userChannel']
 
 	@MenuActionDecorator('logout')
 	def doLogout(self):
@@ -144,7 +144,7 @@ class LoginBusiness ( CommonBusiness ):
 		xmlMessage = self._dbXmlMessage.get(name='Msg/SocialNetwork/Login/PasswordReminder/', lang='en').body
 		EmailBusiness.send(xmlMessage, {'firstName': user.first_name, 'userAccount': user.username,
 						'reminderId': userDetail.reminderId}, [self._f()['email']])
-		self.setOkMsg('OK_PASSWORD_REMINDER')
+		self._setOkMsg('OK_PASSWORD_REMINDER')
 	
 	@ValidateFormDecorator(forms.ChangePasswordForm)
 	@DoBusinessDecorator(pageError=True)
@@ -167,12 +167,11 @@ class HomeBusiness ( CommonBusiness ):
 	
 	@WFViewDecorator('login')
 	@DoBusinessDecorator(form = forms.HomeForm)
-	def showStatus(self):
+	def showLoginHome(self):
 		"""Status home view"""
-		print 'showStatus...'
-		print 'I do the status and home view...'
+		print 'showLoginHome...'
 		dd = self._getFlowParams('ximpiaId')
-		print 'showStatus :: param values: ', dd
+		print 'showLoginHome :: param values: ', dd
 
 class UserBusiness ( CommonBusiness ):
 	
@@ -213,7 +212,6 @@ class SignupBusiness ( CommonBusiness ):
 		self._dbGroup = GroupDAO(ctx)
 		self._dbUserChannel = UserChannelDAO(ctx)
 		self._dbGroupChannel = GroupChannelDAO(ctx)
-		self._dbUser = UserDAO(ctx)
 	
 	@ValidationDecorator()
 	def _validateInvUserSignup(self):

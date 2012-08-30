@@ -1,4 +1,4 @@
-from models import SocialNetwork, Tag, GroupChannel, Organization, OrganizationGroup, Invitation, Param, XmlMessage
+from models import SocialNetwork, Tag, GroupChannel, Organization, OrganizationGroup, Invitation, Param, XmlMessage, UserDetail
 
 from django.contrib import admin
 
@@ -80,3 +80,4 @@ admin.site.register(GroupChannel, GroupChannelAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(OrganizationGroup, OrganizationGroupAdmin)
 admin.site.register(Invitation, InvitationAdmin)
+admin.site.register(UserDetail)

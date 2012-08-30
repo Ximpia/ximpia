@@ -364,7 +364,7 @@ class Param(BaseModel):
 	valueDate = models.DateTimeField(null=True, blank=True, 
 			verbose_name = _('Value Date'), help_text = _('Parameter Value for Date'))
 	paramType = models.CharField(max_length=10, choices=Choices.PARAM_TYPE,
-			verbose_name=_('Mode'), help_text=_('Mode: either parameter or table'))
+			verbose_name=_('Parameter Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
 		return str(self.mode) + ' - ' + str(self.name)
 	class Meta:
