@@ -16,14 +16,15 @@ ComponentRegister.registerApp(code=K.APP, name='Site')
 ##########
 # Views
 ##########
+ComponentRegister.cleanViews(appCode=K.APP)
 # login
 ComponentRegister.registerView(appCode=K.APP, viewName='login', myClass=business.LoginBusiness, method='showLogin')
 ComponentRegister.registerView(appCode=K.APP, viewName='newPassword', myClass=business.LoginBusiness, method='showNewPassword')
 ComponentRegister.registerView(appCode=K.APP, viewName='logout', myClass=business.LoginBusiness, method='showLogout')
 # signup
 ComponentRegister.registerView(appCode=K.APP, viewName='signup', myClass=business.SignupBusiness, method='showSignupUserInvitation')
-# home
-ComponentRegister.registerView(appCode=K.APP, viewName='home', myClass=business.HomeBusiness, method='showStatus')
+# homeLogin
+ComponentRegister.registerView(appCode=K.APP, viewName='homeLogin', myClass=business.HomeBusiness, method='showLoginHome')
 # user
 ComponentRegister.registerView(appCode=K.APP, viewName='changePassword', myClass=business.UserBusiness, method='showChangePassword', 
 			winType=_Ch.WIN_TYPE_POPUP)
@@ -31,9 +32,28 @@ ComponentRegister.registerView(appCode=K.APP, viewName='changePassword', myClass
 # TODO: Integrate into videos application
 ComponentRegister.registerView(appCode=K.APP, viewName='home', myClass=business.VideoBusiness, method='showHome')
 
+#############
+# Templates
+#############
+ComponentRegister.cleanTemplates(appCode=K.APP)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='home', name='home', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='login', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwordReminder', winType=_Ch.WIN_TYPE_POPUP, 
+				alias='passwordReminder')
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='logout', name='logout', winType=_Ch.WIN_TYPE_WINDOW)
+# user
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='changePassword', name='changePassword', winType=_Ch.WIN_TYPE_POPUP)
+# Signup
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='signup', name='signup', winType=_Ch.WIN_TYPE_WINDOW)
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='newPassword', name='newPassword', winType=_Ch.WIN_TYPE_WINDOW)
+# Home login
+ComponentRegister.registerTemplate(appCode=K.APP, viewName='homeLogin', name='homeLogin', winType=_Ch.WIN_TYPE_WINDOW)
+
+
 ##########
 # Actions
 ##########
+ComponentRegister.cleanActions(appCode=K.APP)
 # login
 ComponentRegister.registerAction(appCode=K.APP, actionName='doLogin', myClass=business.LoginBusiness, method='doLogin')
 ComponentRegister.registerAction(appCode=K.APP, actionName='doNewPassword', myClass=business.LoginBusiness, method='doNewPassword')
@@ -45,6 +65,15 @@ ComponentRegister.registerAction(appCode=K.APP, actionName='doSignupUser', myCla
 ComponentRegister.registerAction(appCode=K.APP, actionName='doChangePassword', myClass=business.UserBusiness, method='doChangePassword')
 
 
+##########
+# Flows
+##########
+ComponentRegister.cleanFlows(appCode=K.APP)
+# login
+ComponentRegister.registerFlow(appCode=K.APP, flowCode='login')
+ComponentRegister.registerFlowView(appCode=K.APP, flowCode='login', viewNameSource='login', viewNameTarget='homeLogin', 
+				actionName='doLogin', order=10)
+
 ###############
 # Menu
 ###############
@@ -55,47 +84,23 @@ ComponentRegister.registerMenu(appCode=K.APP, name='signout', titleShort='Sign o
 			actionName='doLogout')
 ComponentRegister.registerMenu(appCode=K.APP, name='changePassword', titleShort='New Password', title='Change Password', iconName='', 
 			viewName='changePassword')
-# Home Menu
+# Login Home Menu
+ComponentRegister.registerMenu(appCode=K.APP, name='homeLogin', titleShort='Home', title='Home', iconName='iconHome', viewName='homeLogin')
 ComponentRegister.registerMenu(appCode=K.APP, name='home', titleShort='Home', title='Home', iconName='iconHome', viewName='home')
-ComponentRegister.registerMenu(appCode=K.APP, name='siteHome', titleShort='Home', title='Home', iconName='iconHome', viewName='home')
 
 ###############
 # View Menus
 ###############
-ComponentRegister.registerViewMenu(appCode=K.APP, viewName='home', menus=[
+ComponentRegister.registerViewMenu(appCode=K.APP, viewName='homeLogin', menus=[
 				{_K.ZONE: 'sys', _K.MENU_NAME: 'sys'},
-				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'home'},
+				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'homeLogin'},
 				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
 				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'signout'},
-				{_K.ZONE: 'main', _K.MENU_NAME: 'home'}
+				{_K.ZONE: 'main', _K.MENU_NAME: 'homeLogin'}
 			])
 ComponentRegister.registerViewMenu(appCode=K.APP, viewName='home', menus=[
-				{_K.ZONE: 'main', _K.MENU_NAME: 'siteHome'}
+				{_K.ZONE: 'main', _K.MENU_NAME: 'home'}
 			])
-
-#############
-# Templates
-#############
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='home', name='home', winType=_Ch.WIN_TYPE_WINDOW)
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='login', winType=_Ch.WIN_TYPE_WINDOW)
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='login', name='passwordReminder', winType=_Ch.WIN_TYPE_POPUP, 
-				alias='passwordReminder')
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='logout', name='logout', winType=_Ch.WIN_TYPE_WINDOW)
-# user
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='changePassword', name='changePassword', winType=_Ch.WIN_TYPE_POPUP)
-# Signup
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='signup', name='signupUser', winType=_Ch.WIN_TYPE_WINDOW)
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='newPassword', name='changePassword', winType=_Ch.WIN_TYPE_WINDOW)
-#ComponentRegister.registerTemplate(appCode=K.APP, viewName='home', name='home', winType=_Ch.WIN_TYPE_WINDOW)
-
-
-##########
-# Flows
-##########
-# login
-ComponentRegister.registerFlow(appCode=K.APP, flowCode='login')
-ComponentRegister.registerFlowView(appCode=K.APP, flowCode='login', viewNameSource='login', viewNameTarget='home', 
-				actionName='doLogin', order=10)
 
 ##########
 # Search

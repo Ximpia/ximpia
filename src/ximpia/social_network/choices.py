@@ -84,7 +84,7 @@ class Choices(object):
 		(ADDRESS_TYPE_HOME, _('Home')),
 		(ADDRESS_TYPE_SHIP, _('Other')),
 		)
-	# SCHDULE
+	# SCHEDULE
 	SCHEDULE_FULL = 'full'
 	SCHEDULE_PART = 'part'
 	SCHEDULE = (

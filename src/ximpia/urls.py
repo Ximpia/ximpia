@@ -8,21 +8,25 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
 		
-	# Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+	# Uncomment the admin/doc line below and add 'django.contrib.admindocs'
 	# to INSTALLED_APPS to enable admin documentation:
 	(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 	
 	# Uncomment the next line to enable the admin:
 	(r'^admin/', include(admin.site.urls)),
 	
-	# Frontend
-	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),	
-	# XimpiaDjango
-	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
 	# CoreDjango
 	(r'^site_media/apps/core/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/CoreDjango/media/apps/core'}),
+	
+	# XimpiaDjango
+	(r'^site_media/apps/site/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media/apps/site'}),
+	#(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
+
+	# Frontend
+	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),
+	
 	# captcha
-	(r'^captcha/', include('yacaptcha.urls')),	
+	(r'^captcha/', include('yacaptcha.urls')),
 )
 
 urlpatterns += patterns('ximpia',

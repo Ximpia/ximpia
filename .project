@@ -6,7 +6,7 @@
 		<project>CoreDjango</project>
 		<project>Misc</project>
 		<project>Site Packages</project>
-		<project>Test App</project>
+		<project>XimpiaApps</project>
 		<project>XimpiaFront</project>
 	</projects>
 	<buildSpec>
