@@ -92,14 +92,20 @@ ComponentRegister.registerMenu(appCode=K.APP, name='home', titleShort='Home', ti
 # View Menus
 ###############
 ComponentRegister.registerViewMenu(appCode=K.APP, viewName='homeLogin', menus=[
-				{_K.ZONE: 'sys', _K.MENU_NAME: 'sys'},
-				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'homeLogin'},
-				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
-				{_K.ZONE: 'sys', _K.GROUP: 'sys', _K.MENU_NAME: 'signout'},
-				{_K.ZONE: 'main', _K.MENU_NAME: 'homeLogin'}
+				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.MENU_NAME: 'sys'},
+				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'homeLogin'},
+				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
+				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'signout'},
+				{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'homeLogin'},
+				{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: 'scrap'}
 			])
+
+"""ComponentRegister.registerViewMenu(appCode='testScrap', viewName='homeLogin', menus=[
+				{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: 'scrap'}
+			])"""
+
 ComponentRegister.registerViewMenu(appCode=K.APP, viewName='home', menus=[
-				{_K.ZONE: 'main', _K.MENU_NAME: 'home'}
+				{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'home'}
 			])
 
 ##########
