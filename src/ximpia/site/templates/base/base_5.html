@@ -108,6 +108,7 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.selectBox.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.flexbox.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.render_ext.js"></script>
 
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
@@ -152,6 +153,9 @@ jQuery(document).ready(function($){
 });
 
 </script>
+
+{% block js %}
+{% endblock %}
 
 <!--</section>-->
 

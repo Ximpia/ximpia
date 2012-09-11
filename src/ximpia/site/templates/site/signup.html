@@ -1,0 +1,81 @@
+{% extends "base/base_5.html" %}
+
+{% load i18n %}
+
+{% block scripts %}
+<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
+<!--<script type="text/javascript" src="http://www.google.com/recaptcha/api/challenge?k=6LceUNYSAAAAAODyOP7uqywx1TaTelM77CC00tHF"></script>-->
+<script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block title %}Ximpia - {% trans "Signup" %}{% endblock %}
+
+{% block sectionTitle %}
+{% endblock %}
+
+{% block sectionContent %}
+
+<div id="id_signup" class="sectionComp">
+
+<form id="form_signup" action="" method="post" data-xp="{}" >
+
+
+<!-- ******************* -->
+<!-- Login with Facebook -->
+<!-- ******************* -->
+<div style="border: 0px solid">
+<div id="id_facebookLogin_comp" data-xp-type="function" data-xp="{functionName: 'ximpia.config.Facebook.renderLogin'}" ></div>
+<fieldset>
+<legend>Login with Facebook</legend>
+<!-- Facebook Button -->
+<div id="fb-root"></div>
+<!-- Facebook Button -->
+<div class="fb-login-button" data-show-faces="true" data-width="200" data-max-rows="1" scope="email"></div>
+</fieldset>
+</div>
+
+
+<!-- ********* -->
+<!-- User Data -->
+<!-- ********* -->
+<div id="id_userData" style=" padding-top: 5px">
+<fieldset>
+<legend>User Data</legend>
+
+<table><tr><td>
+<div id="id_ximpiaId_comp" data-xp-type="basic.text" data-xp="{info: true, tabindex: '1'}" ></div>
+<div id="id_firstName_comp" data-xp-type="basic.text" data-xp="{tabindex: '2'}" ></div>
+<div id="id_lastName_comp" data-xp-type="basic.text" data-xp="{tabindex: '3'}" ></div>
+
+</td>
+<td valign="top">
+<div id="id_email_comp" data-xp-type="basic.text" data-xp="{tabindex: '4','readonly': 'readonly'}" ></div>
+<div id="id_city_comp" data-xp-type="basic.text" data-xp="{tabindex: '5', gmaps: 'city', class: 'gmaps'}" ></div>
+<div id="id_country_comp" data-xp-type="list.select" data-xp="{tabindex: '6', gmaps: 'country', class: 'gmaps'}" ></div>
+</td>
+</tr></table>
+<div id="id_recaptcha_comp" data-xp-type="function" data-xp="{functionName: 'ximpia.config.Captcha.renderCaptcha'}" style="margin-top: 5px" ></div>
+</fieldset>
+</div>
+
+<br/><br/>
+
+<input type="hidden" name="result" value="{{result}}" />
+
+</form>
+
+</div>
+
+{% endblock %}
+
+{% block buttons %}
+
+<div id="id_pageButton" class="btBar">
+<div id="id_doSignup_comp" data-xp-type="button" data-xp="{form: 'form_signup', align: 'left', text: 'Signup', mode: 'actionMsg', type: 'color', action: 'doSignupUser'}" ></div>
+
+</div>
+
+{% endblock%}

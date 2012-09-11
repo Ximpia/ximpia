@@ -13,6 +13,9 @@ import constants as K
 from choices import Choices
 from models import Address, Invitation, UserChannel
 
+# TODO: Remove settings_visual. We need this???? Other ways to do it????
+from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
+
 class HomeForm(XBaseForm):
 	_XP_FORM_ID = 'home'
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
@@ -88,16 +91,17 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbInvitation = Invitation()
 	# Fields
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
-	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsReq=True,  
-		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
-	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
-					label= _('Password Verify'))
+	#password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsReq=True,  
+	#	help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
+	#passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
+	#				label= _('Password Verify'))
 	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'readonly': 'readonly'})
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
 	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
 	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', req=False, initial='', choices=Choices.COUNTRY)
-	invitationCode = XpHiddenDataField(_dbInvitation, '_dbInvitation.invitationCode')
+	#invitationCode = XpHiddenDataField(_dbInvitation, '_dbInvitation.invitationCode')
+	facebookIcon_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SocialNetwork('facebook', 2).getS())
 	# Navigation and Message Fields
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
@@ -120,7 +124,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 			self._dbUser.firstName = snProfileDict['first_name']
 			self._dbUser.lastName = snProfileDict['last_name']
 			#self.user.email = snProfileDict['email']
-			self._dbUser.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
+			#self._dbUser.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
 			locationName = snProfileDict['location']['name']
 			locationFields = locationName.split(',')
 			self._dbAddress.city = locationFields[0].strip()
@@ -133,6 +137,6 @@ class UserSignupInvitationForm ( XBaseForm ):
 
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
-		self._validateSameFields([('password','passwordVerify')])
+		self._validateCaptcha()
 		self._xpClean()
 		return self.cleaned_data

@@ -14,6 +14,8 @@ from data import GroupChannelDAO, InvitationDAO, OrganizationDAO, ParamDAO, User
 from forms import UserSignupInvitationForm #@UnusedImport
 import constants as K
 
+from recaptcha.client import captcha
+
 class VideoBusiness ( CommonBusiness ):
 	
 	def __init__(self, ctx):
@@ -230,16 +232,17 @@ class SignupBusiness ( CommonBusiness ):
 				])
 	
 	@DoBusinessDecorator(pageError=True, form=forms.UserSignupInvitationForm, isServerTmpl=True)
-	def showSignupUserInvitation(self, invitationCode=None, affiliateId=None):
+	def showSignupUserInvitation(self):
 		"""Show signup form. Get get invitation code."""
-		print 'invitationCode: ', invitationCode
-		print 'affiliateId: ', affiliateId
+		"""print 'invitationCode: ', invitationCode
+		print 'affiliateId: ', affiliateId"""
 		# Business Validation 
-		self._validateInvitation(invitationCode)
+		#self._validateInvitation(invitationCode)
 		# Business
-		invitation = self._dbUser.getInvitation(invitationCode, status=K.PENDING)
-		self._ctx['affiliateid'] = json.dumps(affiliateId)
-		self._setMainForm(forms.UserSignupInvitationForm(instances = {'dbInvitation': invitation}))
+		#invitation = self._dbUser.getInvitation(invitationCode, status=K.PENDING)
+		#self._ctx['affiliateid'] = json.dumps(affiliateId)
+		#self._setMainForm(forms.UserSignupInvitationForm(instances = {'dbInvitation': invitation}))
+		pass
 	
 	@ValidateFormDecorator(forms.UserSignupInvitationForm)
 	@DoBusinessDecorator()
@@ -247,7 +250,7 @@ class SignupBusiness ( CommonBusiness ):
 		"""Signup professional user
 		@param ctx: Context"""
 		# Business Validation
-		self._validateInvUserSignup()
+		"""self._validateInvUserSignup()
 		# Invitation
 		invitation = self._dbInvitation.get(invitationCode=self._f()['invitationCode'])
 		# System User
@@ -266,4 +269,15 @@ class SignupBusiness ( CommonBusiness ):
 		userChannel.groups.add(group)
 		# Modify Invitation
 		invitation.status = K.USED
-		invitation.save()
+		invitation.save()"""
+		# Test captcha
+		print 'ximpiaId: ', self._f()['ximpiaId']
+		print 'remoteId: ', self._ctx[Ctx.META]['REMOTE_ADDR']
+		"""if self._f()._captcha == True:
+			captchaResponse = captcha.submit(self._ctx[Ctx.REQUEST]['recaptcha_challenge_field'],
+							self._ctx[Ctx.REQUEST]['recaptcha_response_field'], 
+							settings.RECAPTCHA_PRIVATE_KEY, 
+							'localhost')
+			if captchaResponse.is_valid == False:
+				# Error, insert error message and mark form as not validated
+				pass"""

@@ -21,6 +21,9 @@ urlpatterns = patterns('',
 	# XimpiaDjango
 	(r'^site_media/apps/site/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media/apps/site'}),
 	#(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
+	
+	# XimpiaApps
+	(r'^site_media/apps/testScrap/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaApps/media/apps/testScrap'}),
 
 	# Frontend
 	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),
