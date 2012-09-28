@@ -4,6 +4,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>{% block title %}{% endblock %}</title>
+
+<link rel="shortcut icon" href="{{settings.MEDIA_URL}}images/favicon.ico">
+<link rel="apple-touch-icon" href="{{settings.MEDIA_URL}}images/ximpia_icon.png">
+
 <link rel="stylesheet" href="{{settings.MEDIA_URL}}jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
 <link href="{{settings.MEDIA_URL}}css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
 <link href="{{settings.MEDIA_URL}}css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
@@ -14,6 +18,7 @@
 </head>
 
 <body>
+<div id="fb-root"></div>
 
 {% block id_view %}
 {% endblock %}
@@ -25,7 +30,9 @@
 <form id="form_header" action="" method="post" >
 
 <div id="Logo" style="margin-top: 13px">
-<a href="#" onclick="return false"><img id="LogoImg" src="http://localhost:8000/site_media/images/ximpia-logo-small-plano.png" alt=" " style="height: 35px;margin: 1px 10px;" /> </a>
+<a href="/" ><img id="LogoImg" src="{{settings.MEDIA_URL}}images/ximpia-logo-small-plano.png" alt=" " style="height: 35px;margin: 1px 10px;" /> </a>
+<!-- Make this link with javascript when user logs in: href="#" onclick="return false" -->
+<!-- <a href="/" onclick="return false"><img id="LogoImg" src="{{settings.MEDIA_URL}}images/ximpia-logo-small-plano.png" alt=" " style="height: 35px;margin: 1px 10px;" /> </a> -->
 </div>
 
 <div id="id_header_extra">
@@ -87,10 +94,10 @@
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery/jquery-1.6.min.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.metadata.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jqDock.js"></script>
+<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-common/ximpia.settings.js"></script>
 <script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-common/ximpia.common.js"></script>
 
-<!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/google_maps.js"></script>-->
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBQzkNe8GObf8_Wx_SJEVFvejmByPpknWk&sensor=false"></script>
 
 {% block scripts %}
 {% endblock %}
@@ -125,6 +132,9 @@
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
 <!-- x-webkit-speech -->
 
+<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
+<script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+
 
 <script>
 
@@ -139,7 +149,6 @@ jQuery(document).ready(function($){
 	ximpia.console.log('data...');
 	ximpia.console.log(data);
 	pageJx.renderCtx(data);
-
 	/*ximpia.common.Page.init();
 	var viewData = ximpia.common.Window.getViewAttrs();
 	var pageJx = ximpia.common.PageAjax();
@@ -153,9 +162,6 @@ jQuery(document).ready(function($){
 });
 
 </script>
-
-{% block js %}
-{% endblock %}
 
 <!--</section>-->
 
