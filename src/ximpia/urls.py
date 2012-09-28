@@ -17,17 +17,13 @@ urlpatterns = patterns('',
 	
 	# CoreDjango
 	(r'^site_media/apps/core/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/CoreDjango/media/apps/core'}),
-	
 	# XimpiaDjango
 	(r'^site_media/apps/site/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media/apps/site'}),
 	#(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaDjango/media'}),
-	
 	# XimpiaApps
 	(r'^site_media/apps/testScrap/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaApps/media/apps/testScrap'}),
-
 	# Frontend
 	(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': 'H:/workspace/XimpiaFront/media'}),
-	
 	# captcha
 	(r'^captcha/', include('yacaptcha.urls')),
 )
@@ -76,10 +72,13 @@ urlpatterns += patterns('ximpia',
 )
 
 urlpatterns += patterns('ximpia_core',
-		
+
+    # Ximpia Templates
+    (r'^jxTemplate/(?P<app>.*)/(?P<mode>.*)/(?P<tmplName>.*)$', 'core.views.jxTemplate'),
+    # Exec Server action
+    (r'^apps/(?P<app>.*)/do/(?P<actionName>.*)/(?P<actionAttrs>.*)$', 'core.views.execActionMsg'),		
     # Show Server View
     (r'^apps/(?P<app>.*)/(?P<viewName>.*)/(?P<viewAttrs>.*)$', 'core.views.showView'),
-    
     # Ajax Urls
     (r'^jxSuggestList$', 'core.views.jxSuggestList'),
     (r'^jxJSON$', 'core.views.jxJSON'),

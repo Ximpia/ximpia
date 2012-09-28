@@ -1,4 +1,5 @@
 from models import SocialNetwork, Tag, GroupChannel, Organization, OrganizationGroup, Invitation, Param, XmlMessage, UserDetail
+from models import SocialNetworkUser
 
 from django.contrib import admin
 
@@ -27,6 +28,13 @@ class ParamAdmin(admin.ModelAdmin):
 
 class SocialNetworkAdmin(admin.ModelAdmin):
 	list_display = ('id','myType',)
+	def save_model(self, request, obj, form, change):
+		obj.UserModifyId = request.user.id
+		obj.save()
+
+class SocialNetworkUserAdmin(admin.ModelAdmin):
+	list_display = ('socialNetwork','socialId',)
+	list_filter = ('socialNetwork',)
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
@@ -75,6 +83,7 @@ admin.site.register(Video, VideoAdmin)
 admin.site.register(XmlMessage, XmlMessageAdmin)
 admin.site.register(Param, ParamAdmin)
 admin.site.register(SocialNetwork, SocialNetworkAdmin)
+admin.site.register(SocialNetworkUser, SocialNetworkUserAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(GroupChannel, GroupChannelAdmin)
 admin.site.register(Organization, OrganizationAdmin)

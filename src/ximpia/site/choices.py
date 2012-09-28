@@ -9,7 +9,7 @@ class Choices(object):
 			(K.FACEBOOK,'Facebook'),
 			(K.LINKEDIN,'LinkedIn'),
 			(K.EMAIL,'Email'),
-			('sms','SMS'),
+			(K.SMS,'SMS'),
 			)
 	# MSG_PREFERRED
 	MSG_PREFERRED = (
@@ -24,7 +24,7 @@ class Choices(object):
 		(K.TWITTER,'Twitter'),
 		(K.FACEBOOK,'Facebook'),
 		(K.LINKEDIN,'LinkedIn'),
-		(K.LINKEDIN,'Xing'),
+		(K.XING,'Xing'),
 		(K.GOOGLE,'Google'),
 		)
 	# COUNTRY

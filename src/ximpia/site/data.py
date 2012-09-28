@@ -3,7 +3,7 @@ from ximpia_core.core.data import CommonDAO
 from django.contrib.auth.models import User, Group
 
 from models import Video, GroupChannel, Address, AddressOrganization, Organization, OrganizationGroup, Tag, TagMode, UserChannel, Invitation
-from models import XmlMessage, Param, Category, UserDetail
+from models import XmlMessage, Param, Category, UserDetail, SignupData, SocialNetworkUser
 
 class VideoDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -100,3 +100,13 @@ class UserDetailDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(UserDetailDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = UserDetail
+
+class SignupDataDAO(CommonDAO):
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SignupDataDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = SignupData
+
+class SocialNetworkUserDAO(CommonDAO):
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SocialNetworkUserDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = SocialNetworkUser

@@ -141,9 +141,13 @@ class SocialNetworkOrganization(BaseModel):
 	Account
 	Password"""
 	organization = models.ForeignKey('Organization')
-	socialNetwork = models.ForeignKey('SocialNetwork')
-	token = models.CharField(max_length=255)
-	tokenSecret = models.CharField(max_length=255, null=True, blank=True)
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
+				verbose_name = _('Social Network'), help_text = _('Social network'))
+	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
+	token = models.CharField(max_length=255,
+				verbose_name = _('Token'), help_text = _('Token'))
+	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
+				verbose_name = _('Token Secret'), help_text = _('Token Secret'))
 	def __unicode__(self):
 		return str(self.account)
 	class Meta:
@@ -154,8 +158,11 @@ class SocialNetworkOrganization(BaseModel):
 class SocialNetworkOrganizationGroup(BaseModel):
 	organizationGroup = models.ForeignKey('OrganizationGroup',
 				verbose_name = _('Organization Group'), help_text = _('Organization Group'))
-	socialNetwork = models.ForeignKey('SocialNetwork',
-				verbose_name = _('Social Network'), help_text = _('Social Network'))
+	"""socialNetwork = models.ForeignKey('SocialNetwork',
+				verbose_name = _('Social Network'), help_text = _('Social Network'))"""
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
+				verbose_name = _('Social Network'), help_text = _('Social network'))
+	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
 	token = models.CharField(max_length=255,
 				verbose_name = _('Token'), help_text = _('Token'))
 	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
@@ -170,8 +177,11 @@ class SocialNetworkOrganizationGroup(BaseModel):
 class SocialNetworkUser(models.Model):
 	user = models.ForeignKey('UserDetail',
 				verbose_name = _('User'), help_text = _('User'))
-	socialNetwork = models.ForeignKey('SocialNetwork',
+	"""socialNetwork = models.ForeignKey('SocialNetwork',
+				verbose_name = _('Social Network'), help_text = _('Social network'))"""
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
 				verbose_name = _('Social Network'), help_text = _('Social network'))
+	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
 	token = models.CharField(max_length=255,
 				verbose_name = _('Token'), help_text = _('Token'))
 	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
@@ -179,11 +189,12 @@ class SocialNetworkUser(models.Model):
 	def __unicode__(self):
 		return str(self.getName()) + ' ' + str(self.user)
 	def getName(self):
-		return self.socialNetwork.getName()
+		return self.socialNetwork
 	class Meta:
 		db_table = 'SITE_SOCIAL_USER'
-		verbose_name = 'Social Network for User'
-		verbose_name_plural = "Social Networks for User"
+		unique_together = ("user", "socialNetwork")
+		verbose_name = 'Social Networks for User'
+		verbose_name_plural = "Social Networks for Users"
 
 class Organization(BaseModel):
 	"""Organization Model"""
@@ -213,8 +224,8 @@ class Organization(BaseModel):
 			verbose_name = _('Fax'), help_text = _('Fax'))
 	groups = models.ManyToManyField('site.GroupChannel', through='OrganizationGroup',
 			verbose_name = _('Groups'), help_text = _('Organization Groups'))
-	socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkOrganization',
-			verbose_name = _('Social Networks'), help_text = _('Social Networks'))
+	"""socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkOrganization',
+			verbose_name = _('Social Networks'), help_text = _('Social Networks'))"""
 	description = models.CharField(max_length=500, null=True, blank=True,
 			verbose_name = _('Description'), help_text = _('Description'))
 	isValidated = models.BooleanField(default=False,
@@ -251,8 +262,8 @@ class OrganizationGroup(BaseModel):
 			verbose_name = _('Parent Group'), help_text = _('Parent organization group'))
 	relatedToDown = models.ManyToManyField('self', related_name='org_group_relate_down', null=True, blank=True,
 			verbose_name = _('Child Group'), help_text = _('Child organization group'))
-	socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkOrganizationGroup',
-			verbose_name = _('Social Networks'), help_text = _('Social Networks'))
+	"""socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkOrganizationGroup',
+			verbose_name = _('Social Networks'), help_text = _('Social Networks'))"""
 	def __unicode__(self):
 		return str(self.group)
 	class Meta:
@@ -382,8 +393,8 @@ class UserDetail(BaseModel):
 				verbose_name = _('Name'), help_text = _('Name'))
 	settings = models.TextField(default = '', null=True, blank=True,
 				verbose_name = _('Settings'), help_text = _('Settings'))
-	socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkUser',  null=True, blank=True,
-				verbose_name = _('Social Networks'), help_text = _('Social Networks'))
+	"""socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkUser',  null=True, blank=True,
+				verbose_name = _('Social Networks'), help_text = _('Social Networks'))"""
 	hasUploadPic = models.BooleanField(default=False,
 				verbose_name = _('Uploaded Pic'), help_text = _('Has the user uploaded custom picture?'))
 	isSuspended = models.BooleanField(default=False,
@@ -422,3 +433,16 @@ class UserDetail(BaseModel):
 		db_table = 'SITE_USER_DETAIL'
 		verbose_name = 'UserDetail'
 		verbose_name_plural = "UsersDetail"
+
+class SignupData(BaseModel):
+	"""SignUp Data"""
+	user = models.CharField(max_length=30, unique=True,
+			verbose_name = _('User'), help_text = _('User'))
+	activationCode = models.PositiveSmallIntegerField(verbose_name = _('Activation Code'), help_text = _('Activation code'))
+	data = models.TextField(verbose_name = _('Data'), help_text = _('Data'))
+	def __unicode__(self):
+		return str(self.user)
+	class Meta:
+		db_table = 'SITE_SIGNUP_DATA'
+		verbose_name = _('Signup Data')
+		verbose_name_plural = _('Signup Data')

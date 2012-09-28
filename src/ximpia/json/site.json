@@ -334,7 +334,7 @@
         "fields": {
             "lang": "en", 
             "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Email Validation</Subject>\r\n\t\t<Message>\r\n\t\t$name,\r\n\t\t\r\n\t\tThanks for signing up in Ximpia.\r\n\t\t\r\n\t\tWe need to confirm your email address. Just click on the link:\t\t\r\n\t\thttp://$host/activateUser/$user/$activationCode\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
-            "name": "Msg/SocialNetwork/Signup/Professional/", 
+            "name": "Msg/Site/Signup/User/", 
             "dateCreate": "2011-09-04 14:38:02", 
             "dateModify": "2011-09-04 15:21:26", 
             "userCreateId": null, 
@@ -347,10 +347,10 @@
         "model": "site.xmlmessage", 
         "fields": {
             "lang": "en", 
-            "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Email Validation</Subject>\r\n\t\t<Message>\r\n\t\t$name,\r\n\t\t\r\n\t\tThanks for signing up in Ximpia.\r\n\t\t\r\n\t\tYour account has been created:\r\n\t\t$account\r\n\t\t\r\n\t\tWe need to confirm your email address. Just click on the link:\t\t\r\n\t\thttp://$host/activateUser/$user/$activationCode\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
-            "name": "Msg/SocialNetwork/Signup/Organization/", 
-            "dateCreate": "2011-09-04 14:38:41", 
-            "dateModify": "2011-09-04 15:21:19", 
+            "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Account Verification</Subject>\r\n\t\t<Message>\r\n\t\tAdministrator,\r\n\t\t\r\n\t\tAn organization account has been created.\r\n\t\t\r\n\t\tAccount: $account\r\n\t\tOrganization: $organizationName\r\n\t\tGroup: $organizationGroup\r\n\t\tLinkedIn: linkedin\r\n\t\tName: $name\t\t\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
+            "name": "Msg/Site/Signup/AdminNotify/", 
+            "dateCreate": "2011-09-04 14:39:13", 
+            "dateModify": "2011-09-04 15:21:11", 
             "userCreateId": null, 
             "userModifyId": null, 
             "isDeleted": false
@@ -361,27 +361,41 @@
         "model": "site.xmlmessage", 
         "fields": {
             "lang": "en", 
-            "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Account Verification</Subject>\r\n\t\t<Message>\r\n\t\tAdministrator,\r\n\t\t\r\n\t\tAn organization account has been created.\r\n\t\t\r\n\t\tAccount: $account\r\n\t\tOrganization: $organizationName\r\n\t\tGroup: $organizationGroup\r\n\t\tLinkedIn: linkedin\r\n\t\tName: $name\t\t\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
-            "name": "Msg/SocialNetwork/Signup/AdminNotify/", 
-            "dateCreate": "2011-09-04 14:39:13", 
-            "dateModify": "2011-09-04 15:21:11", 
-            "userCreateId": null, 
-            "userModifyId": null, 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "site.xmlmessage", 
-        "fields": {
-            "lang": "en", 
             "body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Password Reminder</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tYou requested to remember you password in Ximpia. You can change your password by clicking on:\t\t\r\n\t\thttp://localhost:8000/view/changePassword/$userAccount/$reminderId\r\n\t\t\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
-            "name": "Msg/SocialNetwork/Login/PasswordReminder/", 
+            "name": "Msg/Site/Login/PasswordReminder/", 
             "dateCreate": "2012-04-13 22:00:09", 
             "dateModify": "2012-04-13 22:00:09", 
             "userCreateId": null, 
             "userModifyId": null, 
             "isDeleted": false
         }
+    },
+    {
+    	"pk": 4, 
+    	"model": "site.xmlmessage", 
+    	"fields": {
+    		"lang": "en", 
+    		"body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Join the Team</Subject>\r\n\t\t<Message>\r\n\t\tI have received a request to join the team.\r\n\t\t\r\n\t\tname: $name\r\n\t\tlinkedIn: $linkedInProfile\r\n\t\tgitbuh: $githubProfile\t\t\r\n\t\t\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+    		"name": "Msg/Site/JoinUs/", 
+    		"dateCreate": "2012-09-26 13:36:22", 
+    		"dateModify": "2012-09-26 13:36:22", 
+    		"userCreateId": null, 
+    		"userModifyId": null, 
+    		"isDeleted": false
+    	}
+    }, 
+    {
+    	"pk": 5, 
+    	"model": "site.xmlmessage", 
+    	"fields": {
+    		"lang": "en", 
+    		"body": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Message of contact</Subject>\r\n\t\t<Message>\r\n\t\tname: $name\r\n\t\temail: $email\r\n\t\tsubject: $subject\r\n\t\t$message\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+    		"name": "Msg/Site/ContactUs/", 
+    		"dateCreate": "2012-09-26 13:37:02", 
+    		"dateModify": "2012-09-26 13:37:02", 
+    		"userCreateId": null, 
+    		"userModifyId": null, 
+    		"isDeleted": false
+    	}
     }
 ]
