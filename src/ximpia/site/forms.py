@@ -8,6 +8,13 @@ from ximpia_core.core.form_fields import XpHiddenDataField
 from ximpia_core.core.form_widgets import XpHiddenWidget
 from ximpia_core.core.forms import XBaseForm
 
+from ximpia import settings
+
+# Logging
+import logging.config
+logging.config.dictConfig(settings.LOGGING)
+logger = logging.getLogger(__name__)
+
 import messages as _m 
 import constants as K
 from choices import Choices
@@ -21,11 +28,31 @@ class HomeForm(XBaseForm):
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 
+class ContactUsForm(XBaseForm):
+	_XP_FORM_ID = 'contactUs'
+	name = XpCharField(None, '', label="Name", maxValue=30)
+	email = XpEmailField(None, '', label='Email', maxValue=100)
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+
+class JoinUsForm(XBaseForm):
+	_XP_FORM_ID = 'joinUs'
+	name = XpCharField(None, '', label="Name", maxValue=30)
+	email = XpEmailField(None, '', label='Email', maxValue=100)
+	linkedInProfile = XpCharField(None, '', label="LinkedIn Profile", maxValue=100, required=False)
+	githubProfile = XpCharField(None, '', label="GitHub Profile", maxValue=100, required=False)
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+
 class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
-	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId', help_text=_('Your XimpiaId'))
-	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, help_text = _('Your Password'))
+	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6)
+	socialId = forms.CharField(widget=XpHiddenWidget)
+	socialToken = forms.CharField(widget=XpHiddenWidget)
+	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.FACEBOOK)
+	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'authSources': Choices.SOCIAL_NETS}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
@@ -74,7 +101,7 @@ class UserChangePasswordForm( XBaseForm ):
 	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Confirm Password', 
 					help_text = _('Write again your password'))
 	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Password', help_text = _('Current password'))
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_passwordValidate']]))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
@@ -91,17 +118,20 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbInvitation = Invitation()
 	# Fields
 	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
-	#password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsReq=True,  
-	#	help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
-	#passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, req=False, jsVal=["{equalTo: '#id_password'}"], jsReq=True,
-	#				label= _('Password Verify'))
-	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email', attrs={'readonly': 'readonly'})
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsReq=False,  
+		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
+	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsVal=["{equalTo: '#id_password'}"], jsReq=False,
+					label= _('Password Verify'))
+	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email')
 	firstName = XpCharField(_dbUser, '_dbUser.first_name')
-	lastName = XpCharField(_dbUser, '_dbUser.last_name', req=False)
-	city = XpCharField(_dbAddress, '_dbAddress.city', req=False)
-	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', req=False, initial='', choices=Choices.COUNTRY)
+	lastName = XpCharField(_dbUser, '_dbUser.last_name', required=False)
+	city = XpCharField(_dbAddress, '_dbAddress.city', required=False)
+	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, initial='', choices=Choices.COUNTRY)
 	#invitationCode = XpHiddenDataField(_dbInvitation, '_dbInvitation.invitationCode')
-	facebookIcon_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SocialNetwork('facebook', 2).getS())
+	#facebookIcon_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SocialNetwork('facebook', 2).getS())
+	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.PASSWORD)
+	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	# Navigation and Message Fields
 	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
 									'profiles': '', 
@@ -109,34 +139,31 @@ class UserSignupInvitationForm ( XBaseForm ):
 									'affiliateId': -1}))
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'country': Choices.COUNTRY}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
-		['ERR_invitationCode', 'ERR_ximpiaId', 'ERR_email', 'ERR_captcha','ERR_invitationUsed']]))
+										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
 
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		"""Build initial values for form"""
-		#self.initial = {}
-		#self.putParam('userGroups', [K.SIGNUP_USER_GROUP_ID])
-		#self.initial['invitationCode'] = invitation.invitationCode
 		self.fields['invitationCode'].initial = invitation.invitationCode
-		# affiliateId
 		self.putParam('affiliateId', affiliateId)
 		if len(snProfileDict) != 0:
 			self._dbUser.firstName = snProfileDict['first_name']
 			self._dbUser.lastName = snProfileDict['last_name']
-			#self.user.email = snProfileDict['email']
-			#self._dbUser.username = (snProfileDict['first_name'] + '.' + snProfileDict['last_name']).strip().lower()
 			locationName = snProfileDict['location']['name']
 			locationFields = locationName.split(',')
 			self._dbAddress.city = locationFields[0].strip()
 			locale = snProfileDict['locale']
 			self._dbAddress.country = locale.split('_')[1].lower()
-			# TODO: Facebook integration
-			#fbIcon = SocialNetwork('facebook', 2)
-			#fbIcon.setToken(fbAccessToken)
-			#self.initial['facebookIcon_data'] = fbIcon.getS()
 
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
-		self._validateCaptcha()
+		logger.debug( 'UserSignupInvitationForm :: authSource: ', self._getFieldValue('authSource') )
+		if self._getFieldValue('authSource') == K.PASSWORD:
+			self._validateSameFields([('password','passwordVerify')])
 		self._xpClean()
 		return self.cleaned_data
+
+class ActivateUserForm ( XBaseForm ):
+	_XP_FORM_ID = 'activateUser'
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
