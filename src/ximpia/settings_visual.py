@@ -25,7 +25,8 @@ class ConfData(object):
 		dd = json.loads(self._dataDictStr)
 		return dd
 	def __str__(self):
-		return json.dumps(self._dataDict)
+		#return json.dumps(self._dataDict)
+		return self.getS()
 	def setData(self, dataDict):
 		"""Doc."""
 		self._dataDict[1] = dataDict
@@ -36,7 +37,7 @@ class SocialNetworkIconData(ConfData):
 		if service != '' and oauthVersion != '':
 			self._dataDict = [
 					{'windowUrl': '', 'oauthVersion': fpformat.fix(oauthVersion, 1)},
-					{'status': '', 'token': '', 'tokenSecret': ''}
+					{'status': '', 'token': '', 'tokenSecret': '', 'id': ''}
 					]
 			if oauthVersion == 2:
 				self._dataDict[0]['windowUrl'] = settings.XIMPIA_OAUTH_URL_DICT[service]['authorize']
@@ -59,6 +60,9 @@ class SocialNetworkIconData(ConfData):
 	def getStatus(self):
 		"""Get status of icon"""
 		return self._dataDict[1]['status']
+	def getId(self):
+		"""Get social network id"""
+		return self._dataDict[1]['id']
 
 class SuggestBox(object):
 	"""Suggest box. It takes on constructor the tuple from Choices. It supports id,text and can be upgraded to images, etc..."""
