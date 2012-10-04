@@ -132,8 +132,7 @@ ComponentRegister.registerViewMenu(appCode=K.APP, viewName='homeLogin', menus=[
 				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'homeLogin'},
 				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
 				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'signout'},
-				{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'homeLogin'},
-				{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: 'scrap'}
+				{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'homeLogin'}
 			])
 
 """ComponentRegister.registerViewMenu(appCode='testScrap', viewName='homeLogin', menus=[
