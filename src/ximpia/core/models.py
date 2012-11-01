@@ -13,7 +13,7 @@ from django.utils import translation
 from choices import Choices
 import constants as K
 
-from ximpia_core.util.js import Form as _jsf
+from ximpia.util.js import Form as _jsf
 
 # Logging
 import logging.config

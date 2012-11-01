@@ -20,13 +20,13 @@ from models import UserAccountRelation, Subscription, Invitation, SignupData, Gr
 from models import Comment, TagUserTotal, LinkUserTotal, Link, Like, Notification, Skill, SkillGroup, SkillUserAccount, Affiliate, Version
 from models import AddressContact, CommunicationTypeContact, ContactDetail, Contact, File, FileVersion, TagType, SNXmlMessage, SNParam
 from models import Calendar, CalendarInvite, Address
-from ximpia_core.core.models import parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks, CoreParam, UserSocial
-from ximpia_core.core.data import CommonDAO, CoreParameterDAO, ApplicationDAO
+from ximpia.core.models import parseText, XpMsgException, getDataDict, getFormDataValue, getPagingStartEnd, parseLinks, CoreParam, UserSocial
+from ximpia.core.data import CommonDAO, CoreParameterDAO, ApplicationDAO
 import sys
 
 from ximpia.settings_visual import SocialNetworkIconData as SND
 from ximpia.settings_visual import GenericComponent
-from ximpia_core.core.constants import CoreKParam
+from ximpia.core.constants import CoreKParam
 
 #from constants import DbType
 

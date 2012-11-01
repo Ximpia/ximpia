@@ -5,12 +5,12 @@ import base64
 import data
 from datetime import date, timedelta
 
-from ximpia_core.core.models import ContextDecorator as Ctx
-from ximpia_core.core.business import CommonBusiness, EmailBusiness
-from ximpia_core.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator,\
+from ximpia.core.models import ContextDecorator as Ctx
+from ximpia.core.business import CommonBusiness, EmailBusiness
+from ximpia.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator,\
 	ValidationDecorator
-from ximpia_core.core.forms import DefaultForm
-from ximpia import settings
+from ximpia.core.forms import DefaultForm
+from ximpia import settings 
 
 # Logging
 import logging.config

@@ -13,7 +13,7 @@ from django.core.cache import cache
 
 from yacaptcha.models import Captcha
 
-from ximpia_core.core.util import getClass
+from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
 from business import Search, ViewDecorator, XpMsgException
 from data import ViewDAO, ActionDAO, TemplateDAO

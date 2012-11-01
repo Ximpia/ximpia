@@ -4,9 +4,9 @@ import simplejson as json
 import data
 from datetime import date, timedelta
 
-from ximpia_core.core.models import ContextDecorator as Ctx
-from ximpia_core.core.business import CommonBusiness, EmailBusiness
-from ximpia_core.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator,\
+from ximpia.core.models import ContextDecorator as Ctx
+from ximpia.core.business import CommonBusiness, EmailBusiness
+from ximpia.core.business import ValidateFormDecorator, WFActionDecorator, DoBusinessDecorator, WFViewDecorator, MenuActionDecorator,\
 	ValidationDecorator
 from ximpia import settings
 

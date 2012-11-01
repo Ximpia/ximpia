@@ -17,7 +17,7 @@ from django.template import RequestContext
 from models import getResultERROR, XpMsgException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData
-from ximpia_core.util import ut_email, resources
+from ximpia.util import ut_email, resources
 from models import JsResultDict, ContextDecorator as Ctx, CoreParam
 import constants as K
 
@@ -36,7 +36,7 @@ from choices import Choices
 from util import getClass
 from forms import DefaultForm
 
-from ximpia_core.util.js import Form as _jsf
+from ximpia.util.js import Form as _jsf
 
 class ComponentRegister(object):
 	

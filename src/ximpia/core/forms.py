@@ -9,8 +9,8 @@ from django.utils.translation import ugettext as _
 
 from form_widgets import XpHiddenWidget
 import messages as _m
-from ximpia_core.core.models import ContextDecorator as Ctx
-from ximpia_core.util.js import Form as _jsf
+from ximpia.core.models import ContextDecorator as Ctx
+from ximpia.util.js import Form as _jsf
 from ximpia import settings
 
 import constants as K

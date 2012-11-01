@@ -3,14 +3,14 @@ import simplejson as json
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from ximpia_core.core.models import ContextDecorator, XpMsgException
-from ximpia_core.core.data import ActionDAO, ViewDAO
-from ximpia_core.core.util import getClass
-from ximpia_core.core.business import ViewDecorator
+from ximpia.core.models import ContextDecorator, XpMsgException
+from ximpia.core.data import ActionDAO, ViewDAO
+from ximpia.core.util import getClass
+from ximpia.core.business import ViewDecorator
 
 from constants import Constants as K
 import business
-from ximpia_core.util.http import Request
+from ximpia.util.http import Request
 
 
 @ContextDecorator(app=K.APP)

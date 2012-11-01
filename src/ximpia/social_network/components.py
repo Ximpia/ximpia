@@ -1,6 +1,6 @@
-from ximpia_core.core.business import ComponentRegister
-from ximpia_core.core.choices import Choices as _Ch
-from ximpia_core.core.constants import CoreConstants as _K
+from ximpia.core.business import ComponentRegister
+from ximpia.core.choices import Choices as _Ch
+from ximpia.core.constants import CoreConstants as _K
 
 from constants import Constants as K
 import business

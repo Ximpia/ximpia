@@ -1,7 +1,7 @@
 import random
 from django.utils.translation import ugettext as _
 
-from ximpia_core.core.models import ContextDecorator as Ctx
+from ximpia.core.models import ContextDecorator as Ctx
 from models import XpMsgException, CoreParam, Application, Action, ApplicationAccess, CoreXmlMessage
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl

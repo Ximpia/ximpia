@@ -1,9 +1,9 @@
-from ximpia_core.core.business import ComponentRegister
-from ximpia_core.core.choices import Choices as _Ch
-import ximpia_core.core.constants as _K
+from ximpia.core.business import ComponentRegister
+from ximpia.core.choices import Choices as _Ch
+import ximpia.core.constants as _K
 import constants as K
 import business
-from ximpia_core.core.business import DefaultBusiness
+from ximpia.core.business import DefaultBusiness
 
 #################################################
 # Parameters used in Menu, Views and Workflow
