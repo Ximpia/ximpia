@@ -1946,7 +1946,7 @@ ximpia.common.PageAjax.positionBars = (function ( obj ) {
 		$('#id_content').css('border-top-right-radius', '0px');
 		$('#id_content').css('border-top', '0px');
 		//padding-top: 30px sectionComp
-		$('.sectionComp').css('padding-top', '35px');
+		//$('.sectionComp').css('padding-top', '35px');
 		$('header').css('border-bottom-right-radius', '0px');
 		$('header').css('border-bottom-left-radius', '0px');
 	}

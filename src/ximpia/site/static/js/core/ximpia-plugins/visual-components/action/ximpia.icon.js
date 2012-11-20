@@ -18,13 +18,13 @@
 		var htmlContent = '';
 		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock\" title=\"" + obj.title + "\" >";
 		htmlContent += "<a href=\"#\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";
-		htmlContent += "<img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";
+		htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";
 		htmlContent += "<div >" + obj.titleShort + "</div>";
 		return htmlContent;
         };
         var buildBlankIcon = function( obj ) {
         	var htmlContent = '';
-        	htmlContent += "<div style=\"float: right\" class=\"iconMenuBlock\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"iconBlank\" /></div>";
+        	htmlContent += "<div style=\"float: right\" class=\"iconMenuBlock\"><img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"iconBlank\" /></div>";
         	return htmlContent;
         };
         var methods = {
@@ -96,14 +96,18 @@
 				},
 				position: {
 					my: 'top center',
-					at: 'bottom center'
+					at: 'bottom center',
+					adjust: {
+						y: 4
+					}
 				},
 				events: {
 					focus: function(event, api) {
 					}
 				},
 				style: {
-					classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded'
+					classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded',
+					style: 'margin-top: 2px'
 				}
 			});
 			

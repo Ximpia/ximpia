@@ -268,6 +268,7 @@ def jxBusiness(request, **args):
 		implFields = impl.split('.')
 		method = implFields[len(implFields)-1]
 		classPath = ".".join(implFields[:-1])
+		logger.debug('classPath: ' + classPath)
 		if method.find('_') == -1 or method.find('__') == -1:
 			cls = getClass( classPath ) 
 			obj = cls(args['ctx']) #@UnusedVariable

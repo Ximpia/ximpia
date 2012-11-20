@@ -1,4 +1,5 @@
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns, include, url
+import settings
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -6,7 +7,12 @@ admin.autodiscover()
 
 #from django.views.static import serve
 
-urlpatterns = patterns('',
+if settings.DEBUG:
+	urlpatterns = patterns('django.contrib.staticfiles.views',
+        	url(r'^static/(?P<path>.*)$', 'serve'),
+    )
+
+urlpatterns += patterns('',
 		
 	# Uncomment the admin/doc line below and add 'django.contrib.admindocs'
 	# to INSTALLED_APPS to enable admin documentation:
@@ -71,7 +77,7 @@ urlpatterns += patterns('ximpia',
     #(r'^view/$appUrlName/', include('ximpia.social_network.urls')),
 )
 
-urlpatterns += patterns('ximpia_core',
+urlpatterns += patterns('ximpia',
 
     # Ximpia Templates
     (r'^jxTemplate/(?P<app>.*)/(?P<mode>.*)/(?P<tmplName>.*)$', 'core.views.jxTemplate'),

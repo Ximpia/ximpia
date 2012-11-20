@@ -1,3 +1,4 @@
+{% load static from staticfiles %}
 <!DOCTYPE html>
 <html>
 
@@ -5,16 +6,16 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>{% block title %}{% endblock %}</title>
 
-<link rel="shortcut icon" href="{{settings.MEDIA_URL}}images/favicon.ico">
-<link rel="apple-touch-icon" href="{{settings.MEDIA_URL}}images/ximpia_icon.png">
+<link rel="shortcut icon" href="{% static "images/favicon.ico" %}">
+<link rel="apple-touch-icon" href="{% static "images/ximpia_icon.png" %}">
 
-<link rel="stylesheet" href="{{settings.MEDIA_URL}}jQueryThemes/start/jquery-ui-1.8.9.custom.css" type="text/css" />
-<link href="{{settings.MEDIA_URL}}css/ximpia.qtip.css" rel="stylesheet" type="text/css" />	
-<link href="{{settings.MEDIA_URL}}css/ximpia.combobox.css" rel="stylesheet" type="text/css" />
-<link href="{{settings.MEDIA_URL}}css/ximpia.jscrollpane.css" rel="stylesheet" type="text/css" />
-<link href="{{settings.MEDIA_URL}}css/ximpia.selectBox.css" rel="stylesheet" type="text/css" />
-<link href="{{settings.MEDIA_URL}}css/ximpia.flexbox.css" rel="stylesheet" type="text/css" />
-<link href="{{settings.MEDIA_URL}}css/main.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="{% static "jQueryThemes/start/jquery-ui-1.8.9.custom.css" %}" type="text/css" />
+<link href="{% static "css/ximpia.qtip.css" %}" rel="stylesheet" type="text/css" />	
+<link href="{% static "css/ximpia.combobox.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "css/ximpia.jscrollpane.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "css/ximpia.selectBox.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "css/ximpia.flexbox.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "css/main.css" %}" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -23,16 +24,17 @@
 {% block id_view %}
 {% endblock %}
 
-<div id="Wrapper">
-
-<header id="id_header" >
+<div id="id_header_wrapper">
+<div id="id_header" >
+	
+<!--<header id="id_header" >-->
 
 <form id="form_header" action="" method="post" >
 
-<div id="Logo" style="margin-top: 13px">
-<a href="/" ><img id="LogoImg" src="{{settings.MEDIA_URL}}images/ximpia-logo-small-plano.png" alt=" " style="height: 35px;margin: 1px 10px;" /> </a>
+<div id="Logo" style="margin-top: 5px; margin-left: 0px">
+<a href="/" ><img id="LogoImg" src="{% static "images/ximpia-logo-small-plano.png" %}" alt=" " style="height: 35px; " /> </a>
 <!-- Make this link with javascript when user logs in: href="#" onclick="return false" -->
-<!-- <a href="/" onclick="return false"><img id="LogoImg" src="{{settings.MEDIA_URL}}images/ximpia-logo-small-plano.png" alt=" " style="height: 35px;margin: 1px 10px;" /> </a> -->
+<!-- <a href="/" onclick="return false"><img id="LogoImg" src="{% static "images/ximpia-logo-small-plano.png" %}" alt=" " style="height: 35px;margin: 1px 10px;" /> </a> -->
 </div>
 
 <div id="id_header_extra">
@@ -41,10 +43,52 @@
 
 <div id="IconMenu">	
 
-<nav id="id_mainIcons">
+<nav id="id_mainIcons" style="margin-top: 2px; margin-left: 5px">
+
+<!--
+<div style="float: left; height: 35px; margin-top: 3px; border-radius: 7px; margin-right: 5px; background-color: #333">
+	<a href="" style="text-decoration:none; color: #000">
+		<img src="http://localhost:8000/static/images/home_32.png" style="margin-top: 1px; float: left; width: 32px; height: 32px; margin-left: 5px; margin-right: 5px" />
+	</a>
+</div>
+-->
+
 </nav>
 
-<nav id="id_viewIcons" style="margin-right: 5px">
+<nav id="id_viewIcons" style="margin-right: 5px; border: 0px solid #fff; margin-top: -1px; float: right ">
+
+<!--<div class="iconMenuBlock">
+	<a href="" >
+		<img src="http://localhost:8000/static/images/process_32.png"  />
+		<div>Code</div>
+	</a>
+</div>
+
+<div class="iconMenuBlock">
+	<a href="" >
+		<img src="http://localhost:8000/static/images/users_two_32.png"  />
+		<div>Join Us</div>
+	</a>
+</div>
+
+<div class="iconMenuBlock">
+	<a href="" >
+		<img src="http://localhost:8000/static/images/contact-us-icon_32.png"  />
+		<div>Contact Us</div>
+	</a>
+</div>-->
+
+<!--
+<div id="id_icon_code" data-xp-type="icon" style="float: right" class="iconMenuBlock" data-xp-render="true" oldtitle="Get the Code" aria-describedby="ui-tooltip-2">
+	<a href="#" onclick="return false" data-xp="{action: '', view: 'code', params: {}, app: 'site'}">
+		<img src="http://localhost:8000/static/images/process_32.png" class="">
+		<div>Code</div>
+	</a>
+</div>
+-->
+
+<div style="clear: both" > </div>
+
 </nav>
 
 </div>
@@ -52,12 +96,17 @@
 </div>
 
 <nav>
-
 </nav>
 
 </form>
 
-</header>
+<!--</header>-->
+</div>
+</div>
+
+
+
+<div id="Wrapper">
 
 <nav id="id_navBar" >
 </nav>
@@ -91,44 +140,44 @@
 <br/>
 
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/jquery/jquery-1.6.min.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.metadata.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jqDock.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-common/ximpia.settings.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-common/ximpia.common.js"></script>
+<script type="text/javascript" src="{% static "js/jquery/jquery-1.6.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.metadata.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.jqDock.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-common/ximpia.settings.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-common/ximpia.common.js" %}"></script>
 
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBQzkNe8GObf8_Wx_SJEVFvejmByPpknWk&sensor=false"></script>
 
 {% block scripts %}
 {% endblock %}
 
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.passStrengthener.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.form.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.validate.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jsonSuggest.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.networkIcon.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.loading.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.pageButton.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.mousewheel.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.mwheelIntent.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.jscrollpane.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.selectBox.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.flexbox.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.contextMenu.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.render_ext.js"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.passStrengthener.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.form.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.validate.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.jsonSuggest.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.networkIcon.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.loading.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.pageButton.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.mousewheel.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.mwheelIntent.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.jscrollpane.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.selectBox.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.flexbox.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.contextMenu.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.render_ext.js" %}"></script>
 
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/input/ximpia.input.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.button.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.link.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/window/ximpia.popup.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.icon.js"></script>
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/visual-components/action/ximpia.context_menu.js"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/input/ximpia.input.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/input/ximpia.textarea.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/action/ximpia.button.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/action/ximpia.link.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/window/ximpia.popup.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/action/ximpia.icon.js" %}"></script>
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/visual-components/action/ximpia.context_menu.js" %}"></script>
 
-<script type="text/javascript" src="{{settings.MEDIA_URL}}js/core/ximpia-plugins/ximpia.qtip.js"></script>
-<!--<script type="text/javascript" src="{{settings.MEDIA_URL}}js/json.js"></script>-->
+<script type="text/javascript" src="{% static "js/core/ximpia-plugins/ximpia.qtip.js" %}"></script>
+<!--<script type="text/javascript" src="{% static "js/json.js" %}"></script>-->
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>-->
 <!-- x-webkit-speech -->
 
