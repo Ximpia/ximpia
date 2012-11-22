@@ -47,7 +47,7 @@ class ComponentRegister(object):
 		@param name: Application name
 		@param isAdmin: Is app admin backdoor?. Values True / False"""
 		app, created = Application.objects.get_or_create(code=code, name=name, isAdmin=isAdmin)
-		logger.debug( 'Register application: ', app, created )
+		logger.debug( 'Register application: %s %s' % (app, created) )
 	
 	@staticmethod
 	def registerViewMenu(appCode=None, viewName=None, menus=[], **argsDict):
@@ -79,7 +79,8 @@ class ComponentRegister(object):
 			try:
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				logger.debug( view, menu, sep, dd[K.ZONE], counter )
+				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.debug( 'data: %s' % (counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter)
 				counterDict[dd[K.MENU_NAME]] = counter
@@ -97,7 +98,8 @@ class ComponentRegister(object):
 					dd[K.ZONE] = K.VIEW
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				logger.debug( view, menuParent, menu, sep, dd[K.ZONE], counter )
+				#logger.debug( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.debug( 'data: %s' % ( counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
 				counter += 10
@@ -106,7 +108,7 @@ class ComponentRegister(object):
 	def cleanViews(appCode=None):
 		"""Clean all views for application."""
 		View.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all views for ' + appCode )
+		logger.debug( 'deleted all views for %s' % appCode )
 	
 	@staticmethod
 	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
@@ -144,7 +146,7 @@ class ComponentRegister(object):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
 		Action.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all actions for ' + appCode )		
+		logger.debug( 'deleted all actions for %s' % appCode )		
 	
 	@staticmethod
 	def registerAction(appCode=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
@@ -184,7 +186,7 @@ class ComponentRegister(object):
 		"""Clean all flows for application."""
 		Workflow.objects.filter(application__code=appCode).delete()
 		WorkflowData.objects.filter(flow__application__code=appCode).delete()
-		logger.debug( 'deleted all flows for ' + appCode )
+		logger.debug( 'deleted all flows for %s' % appCode )
 	
 	@staticmethod
 	def registerFlow(appCode=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
@@ -231,7 +233,7 @@ class ComponentRegister(object):
 		"""Clean all menus for application
 		@param appCode: Application code"""
 		Menu.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all menus for ' + appCode )
+		logger.debug( 'deleted all menus for %s' % appCode )
 	
 	@staticmethod
 	def registerMenu(appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
@@ -265,10 +267,10 @@ class ComponentRegister(object):
 		if viewName != '':
 			view = View.objects.get(application__code=appCode, name=viewName)
 			paramDict['view'] = view
-		logger.debug( 'paramDict: ', paramDict )
+		logger.debug( 'paramDict: %s' % paramDict )
 		menu = Menu.objects.create(**paramDict)
 		# MenuParam
-		logger.debug( 'argsDict: ', argsDict )
+		logger.debug( 'argsDict: %s' % argsDict )
 		for name in argsDict:
 			operator, value = argsDict[name]
 			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
@@ -279,7 +281,7 @@ class ComponentRegister(object):
 		@param appCode: Application code"""
 		try:
 			SearchIndex.objects.filter(application__code=appCode).delete()
-			logger.debug( 'deleted Search !!!', appCode ) 
+			logger.debug( 'deleted Search !!! %s' % appCode ) 
 		except SearchIndex.DoesNotExist:
 			pass
 
@@ -291,7 +293,7 @@ class ComponentRegister(object):
 		@param viewName: View name
 		@param actionName: Action name"""
 		wordList = resources.Index.parseText(text)
-		logger.debug( 'wordList: ', wordList )
+		logger.debug( 'wordList: %s' % wordList )
 		view = View.objects.get(name=viewName) if viewName != None else None
 		action = Action.objects.get(name=actionName) if actionName != None else None
 		app = Application.objects.get(code=appCode)
@@ -312,7 +314,7 @@ class ComponentRegister(object):
 		"""Clean templates for the application
 		@param appCode: Application code"""
 		XpTemplate.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all templates for ' + appCode )
+		logger.debug( 'deleted all templates for %s' % appCode )
 	
 	@staticmethod
 	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 

@@ -1941,14 +1941,21 @@ ximpia.common.PageAjax.positionBars = (function ( obj ) {
 		var height = $('#id_titleBar').height();
 		if ($('#id_titleBar').offset().top == $('#id_content').offset().top) {
 			$('#id_content').offset({top: height+$('#id_content').offset().top+4});
-		}		
-		$('#id_content').css('border-top-left-radius', '0px');
-		$('#id_content').css('border-top-right-radius', '0px');
-		$('#id_content').css('border-top', '0px');
+		}
+		
+		$('#id_titleBar').offset({left: $('#id_content').offset().left}); 
+		//$('#id_content').css('border-top-left-radius', '0px');
+		//$('#id_content').css('border-top-right-radius', '0px');
+		//$('#id_content').css('border-top', '0px');
 		//padding-top: 30px sectionComp
-		//$('.sectionComp').css('padding-top', '35px');
-		$('header').css('border-bottom-right-radius', '0px');
-		$('header').css('border-bottom-left-radius', '0px');
+		//$('.sectionComp').css('padding-top', '25px');
+		$('#id_content').css('padding-top', '35px');
+		//ximpia.console.log('********** paddong-top: ' + $('.sectionComp').css('padding-top'));
+		//$('.sectionComp').css('padding-top', parseInt($('.sectionComp').css('padding-top'))+ 25 + 'px');
+		//$('header').css('border-bottom-right-radius', '0px');
+		//$('header').css('border-bottom-left-radius', '0px');
+		$('#id_titleBar').css('width', parseInt($('.sectionComp').css('width'))-5 + 'px');
+		$('#id_titleBar').css('visibility', 'visible');
 	}
 	// position page button bar
 	if ($('#id_pageButton').hasOwnProperty('length')) {
@@ -1959,12 +1966,20 @@ ximpia.common.PageAjax.positionBars = (function ( obj ) {
 			// Place bar at bottom
 			$('#id_sectionButton').offset({top: $(window).height()-$('#id_pageButton').height()});
 		} else {
-			//
-			$('#id_sectionButton').offset({top: height+$('#id_content').offset().top-$('#id_pageButton').height()});
+			// Place buttons at end of content dic layer
+			//$('#id_sectionButton').offset({top: height+$('#id_content').offset().top-$('#id_pageButton').height()});
+			var html = $('#id_sectionButton').html();
+			ximpia.console.log('********************** buttons html:  ' + html);
+			$('.sectionComp').append(html);
+			$('#id_sectionButton').html('');
+			//margin-bottom: 0px; left: 0px
 		}
 		if ((typeof obj != 'undefined' && !obj.hasOwnProperty('skipVisibility')) || typeof obj == 'undefined') {
 			$('#id_pageButton').css('visibility', 'visible');
 		}
+		$('#id_pageButton').offset({left: $('#id_content').offset().left});
+		$('#id_pageButton').css('width', parseInt($('.sectionComp').css('width'))-3 + 'px');
+		//$('#id_pageButton').css('width', $('#id_content').css('width'));
 	}
 });
 /**

@@ -1,19 +1,22 @@
 {% extends "base/base_5.html" %}
+{% load static from staticfiles %}
 
 {% load i18n %}
 
-{% block title %}Ximpia - {% trans "Agile Application Framework - Beta" %}{% endblock %}
+{% block title %}Ximpia - {% trans "Making Easier App Development - Beta" %}{% endblock %}
 
 {% block sectionTitle %}
 
-<section id="id_sectionTitle" ><div id="id_titleBar" class="titleBar">
+<section id="id_sectionTitle" >
+<div id="id_titleBar" class="titleBar">
 <div style="float: left"><b>Welcome to Ximpia</b></div>
-</div></section>
+</div>
+</section>
 {% endblock %}
 
 {% block sectionContent %}
 
-<div id="id_home" class="sectionComp" >
+<div id="id_home" class="sectionComp" >	
 
 <form id="form_home" action="" method="post" data-xp="{}" >
 
@@ -38,6 +41,10 @@ Take a look at Ximpia. Mission: Decrease web application development cost and re
 </div>
 </div>
 
+<br/><br/><br/><br/>
+
+<br/><br/><br/><br/>
+<br/><br/><br/><br/>
 <br/><br/><br/><br/>
 
 <input type="hidden" name="result" value="{{result}}" />

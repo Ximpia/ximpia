@@ -136,7 +136,7 @@ input {
 div#Wrapper {
 	text-align: left;
 	/*width: 870px;*/
-	width: 1002px;
+	/*width: 1002px;*/
 	margin-left: auto;
 	margin-right: auto;
 	padding: 0px;
@@ -166,7 +166,7 @@ div#Wrapper {
 	visibility: hidden;
 	margin-top: auto;
 	margin-bottom: auto;
-	padding-top: 10px;
+	/*padding-top: 5px;*/
 }
 
 .sectionContent {
@@ -177,14 +177,19 @@ div#Wrapper {
 	/*border: solid 0px;*/
 	padding-right: 0px;
 	padding-left: 0px;
+	padding-top: 10px;
 	border:solid 1px #ddd;
 	/*margin-top:50px;*/ 
 	border-radius: 8px;
-	border-top-left-radius: 0px;
-	border-top-right-radius: 0px;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	margin-top: 49px;
+	margin-left: auto;
+	margin-right: auto;
 	/*position: relative;*/
 	/*top: 43px;*/
-	top: 68px;
+	/*top: 68px;*/
+	width: 1002px;
 }
 
 #id_sect_loading {
@@ -1369,14 +1374,16 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 /* Title Bar */
 
 .sectionTitle {
-	/*position: fixed;*/
-	position: relative;
-	/*top: 6px;*/
-	top: 0px;
+	position: fixed;
+	/*position: relative;*/
+	top: -1px;
+	/*top: 0px;*/
 	/*border: 1px solid;*/
 	z-index: 10;
 	width: 1002px;
-	margin-top: 10px;
+	/*margin-top: 0px;*/
+	margin-left: auto; 
+	margin-right: auto;
 	visibility: hidden; 
 }
 
@@ -1391,13 +1398,13 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	padding: 2px;
 	padding-left: 5px;
 	margin-bottom: 0px; 
-	margin-left: 0px; 
 	/*margin-top: 59px;*/
 	margin-top: 49px;
 	line-height: 30px;
 	/*border: 1px solid;*/
 	border-top-left-radius: 8px;
 	border-top-right-radius: 8px;
+	visibility: hidden;
 }
 
 /* Button Message Result */
@@ -1627,7 +1634,8 @@ legend {
 
 .iconMenuBlock:hover, .iconMenuBlock.sfhover {
 	/*border: 1px solid #646464;*/
-	border: 1px solid #555;
+	border: 1px solid #777;
+	background-color: #555;
 }
 
 /* ****** */
