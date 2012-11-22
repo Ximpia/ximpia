@@ -77,6 +77,8 @@ urlpatterns += patterns('ximpia',
     #(r'^view/$appUrlName/', include('ximpia.social_network.urls')),
 )
 
+# TODO: Include the core views into urls.py file inside core app, reference to those urls here on top
+
 urlpatterns += patterns('ximpia',
 
     # Ximpia Templates

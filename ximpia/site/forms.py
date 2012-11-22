@@ -20,9 +20,6 @@ import constants as K
 from choices import Choices
 from models import Address, Invitation, UserChannel
 
-# TODO: Remove settings_visual. We need this???? Other ways to do it????
-from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
-
 class HomeForm(XBaseForm):
 	_XP_FORM_ID = 'home'
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))

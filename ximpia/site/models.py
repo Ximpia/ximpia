@@ -12,15 +12,15 @@ from choices import Choices
 
 class Video(BaseModel):
 	"""Videos"""
-	embedCode = models.CharField(max_length=500,
+	embedCode = models.CharField(max_length=500, db_column='EMBED_CODE',
 			verbose_name = _('Embed Code'), help_text = _('Embed code from Video provider'))
-	name = models.CharField(max_length=30,
+	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Media name'))
-	title = models.CharField(max_length=50,
+	title = models.CharField(max_length=50, db_column='TITLE',
 			verbose_name = _('Title'), help_text = _('Media Title'))
-	description = models.CharField(max_length=500,
+	description = models.CharField(max_length=500, db_column='DESCRIPTION',
 			verbose_name = _('Description'), help_text = _('Media Description, shown in search'))
-	isFeatured = models.BooleanField(default=False,
+	isFeatured = models.BooleanField(default=False, db_column='IS_FEATURED',
 			verbose_name = _('Is Featured?'), help_text = _('Is media shown as featured? Will be placed first on search and bigger'))
 	tags = ''
 	categories = ''
@@ -34,15 +34,15 @@ class Video(BaseModel):
 
 class Address(BaseModel):
 	"""Address"""
-	street = models.CharField(max_length=50, null=True, blank=True,
+	street = models.CharField(max_length=50, null=True, blank=True, db_column='STREET',
 			verbose_name = _('Street'), help_text = _('Street'))
-	city = models.CharField(max_length=20,
+	city = models.CharField(max_length=20, db_column='CITY',
 			verbose_name = _('City'), help_text = _('City'))
-	region = models.CharField(max_length=20, null=True, blank=True,
+	region = models.CharField(max_length=20, null=True, blank=True, db_column='REGION',
 			verbose_name = _('Region'), help_text = _('Region'))
-	zipCode = models.CharField(max_length=20, null=True, blank=True,
+	zipCode = models.CharField(max_length=20, null=True, blank=True, db_column='ZIP_CODE',
 			verbose_name = _('Zip Code'), help_text = _('Zip Code'))
-	country = models.CharField(max_length=2, choices=Choices.COUNTRY,
+	country = models.CharField(max_length=2, choices=Choices.COUNTRY, db_column='COUNTRY',
 			verbose_name = _('Country'), help_text = _('Country'))
 	def __unicode__(self):
 		return str(self.street) + ' ' + str(self.city)
@@ -54,15 +54,15 @@ class Address(BaseModel):
 class UserChannel(BaseModel):
 	"""Every user can have one or more social channels. In case social channels are disabled, only one registry will
 	exist for each user."""
-	user = models.ForeignKey(User, 
+	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField(Group,
+	groups = models.ManyToManyField(Group, 
 				verbose_name = _('Groups'), help_text = _('Groups'))
-	title = models.CharField(max_length=20, 
+	title = models.CharField(max_length=20, db_column='TITLE',
 				verbose_name = _('Channel Title'), help_text=_('Title for the social channel'))
-	name = models.CharField(max_length=20, default=K.USER,
+	name = models.CharField(max_length=20, default=K.USER, db_column='NAME',
 				verbose_name = _('Social Channel Name'), help_text = _('Name for the social channel'))
-	"""isCompany = models.BooleanField(default=False,
+	"""isCompany = models.BooleanField(default=False, db_column='IS_COMPANY',
 				verbose_name=_('Company'), help_text=_('Is Company?'))"""
 	def __unicode__(self):
 		return str(self.user.username) + '-' + str(self.name)
@@ -86,27 +86,27 @@ class UserChannel(BaseModel):
 
 class GroupChannel(BaseModel):
 	"""Ximpia Group Model."""
-	group = models.ForeignKey(Group, unique=True,
+	group = models.ForeignKey(Group, unique=True, db_column='ID_GROUP',
 				verbose_name = _('Group'), help_text = _('Group'))
-	groupNameId = models.CharField(max_length=20, null=True, blank=True,
+	groupNameId = models.CharField(max_length=20, null=True, blank=True, db_column='GROUP_NAME_ID',
 				verbose_name = _('Group Name Id'), help_text = _('Identification for group'))
-	isXimpiaGroup = models.BooleanField(default=False,
+	isXimpiaGroup = models.BooleanField(default=False, db_column='IS_XIMPIA_GROUP',
 				verbose_name = _('Ximpia Group'), help_text = _('System Group'))
-	isIndustry = models.BooleanField(default=False,
+	isIndustry = models.BooleanField(default=False, db_column='IS_INDUSTRY',
 				verbose_name = _('Industry'), help_text = _('Industry'))
-	isSocialGroup = models.BooleanField(default=False,
+	isSocialGroup = models.BooleanField(default=False, db_column='IS_SOCIAL_GROUP',
 				verbose_name = _('Social Group'), help_text = _('Group is a social group'))
-	isOrgGroup = models.BooleanField(default=False,
+	isOrgGroup = models.BooleanField(default=False, db_column='IS_ORG_GROUP',
 				verbose_name = _('Organization Group'), help_text = _('Group belongs to organization'))
-	account = models.ForeignKey('site.Organization', 'account', null=True, blank=True,
+	account = models.ForeignKey('site.Organization', 'account', null=True, blank=True, db_column='ID_ACCOUNT',
 				verbose_name = _('Account'), help_text = _('Account name'))
-	isPublic = models.BooleanField(default=True,
+	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 				verbose_name = _('Public'), help_text = _('Group is public'))
-	accessGroups = models.ManyToManyField('self', related_name='group_access', null=True, blank=True,
+	accessGroups = models.ManyToManyField('self', related_name='group_access', null=True, blank=True, 
 				verbose_name = _('Access Groups'), help_text = _('Groups that have access to this group'))
 	tags = models.ManyToManyField('site.Tag', null=True, blank=True,
 				verbose_name = _('Tags'), help_text = _('Tags'))
-	owner = models.ForeignKey('site.UserChannel', related_name='group_owner', null=True, blank=True,
+	owner = models.ForeignKey('site.UserChannel', related_name='group_owner', null=True, blank=True, db_column='ID_OWNER',
 				verbose_name = _('Group Owner'), help_text = _('Owner of group'))
 	admins = models.ManyToManyField('site.UserChannel', related_name='group_admins', null=True, blank=True,
 				verbose_name = _('Administrators'), help_text = _('Administrators'))
@@ -123,7 +123,7 @@ class GroupChannel(BaseModel):
 		verbose_name_plural = "Group Channels"
 
 class SocialNetwork(BaseModel):
-	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': K},
+	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': K}, db_column='ID_TYPE',
 				verbose_name = _('Social Network Type'), help_text = _('Type of social network'))
 	def __unicode__(self):
 		return str(self.myType)
@@ -140,13 +140,13 @@ class SocialNetworkOrganization(BaseModel):
 	FK: SocialNetwork
 	Account
 	Password"""
-	organization = models.ForeignKey('Organization')
-	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
+	organization = models.ForeignKey('Organization', db_column='ID_ORGANIZATION')
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS, db_column='SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
-	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
-	token = models.CharField(max_length=255,
+	socialId = models.IntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
+	token = models.CharField(max_length=255, db_column='TOKEN',
 				verbose_name = _('Token'), help_text = _('Token'))
-	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
+	tokenSecret = models.CharField(max_length=255, null=True, blank=True, db_column='TOKEN_SECRET',
 				verbose_name = _('Token Secret'), help_text = _('Token Secret'))
 	def __unicode__(self):
 		return str(self.account)
@@ -156,16 +156,16 @@ class SocialNetworkOrganization(BaseModel):
 		verbose_name_plural = _('Social Networks for Organization')
 
 class SocialNetworkOrganizationGroup(BaseModel):
-	organizationGroup = models.ForeignKey('OrganizationGroup',
+	organizationGroup = models.ForeignKey('OrganizationGroup', db_column='ID_ORGANIZATION_GROUP',
 				verbose_name = _('Organization Group'), help_text = _('Organization Group'))
-	"""socialNetwork = models.ForeignKey('SocialNetwork',
+	"""socialNetwork = models.ForeignKey('SocialNetwork', db_column='IS_SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social Network'))"""
-	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS, db_column='SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
-	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
-	token = models.CharField(max_length=255,
+	socialId = models.IntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
+	token = models.CharField(max_length=255, db_column='TOKEN',
 				verbose_name = _('Token'), help_text = _('Token'))
-	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
+	tokenSecret = models.CharField(max_length=255, null=True, blank=True, db_column='TOKEN_SECRET',
 				verbose_name = _('Token Secret'), help_text = _('Token Secret'))
 	def __unicode__(self):
 		return str(self.account)
@@ -175,16 +175,16 @@ class SocialNetworkOrganizationGroup(BaseModel):
 		verbose_name_plural = _('Social Networks for Organization Group')
 
 class SocialNetworkUser(models.Model):
-	user = models.ForeignKey('UserDetail',
+	user = models.ForeignKey('UserDetail', db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	"""socialNetwork = models.ForeignKey('SocialNetwork',
+	"""socialNetwork = models.ForeignKey('SocialNetwork', db_column='ID_SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social network'))"""
-	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS,
+	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS, db_column='SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
-	socialId = models.IntegerField(verbose_name = _('Social ID'), help_text = _('Social network user id'))
-	token = models.CharField(max_length=255,
+	socialId = models.IntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
+	token = models.CharField(max_length=255, db_column='TOKEN',
 				verbose_name = _('Token'), help_text = _('Token'))
-	tokenSecret = models.CharField(max_length=255, null=True, blank=True,
+	tokenSecret = models.CharField(max_length=255, null=True, blank=True, db_column='TOKEN_SECRET',
 				verbose_name = _('Token Secret'), help_text = _('Token secret'))
 	def __unicode__(self):
 		return str(self.getName()) + ' ' + str(self.user)
@@ -198,37 +198,37 @@ class SocialNetworkUser(models.Model):
 
 class Organization(BaseModel):
 	"""Organization Model"""
-	invitedByUser = models.ForeignKey(User, null=True, blank=True,
+	invitedByUser = models.ForeignKey(User, null=True, blank=True, db_column='ID_INVITED_BY_USER',
 			verbose_name = _('Invited By User'), help_text = _('Invited by user'))
-	invitedByOrg = models.ForeignKey('self', null=True, blank=True,
+	invitedByOrg = models.ForeignKey('self', null=True, blank=True, db_column='ID_INVITED_BY_ORG',
 			verbose_name = _('Invited By Organization'), help_text = _('Invited by Organization'))
-	account = models.CharField(max_length=20, unique=True, null=True, blank=True,
+	account = models.CharField(max_length=20, unique=True, null=True, blank=True, db_column='ACCOUNT',
 			verbose_name = _('Account'), help_text = _('Account name'))
-	accountType = models.CharField(max_length=15, choices=Choices.ACCOUNT_TYPE, default=Choices.ACCOUNT_TYPE_ORDINARY,
+	accountType = models.CharField(max_length=15, choices=Choices.ACCOUNT_TYPE, default=Choices.ACCOUNT_TYPE_ORDINARY, db_column='ACCOUNT_TYPE',
 			verbose_name = _('Account Type'), help_text = _('Account type: ordinary, promotion, etc...'))
 	relatedToUp = models.ManyToManyField('self', related_name='org_up', null=True, blank=True,
 			verbose_name = _('Parent Organization'), help_text = _('Parent organization'))
 	relatedToDown = models.ManyToManyField('self', related_name='org_down', null=True, blank=True,
 			verbose_name = _('Child Organization'), help_text = _('Child Organization'))
-	domain = models.CharField(max_length=50, unique=True,
+	domain = models.CharField(max_length=50, unique=True, db_column='DOMAIN',
 			verbose_name = _('Domain'), help_text = _('Domain'))
-	name = models.CharField(max_length=30,
+	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Name'))
 	industries = models.ManyToManyField('site.GroupChannel', limit_choices_to={'industry': True}, related_name='organization_industries',
 			verbose_name = _('Industries'), help_text = _('Industries'))
 	addresses = models.ManyToManyField('site.Address', through='AddressOrganization', related_name='organization_addresses', 
 			verbose_name = _('Addresses'), help_text = _('Addresses'))
-	phone = models.CharField(max_length=20, null=True, blank=True,
+	phone = models.CharField(max_length=20, null=True, blank=True, db_column='PHONE',
 			verbose_name = _('Phone'), help_text = _('Phone'))
-	fax = models.CharField(max_length=20, null=True, blank=True,
+	fax = models.CharField(max_length=20, null=True, blank=True, db_column='FAX',
 			verbose_name = _('Fax'), help_text = _('Fax'))
 	groups = models.ManyToManyField('site.GroupChannel', through='OrganizationGroup',
 			verbose_name = _('Groups'), help_text = _('Organization Groups'))
 	"""socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkOrganization',
 			verbose_name = _('Social Networks'), help_text = _('Social Networks'))"""
-	description = models.CharField(max_length=500, null=True, blank=True,
+	description = models.CharField(max_length=500, null=True, blank=True, db_column='DESCRIPTION',
 			verbose_name = _('Description'), help_text = _('Description'))
-	isValidated = models.BooleanField(default=False,
+	isValidated = models.BooleanField(default=False, db_column='IS_VALIDATED',
 			verbose_name = _('Validated'), help_text = _('Validated'))
 	def __unicode__(self):
 		return str(self.account)
@@ -239,11 +239,11 @@ class Organization(BaseModel):
 
 class AddressOrganization(BaseModel):
 	"""Address Organization Model"""
-	addressType = models.CharField(max_length=20, choices=Choices.ADDRESS_TYPE,
+	addressType = models.CharField(max_length=20, choices=Choices.ADDRESS_TYPE, db_column='ADDRESS_TYPE',
 			verbose_name = _('Address Type'), help_text = _('Address type'))
-	organization = models.ForeignKey('Organization',
+	organization = models.ForeignKey('Organization', db_column='ID_ORGANIZATION',
 			verbose_name = _('Organization'), help_text = _('Organization'))
-	address = models.ForeignKey('Address',
+	address = models.ForeignKey('Address', db_column='ID_ADDRESS',
 			verbose_name = _('Address'), help_text = _('Address'))
 	def __unicode__(self):
 		return str(self.pk) + ' ' + str(self.addressType) + ' ' + str(self.organization)
@@ -254,9 +254,9 @@ class AddressOrganization(BaseModel):
 
 class OrganizationGroup(BaseModel):
 	"""Organization Group Model (Departments, groups of people, etc...)."""
-	group = models.ForeignKey('site.GroupChannel',
+	group = models.ForeignKey('site.GroupChannel', db_column='ID_GROUP',
 			verbose_name = _('Group'), help_text = _('Group'))
-	organization = models.ForeignKey('site.Organization',
+	organization = models.ForeignKey('site.Organization', db_column='ID_ORGANIZATION',
 			verbose_name = _('Organization'), help_text = _('Organization'))
 	relatedToUp = models.ManyToManyField('self', related_name='org_group_relate_up', null=True, blank=True,
 			verbose_name = _('Parent Group'), help_text = _('Parent organization group'))
@@ -273,13 +273,13 @@ class OrganizationGroup(BaseModel):
 
 class Category(BaseModel):
 	"""Category Model"""
-	name = models.CharField(max_length=30,
+	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Category name'))
-	description = models.CharField(max_length=50,
+	description = models.CharField(max_length=50, db_column='DESCRIPTION',
 			verbose_name = _('Description'), help_text = _('Category description'))
-	popularity = models.IntegerField(default=1, null=True, blank=True,
+	popularity = models.IntegerField(default=1, null=True, blank=True, db_column='POPULARITY',
 			verbose_name = _('Popularity'), help_text = _('Popularity'))
-	isPublic = models.BooleanField(default=True,
+	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 			verbose_name = _('Public'), help_text = _('Is category public?'))
 	def __unicode__(self):
 		return str(self.name)
@@ -293,13 +293,13 @@ class Category(BaseModel):
 
 class Tag(BaseModel):
 	"""Tag Model"""
-	name = models.CharField(max_length=30,
+	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Tag name'))
-	mode = models.ForeignKey('site.TagMode', related_name='Tag_Mode',
+	mode = models.ForeignKey('site.TagMode', related_name='Tag_Mode', db_column='ID_MODE',
 			verbose_name = _('Mode'), help_text = _('Tag mode'))
-	popularity = models.IntegerField(default=1, null=True, blank=True,
+	popularity = models.IntegerField(default=1, null=True, blank=True, db_column='POPULARITY',
 			verbose_name = _('Popularity'), help_text = _('Popularity'))
-	isPublic = models.BooleanField(default=True,
+	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 			verbose_name = _('Public'), help_text = _('Is tag public?'))
 	def __unicode__(self):
 		return str(self.name)
@@ -313,9 +313,9 @@ class Tag(BaseModel):
 
 class TagMode(BaseModel):
 	"""Tag Mode Model"""
-	mode = models.CharField(max_length=30,
+	mode = models.CharField(max_length=30, db_column='MODE',
 			verbose_name = _('Type'), help_text = _('Tag type'))
-	isPublic = models.BooleanField(default=True,
+	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 			verbose_name = _('Public'), help_text = _('Is tag type public?'))
 	def __unicode__(self):
 		return str(self.myType)
@@ -326,20 +326,20 @@ class TagMode(BaseModel):
 
 class Invitation(BaseModel):
 	"""Invitation Model"""
-	fromUser = models.ForeignKey(User,
+	fromUser = models.ForeignKey(User, db_column='ID_FROM_USER',
 				verbose_name = _('From User'), help_text = _('Invitation from user'))
-	fromOrg = models.ForeignKey('site.Organization', null=True, blank=True,
+	fromOrg = models.ForeignKey('site.Organization', null=True, blank=True, db_column='ID_FROM_ORG',
 				verbose_name = _('From Account'), help_text = _('Invitation from organization'))
-	invitationCode = models.CharField(max_length=10, unique=True,
+	invitationCode = models.CharField(max_length=10, unique=True, db_column='INVITATION_CODE',
 				verbose_name = _('Inivitation Code'), help_text = _('Invitation Code'))
-	email = models.EmailField(unique=True, verbose_name = _('Email'), help_text = _('Email attached to invitation'))
-	status = models.CharField(max_length=10, choices=Choices.INVITATION_STATUS, default=K.PENDING,
+	email = models.EmailField(unique=True, db_column='EMAIL', verbose_name = _('Email'), help_text = _('Email attached to invitation'))
+	status = models.CharField(max_length=10, choices=Choices.INVITATION_STATUS, default=K.PENDING, db_column='STATUS',
 				verbose_name = _('Status'), help_text = _('Invitation status : pending, used.'))
-	number = models.PositiveSmallIntegerField(default=1,
+	number = models.PositiveSmallIntegerField(default=1, db_column='NUMBER',
 				verbose_name = _('Number'), help_text = _('Invitation Number'))
-	message = models.CharField(max_length=200, null=True, blank=True,
+	message = models.CharField(max_length=200, null=True, blank=True, db_column='MESSAGE',
 				verbose_name = _('Message'), help_text = _('Message'))
-	domain = models.CharField(max_length=100, null=True, blank=True,
+	domain = models.CharField(max_length=100, null=True, blank=True, db_column='DOMAIN',
 				verbose_name = _('Domain'), help_text = _('Domain'))
 	def __unicode__(self):
 		return str(self.fromUser) + ' ' + str(self.invitationCode)
@@ -350,11 +350,11 @@ class Invitation(BaseModel):
 
 class XmlMessage(BaseModel):
 	"""XML Messages"""
-	name = models.CharField(max_length=255,
+	name = models.CharField(max_length=255, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Code name of XML'))
-	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH,
+	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, db_column='LANG',
 			verbose_name = _('Language'), help_text = _('Language for xml'))
-	body = models.TextField(verbose_name = _('Xml Content'), help_text = _('Xml content'))
+	body = models.TextField(db_column='BODY', verbose_name = _('Xml Content'), help_text = _('Xml content'))
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -364,17 +364,17 @@ class XmlMessage(BaseModel):
 
 class Param(BaseModel):
 	"""Social Network Parameters"""
-	mode = models.CharField(max_length=20, 
+	mode = models.CharField(max_length=20, db_column='MODE', 
 			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
-	name = models.CharField(max_length=20, 
+	name = models.CharField(max_length=20, db_column='NAME',
 			verbose_name=_('Name'), help_text=_('Parameter Name'))
-	value = models.CharField(max_length=100, null=True, blank=True, 
+	value = models.CharField(max_length=100, null=True, blank=True, db_column='VALUE', 
 			verbose_name=_('Value'), help_text=_('Parameter Value for Strings'))
-	valueId = models.IntegerField(null=True, blank=True, 
+	valueId = models.IntegerField(null=True, blank=True, db_column='VALUE_ID',
 			verbose_name=_('Value Id'), help_text=_('Parameter Value for Integers'))
-	valueDate = models.DateTimeField(null=True, blank=True, 
+	valueDate = models.DateTimeField(null=True, blank=True, db_column='VALUE_DATE',
 			verbose_name = _('Value Date'), help_text = _('Parameter Value for Date'))
-	paramType = models.CharField(max_length=10, choices=Choices.PARAM_TYPE,
+	paramType = models.CharField(max_length=10, choices=Choices.PARAM_TYPE, db_column='PARAM_TYPE',
 			verbose_name=_('Parameter Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
 		return str(self.mode) + ' - ' + str(self.name)
@@ -387,37 +387,37 @@ class UserDetail(BaseModel):
 	"""Model for UserSocial
 	FK : User
 	MN: SocialNetworks"""
-	user = models.ForeignKey(User,
+	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	name = models.CharField(max_length=60,
+	name = models.CharField(max_length=60, db_column='NAME',
 				verbose_name = _('Name'), help_text = _('Name'))
-	settings = models.TextField(default = '', null=True, blank=True,
+	settings = models.TextField(default = '', null=True, blank=True, db_column='SETTINGS',
 				verbose_name = _('Settings'), help_text = _('Settings'))
 	"""socialNetworks = models.ManyToManyField('SocialNetwork', through='SocialNetworkUser',  null=True, blank=True,
 				verbose_name = _('Social Networks'), help_text = _('Social Networks'))"""
-	hasUploadPic = models.BooleanField(default=False,
+	hasUploadPic = models.BooleanField(default=False, db_column='HAS_UPLOAD_PIC',
 				verbose_name = _('Uploaded Pic'), help_text = _('Has the user uploaded custom picture?'))
-	isSuspended = models.BooleanField(default=False,
+	isSuspended = models.BooleanField(default=False, db_column='IS_SUSPENDED',
 				verbose_name = _('Suspended'), help_text = _('Weather user account has been suspended'))
-	picExt = models.CharField(max_length=3, null=True, blank=True,
+	picExt = models.CharField(max_length=3, null=True, blank=True, db_column='PIC_EXT',
 				verbose_name = _('Picture Extension'), help_text = _('Picture file extension'))
-	reminderId = models.CharField(max_length=15, null=True, blank=True,
+	reminderId = models.CharField(max_length=15, null=True, blank=True, db_column='REMINDER_ID',
 				verbose_name = _('Reminder Id'), help_text = _('Reminder identification for password retreive'))
-	lang = models.CharField(max_length=2, default='en',
+	lang = models.CharField(max_length=2, default='en', db_column='LANG',
 				verbose_name = _('Language'), help_text = _('Language'))
-	auth = models.TextField(default = '', null=True, blank=True,
+	auth = models.TextField(default = '', null=True, blank=True, db_column='AUTH',
 				verbose_name = _('Authentication'), help_text = _('Authentication'))	
-	netProfiles = models.TextField(default = '', null=True, blank=True,
+	netProfiles = models.TextField(default = '', null=True, blank=True, db_column='NET_PROFILES',
 				verbose_name = _('Network Profiles'), help_text = _('Network Profiles'))	
-	msgPreference = models.CharField(max_length=10, choices=Choices.MSG_PREFERRED, default=K.XIMPIA,
+	msgPreference = models.CharField(max_length=10, choices=Choices.MSG_PREFERRED, default=K.XIMPIA, db_column='MSG_PREFERENCE',
 				verbose_name = _('Messaging Preference'), help_text = _('Preference for sending messages: Facebook, Twitter, Email, etc...'))
-	hasValidatedEmail = models.BooleanField(default=False,
+	hasValidatedEmail = models.BooleanField(default=False, db_column='HAS_VALIDATED_EMAIL',
 				verbose_name = _('Validated Email'), help_text = _('User has validated his email address?'))
-	filesQuota = models.IntegerField(default=K.FILE_QUOTA_DEFAULT,
+	filesQuota = models.IntegerField(default=K.FILE_QUOTA_DEFAULT, db_column='FILES_QUOTA',
 				verbose_name = _('File Quota'), help_text = _('Maximum size storage for files in MB'))
-	resetPasswordDate = models.DateField(null=True, blank=True, 
+	resetPasswordDate = models.DateField(null=True, blank=True, db_column='RESET_PASSWORD_DATE', 
 				verbose_name = _('Reset Password Date'), help_text = _('Maximum date for reset password link validation'))
-	showIntro = models.BooleanField(default=True,
+	showIntro = models.BooleanField(default=True, db_column='SHOW_INTRO',
 				verbose_name=_('Show Introduction content'), help_text=_('Show introduction content to user for help'))
 	def __unicode__(self):
 		return str(self.user.username)
@@ -436,10 +436,11 @@ class UserDetail(BaseModel):
 
 class SignupData(BaseModel):
 	"""SignUp Data"""
-	user = models.CharField(max_length=30, unique=True,
+	user = models.CharField(max_length=30, unique=True, db_column='USER',
 			verbose_name = _('User'), help_text = _('User'))
-	activationCode = models.PositiveSmallIntegerField(verbose_name = _('Activation Code'), help_text = _('Activation code'))
-	data = models.TextField(verbose_name = _('Data'), help_text = _('Data'))
+	activationCode = models.PositiveSmallIntegerField(db_column='ACTIVATION_CODE', 
+			verbose_name = _('Activation Code'), help_text = _('Activation code'))
+	data = models.TextField(db_column='DATA', verbose_name = _('Data'), help_text = _('Data'))
 	def __unicode__(self):
 		return str(self.user)
 	class Meta:

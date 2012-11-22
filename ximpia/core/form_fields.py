@@ -1,7 +1,6 @@
 from django.forms import Field, ChoiceField, MultipleChoiceField, CharField
 import json
 
-#from ximpia.settings_visual import SocialNetworkIconData as SocialNetwork
 from ximpia.util.basic_types import DictUtil
 from validators import validateUserId, validateEmail, validateTxtField, validatePassword
 
