@@ -12,6 +12,7 @@ from choices import Choices
 
 class Video(BaseModel):
 	"""Videos"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_VIDEO')
 	embedCode = models.CharField(max_length=500, db_column='EMBED_CODE',
 			verbose_name = _('Embed Code'), help_text = _('Embed code from Video provider'))
 	name = models.CharField(max_length=30, db_column='NAME',
@@ -34,6 +35,7 @@ class Video(BaseModel):
 
 class Address(BaseModel):
 	"""Address"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_ADDRESS')
 	street = models.CharField(max_length=50, null=True, blank=True, db_column='STREET',
 			verbose_name = _('Street'), help_text = _('Street'))
 	city = models.CharField(max_length=20, db_column='CITY',
@@ -54,6 +56,7 @@ class Address(BaseModel):
 class UserChannel(BaseModel):
 	"""Every user can have one or more social channels. In case social channels are disabled, only one registry will
 	exist for each user."""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
 	groups = models.ManyToManyField(Group, 
@@ -86,6 +89,7 @@ class UserChannel(BaseModel):
 
 class GroupChannel(BaseModel):
 	"""Ximpia Group Model."""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP')
 	group = models.ForeignKey(Group, unique=True, db_column='ID_GROUP',
 				verbose_name = _('Group'), help_text = _('Group'))
 	groupNameId = models.CharField(max_length=20, null=True, blank=True, db_column='GROUP_NAME_ID',
@@ -123,6 +127,7 @@ class GroupChannel(BaseModel):
 		verbose_name_plural = "Group Channels"
 
 class SocialNetwork(BaseModel):
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_NETWORK')
 	myType = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': K}, db_column='ID_TYPE',
 				verbose_name = _('Social Network Type'), help_text = _('Type of social network'))
 	def __unicode__(self):
@@ -140,6 +145,7 @@ class SocialNetworkOrganization(BaseModel):
 	FK: SocialNetwork
 	Account
 	Password"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_ORG')
 	organization = models.ForeignKey('Organization', db_column='ID_ORGANIZATION')
 	socialNetwork = models.CharField(max_length=20, choices=Choices.SOCIAL_NETS, db_column='SOCIAL_NETWORK',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
@@ -156,6 +162,7 @@ class SocialNetworkOrganization(BaseModel):
 		verbose_name_plural = _('Social Networks for Organization')
 
 class SocialNetworkOrganizationGroup(BaseModel):
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_GROUP')
 	organizationGroup = models.ForeignKey('OrganizationGroup', db_column='ID_ORGANIZATION_GROUP',
 				verbose_name = _('Organization Group'), help_text = _('Organization Group'))
 	"""socialNetwork = models.ForeignKey('SocialNetwork', db_column='IS_SOCIAL_NETWORK',
@@ -175,6 +182,7 @@ class SocialNetworkOrganizationGroup(BaseModel):
 		verbose_name_plural = _('Social Networks for Organization Group')
 
 class SocialNetworkUser(models.Model):
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_USER')
 	user = models.ForeignKey('UserDetail', db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
 	"""socialNetwork = models.ForeignKey('SocialNetwork', db_column='ID_SOCIAL_NETWORK',
@@ -198,6 +206,7 @@ class SocialNetworkUser(models.Model):
 
 class Organization(BaseModel):
 	"""Organization Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_ORGANIZATION')
 	invitedByUser = models.ForeignKey(User, null=True, blank=True, db_column='ID_INVITED_BY_USER',
 			verbose_name = _('Invited By User'), help_text = _('Invited by user'))
 	invitedByOrg = models.ForeignKey('self', null=True, blank=True, db_column='ID_INVITED_BY_ORG',
@@ -239,6 +248,7 @@ class Organization(BaseModel):
 
 class AddressOrganization(BaseModel):
 	"""Address Organization Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_ORGANIZATION_ADDRESS')
 	addressType = models.CharField(max_length=20, choices=Choices.ADDRESS_TYPE, db_column='ADDRESS_TYPE',
 			verbose_name = _('Address Type'), help_text = _('Address type'))
 	organization = models.ForeignKey('Organization', db_column='ID_ORGANIZATION',
@@ -254,6 +264,7 @@ class AddressOrganization(BaseModel):
 
 class OrganizationGroup(BaseModel):
 	"""Organization Group Model (Departments, groups of people, etc...)."""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_ORGANIZATION_GROUP')
 	group = models.ForeignKey('site.GroupChannel', db_column='ID_GROUP',
 			verbose_name = _('Group'), help_text = _('Group'))
 	organization = models.ForeignKey('site.Organization', db_column='ID_ORGANIZATION',
@@ -273,6 +284,7 @@ class OrganizationGroup(BaseModel):
 
 class Category(BaseModel):
 	"""Category Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_CATEGORY')
 	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Category name'))
 	description = models.CharField(max_length=50, db_column='DESCRIPTION',
@@ -293,6 +305,7 @@ class Category(BaseModel):
 
 class Tag(BaseModel):
 	"""Tag Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_TAG')
 	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Tag name'))
 	mode = models.ForeignKey('site.TagMode', related_name='Tag_Mode', db_column='ID_MODE',
@@ -313,6 +326,7 @@ class Tag(BaseModel):
 
 class TagMode(BaseModel):
 	"""Tag Mode Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_TAG_MODE')
 	mode = models.CharField(max_length=30, db_column='MODE',
 			verbose_name = _('Type'), help_text = _('Tag type'))
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
@@ -326,6 +340,7 @@ class TagMode(BaseModel):
 
 class Invitation(BaseModel):
 	"""Invitation Model"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_INVITATION')
 	fromUser = models.ForeignKey(User, db_column='ID_FROM_USER',
 				verbose_name = _('From User'), help_text = _('Invitation from user'))
 	fromOrg = models.ForeignKey('site.Organization', null=True, blank=True, db_column='ID_FROM_ORG',
@@ -350,6 +365,7 @@ class Invitation(BaseModel):
 
 class XmlMessage(BaseModel):
 	"""XML Messages"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_XML_MESSAGE')
 	name = models.CharField(max_length=255, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Code name of XML'))
 	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, db_column='LANG',
@@ -364,6 +380,7 @@ class XmlMessage(BaseModel):
 
 class Param(BaseModel):
 	"""Social Network Parameters"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_PARAMETER')
 	mode = models.CharField(max_length=20, db_column='MODE', 
 			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
 	name = models.CharField(max_length=20, db_column='NAME',
@@ -387,6 +404,7 @@ class UserDetail(BaseModel):
 	"""Model for UserSocial
 	FK : User
 	MN: SocialNetworks"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_DETAIL')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
 	name = models.CharField(max_length=60, db_column='NAME',
@@ -436,6 +454,7 @@ class UserDetail(BaseModel):
 
 class SignupData(BaseModel):
 	"""SignUp Data"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SIGNUP_DATA')
 	user = models.CharField(max_length=30, unique=True, db_column='USER',
 			verbose_name = _('User'), help_text = _('User'))
 	activationCode = models.PositiveSmallIntegerField(db_column='ACTIVATION_CODE', 

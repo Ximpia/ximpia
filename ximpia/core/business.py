@@ -38,10 +38,50 @@ from forms import DefaultForm
 
 from ximpia.util.js import Form as _jsf
 
+class AppComponentRegCommon ( object ):
+	_ctx = None
+	def __init__(self, ctx=None):
+		"""Parent class for application component registering."""
+		self._ctx = ctx
+		self._reg = ComponentRegister()
+		self.main()
+		self.views()
+		self.templates()
+		self.actions()
+		self.flows()
+		self.menus()
+		self.viewMenus()
+		self.search()
+	def main(self):
+		"""Doc."""
+		pass
+	def views(self):
+		"""Doc."""
+		pass
+	def templates(self):
+		"""Doc."""
+		pass
+	def actions(self):
+		"""Doc."""
+		pass
+	def flows(self):
+		"""Doc."""
+		pass
+	def menus(self):
+		"""Doc."""
+		pass
+	def viewMenus(self):
+		"""Doc."""
+		pass
+	def search(self):
+		pass
+
 class ComponentRegister(object):
 	
-	@staticmethod
-	def registerApp(code=None, name=None, isAdmin=False):
+	def __init__(self):
+		pass
+	
+	def registerApp(self, code=None, name=None, isAdmin=False):
 		"""Register application
 		@param code: Application code
 		@param name: Application name
@@ -49,8 +89,7 @@ class ComponentRegister(object):
 		app, created = Application.objects.get_or_create(code=code, name=name, isAdmin=isAdmin)
 		logger.debug( 'Register application: %s %s' % (app, created) )
 	
-	@staticmethod
-	def registerViewMenu(appCode=None, viewName=None, menus=[], **argsDict):
+	def registerViewMenu(self, appCode=None, viewName=None, menus=[], **argsDict):
 		"""Register views associated with a menu
 		@param appCode: Application code
 		@param viewName: View name
@@ -81,7 +120,7 @@ class ComponentRegister(object):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.debug( 'data: %s' % (counter) )
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
+				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter)
 				counterDict[dd[K.MENU_NAME]] = counter
 				counter += 100
@@ -100,18 +139,16 @@ class ComponentRegister(object):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.debug( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.debug( 'data: %s' % ( counter) )
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, separator=sep, #@UnusedVariable
+				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
 				counter += 10
 	
-	@staticmethod
-	def cleanViews(appCode=None):
+	def cleanViews(self, appCode=None):
 		"""Clean all views for application."""
 		View.objects.filter(application__code=appCode).delete()
 		logger.debug( 'deleted all views for %s' % appCode )
 	
-	@staticmethod
-	def registerView(appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
+	def registerView(self, appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
 			hasAuth=True, **argsDict):
 		"""Registers view
 		@param appCode: Application code
@@ -141,15 +178,13 @@ class ComponentRegister(object):
 				theTuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value) #@UnusedVariable
 		
 	
-	@staticmethod
-	def cleanActions(appCode=None):
+	def cleanActions(self, appCode=None):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
 		Action.objects.filter(application__code=appCode).delete()
 		logger.debug( 'deleted all actions for %s' % appCode )		
 	
-	@staticmethod
-	def registerAction(appCode=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
+	def registerAction(self, appCode=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
 		"""Registers action
 		@param appCode: Application code
 		@param actionName: Action name
@@ -163,8 +198,7 @@ class ComponentRegister(object):
 		action.hasAuth = hasAuth
 		action.save()
 	
-	@staticmethod
-	def registerParam(appCode=None, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
+	def registerParam(self, appCode=None, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
 		"""Register view / workflow parameter
 		@param appCode: Application code
 		@param name: Parameter name
@@ -181,15 +215,13 @@ class ComponentRegister(object):
 			param.workflow = isWorkflow
 			param.save()
 
-	@staticmethod
-	def cleanFlows(appCode=None):
+	def cleanFlows(self, appCode=None):
 		"""Clean all flows for application."""
 		Workflow.objects.filter(application__code=appCode).delete()
 		WorkflowData.objects.filter(flow__application__code=appCode).delete()
 		logger.debug( 'deleted all flows for %s' % appCode )
 	
-	@staticmethod
-	def registerFlow(appCode=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
+	def registerFlow(self, appCode=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
 		"""Reister flow
 		@param appCode: Application code
 		@param flowcode: Flow code
@@ -203,8 +235,7 @@ class ComponentRegister(object):
 		flow.jumpToView = jumpToView
 		flow.save()
 		
-	@staticmethod
-	def registerFlowView(appCode=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
+	def registerFlowView(self, appCode=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
 			paramDict={}, viewParamDict={}):
 		"""Reister flow
 		@param appCode: Application code
@@ -228,15 +259,13 @@ class ComponentRegister(object):
 		# Entry View parameters
 		# TODO: Complete entry view parameters
 	
-	@staticmethod
-	def cleanMenu(appCode=None):
+	def cleanMenu(self, appCode=None):
 		"""Clean all menus for application
 		@param appCode: Application code"""
 		Menu.objects.filter(application__code=appCode).delete()
 		logger.debug( 'deleted all menus for %s' % appCode )
 	
-	@staticmethod
-	def registerMenu(appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
+	def registerMenu(self, appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
 			urlTarget='', **argsDict):
 		"""Register menu item
 		@param appCode: Application code
@@ -275,8 +304,7 @@ class ComponentRegister(object):
 			operator, value = argsDict[name]
 			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
 		
-	@staticmethod
-	def cleanSearch(appCode=None):
+	def cleanSearch(self, appCode=None):
 		"""Clean Search information for view or action
 		@param appCode: Application code"""
 		try:
@@ -285,8 +313,7 @@ class ComponentRegister(object):
 		except SearchIndex.DoesNotExist:
 			pass
 
-	@staticmethod
-	def registerSearch(text='', appCode=None, viewName=None, actionName=None, params={}):
+	def registerSearch(self, text='', appCode=None, viewName=None, actionName=None, params={}):
 		"""Register application operation. It will be used in view search.
 		@param text: Text to index
 		@param appCode: Application code
@@ -309,15 +336,13 @@ class ComponentRegister(object):
 			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
 								value=params[paramName])
 	
-	@staticmethod
-	def cleanTemplates(appCode=None):
+	def cleanTemplates(self, appCode=None):
 		"""Clean templates for the application
 		@param appCode: Application code"""
 		XpTemplate.objects.filter(application__code=appCode).delete()
 		logger.debug( 'deleted all templates for %s' % appCode )
 	
-	@staticmethod
-	def registerTemplate(appCode=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
+	def registerTemplate(self, appCode=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
 			device=None, alias=None):
 		"""Register template
 		@param appCode: Application code
@@ -1152,8 +1177,8 @@ class MenuBusiness( object ):
 		# TODO: Remove the SN code simulator, use the one built from userChannel
 		# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		userAccessCodeList = ['SN']
-		viewMenus = self._dbViewMenu.search( 	Q(menu__application__subscription = False) | 
-							Q(menu__application__subscription = True) & 
+		viewMenus = self._dbViewMenu.search( 	Q(menu__application__isSubscription = False) | 
+							Q(menu__application__isSubscription = True) & 
 							Q(menu__application__code__in=userAccessCodeList), view=view).order_by('order')
 		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
 		#logger.debug( 'getMenus :: viewMenus: ', viewMenus )
@@ -1171,7 +1196,7 @@ class MenuBusiness( object ):
 			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
 			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
 			menuObj['winType'] = viewMenu.menu.view.winType if viewMenu.menu.view != None else ''
-			menuObj['sep'] = viewMenu.separator
+			menuObj['sep'] = viewMenu.hasSeparator
 			menuObj['name'] = viewMenu.menu.name
 			menuObj['title'] = viewMenu.menu.title
 			menuObj['titleShort'] = viewMenu.menu.titleShort

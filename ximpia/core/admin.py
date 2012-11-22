@@ -11,8 +11,8 @@ class CoreParamAdmin(admin.ModelAdmin):
 		obj.save()
 
 class ApplicationAdmin(admin.ModelAdmin):
-	list_display = ('code', 'name','developer','developerOrg','subscription','private')
-	list_filter = ('subscription','private')
+	list_display = ('code', 'name','developer','developerOrg','isSubscription','isPrivate')
+	list_filter = ('isSubscription','isPrivate')
 	def save_model(self, request, obj, form, change):
 		obj.UserModifyId = request.user.id
 		obj.save()
