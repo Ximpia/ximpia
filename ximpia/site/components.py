@@ -1,4 +1,3 @@
-from ximpia.core.business import ComponentRegister
 from ximpia.core.choices import Choices as _Ch
 import ximpia.core.constants as _K
 from ximpia.core.business import AppComponentRegCommon
