@@ -38,12 +38,12 @@ from forms import DefaultForm
 
 from ximpia.util.js import Form as _jsf
 
-class AppComponentRegCommon ( object ):
+class AppCompRegCommonBusiness ( object ):
 	_ctx = None
 	def __init__(self, ctx=None):
 		"""Parent class for application component registering."""
 		self._ctx = ctx
-		self._reg = ComponentRegister()
+		self._reg = ComponentRegisterBusiness()
 		self.main()
 		self.views()
 		self.templates()
@@ -76,7 +76,7 @@ class AppComponentRegCommon ( object ):
 	def search(self):
 		pass
 
-class ComponentRegister(object):
+class ComponentRegisterBusiness ( object ):
 	
 	def __init__(self):
 		pass
@@ -378,7 +378,7 @@ class ComponentRegister(object):
 		# View
 		ViewTmpl.objects.create(view=view, template=template)
 
-class CommonBusiness( object ):
+class CommonService( object ):
 	
 	_ctx = None
 	_request = None
@@ -995,7 +995,7 @@ class WorkFlowBusiness (object):
 		self._dbWFData.deleteById(flowData.id, real=True)
 		
 
-class Search( object ):
+class SearchBusiness ( object ):
 	_ctx = None
 	def __init__(self, ctx):
 		"""Search index operations"""
@@ -1110,7 +1110,7 @@ class Search( object ):
 			resultsFinal.append(myDict)
 		return resultsFinal
 
-class Template( object ):
+class TemplateBusiness ( object ):
 	"""Logic for templates"""
 	_ctx = None
 	def __init__(self, ctx):
@@ -1235,7 +1235,7 @@ class MenuBusiness( object ):
 class EmailBusiness(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
 	@staticmethod
-	def send(xmlMessage, subsDict, recipientList):
+	def send(xmlMessage, subsDict, fromAddr, recipientList):
 		"""Send email
 		@param keyName: keyName for datastore
 		@subsDict : Dictionary with substitution values for template
@@ -1244,7 +1244,7 @@ class EmailBusiness(object):
 		subject, message = ut_email.getMessage(xmlMessage)
 		message = string.Template(message).substitute(**subsDict)
 		#logger.debug( message )
-		send_mail(subject, message, settings.XIMPIA_WEBMASTER_EMAIL, recipientList)
+		send_mail(subject, message, fromAddr, recipientList)
 
 
 # ****************************************************
@@ -1337,7 +1337,7 @@ class DoBusinessDecorator(object):
 					else:
 						obj._ctx[Ctx.JS_DATA].addAttr('isLogin', False)
 					# Template
-					tmpl = Template(obj._ctx)
+					tmpl = TemplateBusiness(obj._ctx)
 					if len(obj._ctx[Ctx.JS_DATA]['response']['view'].strip()) != 0:
 						templates = tmpl.resolve(obj._ctx[Ctx.JS_DATA]['response']['view'])
 						if templates.has_key(obj._ctx[Ctx.JS_DATA]['response']['view']):
@@ -1730,7 +1730,7 @@ class ViewOldDecorator ( object ):
 			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
 			resultJs = f(*argsTuple, **args)
 			#logger.debug( 'resultJs: ', resultJs )
-			template = Template(args['ctx'])
+			template = TemplateBusiness(args['ctx'])
 			templates = template.resolve(self.__viewName)
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
@@ -1748,8 +1748,9 @@ class ViewDecorator ( object ):
 	""""Decorator for django views in core module."""
 	__viewName = ''
 	__APP = ''
+	_settings = {}
 	def __init__(self, *argsTuple, **argsDict):
-		pass
+		self._settings = argsTuple[0]
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
@@ -1771,7 +1772,7 @@ class ViewDecorator ( object ):
 				self.__viewName = args['ctx'][Ctx.VIEW_NAME_TARGET]
 			logger.debug( 'ViewDecorator :: resultJs: ', resultJs )
 			#logger.debug( 'ViewDecorator :: viewName: ', self.__viewName, 'target:', args['ctx'][Ctx.VIEW_NAME_TARGET], 'source:', args['ctx'][Ctx.VIEW_NAME_SOURCE] )
-			template = Template(args['ctx'])
+			template = TemplateBusiness(args['ctx'])
 			templates = template.resolve(self.__viewName)
 			logger.debug( 'ViewDecorator :: templates: ', templates )
 			if templates.has_key(self.__viewName):
@@ -1779,7 +1780,7 @@ class ViewDecorator ( object ):
 				#logger.debug( 'ViewDecorator :: tmplName: ', tmplName )
 				result = render_to_response( self.__APP + '/' + tmplName + '.html', RequestContext(request, 
 													{	'result': json.dumps(resultJs),
-														'settings': settings
+														'settings': self._settings
 													}))
 			else:
 				raise XpMsgException(None, _('Error in resolving template for view'))
@@ -1788,7 +1789,7 @@ class ViewDecorator ( object ):
 
 
 
-class DefaultBusiness ( CommonBusiness ):
+class DefaultBusiness ( CommonService ):
 	
 	def __init__(self, ctx):
 		super(DefaultBusiness, self).__init__(ctx)
@@ -1797,3 +1798,20 @@ class DefaultBusiness ( CommonBusiness ):
 	def show(self):
 		"""Method to execute for view with no business code, only showing a html template."""
 		pass
+
+class CommonBusiness ( object ):
+	
+	"""
+	
+	Common Business class for ximpia business logic.
+	
+	**Attributes**
+	
+	* ``ctx``:Dict : Context
+	
+	"""
+	
+	_ctx = None
+	
+	def __init__(self, ctx):
+		self._ctx = ctx

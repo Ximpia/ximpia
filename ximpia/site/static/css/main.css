@@ -976,15 +976,8 @@ div.listFieldText:hover, listField.listFieldText.sfhover, div.listFieldDel:hover
 div.listFieldTextAdd:hover, div.listFieldTextAdd.sfhover {
 	cursor: default;
 }
-div.listFieldSep {
-	float: left; 
-	width: 1px; 
-	background-color: #000; 
-	height: 15px;
-}
-div.listFieldDel {
-	float: left; 
-	font-size: 70%;  
+div.listFieldDel { 
+	font-size: 100%;  
 	line-height: 15px; 
 	background-color: #dddddd; 
 	width: 15px; 

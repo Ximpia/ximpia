@@ -20,17 +20,17 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-def getBlankWfData(dd):
+def getBlankWfData( dd ):
 	"""Get workflow data inside flowCode by default"""
 	dd['data'] = {}
 	dd['viewName'] = ''
 	return dd
 
-class DeleteManager(models.Manager):
+class DeleteManager( models.Manager ):
 	def get_query_set(self):
 		return super(DeleteManager, self).get_query_set().filter(isDeleted=False)
 
-class BaseModel(models.Model):
+class BaseModel( models.Model ):
 	"""Abstract Base Model"""
 	dateCreate = models.DateTimeField(auto_now_add=True, null=True, blank=True, editable=False, db_column='DATE_CREATE', 
 					verbose_name= _('Create Date'), help_text= _('Create Date'))
@@ -47,8 +47,14 @@ class BaseModel(models.Model):
 	class Meta:
 		abstract = True
 
-class CoreParam(BaseModel):
-	"""User Parameters"""
+class CoreParam( BaseModel ):
+	"""
+	
+	User Parameters
+	
+	Doc here...
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAMETER')
 	mode = models.CharField(max_length=20, db_column='MODE',
 			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
@@ -67,7 +73,33 @@ class CoreParam(BaseModel):
 		verbose_name = "Parameter"
 		verbose_name_plural = "Parameters"
 
-class CoreXmlMessage(BaseModel):
+class MetaKey( BaseModel ):
+	"""
+	
+	Model to store the keys allowed for meta values
+	
+	**Attributes**
+	
+	* ``name``:CharField(20) : Key META name
+	
+	**Relationships**
+	
+	* ``keyType`` : META Key type
+	
+	"""
+	name = models.CharField(max_length=20,
+	        verbose_name = _('Key Name'), help_text = _('Meta Key Name'), db_column='NAME')
+	keyType = models.ForeignKey(CoreParam, limit_choices_to={'mode': K.PARAM_META_TYPE}, db_column='ID_META_TYPE',
+			verbose_name=_('Key META Type'), help_text=_('Key META Type') )
+	def __unicode__(self):
+		return self.name
+	class Meta:
+		db_table = 'CORE_META_KEY'
+		ordering = ['name']
+		verbose_name = _('Meta Key')
+		verbose_name_plural = _('Meta Keys')
+
+class CoreXmlMessage( BaseModel ):
 	"""XML Message"""
 	#TODO: INCLUDE MESSAGE TYPE: EMAIL, ETC...
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_XML_MESSAGE')
@@ -83,7 +115,7 @@ class CoreXmlMessage(BaseModel):
 		verbose_name = _('Xml Message')
 		verbose_name_plural = _('Xml Messages')
 
-class Application(BaseModel):
+class Application( BaseModel ):
 	"""Applications"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION')
 	code = models.CharField(max_length=10,
@@ -104,6 +136,8 @@ class Application(BaseModel):
 			verbose_name=_('Users'), help_text=_('Users that have access to the application'))
 	isAdmin = models.BooleanField(default=False, db_column='IS_ADMIN',
 		verbose_name = _('Is Admin?'), help_text = _('Is this application an admin backdoor?'))
+	meta = models.ManyToManyField(MetaKey, through='core.ApplicationMeta', related_name='app_meta',
+			verbose_name=_('META Keys'), help_text=_('META Keys for application') )
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
@@ -111,7 +145,37 @@ class Application(BaseModel):
 		verbose_name = _('Application')
 		verbose_name_plural = _('Applications')
 
-class ApplicationAccess(BaseModel):
+class ApplicationMeta( BaseModel ):
+	"""
+	
+	Meta information for application.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``value``:CharField(255) : META Key value for application
+	
+	**Relationships**
+	
+	* ``application`` : Application
+	* ``meta`` : Meta Key
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_META')
+	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
+				verbose_name = _('Application'), help_text = _('Application'))
+	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
+	value = models.CharField(max_length=255, db_column='VALUE',
+                		verbose_name = _('Value'), help_text = _('Value'))
+	def __unicode__(self):
+		return ''
+	class Meta:
+		db_table = 'CORE_APPLICATION_META'
+		verbose_name = 'Application META'
+		verbose_name_plural = "Application META"
+
+class ApplicationAccess( BaseModel ):
 	"""User that have access to application. Used for subscription and private applications."""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APP_ACCESS')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -121,11 +185,11 @@ class ApplicationAccess(BaseModel):
 	def __unicode__(self):
 		return str(self.userChannel)
 	class Meta:
-		db_table = 'CORE_APP_ACCESS'
+		db_table = 'CORE_APPLICATION_ACCESS'
 		verbose_name = 'Application Access'
 		verbose_name_plural = "Application Access"
 
-class SearchIndex(BaseModel):
+class SearchIndex( BaseModel ):
 	"""Index"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -148,7 +212,7 @@ class SearchIndex(BaseModel):
 		verbose_name_plural = "Index"
 		unique_together = ("view", "action")
 
-class SearchIndexWord(BaseModel):
+class SearchIndexWord( BaseModel ):
 	"""Index"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX_WORD')
 	index = models.ForeignKey('core.SearchIndex', db_column='ID_INDEX',
@@ -162,7 +226,7 @@ class SearchIndexWord(BaseModel):
 		verbose_name = 'Index Word'
 		verbose_name_plural = "Index Words"
 
-class Word(BaseModel):
+class Word( BaseModel ):
 	"""Word"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORD')
 	word = models.CharField(max_length=20, db_index=True, db_column='WORD', 
@@ -174,7 +238,7 @@ class Word(BaseModel):
 		verbose_name = 'Word'
 		verbose_name_plural = "Words"
 
-class SearchIndexParam(BaseModel):
+class SearchIndexParam( BaseModel ):
 	"""Index Parameters"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_INDEX_PARAM')
 	searchIndex = models.ForeignKey('core.SearchIndex', db_column='ID_SEARCH_INDEX',
@@ -192,7 +256,7 @@ class SearchIndexParam(BaseModel):
 		verbose_name = 'Index Parameters'
 		verbose_name_plural = "Index Parameters"
 
-class Menu(BaseModel):
+class Menu( BaseModel ):
 	"""Menu"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -224,7 +288,7 @@ class Menu(BaseModel):
 		verbose_name = 'Menu'
 		verbose_name_plural = "Menus"
 
-class ViewMenu(BaseModel):
+class ViewMenu( BaseModel ):
 	"""Menus associated to a view"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_MENU')
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
@@ -247,7 +311,7 @@ class ViewMenu(BaseModel):
 		verbose_name_plural = "Views for Menus"
 		#TODO: Unique for menu and view
 
-class MenuParam(BaseModel):
+class MenuParam( BaseModel ):
 	"""Parameters or attributes feeded to views"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU_PARAM')
 	menu = models.ForeignKey('core.Menu', db_column='ID_MENU',
@@ -265,7 +329,7 @@ class MenuParam(BaseModel):
 		verbose_name = 'Menu Param'
 		verbose_name_plural = "Menu Params"
 
-class View(BaseModel):
+class View( BaseModel ):
 	"""View"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -292,7 +356,37 @@ class View(BaseModel):
 		verbose_name_plural = "Views"
 		unique_together = ("application", "name")
 
-class ViewTmpl(BaseModel):
+class ViewMeta( BaseModel ):
+	"""
+	
+	Meta information for views
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``value``:CharField(255) : Key value
+	
+	**Relationships**
+	
+	* ``view`` : View
+	* ``meta`` : Meta Key
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_META')
+	view = models.ForeignKey(View, db_column='ID_VIEW',
+				verbose_name = _('View'), help_text = _('View'))
+	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
+	value = models.CharField(max_length=255, db_column='VALUE',
+                		verbose_name = _('Value'), help_text = _('Value'))
+	def __unicode__(self):
+		return '%s %s' % (self.view, self.meta)
+	class Meta:
+		db_table = 'CORE_VIEW_META'
+		verbose_name = 'View META'
+		verbose_name_plural = "View META"
+
+class ViewTmpl( BaseModel ):
 	"""View Template"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_TMPL')
 	view = models.ForeignKey('core.View', db_column='ID_VIEW',
@@ -306,7 +400,7 @@ class ViewTmpl(BaseModel):
 		verbose_name = 'View Template'
 		verbose_name_plural = "View Templates"
 
-class XpTemplate(BaseModel):
+class XpTemplate( BaseModel ):
 	"""Template"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_TEMPLATE')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -331,7 +425,7 @@ class XpTemplate(BaseModel):
 		verbose_name_plural = "Templates"
 		unique_together = ("application", "name")
 
-class Action(BaseModel):
+class Action( BaseModel ):
 	"""Action"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -352,7 +446,7 @@ class Action(BaseModel):
 		verbose_name_plural = "Action"
 		unique_together = ("application", "name")
 
-class Workflow(BaseModel):
+class Workflow( BaseModel ):
 	"""WorkFlow"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
@@ -372,7 +466,7 @@ class Workflow(BaseModel):
 		verbose_name = 'Workflow'
 		verbose_name_plural = "Workflow"
 
-class WorkflowView(BaseModel):
+class WorkflowView( BaseModel ):
 	"""WorkFlow View"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW')
 	flow = models.ForeignKey('core.WorkFlow', related_name='flowView', db_column='ID_FLOW', 
@@ -395,7 +489,7 @@ class WorkflowView(BaseModel):
 		verbose_name_plural = "Workflow View"
 		unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
 
-class WFViewEntryParam(BaseModel):
+class WFViewEntryParam( BaseModel ):
 	"""Relates flows with view entry parameters."""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW_PARAM')
 	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewEntryParam', db_column='ID_FLOW_VIEW', 
@@ -409,7 +503,7 @@ class WFViewEntryParam(BaseModel):
 		verbose_name = 'Workflow View Entry Param'
 		verbose_name_plural = "Workflow View Entry Params"
 
-class WorkflowData(BaseModel):
+class WorkflowData( BaseModel ):
 	"""Workflow Data"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_DATA')
 	userId = models.CharField(max_length=40, db_column='USER_ID',
@@ -428,7 +522,7 @@ class WorkflowData(BaseModel):
 		verbose_name_plural = "Workflow Data"
 		unique_together = ('userId', 'flow')
 
-class Param(BaseModel):
+class Param( BaseModel ):
 	"""Parameters for WF and Views"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAM')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION', 
@@ -452,7 +546,7 @@ class Param(BaseModel):
 		unique_together = ('application','name')
 
 
-class ViewParamValue(BaseModel):
+class ViewParamValue( BaseModel ):
 	"""Parameter Values for WF"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')
 	view = models.ForeignKey('core.View', related_name='viewParam', db_column='ID_VIEW',
@@ -470,7 +564,7 @@ class ViewParamValue(BaseModel):
 		verbose_name = 'View Parameter Value'
 		verbose_name_plural = "View Parameter Values"
 
-class WFParamValue(BaseModel):
+class WFParamValue( BaseModel ):
 	"""Parameter Values for WF"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_PARAM_VALUE')
 	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewParamValue', db_column='ID_FLOW_VIEW', 
@@ -488,7 +582,7 @@ class WFParamValue(BaseModel):
 		verbose_name = 'Workflow Parameter Value'
 		verbose_name_plural = "Workflow Parameter Values"
 
-class XpMsgException(Exception):
+class XpMsgException( Exception ):
 	Msg = ''
 	myException = None
 	ArgsDict = {}
@@ -514,7 +608,7 @@ class XpMsgException(Exception):
 		#return repr(self.Msg)
 		return self.Msg
 
-class XpRegisterException(Exception):
+class XpRegisterException( Exception ):
 	Msg = ''
 	myException = None
 	ArgsDict = {}
@@ -741,6 +835,7 @@ class ContextDecorator(object):
 class ContextViewDecorator(object):
 	_app = ''
 	__mode = ''
+	_settings = {}
 	APP = 'app'
 	USER = 'user'
 	LANG = 'lang'
@@ -774,13 +869,14 @@ class ContextViewDecorator(object):
 	TMPL = 'tmpl'
 	WF_USER_ID = 'wfUserId'
 	IS_LOGIN = 'isLogin'
-	def __init__(self, **args):
+	def __init__(self, *argList, **args):
 		"""if args.has_key('app'):
 			self._app = args['app']"""
 		if args.has_key('mode'):
 			self.__mode = args['mode']
 		else:
 			self.__mode = 'view'
+		self._settings = argList[0]
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
@@ -817,7 +913,7 @@ class ContextViewDecorator(object):
 				ctx[self.APP] = self._app
 				ctx['user'] = request.user
 				ctx[self.LANG] = lang
-				ctx['settings'] = settings
+				ctx['settings'] = self._settings
 				ctx['session'] = request.session
 				ctx['cookies'] = request.COOKIES
 				ctx['meta'] = request.META

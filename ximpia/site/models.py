@@ -28,10 +28,33 @@ class SocialNetworkUser(models.Model):
 		verbose_name = 'Social Networks for User'
 		verbose_name_plural = "Social Networks for Users"
 
-# TODO: Settings table
+class Settings( BaseModel ):
+	"""
+	Settings model
+	
+	**Attributes**
+	
+	* ``name``:CharField(64) : Setting name
+	* ``value``:TextField : Settings value
+	* ``description``:CharField(255) : Setting description
+	* ``mustAutoload``:BooleanField : Has to load settings on cache?
+	
+	"""
+	name = models.CharField(max_length=64,
+	        verbose_name = _('Name'), help_text = _('Settings name'), db_column='NAME')
+	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
+	description = models.CharField(max_length=255,
+	        verbose_name = _('Description'), help_text = _('Description'), db_column='DESCRIPTION')
+	mustAutoload = models.BooleanField(default=False,
+	        verbose_name = _('Must Autoload?'), help_text = _('Must Autoload?'), db_column='MUST_AUTOLOAD')
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'SITE_SETTINGS'
+		verbose_name = _('Settings')
+		verbose_name_plural = _('Settings')
 
 # TODO: UserDetail?? FileBrowser?? UserProfile???
-
 class UserDetail(BaseModel):
 	"""Model for UserSocial
 	FK : User
@@ -134,6 +157,8 @@ class SocialNetwork(BaseModel):
 
 class XmlMessage(BaseModel):
 	"""XML Messages"""
+	# TODO: This table will go to settings, having name as name
+	# @deprecated: Move table data to SITE_SETTINGS
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_XML_MESSAGE')
 	name = models.CharField(max_length=255, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Code name of XML'))
@@ -148,7 +173,7 @@ class XmlMessage(BaseModel):
 		verbose_name_plural = _('Xml Messages')
 
 class Param(BaseModel):
-	"""Social Network Parameters"""
+	"""Site Parameters"""
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_PARAMETER')
 	mode = models.CharField(max_length=20, db_column='MODE', 
 			verbose_name=_('Mode'), help_text=_('Parameter Mode'))
