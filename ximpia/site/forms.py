@@ -1,3 +1,5 @@
+import os
+
 from django import forms
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
@@ -8,7 +10,9 @@ from ximpia.core.form_fields import XpHiddenDataField
 from ximpia.core.form_widgets import XpHiddenWidget
 from ximpia.core.forms import XBaseForm
 
-from ximpia import settings
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config

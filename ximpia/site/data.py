@@ -2,13 +2,13 @@ from ximpia.core.data import CommonDAO
 
 from django.contrib.auth.models import User, Group
 
-from models import Video, GroupChannel, Address, AddressOrganization, Organization, OrganizationGroup, Tag, TagMode, UserChannel, Invitation
-from models import XmlMessage, Param, Category, UserDetail, SignupData, SocialNetworkUser
+from models import UserChannel
+from models import XmlMessage, Param, UserDetail, SignupData, SocialNetworkUser, Settings
 
-class VideoDAO( CommonDAO ):
+"""class VideoDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(VideoDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Video
+		self._model = Video"""
 
 ########################################################################
 
@@ -21,7 +21,7 @@ class UserDAO(CommonDAO):
 		"""Get invitation for invitationCode 
 		@param invitationCode: 
 		@return: Invitation"""
-		try:
+		"""try:
 			if status:
 				invitation = Invitation.objects.get(invitationCode=invitationCode, status=status)
 			else:
@@ -29,57 +29,58 @@ class UserDAO(CommonDAO):
 		except Exception as e:
 			raise e
 			#raise XpMsgException(e, _('Error in checking invitation code'))
-		return invitation
+		return invitation"""
+		pass
 
 class GroupDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(GroupDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Group
 
-class GroupChannelDAO( CommonDAO ):
+"""class GroupChannelDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(GroupChannelDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = GroupChannel
+		self._model = GroupChannel"""
 
-class AddressDAO( CommonDAO ):
+"""class AddressDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(AddressDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Address
+		self._model = Address"""
 
-class AddressOrganizationDAO( CommonDAO ):
+"""class AddressOrganizationDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(AddressOrganizationDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = AddressOrganization
+		self._model = AddressOrganization"""
 
-class OrganizationDAO( CommonDAO ):	
+"""class OrganizationDAO( CommonDAO ):	
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(OrganizationDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Organization
+		self._model = Organization"""
 
-class OrganizationGroupDAO( CommonDAO ):
+"""class OrganizationGroupDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(OrganizationGroupDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = OrganizationGroup
+		self._model = OrganizationGroup"""
 
-class TagDAO( CommonDAO ):
+"""class TagDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(TagDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Tag
+		self._model = Tag"""
 
-class TagModeDAO(CommonDAO):
+"""class TagModeDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(TagModeDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = TagMode
+		self._model = TagMode"""
 
 class UserChannelDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(UserChannelDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = UserChannel
 
-class InvitationDAO(CommonDAO):
+"""class InvitationDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(InvitationDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Invitation
+		self._model = Invitation"""
 
 class XmlMessageDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -91,10 +92,10 @@ class ParamDAO(CommonDAO):
 		super(ParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Param
 
-class CategoryDAO(CommonDAO):
+"""class CategoryDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(CategoryDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Category
+		self._model = Category"""
 
 class UserDetailDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -110,3 +111,8 @@ class SocialNetworkUserDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(SocialNetworkUserDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = SocialNetworkUser
+
+class SettingsDAO(CommonDAO):
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SettingsDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = Settings

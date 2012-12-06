@@ -1,4 +1,5 @@
 import random
+import os
 from django.utils.translation import ugettext as _
 
 from ximpia.core.models import ContextDecorator as Ctx
@@ -6,7 +7,9 @@ from models import XpMsgException, CoreParam, Application, Action, ApplicationAc
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
-from ximpia import settings
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config

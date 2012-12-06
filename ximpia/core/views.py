@@ -15,11 +15,10 @@ from yacaptcha.models import Captcha
 
 from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
-from business import Search, ViewDecorator, XpMsgException
-from data import ViewDAO, ActionDAO, TemplateDAO
-import constants as K
+from service import XpMsgException, ViewDecorator, SearchService
+from data import ViewDAO, ActionDAO
 
-from ximpia import settings
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -205,7 +204,7 @@ def searchHeader(request, **args):
 		logger.debug( 'search: ' + request.REQUEST['search'] )
 		# What are params in jxSuggestList?????
 		ctx = args['ctx']
-		searchObj = Search(ctx)
+		searchObj = SearchService(ctx)
 		results = searchObj.search(request.REQUEST['search'])
 		logger.debug( 'results: ' + json.dumps(results) )
 	except:
@@ -227,10 +226,9 @@ def jxTemplate(request, app, mode, tmplName):
 		f.close()
 		cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
 	return HttpResponse(tmpl)
-	
 
 @ContextDecorator()
-def jxBusiness(request, **args):
+def jxService(request, **args):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""

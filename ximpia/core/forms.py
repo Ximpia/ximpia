@@ -1,6 +1,7 @@
 import re
 import json
 import types
+import os
 
 from django.core import serializers as _s
 from django import forms
@@ -11,7 +12,10 @@ from form_widgets import XpHiddenWidget
 import messages as _m
 from ximpia.core.models import ContextDecorator as Ctx
 from ximpia.util.js import Form as _jsf
-from ximpia import settings
+
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import constants as K
 

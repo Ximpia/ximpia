@@ -1,14 +1,10 @@
 import string
-import os
 import time
 import struct
-import cPickle
-import zlib
 import urlparse
 import types
 import urllib
 import re
-import random
 import socket
 
 class Cache:
@@ -25,8 +21,6 @@ class Cache:
 		else:
 			folder = 0
 		return folder	
-
-
 
 class Url:
 

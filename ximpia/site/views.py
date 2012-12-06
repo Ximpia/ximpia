@@ -1,7 +1,5 @@
 from ximpia.core.models import ContextViewDecorator
-from ximpia.core.business import ViewDecorator
-
-import business
+from ximpia.core.service import ViewDecorator
 
 from ximpia import settings
 
@@ -14,6 +12,7 @@ logger = logging.getLogger(__name__)
 @ViewDecorator()
 def home(request, **args):
 	logger.debug( 'home....' )
-	video = business.VideoBusiness(args['ctx'])
-	result = video.showHome()
+	#video = business.VideoBusiness(args['ctx'])
+	#result = video.showHome()
+	result = None
 	return result

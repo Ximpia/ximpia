@@ -1,12 +1,15 @@
 from django.forms import Field, ChoiceField, MultipleChoiceField, CharField
 import json
+import os
 
 from ximpia.util.basic_types import DictUtil
 from validators import validateUserId, validateEmail, validateTxtField, validatePassword
 
 from form_widgets import XpHiddenWidget, XpMultipleWidget, XpPasswordWidget, XpSelectWidget, XpTextInputWidget, XpOptionWidget, XpCheckboxWidget 
 
-from ximpia import settings
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config

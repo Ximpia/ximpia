@@ -3,11 +3,6 @@
 	<name>ximpia</name>
 	<comment></comment>
 	<projects>
-		<project>CoreDjango</project>
-		<project>Misc</project>
-		<project>Site Packages</project>
-		<project>XimpiaApps</project>
-		<project>XimpiaFront</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
