@@ -466,8 +466,19 @@ class Choices(object):
 				(7, _('Sales Director')),
 				(8, _('Marketing Director')),
 				)
-	# PARAM_TYPE
-	PARAM_TYPE = (
-				('param', _('Parameter')),
-				('table', _('Table')),
-				)
+	# CATEGORY_TYE
+	CATEGORY_TYPE_DEFAULT = 'default'
+	CATEGORY_TYPE = (
+		(CATEGORY_TYPE_DEFAULT, _('Default')),
+		)
+	# USER_RELATIONSHIP
+	ACCESS_RELATIONSHIP_OWNER = 'owner'
+	ACCESS_RELATIONSHIP_ADMIN = 'admin'
+	ACCESS_RELATIONSHIP_MANAGER = 'manager'
+	ACCESS_RELATIONSHIP_USER = 'user'
+	ACCESS_RELATIONSHIP = (
+		(ACCESS_RELATIONSHIP_ADMIN, _('Admin')),
+		(ACCESS_RELATIONSHIP_OWNER, _('Owner')),
+		(ACCESS_RELATIONSHIP_MANAGER, _('Manager')),
+		(ACCESS_RELATIONSHIP_USER, _('User')),
+		)

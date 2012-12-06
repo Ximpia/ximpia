@@ -114,3 +114,12 @@ class Choices(object):
 		(URL_TARGET_SAME, _('Same Window')),
 		(URL_TARGET_NEW, _('New Window')),
 		)
+	# PARAM_TYPE
+	PARAM_TYPE_STRING = 'string'
+	PARAM_TYPE_INTEGER = 'integer'
+	PARAM_TYPE_DATE = 'date'
+	PARAM_TYPE = (
+				(PARAM_TYPE_STRING, _('String')),
+				(PARAM_TYPE_INTEGER, _('Integer')),
+				(PARAM_TYPE_DATE, _('Date')),
+				)
