@@ -13,9 +13,11 @@ from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.core.cache import cache
 
 from business import WorkFlowBusiness
 from models import getResultERROR, XpMsgException
+from util import TemplateParser
 
 from models import SearchIndex, Context
 
@@ -39,7 +41,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 from data import ViewDAO
-from util import getClass
+#from util import getClass
 from forms import DefaultForm
 
 from ximpia.util.js import Form as _jsf
@@ -911,10 +913,13 @@ class ViewDecorator ( object ):
 	__APP = ''
 	_settings = {}
 	def __init__(self, *argsTuple, **argsDict):
-		self._settings = argsTuple[0]
+		#self._settings = argsTuple[0]
+		pass
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
+			ctx = args['ctx']
+			if False: ctx = Context()
 			if args.has_key('app') and len(args['app']) != 0:
 				self.__APP = args['app']
 				if args.has_key('viewName'):
@@ -923,28 +928,111 @@ class ViewDecorator ( object ):
 				else:
 					self.__viewName = ''
 			else:
-				self.__APP = 'site'
+				# TODO: Use here the default app for project settings and default view...
+				self.__APP = 'ximpia.site'
 				self.__viewName = 'home'
-			args['ctx'][Ctx.VIEW_NAME_SOURCE] = self.__viewName
+			ctx.viewNameSource = self.__viewName
 			logger.debug( f )
 			resultJs = f(request, **args)
 			logger.debug( f )
-			if len(args['ctx'][Ctx.VIEW_NAME_TARGET]) != 0:
-				self.__viewName = args['ctx'][Ctx.VIEW_NAME_TARGET]
+			if len(ctx.viewNameTarget) != 0:
+				self.__viewName = ctx.viewNameTargett
 			logger.debug( 'ViewDecorator :: resultJs: ', resultJs )
-			#logger.debug( 'ViewDecorator :: viewName: ', self.__viewName, 'target:', args['ctx'][Ctx.VIEW_NAME_TARGET], 'source:', args['ctx'][Ctx.VIEW_NAME_SOURCE] )
-			template = TemplateService(args['ctx'])
+			logger.debug( 'ViewDecorator :: viewName: %s target: %s source: %s ' % 
+				(self.__viewName, args['ctx'][Ctx.VIEW_NAME_TARGET], args['ctx'][Ctx.VIEW_NAME_SOURCE]) )
+			template = TemplateService(ctx)
 			templates = template.resolve(self.__viewName)
 			logger.debug( 'ViewDecorator :: templates: ', templates )
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
-				#logger.debug( 'ViewDecorator :: tmplName: ', tmplName )
-				result = render_to_response( self.__APP + '/' + tmplName + '.html', RequestContext(request, 
-													{	'result': json.dumps(resultJs),
-														'settings': self._settings
-													}))
+				logger.debug( 'ViewDecorator :: tmplName: ', tmplName )				
+				# Get template data
+				tmplService = TemplateService(ctx)
+				tmplData = tmplService.get(self.__APP, 'window', tmplName)				
+				parser = TemplateParser()
+				parser.feed(tmplData)
+				#logger.debug('titleBar: %s' % parser.titleBar)
+				#logger.debug('content: %s' % parser.content)
+				#logger.debug('buttons: %s' % parser.buttons)
+				result = render_to_response( 'main.html', RequestContext(request, 
+												{	'title': parser.title,
+													'titleBar': parser.titleBar,
+													'content': parser.content,
+													'buttons': parser.buttons,
+													'result': json.dumps(resultJs),
+													'settings': settings
+												}))
+				#result = result.replace('{{result}}', json.dumps(resultJs))
 			else:
-				raise XpMsgException(None, _('Error in resolving template for view'))
+				raise XpMsgException(None, _('Error in resolving template for view'))			
+			
+			return result
+		return wrapped_f
+
+class ViewNewDecorator ( object ):
+	"""
+	
+	Decorator for ximpia views
+	
+	"""
+	
+	__form = None
+	
+	def __init__(self, form):
+		self.__form = form
+
+	def __call__(self, f):
+		"""Decorator call method"""
+		logger.debug('ViewNewDecorator :: form: %s' % self.__form)
+		@ServiceDecorator(form=self.__form)
+		def wrapped_f(request, *argsTuple, **argsDict):
+			result = f(request, *argsTuple, **argsDict)			
+			return result
+		return wrapped_f
+
+class ActionDecorator ( object ):
+	"""
+	
+	Decorator for ximpia actions
+	
+	"""
+	
+	__form = None
+	
+	def __init__(self, form):
+		self.__form = form
+
+	def __call__(self, f):
+		"""Decorator call method"""
+		logger.debug('ActionDecorator :: form: %s' % self.__form)
+		@ValidateFormDecorator(self.__form)
+		@ServiceDecorator()
+		def wrapped_f(request, *argsTuple, **argsDict):
+			result = f(request, *argsTuple, **argsDict)			
+			return result
+		return wrapped_f
+
+class WorkflowViewDecorator ( object ):
+	"""
+	
+	Decorator for workflow views
+	
+	"""
+	
+	__form = None
+	__flowCode = None
+	
+	def __init__(self, flowCode, form):
+		self.__flowCode = flowCode
+		self.__form = form
+
+	def __call__(self, f):
+		"""Decorator call method"""
+		logger.debug('WorkflowViewDecorator :: flowCode: %s form: %s' % (self.__flowCode, self.__form))
+		@WFViewDecorator(self.__flowCode)
+		@ServiceDecorator(form = self.__form)
+		def wrapped_f(request, *argsTuple, **argsDict):
+			result = f(request, *argsTuple, **argsDict)			
 			return result
 		return wrapped_f
 
@@ -1153,6 +1241,32 @@ class TemplateService ( object ):
 		self._ctx = ctx
 		self._dbViewTmpl = ViewTmplDAO(self._ctx, relatedDepth=2)
 		self._dbTemplate = TemplateDAO(self._ctx)
+	def get(self, app, mode, tmplName):
+		"""
+		Get template
+		
+		**Attributes**
+		
+		* ``app``:String
+		* ``mode``:String
+		* ``tmplName``:String
+		
+		**Returns**
+		
+		* ``tmplData``:String
+		
+		"""
+		
+		tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
+		if not tmpl:
+			package, module = app.split('.')
+			m = getClass(package + '.' + module)
+			path = m.__file__.split('__init__')[0] + '/templates/' + mode + '/' + tmplName + '.html'
+			f = open(path)
+			tmpl = f.read()
+			f.close()
+			cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
+
 	def resolve(self, viewName):
 		"""Resolve template """
 		# Context: device, lang, country

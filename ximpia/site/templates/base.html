@@ -1,5 +1,5 @@
-{% load static from staticfiles %}
 <!DOCTYPE html>
+{% load static from staticfiles %}
 <html>
 
 <head>
@@ -19,7 +19,8 @@
 </head>
 
 <body>
-<div id="fb-root"></div>
+<!-- Facebook should be supportted by external links: buttons that link to fb in modal window, etc... -->
+<!--<div id="fb-root"> </div>-->
 
 {% block id_view %}
 {% endblock %}
@@ -121,10 +122,18 @@
 
 </section>
 
+
+
 <section id="id_content" class="sectionContent" >
+
+<form id="form_main" action="" method="post" data-xp="{}" >	
 
 {% block sectionContent %}
 {% endblock%}
+
+<input type="hidden" name="result" value="{{result}}" />
+
+</form>
 
 </section>
 

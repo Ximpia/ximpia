@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block sectionTitle %}
+{{titleBar|safe}}
+{% endblock %}
+
+{% block sectionContent %}
+{{content|safe}}
+{% endblock %}
+
+{% block buttons %}
+{{buttons|safe}}
+{% endblock %}

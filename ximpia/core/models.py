@@ -334,20 +334,22 @@ class MenuParam( BaseModel ):
 class View( BaseModel ):
 	"""View"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
+	parent = models.ForeignKey('self', null=True, blank=True, related_name='view_parent', 
+		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the view'))
 	name = models.CharField(max_length=30, db_column='NAME', 
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
-			verbose_name=_('Implementation'), help_text=_('Business class and method that will show view'))
+			verbose_name=_('Implementation'), help_text=_('Service class and method that will show view'))
 	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
 			verbose_name=_('Templates'), help_text=_('Templates for view'))
 	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
 			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
 	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW, db_column='WIN_TYPE',
 			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
-	hasUrl = models.BooleanField(default=False, db_column='HAS_URL',
-			verbose_name = _('Url enabled'), help_text = _('View can be called using an url'))
+	slug = models.SlugField(max_length=200,
+		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
 			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
 	def __unicode__(self):
@@ -434,9 +436,9 @@ class Action( BaseModel ):
 	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name=_('Action Name'), help_text=_('Action Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
-			verbose_name=_('Implementation'), help_text=_('Business class and method that will process action'))
-	hasUrl = models.BooleanField(default=False, db_column='HAS_URL',
-			verbose_name = _('Url enabled'), help_text = _('View can be called using an url'))
+			verbose_name=_('Implementation'), help_text=_('Service class and method that will process action'))
+	slug = models.SlugField(max_length=200,
+		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
 			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
 	def __unicode__(self):
@@ -444,7 +446,7 @@ class Action( BaseModel ):
 	class Meta:
 		db_table = 'CORE_ACTION'
 		verbose_name = 'Action'
-		verbose_name_plural = "Action"
+		verbose_name_plural = "Actions"
 		unique_together = ("application", "name")
 
 class Workflow( BaseModel ):
@@ -465,7 +467,7 @@ class Workflow( BaseModel ):
 	class Meta:
 		db_table = 'CORE_WORKFLOW'
 		verbose_name = 'Workflow'
-		verbose_name_plural = "Workflow"
+		verbose_name_plural = "Workflows"
 
 class WorkflowView( BaseModel ):
 	"""WorkFlow View"""
@@ -582,6 +584,37 @@ class WFParamValue( BaseModel ):
 		db_table = 'CORE_WORKFLOW_PARAM_VALUE'
 		verbose_name = 'Workflow Parameter Value'
 		verbose_name_plural = "Workflow Parameter Values"
+
+class Settings ( BaseModel ):
+	"""
+	Settings model
+	
+	**Attributes**
+	
+	* ``value``:TextField : Settings value.
+	* ``description``:CharField(255) : Setting description.
+	* ``mustAutoload``:BooleanField : Has to load settings on cache?
+	
+	**Relationships**
+	
+	* ``name`` -> MetaKey : Foreign key to MetaKey model.
+	
+	"""
+	
+	name = models.ForeignKey(MetaKey, db_column='ID_META',
+				verbose_name=_('Name'), help_text=_('Settings name'))
+	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
+	description = models.CharField(max_length=255,
+	        verbose_name = _('Description'), help_text = _('Description'), db_column='DESCRIPTION')
+	mustAutoload = models.BooleanField(default=False,
+	        verbose_name = _('Must Autoload?'), help_text = _('Must Autoload?'), db_column='MUST_AUTOLOAD')
+	def __unicode__(self):
+		return str(self.name)
+	class Meta:
+		db_table = 'CORE_SETTINGS'
+		verbose_name = _('Settings')
+		verbose_name_plural = _('Settings')
+
 
 class XpMsgException( Exception ):
 	Msg = ''
@@ -738,7 +771,7 @@ class Context ( object ):
 	captcha = None
 	rawRequest = None
 	ctx = None
-	jsData = None		# Doc for jsData
+	jsData = None
 	viewNameSource = None
 	viewNameTarget = None
 	action = None
@@ -755,6 +788,49 @@ class Context ( object ):
 	wfUserId = None
 	isLogin = False
 	container = {}
+	
+	"""
+	
+	Context
+	
+	**Attributes**
+	
+	* ``app``:String
+	* ``user``:User
+	* ``lang``:String
+	* ``settings``:String
+	* ``session``:String
+	* ``cookies``:object
+	* ``meta``:object
+	* ``post``:object
+	* ``request``:object
+	* ``get``:object
+	* ``userChannel``:String
+	* ``auth``:Dict
+	* ``form``:object
+	* ``forms``:Dict
+	* ``captcha``:String
+	* ``rawRequest``:object
+	* ``ctx``:object
+	* ``jsData``:JsResultDict
+	* ``viewNameSource``:String
+	* ``viewNameTarget``:String
+	* ``action``:String
+	* ``isView``:Boolean
+	* ``isAction``:Boolean
+	* ``flowCode``:String
+	* ``flowData``:String
+	* ``isFlow``:Boolean
+	* ``set_cookies``:List
+	* ``device``:String
+	* ``country``:String
+	* ``winType``:String
+	* ``tmpl``:String
+	* ``wfUserId``:String
+	* ``isLogin``:Boolean
+	* ``container``:Dict
+	
+	"""
 	
 	def __init__(self):
 		self.app = None
@@ -794,396 +870,200 @@ class Context ( object ):
 
 	def get_app(self):
 		return self.__app
-
-
 	def get_user(self):
 		return self.__user
-
-
 	def get_lang(self):
 		return self.__lang
-
-
 	def get_session(self):
 		return self.__session
-
-
 	def get_cookies(self):
 		return self.__cookies
-
-
 	def get_meta(self):
 		return self.__meta
-
-
 	def get_post(self):
 		return self.__post
-
-
 	def get_request(self):
 		return self.__request
-
-
 	def get_get(self):
 		return self.__get
-
-
 	def get_user_channel(self):
 		return self.__userChannel
-
-
 	def get_auth(self):
 		return self.__auth
-
-
 	def get_form(self):
 		return self.__form
-
-
 	def get_forms(self):
 		return self.__forms
-
-
 	def get_captcha(self):
 		return self.__captcha
-
-
 	def get_raw_request(self):
 		return self.__rawRequest
-
-
 	def get_ctx(self):
 		return self.__ctx
-
-
 	def get_js_data(self):
 		return self.__jsData
-
-
 	def get_view_name_source(self):
 		return self.__viewNameSource
-
-
 	def get_view_name_target(self):
 		return self.__viewNameTarget
-
-
 	def get_action(self):
 		return self.__action
-
-
 	def get_is_view(self):
 		return self.__isView
-
-
 	def get_is_action(self):
 		return self.__isAction
-
-
 	def get_flow_code(self):
 		return self.__flowCode
-
-
 	def get_flow_data(self):
 		return self.__flowData
-
-
 	def get_is_flow(self):
 		return self.__isFlow
-
-
 	def get_set_cookies(self):
 		return self.__set_cookies
-
-
 	def get_device(self):
 		return self.__device
-
-
 	def get_country(self):
 		return self.__country
-
-
 	def get_win_type(self):
 		return self.__winType
-
-
 	def get_tmpl(self):
 		return self.__tmpl
-
-
 	def get_wf_user_id(self):
 		return self.__wfUserId
-
-
 	def get_is_login(self):
 		return self.__isLogin
-
-
 	def get_container(self):
 		return self.__container
-
-
 	def set_app(self, value):
 		self.__app = value
-
-
 	def set_user(self, value):
 		self.__user = value
-
-
 	def set_lang(self, value):
 		self.__lang = value
-
-
 	def set_session(self, value):
 		self.__session = value
-
-
 	def set_cookies(self, value):
 		self.__cookies = value
-
-
 	def set_meta(self, value):
 		self.__meta = value
-
-
 	def set_post(self, value):
 		self.__post = value
-
-
 	def set_request(self, value):
 		self.__request = value
-
-
 	def set_get(self, value):
 		self.__get = value
-
-
 	def set_user_channel(self, value):
 		self.__userChannel = value
-
-
 	def set_auth(self, value):
 		self.__auth = value
-
-
 	def set_form(self, value):
 		self.__form = value
-
-
 	def set_forms(self, value):
 		self.__forms = value
-
-
 	def set_captcha(self, value):
 		self.__captcha = value
-
-
 	def set_raw_request(self, value):
 		self.__rawRequest = value
-
-
 	def set_ctx(self, value):
 		self.__ctx = value
-
-
 	def set_js_data(self, value):
 		self.__jsData = value
-
-
 	def set_view_name_source(self, value):
 		self.__viewNameSource = value
-
-
 	def set_view_name_target(self, value):
 		self.__viewNameTarget = value
-
-
 	def set_action(self, value):
 		self.__action = value
-
-
 	def set_is_view(self, value):
 		self.__isView = value
-
-
 	def set_is_action(self, value):
 		self.__isAction = value
-
-
 	def set_flow_code(self, value):
 		self.__flowCode = value
-
-
 	def set_flow_data(self, value):
 		self.__flowData = value
-
-
 	def set_is_flow(self, value):
 		self.__isFlow = value
-
-
 	def set_set_cookies(self, value):
 		self.__set_cookies = value
-
-
 	def set_device(self, value):
 		self.__device = value
-
-
 	def set_country(self, value):
 		self.__country = value
-
-
 	def set_win_type(self, value):
 		self.__winType = value
-
-
 	def set_tmpl(self, value):
 		self.__tmpl = value
-
-
 	def set_wf_user_id(self, value):
 		self.__wfUserId = value
-
-
 	def set_is_login(self, value):
 		self.__isLogin = value
-
-
 	def set_container(self, value):
 		self.__container = value
-
-
 	def del_app(self):
 		del self.__app
-
-
 	def del_user(self):
 		del self.__user
-
-
 	def del_lang(self):
 		del self.__lang
-
-
 	def del_session(self):
 		del self.__session
-
-
 	def del_cookies(self):
 		del self.__cookies
-
-
 	def del_meta(self):
 		del self.__meta
-
-
 	def del_post(self):
 		del self.__post
-
-
 	def del_request(self):
 		del self.__request
-
-
 	def del_get(self):
 		del self.__get
-
-
 	def del_user_channel(self):
 		del self.__userChannel
-
-
 	def del_auth(self):
 		del self.__auth
-
-
 	def del_form(self):
 		del self.__form
-
-
 	def del_forms(self):
 		del self.__forms
-
-
 	def del_captcha(self):
 		del self.__captcha
-
-
 	def del_raw_request(self):
 		del self.__rawRequest
-
-
 	def del_ctx(self):
 		del self.__ctx
-
-
 	def del_js_data(self):
 		del self.__jsData
-
-
 	def del_view_name_source(self):
 		del self.__viewNameSource
-
-
 	def del_view_name_target(self):
 		del self.__viewNameTarget
-
-
 	def del_action(self):
 		del self.__action
-
-
 	def del_is_view(self):
 		del self.__isView
-
-
 	def del_is_action(self):
 		del self.__isAction
-
-
 	def del_flow_code(self):
 		del self.__flowCode
-
-
 	def del_flow_data(self):
 		del self.__flowData
-
-
 	def del_is_flow(self):
 		del self.__isFlow
-
-
 	def del_set_cookies(self):
 		del self.__set_cookies
-
-
 	def del_device(self):
 		del self.__device
-
-
 	def del_country(self):
 		del self.__country
-
-
 	def del_win_type(self):
 		del self.__winType
-
-
 	def del_tmpl(self):
 		del self.__tmpl
-
-
 	def del_wf_user_id(self):
 		del self.__wfUserId
-
-
 	def del_is_login(self):
 		del self.__isLogin
-
-
 	def del_container(self):
 		del self.__container
 
@@ -1223,39 +1103,6 @@ class Context ( object ):
 
 class ContextDecorator(object):
 	_app = ''
-	APP = 'app'
-	USER = 'user'
-	LANG = 'lang'
-	SETTINGS = 'settings'
-	SESSION = 'session'
-	COOKIES = 'cookies'
-	META = 'meta'
-	POST = 'post'
-	REQUEST = 'request'
-	GET = 'get'
-	USER_CHANNEL = 'userChannel'
-	AUTH = 'auth'
-	FORM = 'form'
-	FORMS = 'forms'
-	CAPTCHA = 'captcha'
-	RAW_REQUEST = 'raw_request'
-	CTX = 'ctx'
-	JS_DATA = 'jsData'
-	VIEW_NAME_SOURCE = 'viewNameSource'
-	VIEW_NAME_TARGET = 'viewNameTarget'
-	ACTION = 'action'
-	IS_VIEW = 'isView'
-	IS_ACTION = 'isAction'
-	FLOW_CODE = 'flowCode'
-	FLOW_DATA = 'flowData'
-	IS_FLOW = 'isFlow'
-	SET_COOKIES = 'set_cookies'
-	DEVICE = 'device'
-	COUNTRY = 'country'
-	WIN_TYPE = 'winType'
-	TMPL = 'tmpl'
-	WF_USER_ID = 'wfUserId'
-	IS_LOGIN = 'isLogin'
 	def __init__(self, **args):
 		"""if args.has_key('app'):
 			self._app = args['app']"""
@@ -1272,10 +1119,10 @@ class ContextDecorator(object):
 				logger.debug( 'lang django: ' + lang )
 				if lang not in langs:
 					lang = 'en'
-				# TODO: We need to extend contexts. Where to tell which context we use???
-				# Use app context as default???
 				# Instantiate app Context
-				ctx = Context() 
+				cls = getClass( self._app + '.service.Context' )
+				ctx = cls()
+				if False: ctx = Context()
 				ctx.app = self._app
 				ctx.user = request.user
 				ctx.lang = lang
@@ -1340,55 +1187,18 @@ class ContextDecorator(object):
 class ContextViewDecorator(object):
 	_app = ''
 	__mode = ''
-	_settings = {}
-	APP = 'app'
-	USER = 'user'
-	LANG = 'lang'
-	SETTINGS = 'settings'
-	SESSION = 'session'
-	COOKIES = 'cookies'
-	META = 'meta'
-	POST = 'post'
-	REQUEST = 'request'
-	GET = 'get'
-	USER_CHANNEL = 'userChannel'
-	AUTH = 'auth'
-	FORM = 'form'
-	FORMS = 'forms'
-	CAPTCHA = 'captcha'
-	RAW_REQUEST = 'raw_request'
-	CTX = 'ctx'
-	JS_DATA = 'jsData'
-	VIEW_NAME_SOURCE = 'viewNameSource'
-	VIEW_NAME_TARGET = 'viewNameTarget'
-	ACTION = 'action'
-	FLOW_CODE = 'flowCode'
-	FLOW_DATA = 'flowData'
-	IS_FLOW = 'isFlow'
-	IS_VIEW = 'isView'
-	IS_ACTION = 'isAction'
-	SET_COOKIES = 'set_cookies'
-	DEVICE = 'device'
-	COUNTRY = 'country'
-	WIN_TYPE = 'winType'
-	TMPL = 'tmpl'
-	WF_USER_ID = 'wfUserId'
-	IS_LOGIN = 'isLogin'
 	def __init__(self, *argList, **args):
-		"""if args.has_key('app'):
-			self._app = args['app']"""
 		if args.has_key('mode'):
 			self.__mode = args['mode']
 		else:
 			self.__mode = 'view'
-		self._settings = argList[0]
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
 			try:
-				logger.debug( 'ContextNew :: args: ' + json.dumps(args) )				
-
-				logger.debug( 'userAgent: '  + request.META['HTTP_USER_AGENT'] )				
+				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
+				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
+								
 				if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 8') != -1:
 					result = render_to_response( 'noHTML5.html', RequestContext(request) )
@@ -1408,63 +1218,66 @@ class ContextViewDecorator(object):
 					else:
 						self._app = 'site'
 						#self.__viewName = 'home'
+				
 				REQ = request.REQUEST 
 				langs = ('en')
 				lang = translation.get_language()
-				logger.debug( 'lang django: ' + lang )
+				logger.debug( 'ContextViewDecorator :: lang django: %s' % lang )
 				if lang not in langs:
 					lang = 'en'
-				ctx = {}
-				ctx[self.APP] = self._app
-				ctx['user'] = request.user
-				ctx[self.LANG] = lang
-				ctx['settings'] = self._settings
-				ctx['session'] = request.session
-				ctx['cookies'] = request.COOKIES
-				ctx['meta'] = request.META
-				ctx['post'] = request.POST
-				ctx['request'] = REQ
-				ctx['raw_request'] = request
-				ctx['get'] = request.GET
-				ctx[self.DEVICE] = Choices.DEVICE_PC
-				ctx[self.COUNTRY] = ''
-				ctx[self.WIN_TYPE] = Choices.WIN_TYPE_WINDOW
-				ctx[self.TMPL] = ''
-				#ctx['socialChannel'] = ''
-				ctx[self.USER_CHANNEL] = None
-				ctx['auth'] = {}
-				ctx['form'] = None
-				ctx['forms'] = {}
-				ctx['captcha'] = None 
-				ctx[self.VIEW_NAME_SOURCE] = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
-				ctx[self.VIEW_NAME_TARGET] = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
-				ctx[self.ACTION] = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
+				# Instantiate app Context
+				cls = getClass( self._app + '.service.Context' )
+				ctx = cls()
+				if False: ctx = Context()
+				ctx.ap = self._app
+				ctx.user = request.user
+				ctx.lang = lang
+				ctx.settings = settings
+				ctx.session = request.session
+				ctx.cookies = request.COOKIES
+				ctx.meta = request.META
+				ctx.post = request.POST
+				ctx.request = REQ
+				ctx.rawRequest = request
+				ctx.get = request.GET
+				ctx.device = Choices.DEVICE_PC
+				ctx.country = ''
+				ctx.winType = Choices.WIN_TYPE_WINDOW
+				ctx.tmpl = ''
+				ctx.userChannel = None
+				ctx.auth = {}
+				ctx.form = None
+				ctx.forms = {}
+				ctx.captcha = None 
+				ctx.viewNameSource = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
+				ctx.viewNameTarget = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
+				ctx.action = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
 				# Set isView and isAction. Used by data layer, to define which database name to use
 				if request.REQUEST.has_key('view'):
-					ctx[self.IS_VIEW] = True
-					ctx[self.IS_ACTION] = False
+					ctx.isView = True
+					ctx.isAction = False
 				elif request.REQUEST.has_key('action'):
-					ctx[self.IS_ACTION] = True
-					ctx[self.IS_VIEW] = False
+					ctx.isAction = True
+					ctx.isView = False
 				else:
-					ctx[self.IS_VIEW] = True
-					ctx[self.IS_ACTION] = False
-				ctx[self.FLOW_CODE] = ''
-				ctx[self.FLOW_DATA] = ''
-				ctx[self.IS_FLOW] = False
-				ctx[self.JS_DATA] = ''
-				ctx[self.WF_USER_ID] = ''
+					ctx.isView = True
+					ctx.isAction = False
+				ctx.flowCode = ''
+				ctx.flowData = ''
+				ctx.isFlow = False
+				ctx.jsData = ''
+				ctx.wfUserId = ''
 				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
 				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
-					ctx[self.USER_CHANNEL] = request.session['userChannel']
+					ctx.userChannel = request.session['userChannel']
 					logger.debug( 'Context :: userChannel: ' + ctx[self.USER_CHANNEL] )
 				if request.user.is_authenticated():
-					ctx[self.IS_LOGIN] = True
+					ctx.isLogin = True
 				else:
-					ctx[self.IS_LOGIN] = False
+					ctx.isLogin = False
 				# Set cookies
-				ctx[self.SET_COOKIES] = []
+				ctx.set_cookies = []
 				args['ctx'] = ctx
 				resp = f(request, **args)
 				return resp

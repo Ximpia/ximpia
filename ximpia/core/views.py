@@ -15,7 +15,7 @@ from yacaptcha.models import Captcha
 
 from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
-from service import XpMsgException, ViewDecorator, SearchService
+from service import XpMsgException, ViewDecorator, SearchService, TemplateService
 from data import ViewDAO, ActionDAO
 
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
@@ -212,19 +212,35 @@ def searchHeader(request, **args):
 	return HttpResponse(json.dumps(results))
 
 def jxTemplate(request, app, mode, tmplName):
-	"""Get ximpia template
-	@param app: Application code
-	@param mode: Either window or popup
-	@param tmplName: Template name
-	@return: template"""
-	tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
+	"""
+	
+	Get ximpia template
+	
+	**Attributes**
+	
+	* ``app``:String : Application
+	* ``mode``:String : Mode: window, popup
+	* ``tmplName``:String : Template name
+	
+	** Returns **
+	
+	* ``template``:HttpResponse	
+	
+	"""
+	
+	service = TemplateService(None)
+	tmpl = service.get(app, mode, tmplName)
+	
+	"""tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
 	if not tmpl:
-		m = getClass('ximpia.' + app)
+		package, module = app.split('.')
+		m = getClass(package + '.' + module)
 		path = m.__file__.split('__init__')[0] + '/xp_templates/' + mode + '/' + tmplName + '.html'
 		f = open(path)
 		tmpl = f.read()
 		f.close()
-		cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
+		cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)"""
+
 	return HttpResponse(tmpl)
 
 @ContextDecorator()
@@ -232,7 +248,7 @@ def jxService(request, **args):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
-	logger.debug( 'jxBusiness...' )
+	logger.debug( 'jxService...' )
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
 	request.session.delete_test_cookie()

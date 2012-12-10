@@ -409,9 +409,9 @@ class UserProfile ( BaseModel ):
 			verbose_name=_('Status'), help_text=_('User Status') )
 	
 	class Meta:
-		db_table = 'SITE_USER_META'
-		verbose_name = 'User Meta Keys'
-		verbose_name_plural = "Users Meta Keys"
+		db_table = 'SITE_USER_PROFILE'
+		verbose_name = 'User Profile'
+		verbose_name_plural = "User Profiles"
 
 class GroupChannel ( BaseModel ):
 	"""
@@ -444,7 +444,7 @@ class GroupChannel ( BaseModel ):
 				verbose_name = _('Group Name Id'), help_text = _('Identification for group'))
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 				verbose_name = _('Public'), help_text = _('Group is public'))
-	accessGroups = models.ManyToManyField('self', through='site.GroupChannelAccess', related_name='groupchannel_access', 
+	accessGroups = models.ManyToManyField('self', through='site.GroupChannelAccess', related_name='groupchannel_access', symmetrical=False, 
 				verbose_name = _('Access Groups'), help_text = _('Profiles that have access to this group'))
 	tags = models.ManyToManyField(Tag, through='site.GroupChannelTags', null=True, blank=True, related_name='groupchannel_tags',
 				verbose_name = _('Tags'), help_text = _('Tags'))
@@ -473,7 +473,9 @@ class GroupChannelAccess ( BaseModel ):
 	"""
 	
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
-	groupChannel = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL',
+	groupChannelFrom = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL_FROM', related_name='groupchannelaccess_from',
+					verbose_name=_('Group'), help_text=_('Group Channel'))
+	groupChannelTo = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL_TO', related_name='groupchannelaccess_to',
 					verbose_name=_('Group'), help_text=_('Group Channel'))
 	
 	def __unicode__(self):
@@ -667,3 +669,31 @@ class Invitation ( BaseModel ):
 		db_table = 'SITE_INVITATION'
 		verbose_name = _('Invitation')
 		verbose_name_plural = _('Invitations')
+
+class InvitationMeta ( BaseModel ):
+	"""
+	
+	Invitation attached data.
+	
+	**Attributes**
+	
+	* ``value``:TextField : User meta value.
+	
+	**Relationships**
+	
+	* ``invitation`` -> Invitation . Foreign key relationship with Invitation model.
+	* ``meta`` -> MetaKey . Foreign key relationship with MetaKey.
+	
+	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_PROFILE')
+	invitation = models.ForeignKey(Invitation, db_column='ID_INVITATION',
+				verbose_name = _('Invitation'), help_text = _('Invitation'))
+	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+				verbose_name=_('Meta Key'), help_text=_('Meta Key'))
+	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
+	
+	class Meta:
+		db_table = 'SITE_INVITATION_META'
+		verbose_name = 'Invitation Meta Keys'
+		verbose_name_plural = "Invitation Meta Keys"
