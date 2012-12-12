@@ -28,10 +28,12 @@ from ximpia.util.js import Form as _jsf
 
 class AppCompRegCommonBusiness ( object ):
 	_ctx = None
-	def __init__(self, ctx=None):
+	def __init__(self, ctx=None, appName=None, doClean=True):
 		"""Parent class for application component registering."""
 		self._ctx = ctx
 		self._reg = ComponentRegisterBusiness()
+		if appName != None and doClean == True:
+			self._reg.cleanAll(appName)
 		self.main()
 		self.views()
 		self.templates()
@@ -69,21 +71,44 @@ class ComponentRegisterBusiness ( object ):
 	def __init__(self):
 		pass
 	
-	def registerApp(self, code=None, name=None, isAdmin=False):
+	def registerApp(self, name=None, title=None, isAdmin=False, slug=''):
 		"""Register application
 		@param code: Application code
 		@param name: Application name
 		@param isAdmin: Is app admin backdoor?. Values True / False"""
-		app, created = Application.objects.get_or_create(code=code, name=name, isAdmin=isAdmin)
+		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug)
 		logger.debug( 'Register application: %s %s' % (app, created) )
 	
-	def registerViewMenu(self, appCode=None, viewName=None, menus=[], **argsDict):
+	def cleanAll(self, appName=None):
+		"""
+		
+		Clean views, actions, workflows, menus, search and templates for application
+		
+		**Attributes**
+		
+		* ``appName`` : Application name, like 'ximpia.site'. Package and module for application, like in installed apps in settings
+		file
+		
+		"""
+		View.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all views for %s' % appName )
+		Action.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all actions for %s' % appName )
+		Workflow.objects.filter(application__name=appName).delete()
+		WorkflowData.objects.filter(flow__application__name=appName).delete()
+		logger.debug( 'deleted all flows for %s' % appName )
+		Menu.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all menus for %s' % appName )
+		XpTemplate.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all templates for %s' % appName )
+	
+	def registerViewMenu(self, appName=None, viewName=None, menus=[], **argsDict):
 		"""Register views associated with a menu
-		@param appCode: Application code
+		@param appName: Application code
 		@param viewName: View name
 		@param menus: List of menus dictionaries"""
 		logger.debug( 'register view Menus...' )
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName)
 		# Menu
 		logger.debug( 'View menus...' )
@@ -129,17 +154,17 @@ class ComponentRegisterBusiness ( object ):
 				logger.debug( 'data: %s' % ( counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
-				counter += 10
+				counter += 10	
 	
-	def cleanViews(self, appCode=None):
+	def cleanViews(self, appName=None):
 		"""Clean all views for application."""
-		View.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all views for %s' % appCode )
+		View.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all views for %s' % appName )
 	
-	def registerView(self, appCode=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
+	def registerView(self, appName=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
 			hasAuth=True, **argsDict):
 		"""Registers view
-		@param appCode: Application code
+		@param appName: Application code
 		@param viewName: View name
 		@param myClass: Class that shows view
 		@param method: Method that shows view
@@ -151,7 +176,7 @@ class ComponentRegisterBusiness ( object ):
 		# TODO: Validate entry arguments: There is no None arguments, types, etc...
 		logger.debug( 'register views...' )
 		classPath = str(myClass).split("'")[1]
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		view, created = View.objects.get_or_create(application=app, name=viewName) #@UnusedVariable
 		view.implementation = classPath + '.' + method
 		view.winType = winType
@@ -164,37 +189,36 @@ class ComponentRegisterBusiness ( object ):
 			fields = argsDict[name]
 			for value in fields:
 				theTuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value) #@UnusedVariable
-		
 	
-	def cleanActions(self, appCode=None):
+	def cleanActions(self, appName=None):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
-		Action.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all actions for %s' % appCode )		
+		Action.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all actions for %s' % appName )
 	
-	def registerAction(self, appCode=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
+	def registerAction(self, appName=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
 		"""Registers action
-		@param appCode: Application code
+		@param appName: Application code
 		@param actionName: Action name
 		@param myClass: Class for action
 		@param method: Method that executes action"""
 		classPath = str(myClass).split("'")[1]
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		action, created = Action.objects.get_or_create(application=app, name=actionName) #@UnusedVariable
 		action.implementation = classPath + '.' + method
 		action.hasUrl = hasUrl
 		action.hasAuth = hasAuth
 		action.save()
 	
-	def registerParam(self, appCode=None, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
+	def registerParam(self, appName=None, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
 		"""Register view / workflow parameter
-		@param appCode: Application code
+		@param appName: Application code
 		@param name: Parameter name
 		@param title: Parameter title
 		@param paramType: Parameter type
 		@param isView: Boolean if parameter used in view
 		@param isWorkflow: Boolean if parameter used in flow to resolve view"""
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		param, created = Param.objects.get_or_create(application=app, name=name)
 		if created:
 			param.title = title
@@ -202,38 +226,38 @@ class ComponentRegisterBusiness ( object ):
 			param.view = isView
 			param.workflow = isWorkflow
 			param.save()
-
-	def cleanFlows(self, appCode=None):
-		"""Clean all flows for application."""
-		Workflow.objects.filter(application__code=appCode).delete()
-		WorkflowData.objects.filter(flow__application__code=appCode).delete()
-		logger.debug( 'deleted all flows for %s' % appCode )
 	
-	def registerFlow(self, appCode=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
+	def cleanFlows(self, appName=None):
+		"""Clean all flows for application."""
+		Workflow.objects.filter(application__name=appName).delete()
+		WorkflowData.objects.filter(flow__application__name=appName).delete()
+		logger.debug( 'deleted all flows for %s' % appName )
+	
+	def registerFlow(self, appName=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
 		"""Reister flow
-		@param appCode: Application code
+		@param appName: Application code
 		@param flowcode: Flow code
 		@param resetStart: Is flow reset at start of flow?
 		@param deleteOnEnd: Is flow data deleted at end of flow?
 		@param jumpToView: Does flow needs to jump to last view in flow?"""
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode) #@UnusedVariable
 		flow.resetStart = resetStart
 		flow.deleteOnEnd = deleteOnEnd
 		flow.jumpToView = jumpToView
 		flow.save()
 		
-	def registerFlowView(self, appCode=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
+	def registerFlowView(self, appName=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
 			paramDict={}, viewParamDict={}):
 		"""Reister flow
-		@param appCode: Application code
+		@param appName: Application code
 		@param flowcode: Flow code
 		@param viewNameSource: View name origin for flow
 		@param viewNameTarget: View name destiny for flow
 		@param actionName: Action name
 		@param order: Order to evaluate view target resolution
 		@param paramDict: Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)"""
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		viewSource = View.objects.get(application=app, name=viewNameSource)
 		viewTarget = View.objects.get(application=app, name=viewNameTarget)
 		action = Action.objects.get(application=app, name=actionName)
@@ -247,16 +271,16 @@ class ComponentRegisterBusiness ( object ):
 		# Entry View parameters
 		# TODO: Complete entry view parameters
 	
-	def cleanMenu(self, appCode=None):
+	def cleanMenu(self, appName=None):
 		"""Clean all menus for application
 		@param appCode: Application code"""
-		Menu.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all menus for %s' % appCode )
+		Menu.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all menus for %s' % appName )
 	
-	def registerMenu(self, appCode=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
+	def registerMenu(self, appName=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
 			urlTarget='', **argsDict):
 		"""Register menu item
-		@param appCode: Application code
+		@param appName: Application code
 		@param name: Menu name
 		@param titleShort: Menu short title
 		@param title: Menu title
@@ -266,54 +290,56 @@ class ComponentRegisterBusiness ( object ):
 		@param url: Url to trigger
 		@param urlTarget: Target to open window: same or new tab"""
 		logger.debug( 'register menus...' )
-		paramDict = {}
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		# Icon
 		icon, created = CoreParam.objects.get_or_create(mode=K.PARAM_ICON, name=iconName, value=iconName) #@UnusedVariable
-		paramDict['application'] = app
-		paramDict['name'] = name
-		paramDict['titleShort'] = titleShort
-		paramDict['title'] = title
-		paramDict['icon'] = icon
+		# Menu
+		try:
+			menu = Menu.objects.get(name=name)
+		except Menu.DoesNotExist:
+			menu = Menu(	application=app,
+					name=name,
+					titleShort=titleShort,
+					title=title,
+					icon=icon
+				)
 		if len(url) != 0:
-			paramDict['url'] = url
-			paramDict['urlTarget'] = urlTarget
+			menu.url = url
+			menu.urlTarget = urlTarget
 		if actionName != '':
 			action = Action.objects.get(name=actionName)
-			paramDict['action'] = action
+			menu.action = action
 		if viewName != '':
-			view = View.objects.get(application__code=appCode, name=viewName)
-			paramDict['view'] = view
-		logger.debug( 'paramDict: %s' % paramDict )
-		menu = Menu.objects.create(**paramDict)
+			view = View.objects.get(application__name=appName, name=viewName)
+			menu.view = view
+		menu.save()
 		# MenuParam
 		logger.debug( 'argsDict: %s' % argsDict )
 		for name in argsDict:
 			operator, value = argsDict[name]
 			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
-		
-	def cleanSearch(self, appCode=None):
-		"""Clean Search information for view or action
-		@param appCode: Application code"""
-		try:
-			SearchIndex.objects.filter(application__code=appCode).delete()
-			logger.debug( 'deleted Search !!! %s' % appCode ) 
-		except SearchIndex.DoesNotExist:
-			pass
-
-	def registerSearch(self, text='', appCode=None, viewName=None, actionName=None, params={}):
+	
+	def registerSearch(self, text='', appName=None, viewName=None, actionName=None, params={}):
 		"""Register application operation. It will be used in view search.
 		@param text: Text to index
-		@param appCode: Application code
+		@param appName: Application code
 		@param viewName: View name
 		@param actionName: Action name"""
 		wordList = resources.Index.parseText(text)
 		logger.debug( 'wordList: %s' % wordList )
 		view = View.objects.get(name=viewName) if viewName != None else None
 		action = Action.objects.get(name=actionName) if actionName != None else None
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		# Create search index
-		search = SearchIndex.objects.create(application=app, view=view, action=action, title=text)
+		search, created = SearchIndex.objects.get_or_create(application=app, title=text) #@UnusedVariable
+		if view != None:
+			search.view = view
+		if action != None:
+			search.action = action
+		if view != None or action != None:
+			search.save()
+		# delete all words for search in SearchIndexWord
+		SearchIndexWord.objects.filter(index=search, word__in=wordList).delete()
 		for wordName in wordList:
 			# Word
 			word, created = Word.objects.get_or_create(word=wordName) #@UnusedVariable
@@ -324,16 +350,16 @@ class ComponentRegisterBusiness ( object ):
 			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
 								value=params[paramName])
 	
-	def cleanTemplates(self, appCode=None):
+	def cleanTemplates(self, appName=None):
 		"""Clean templates for the application
 		@param appCode: Application code"""
-		XpTemplate.objects.filter(application__code=appCode).delete()
-		logger.debug( 'deleted all templates for %s' % appCode )
+		XpTemplate.objects.filter(application__name=appName).delete()
+		logger.debug( 'deleted all templates for %s' % appName )
 	
-	def registerTemplate(self, appCode=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
+	def registerTemplate(self, appName=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
 			device=None, alias=None):
 		"""Register template
-		@param appCode: Application code
+		@param appName: Application code
 		@param viewName: View name
 		@param name: Template name
 		@param language: Language to target template
@@ -341,7 +367,7 @@ class ComponentRegisterBusiness ( object ):
 		@param winType: Type of window for template, window or popup
 		@param device: Device to target template
 		@param alias: Template alias"""
-		app = Application.objects.get(code=appCode)
+		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName) if viewName != None else None
 		paramDict = {}
 		paramDict['application'] = app
@@ -410,13 +436,13 @@ class WorkFlowBusiness (object):
 		logger.debug( 'resolvedFlow: ', resolvedFlow )
 		return resolvedFlow
 
-	def resolveView(self, wfUserId, appCode, flowCode, viewNameSource, actionName):
+	def resolveView(self, wfUserId, appName, flowCode, viewNameSource, actionName):
 		"""Search destiny views with origin viewSource and operation actionName
 		@param viewNameSource: Origin view
 		@param actionName: Action name
 		@return: List of views"""
 		viewTarget = ''
-		flowViews = self._dbWFView.search(flow__application__code=appCode, flow__code=flowCode,
+		flowViews = self._dbWFView.search(flow__application__name=appName, flow__code=flowCode,
 					viewSource__name=viewNameSource, action__name=actionName).order_by('order')
 		params = self._dbWFParams.search(flowView__in=flowViews)
 		paramFlowDict = {}

@@ -22,7 +22,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 import forms
-from data import ParamDAO, UserChannelDAO, XmlMessageDAO, UserDAO, GroupDAO, UserDetailDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO
+from data import ParamDAO, UserChannelDAO, XmlMessageDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO
 from forms import UserSignupInvitationForm #@UnusedImport
 import messages as _m
 import constants as K
@@ -97,7 +97,6 @@ class LoginServiceOld ( CommonService ):
 		super(LoginServiceOld, self).__init__(ctx)
 		self._dbUserSys = UserDAO(ctx)
 		self._dbXmlMessage = XmlMessageDAO(ctx)
-		self._dbUserDetail = UserDetailDAO(ctx)
 		self._dbUserChannel = UserChannelDAO(ctx)
 		self._dbParam = ParamDAO(ctx)	
 	
@@ -250,7 +249,6 @@ class SignupService ( CommonService ):
 	def __init__(self, ctx):
 		super(SignupService, self).__init__(ctx)
 		self._dbUser = UserDAO(ctx)
-		self._dbUserDetail = UserDetailDAO(ctx)
 		#self._dbOrganization = OrganizationDAO(ctx)
 		#self._dbInvitation = InvitationDAO(ctx)
 		self._dbGroup = GroupDAO(ctx)
