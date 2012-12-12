@@ -3,7 +3,7 @@ import os
 from django.utils.translation import ugettext as _
 
 from ximpia.core.models import ContextDecorator as Ctx
-from models import XpMsgException, CoreParam, Application, Action, ApplicationAccess, CoreXmlMessage
+from models import XpMsgException, CoreParam, Application, Action, ApplicationAccess
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
@@ -321,11 +321,6 @@ class ApplicationAccessDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ApplicationAccessDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = ApplicationAccess
-
-class CoreXMLMessageDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(CoreXMLMessageDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = CoreXmlMessage
 
 class MenuDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

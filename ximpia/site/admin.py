@@ -1,4 +1,4 @@
-from models import Tag, GroupChannel, Invitation, Param, XmlMessage, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
+from models import Tag, GroupChannel, Invitation, Param, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
 	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupChannelTags 
 
 from django.contrib import admin
@@ -17,15 +17,6 @@ class AddressAdmin(admin.ModelAdmin):
 	list_display = ('id','city','region','zipCode','country','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
 	list_display_links = ('id',)
 	search_fields = ('city', 'region','country','zipCode')
-	def save_model(self, request, obj, form, change):
-		obj.userModifyId = request.user.id
-		if not obj.id:
-			obj.userCreateId = request.user.id
-		obj.save()
-
-class XmlMessageAdmin(admin.ModelAdmin):
-	list_display = ('id','name', 'lang', 'userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
-	list_display_links = ('name',)
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
@@ -204,7 +195,6 @@ class SignupDataAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
-admin.site.register(XmlMessage, XmlMessageAdmin)
 admin.site.register(Param, ParamAdmin)
 admin.site.register(SocialNetworkUser, SocialNetworkUserAdmin)
 admin.site.register(Tag, TagAdmin)

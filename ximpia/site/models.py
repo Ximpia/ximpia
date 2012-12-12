@@ -60,7 +60,7 @@ class MetaKey( BaseModel ):
 	"""
 	
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_META_KEY')
-	name = models.CharField(max_length=20,
+	name = models.CharField(max_length=100,
 	        verbose_name = _('Key Name'), help_text = _('Meta Key Name'), db_column='NAME')
 	keyType = models.ForeignKey(Param, limit_choices_to={'mode': CoreK.PARAM_META_TYPE}, db_column='ID_SITE_PARAMETER',
 			verbose_name=_('Key META Type'), help_text=_('Key META Type') )
@@ -576,29 +576,6 @@ class GroupChannelTags ( BaseModel ):
 		db_table = 'SITE_GROUP_CHANNEL_TAGS'
 		verbose_name = 'Group Channel Tags'
 		verbose_name_plural = "Group Channel Tags"
-
-class XmlMessage ( BaseModel ):
-	
-	"""
-	
-	XML Messages
-	
-	"""
-	
-	# TODO: This table will go to settings, having name as name
-	# @deprecated: Move table data to SITE_SETTINGS
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_XML_MESSAGE')
-	name = models.CharField(max_length=255, db_column='NAME',
-			verbose_name = _('Name'), help_text = _('Code name of XML'))
-	lang = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, db_column='LANG',
-			verbose_name = _('Language'), help_text = _('Language for xml'))
-	body = models.TextField(db_column='BODY', verbose_name = _('Xml Content'), help_text = _('Xml content'))
-	def __unicode__(self):
-		return str(self.name)
-	class Meta:
-		db_table = 'SITE_XML_MESSAGE'
-		verbose_name = _('Xml Message')
-		verbose_name_plural = _('Xml Messages')
 
 class SignupData ( BaseModel ):
 	

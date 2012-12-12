@@ -3,7 +3,7 @@ from ximpia.core.data import CommonDAO
 from django.contrib.auth.models import User, Group
 
 from models import UserChannel
-from models import XmlMessage, Param, SignupData, SocialNetworkUser, Settings, Category, Tag, TagMode, Invitation, Address, GroupChannel
+from models import Param, SignupData, SocialNetworkUser, Settings, Category, Tag, TagMode, Invitation, Address, GroupChannel
 
 class UserDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -59,11 +59,6 @@ class InvitationDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(InvitationDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Invitation
-
-class XmlMessageDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(XmlMessageDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = XmlMessage
 
 class ParamDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):

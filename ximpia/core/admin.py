@@ -1,5 +1,4 @@
-from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Settings, MetaKey, ApplicationAccess, WorkflowView,\
-	CoreXmlMessage
+from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Settings, MetaKey, ApplicationAccess, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param
 
 from django.contrib import admin
@@ -215,5 +214,3 @@ admin.site.register(WorkflowView, WorkflowViewAdmin)
 admin.site.register(XpTemplate, XpTemplateAdmin)
 admin.site.register(MetaKey, MetaKeyAdmin)
 admin.site.register(Settings, SettingsAdmin)
-
-admin.site.register(CoreXmlMessage)
