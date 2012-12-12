@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 
 from ximpia.core.models import ContextDecorator as Ctx
 from models import XpMsgException, CoreParam, Application, Action, ApplicationAccess, CoreXmlMessage
-from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, WFViewEntryParam
+from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
 # Settings
@@ -103,14 +103,14 @@ class CommonDAO(object):
 			elif dbNameI.find('slave') == 0:
 				dbListSlave.append(dbNameI)
 		dbName = ''
-		if self._ctx[Ctx.IS_VIEW] == True:
+		if self._ctx.isView == True:
 			if len(dbListSlave) != 0:
 				dbName = random.choice(dbListSlave)
 			else:
 				dbName = 'default'
-		elif self._ctx[Ctx.IS_ACTION] == True:
+		elif self._ctx.isAction == True:
 			dbName = random.choice(dbListMaster)
-		logger.debug('CommonDAO :: dbName: ' + dbName + ' view: ' + self._ctx[Ctx.VIEW_NAME_SOURCE] )
+		logger.debug('CommonDAO :: dbName: ' + dbName + ' view: ' + self._ctx.viewNameSource )
 		return dbName
 	
 	def getMap(self, idList):
@@ -205,34 +205,47 @@ class CommonDAO(object):
 		@param id: Object id
 		@return: Model object"""
 		try:
-			xpObject = self._model.objects.using(self._resolveDbName()).get(id=pk)
 			if real == False:
+				xpObject = self._model.objects.using(self._resolveDbName()).get(id=pk)
 				xpObject.isDeleted = True
 				xpObject.save(using=self._resolveDbName())
 			else:
-				self._model.objects.using(self._resolveDbName()).get(id=pk).delete()
+				xpObject = self._model.objects_del.using(self._resolveDbName()).get(id=pk)
+				xpObject.delete()
 		except Exception as e:
 			raise XpMsgException(e, _('Error delete object by id ') + str(pk))
 		return xpObject
 	
-	def deleteIfExists(self, **qsArgs):
+	def deleteIfExists(self, real=False, **qsArgs):
 		"""Delete row in case item exists.If does not exist, catches a DoesNotExist exception
 		@param qsArgs: query arguments"""
 		try:
 			dbObj = self._model.objects
 			try:
-				dbObj.using(self._resolveDbName()).get(**qsArgs).delete()
+				if real == False:
+					dbObj = self._model.objects.using(self._resolveDbName()).get(**qsArgs)
+					dbObj.isDeleted = True
+					dbObj.save(using=self._resolveDbName())
+				else:
+					dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qsArgs)
+					dbObj.delete()
 			except self._model.DoesNotExist:
 				pass	
 		except Exception as e:
 			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model))
 	
-	def delete(self, **qsArgs):
+	def delete(self, real=False, **qsArgs):
 		"""Delete row. In case does not exist, throws model.DoesNotExist
 		@param qsArgs: query arguments"""
-		try:
-			dbObj = self._model.objects
-			dbObj.using(self._resolveDbName()).get(**qsArgs).delete()
+		try:						
+			if real == False:
+				dbObj = self._model.objects.using(self._resolveDbName()).get(**qsArgs)
+				dbObj.isDeleted = True
+				dbObj.save(using=self._resolveDbName())
+			else:
+				dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qsArgs)
+				dbObj.delete()
+			#dbObj.using(self._resolveDbName()).get(**qsArgs).delete()
 		except Exception as e:
 			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model))
 	
@@ -353,11 +366,6 @@ class WFParamValueDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(WFParamValueDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = WFParamValue
-
-class WFViewEntryParamDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WFViewEntryParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = WFViewEntryParam
 
 class WorkflowViewDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

@@ -9,7 +9,7 @@ from models import XpMsgException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData
 from ximpia.util import resources
-from models import ContextDecorator as Ctx, CoreParam
+from models import CoreParam
 import constants as K
 
 # Settings
@@ -21,7 +21,7 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-from data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, WFViewEntryParamDAO, ViewDAO, WorkflowViewDAO
+from data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, ViewDAO, WorkflowViewDAO
 from choices import Choices
 
 from ximpia.util.js import Form as _jsf
@@ -378,7 +378,7 @@ class WorkFlowBusiness (object):
 		self._dbWFParams = WFParamValueDAO(ctx, relatedDepth=2)
 		self._dbView = ViewDAO(ctx)
 		self._dbParam = ParamDAO(ctx)
-		self._dbWFViewParam = WFViewEntryParamDAO(ctx, relatedDepth=2)
+		#self._dbWFViewParam = WFViewEntryParamDAO(ctx, relatedDepth=2)
 		self.__wfData = getBlankWfData({})
 	
 	def genUserId(self):
@@ -454,7 +454,7 @@ class WorkFlowBusiness (object):
 		"""Put list of workflow parameters in context
 		@param flowCode: Flow code
 		@param argsDict: Argument dictionary"""
-		flowCode = self._ctx[Ctx.FLOW_CODE]
+		flowCode = self._ctx.flowCode
 		flow = self._dbWorkflow.get(code=flowCode) #@UnusedVariable
 		if not self.__wfData:
 			self.__wfData = getBlankWfData({})
@@ -559,7 +559,7 @@ class WorkFlowBusiness (object):
 		"""Get flow parameter from context.
 		@param name: Parameter name
 		@return: Parameter value"""
-		flowDataDict = self._ctx[Ctx.FLOW_DATA]
+		flowDataDict = self._ctx.flowData
 		logger.debug( 'flowDataDict: ', flowDataDict, type(flowDataDict) )
 		logger.debug( 'wfData: ', self.__wfData )
 		return flowDataDict['data'][name]
