@@ -1,5 +1,5 @@
 
-APP = 'site'
+#APP = 'site'
 XIMPIA = 'ximpia'
 TWITTER = 'twitter'
 FACEBOOK = 'facebook'

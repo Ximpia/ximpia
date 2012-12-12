@@ -35,7 +35,30 @@ class DeleteManager( models.Manager ):
 		return super(DeleteManager, self).get_query_set().filter(isDeleted=False)
 
 class BaseModel( models.Model ):
-	"""Abstract Base Model"""
+	"""
+	
+	Abstract Base Model with fields for all other models. Ximpia models have this model as parent. This model provides audit
+	informatioon like date creating and updating, as well as user involved in the update or creation.
+	
+	When you delete rows in Ximpia, ``isDeleted``field is set to True. You can force to physical delete by passing ``real=True`` to 
+	data delete methods (db.delete, db.deleteById and db.deleteIfExists).
+	
+	When deleting rows with the django admin interface, you cannot delete database records physically, therefore those rows will have
+	isDeleted=True and will not show in the admin pages. You can delete for ever with your application code or directly connecting to
+	your database.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``dateCreate``:DateTimeField
+	* ``dateModify``:DateTimeField
+	* ``userCreateId``:IntegerField
+	* ``userModifyId``:IntegerField
+	* ``isDeleted``:BooleanField
+	
+	**Relatinships**
+	
+	"""
 	dateCreate = models.DateTimeField(auto_now_add=True, null=True, blank=True, editable=False, db_column='DATE_CREATE', 
 					verbose_name= _('Create Date'), help_text= _('Create Date'))
 	dateModify = models.DateTimeField(auto_now=True, null=True, blank=True, editable=False, db_column='DATE_MODIFY',
@@ -51,12 +74,79 @@ class BaseModel( models.Model ):
 	class Meta:
 		abstract = True
 
+class Param( BaseModel ):
+	"""
+	
+	Parameters for WF and Views
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``name``:CharField(15)
+	* ``title``:CharField(30)
+	* ``paramType``:CharField(10) : As Choices.BASIC_TYPES
+	* ``isView``:BooleanField
+	* ``isWorkflow``:BooleanField
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAM')
+	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION', 
+				verbose_name = _('Application'), help_text = _('Application'))
+	name = models.CharField(max_length=15, db_column='NAME',
+				verbose_name=_('Name'), help_text=_('Name'))
+	title = models.CharField(max_length=30, db_column='TITLE',
+				verbose_name=_('Title'), help_text=_('Title text for the parameter'))
+	paramType = models.CharField(max_length=10, choices=Choices.BASIC_TYPES, db_column='PARAM_TYPE',
+				verbose_name=_('Type'), help_text=_('Type'))
+	isView = models.BooleanField(default=False, db_column='IS_VIEW',
+				verbose_name=_('View'), help_text=_('Parameter for View?'))
+	isWorkflow = models.BooleanField(default=False, db_column='IS_WORKFLOW',
+				verbose_name=_('Workflow'), help_text=_('Parameter for workflow?'))
+	def __unicode__(self):
+		return self.title
+	class Meta:
+		db_table = 'CORE_PARAM'
+		verbose_name = 'Parameter'
+		verbose_name_plural = "Parameters for views and workflow"
+		unique_together = ('application','name')
+
+
 class CoreParam( BaseModel ):
 	"""
 	
-	User Parameters
+	Parameters
 	
-	Doc here...
+	You would place tables (key->value) in choices module inside your application for tables that will not change often. When you
+	have data that will change frequently, you can user this model to record parameters, lookup tables (like choices) and any other
+	parametric information you may require.
+	
+	You can do:
+	
+	MY_FIRST_PARAM = 67 by inserting name='MY_FIRST_PARAM', value='67', paramType='integer'
+	
+	Country
+	||name||value||
+	||es||spain||
+	||us||United States||
+	
+	by...
+	mode='COUNTRY', name='es', value='Spain', paramType='string'
+	mode='COUNTRY', name='us', value='United States', paramType='string'
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``mode``:CharField(20) : Parameter mode. This field allows you to group parameter to build lookup tables like the ones found
+	in combo boxes (select boxes) with name->value pairs.
+	* ``name``:CharField(20) : Parameter name
+	* ``value``:CharField(100) : Parameter value
+	* ``paramType``:CharField(10) : Parameter type, as Choices.PARAM_TYPE . Choices are string, integer, date.
+	
+	**Relationships**
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAMETER')
@@ -70,26 +160,30 @@ class CoreParam( BaseModel ):
 			db_column='PARAM_TYPE',
 			verbose_name=_('Parameter Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
-		return str(self.mode) + ' - ' + str(self.name)
+		return '%s - %s' % (self.mode, self.name)
 	class Meta:
 		db_table = 'CORE_PARAMETER'
 		verbose_name = "Parameter"
 		verbose_name_plural = "Parameters"
 
 class MetaKey( BaseModel ):
+
 	"""
 	
 	Model to store the keys allowed for meta values
 	
 	**Attributes**
 	
+	* ``id``:AutoField : Primary key
 	* ``name``:CharField(20) : Key META name
 	
 	**Relationships**
 	
-	* ``keyType`` : META Key type
+	* ``keyType`` -> CoreParam : Foreign key to CoreParam having mode='META_TYPE'
 	
 	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_META_KEY')
 	name = models.CharField(max_length=20,
 	        verbose_name = _('Key Name'), help_text = _('Meta Key Name'), db_column='NAME')
 	keyType = models.ForeignKey(CoreParam, limit_choices_to={'mode': K.PARAM_META_TYPE}, db_column='ID_META_TYPE',
@@ -112,19 +206,60 @@ class CoreXmlMessage( BaseModel ):
 			verbose_name = _('Language'), help_text = _('Language for xml'))
 	body = models.TextField(db_column='BODY', verbose_name = _('Xml Content'), help_text = _('Xml content'))
 	def __unicode__(self):
-		return str(self.name)
+		return self.name
 	class Meta:
 		db_table = 'CORE_XML_MESSAGE'
 		verbose_name = _('Xml Message')
 		verbose_name_plural = _('Xml Messages')
 
 class Application( BaseModel ):
-	"""Applications"""
+	
+	"""
+	
+	Applications. For most sites, they will have single application for N services which relate to use cases for views and actions.
+	In case your application is big or have admin backdoors, your site with have more than one application.
+	
+	This table holds applications at your site. slug corresponds to the host name that related to the application, like 'slug.domain.com'.
+	You can also access applications by /apps/slug in case application hosts is disabled.
+	
+	Applications can be grouped together using the ``parent`` field.
+	
+	Applications can have subscription business model or be free. In case subscription required, ``isSubscription`` would be ``True``
+	
+	Applications can be private and accessible only to a group of users. ``isPrivate`` would be ``True`` in this case. Applications can
+	start private (like a private beta) and then make them public. When making public applications, you can publish at Ximpia 
+	directory.
+	
+	Applications have meta information through model ApplicationMeta. You can attach meta values for application in this model.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``name``:CharField(15)
+	* ``slug``:SlugField(30)
+	* ``title``:CharField(30)
+	* ``isSubscription``:BooleanField
+	* ``isPrivate``:BooleanField
+	* ``isAdmin``:BooleanField
+	
+	**Relationships**
+	
+	* ``developer`` -> User
+	* ``developerOrg`` -> Group
+	* ``parent`` -> self
+	* ``users`` <-> UserChannel through ApplicationAccess and related name 'app_access'
+	* ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
+	
+	"""
+	
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION')
-	code = models.CharField(max_length=10,
-		verbose_name = _('Code'), help_text = _('Application code'))
-	name = models.CharField(max_length=30, db_column='NAME',
-		verbose_name = _('Name'), help_text = _('Application name'))
+	name = models.CharField(max_length=100,
+		verbose_name = _('Name'), help_text = _('Application name. It must contain package and module for application with . as \
+			separator, like ximpia.site'))
+	slug = models.SlugField(max_length=30,
+		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
+	title = models.CharField(max_length=30, db_column='TITLE',
+		verbose_name = _('Title'), help_text = _('Application title'))
 	developer = models.ForeignKey(User, null=True, blank=True, db_column='ID_DEVELOPER',
 		verbose_name = _('Developer'), help_text = _('Developer'))
 	developerOrg = models.ForeignKey(Group, null=True, blank=True, db_column='ID_DEVELOPER_ORG',
@@ -142,7 +277,7 @@ class Application( BaseModel ):
 	meta = models.ManyToManyField(MetaKey, through='core.ApplicationMeta', related_name='app_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for application') )
 	def __unicode__(self):
-		return str(self.name)
+		return self.title
 	class Meta:
 		db_table = 'CORE_APPLICATION'
 		verbose_name = _('Application')
@@ -156,43 +291,79 @@ class ApplicationMeta( BaseModel ):
 	**Attributes**
 	
 	* ``id`` : Primary key
-	* ``value``:CharField(255) : META Key value for application
+	* ``value``:TextField : META Key value for application
 	
 	**Relationships**
 	
-	* ``application`` : Application
-	* ``meta`` : Meta Key
+	* ``application`` -> Application
+	* ``meta`` -> MetaKey
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_META')
 	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
 				verbose_name = _('Application'), help_text = _('Application'))
-	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+	meta = models.ForeignKey(MetaKey, limit_choices_to={'keyType__value': K.PARAM_META}, db_column='ID_META',
 				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	def __unicode__(self):
-		return ''
+		return '%s' % (self.meta.name)
 	class Meta:
 		db_table = 'CORE_APPLICATION_META'
 		verbose_name = 'Application META'
 		verbose_name_plural = "Application META"
 
 class ApplicationAccess( BaseModel ):
-	"""User that have access to application. Used for subscription and private applications."""
+	"""
+	
+	User that have access to application. Used for subscription and private applications.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary key
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	* ``userChannel`` -> UserChannel
+	
+	"""
+	
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APP_ACCESS')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 				verbose_name = _('Application'), help_text = _('Application'))
 	userChannel = models.ForeignKey('site.UserChannel', db_column='ID_USER_CHANNEL',
-				verbose_name = _('User Social'), help_text = _('User Social or social channel needed to access application'))
+				verbose_name = _('User'), help_text = _('User channel needed to access application'))
 	def __unicode__(self):
-		return str(self.userChannel)
+		return '%s' % (self.userChannel.user.username)
 	class Meta:
 		db_table = 'CORE_APPLICATION_ACCESS'
 		verbose_name = 'Application Access'
 		verbose_name_plural = "Application Access"
 
 class SearchIndex( BaseModel ):
-	"""Index"""
+	"""
+	
+	Search index. This table maps words indexed in views and actions to result literals (string to show in search tooltip). We map
+	entry parameters to view as well.
+	
+	Search results can come from views and actions. Words in the title are indexed in ``Word`` model. When user clicks on search result,
+	we know what to do from this table. If search result applies to a view, we launch view. In case related to an action, we launch
+	the action.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``title``:CharField(70)
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	* ``view`` -> View
+	* ``action`` -> Action
+	* ``words`` <-> Word through SearchIndexWord with related name 'index_words'
+	* ``params`` <-> Param through SearchIndexParam with related name 'index_params'
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for seraching'))
@@ -207,59 +378,237 @@ class SearchIndex( BaseModel ):
 	params = models.ManyToManyField('core.Param', through='core.SearchIndexParam', related_name='index_params', null=True, blank=True,
 			verbose_name=_('Index Parameters'), help_text=_('Parameters used in the search of content for views and actions'))
 	def __unicode__(self):
-		return str(self.title)
+		return self.title
 	class Meta:
 		db_table = 'CORE_SEARCH_INDEX'
 		verbose_name = 'Index'
 		verbose_name_plural = "Index"
 		unique_together = ("view", "action")
 
-class SearchIndexWord( BaseModel ):
-	"""Index"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX_WORD')
-	index = models.ForeignKey('core.SearchIndex', db_column='ID_INDEX',
-			verbose_name=_('Index'), help_text=_('Index having application, view, action, title and parameters'))
-	word = models.ForeignKey('core.Word', db_column='ID_WORD',
-			verbose_name=_('Word'), help_text=_('Word'))
-	def __unicode__(self):
-		return str(self.index) + '-' + str(self.word)
-	class Meta:
-		db_table = 'CORE_SEARCH_INDEX_WORD'
-		verbose_name = 'Index Word'
-		verbose_name_plural = "Index Words"
-
 class Word( BaseModel ):
-	"""Word"""
+	"""
+	
+	Word
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``word``:CharField(20) : Word to index
+	
+	**Relationships**
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORD')
 	word = models.CharField(max_length=20, db_index=True, db_column='WORD', 
 			verbose_name=_('Word'), help_text=_('Word'))
 	def __unicode__(self):
-		return str(self.word)
+		return self.word
 	class Meta:
 		db_table = 'CORE_WORD'
 		verbose_name = 'Word'
 		verbose_name_plural = "Words"
 
+class SearchIndexWord( BaseModel ):
+	"""
+	
+	Index
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	
+	**Relationships**
+	
+	* ``index`` -> SearchIndex
+	* ``word`` -> Word
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX_WORD')
+	index = models.ForeignKey(SearchIndex, db_column='ID_INDEX',
+			verbose_name=_('Index'), help_text=_('Index having application, view, action, title and parameters'))
+	word = models.ForeignKey(Word, db_column='ID_WORD',
+			verbose_name=_('Word'), help_text=_('Word'))
+	def __unicode__(self):
+		return '%s - %s' % (self.index, self.word)
+	class Meta:
+		db_table = 'CORE_SEARCH_INDEX_WORD'
+		verbose_name = 'Index Word'
+		verbose_name_plural = "Index Words"
+
+
 class SearchIndexParam( BaseModel ):
-	"""Index Parameters"""
+	"""
+	
+	Index Parameters
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``operator``:CharField(10) : Operator for parameter, as Choices.OP : equal, less than, greater than , not equal to
+	* ``value``:CharField(20)
+	
+	**Relationships**
+	
+	* ``searchIndex`` -> SearchIndex
+	* ``name`` -> Param . Params for workflow, views, actions and search are registered in Param table.
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_INDEX_PARAM')
-	searchIndex = models.ForeignKey('core.SearchIndex', db_column='ID_SEARCH_INDEX',
+	searchIndex = models.ForeignKey(SearchIndex, db_column='ID_SEARCH_INDEX',
 			verbose_name=_('Search Index'), help_text=_('Search Index'))
-	name = models.ForeignKey('core.Param', db_column='ID_NAME', 
+	name = models.ForeignKey(Param, db_column='ID_NAME', 
 			verbose_name=_('Parameter'), help_text=_('Parameter'))
 	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
 			verbose_name=_('Operator'), help_text=_('Operator'))
 	value = models.CharField(max_length=20, db_column='VALUE',
 			verbose_name=_('Value'), help_text=_('Value'))
 	def __unicode__(self):
-		return str(self.name) + '-' + str(self.value)
+		return '%s - %s' % (self.name, self.value)
 	class Meta:
 		db_table = 'CORE_INDEX_PARAM'
 		verbose_name = 'Index Parameters'
 		verbose_name_plural = "Index Parameters"
 
+class View( BaseModel ):
+	"""
+	
+	View. Pages in ximpia are called views. Views render content obtaine from database or other APIs. They hit the slave databases. In
+	case writing content is needed, could be accomplished by calling queues. Views can show lists, record detalils in forms, reports,
+	static content, etc... 
+	
+	In case no logic is needed by view, simply include ``pass`` in the service operation.
+	
+	Views have name to be used internally in component registering and code and slug which is the name used in urls.
+	
+	View implementation is the path to the service operation that will produce view JSON data to server the frontend. Implementation
+	is built by registering a view component.
+	
+	Window types can be 'window', 'popup' and 'panel' (this one coming soon). Windows render full width, popups are modal windows, and
+	panels are tooltip areas inside your content. Popups can be triggered using icons, buttons or any other action. Panels will be
+	triggered by mouse over components, clicking on visual action components.
+	
+	In case view needs authentication to render, would have hasAuth = True.
+	
+	Views can be grouped together using the ``parent`` field.
+	
+	Params are entry parameters (dynamic or static) that view will accept. Parameters are inyected to service operations with **args 
+	variable. The parameter name you include will be called by args['MY_PARAM'] in case your parameter name is 'MY_PARAM'.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``name``:CharField(30)
+	* ``implementation``:CharField(100)
+	* ``winType``:CharField(20) : Window type, as Choices.WIN_TYPE_WINDOW
+	* ``slug``:SlugField(50) : View slug to form url to call view
+	* ``hasAuth``:BooleanField : Needs view authentication?
+	
+	**Relationships**
+	
+	* ``parent`` -> self
+	* ``application`` -> Application
+	* ``templates`` <-> XpTemplate through ViewTmpl with related name `view_templates`
+	* ``params`` <-> Param through ViewParamValue with related nam 'view_params'
+	* ``menus`` <-> Menu through ViewMenu with related name 'view_menus'
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
+	parent = models.ForeignKey('self', null=True, blank=True, related_name='view_parent', 
+		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
+	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
+			verbose_name=_('Application'), help_text=_('Application for the view'))
+	name = models.CharField(max_length=30, db_column='NAME', 
+			verbose_name=_('View Name'), help_text=_('View Name'))
+	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
+			verbose_name=_('Implementation'), help_text=_('Service class and method that will show view'))
+	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
+			verbose_name=_('Templates'), help_text=_('Templates for view'))
+	menus = models.ManyToManyField('core.Menu', through='core.ViewMenu', related_name='view_menus',
+			verbose_name=_('Menus'), help_text=_('Menu items related to views'))
+	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
+			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
+	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW, db_column='WIN_TYPE',
+			verbose_name=_('Window Type'), help_text=_('Window type: Window, Popup'))
+	slug = models.SlugField(max_length=50,
+		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
+	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
+			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
+	def __unicode__(self):
+		return self.name
+	class Meta:
+		db_table = 'CORE_VIEW'
+		verbose_name = 'View'
+		verbose_name_plural = "Views"
+		unique_together = ("application", "name")
+
+class Action( BaseModel ):
+	"""
+	
+	Action
+	
+	Actions are mapped to service operations. Actions can be triggered by clicking on a button, a link, a menu icon or any other
+	visual component that triggers actions.
+	
+	Here we map action names, implementations, slugs and action properties. Implementations are built by component registering.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary key
+	* ``name``:CharField(30)
+	* ``implementation``:CharField(100)
+	* ``slug``:SlugField(50)
+	* ``hasAuth``:BooleanField
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
+	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
+			verbose_name=_('Application'), help_text=_('Application for the action'))
+	name = models.CharField(max_length=30, db_column='NAME',
+			verbose_name=_('Action Name'), help_text=_('Action Name'))
+	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
+			verbose_name=_('Implementation'), help_text=_('Service class and method that will process action'))
+	slug = models.SlugField(max_length=50,
+		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
+	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
+			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
+	def __unicode__(self):
+		return self.name
+	class Meta:
+		db_table = 'CORE_ACTION'
+		verbose_name = 'Action'
+		verbose_name_plural = "Actions"
+		unique_together = ("application", "name")
+
 class Menu( BaseModel ):
-	"""Menu"""
+	"""
+	
+	Menu
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``name``:CharField(20) : Menu item name
+	* ``titleShort``:CharField(15) : Title short. Text shown in icon. Default menu shows this text right to the icon image.
+	* ``title``:CharField(30) : Title shown in tooptip when mouse goes over.
+	* ``url``:URLField : Url to launch . Used for external urls mapped to menu items.
+	* ``urlTarget``:CharField(10) : target to launch url
+	* ``language``:CharField(2) : Language code, like ``es``, ``en``, etc...
+	* ``country``:CharField(2) : Country as Choices.COUNTRY
+	* ``device``:CharField(10) : Device. Smartphones, tablets can have their own menu, customized to screen width
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	* ``icon`` -> CoreParam
+	* ``view`` -> View
+	* ``action`` -> Action
+	* ``params`` <-> Param through MenuParam with related name 'menu_params'
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the menu'))
@@ -269,11 +618,11 @@ class Menu( BaseModel ):
 			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
 	title = models.CharField(max_length=30, db_column='TITLE',
 			verbose_name=_('Menu Title'), help_text=_('Title for menu item'))
-	icon = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': K.PARAM_ICON}, db_column='ID_ICON',
+	icon = models.ForeignKey(CoreParam, limit_choices_to={'mode': K.PARAM_ICON}, db_column='ID_ICON',
 			verbose_name=_('Icon'), help_text=_('Icon'))
-	view = models.ForeignKey('core.View', null=True, blank=True, related_name='menu_view', db_column='ID_VIEW',
+	view = models.ForeignKey(View, null=True, blank=True, related_name='menu_view', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
-	action = models.ForeignKey('core.Action', related_name='menu_action', null=True, blank=True,  db_column='ID_ACTION',
+	action = models.ForeignKey(Action, related_name='menu_action', null=True, blank=True,  db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action to process when click on menu item'))
 	url = models.URLField(null=True, blank=True, db_column='URL',
 			verbose_name=_('Url'), help_text=_('Url to trigger for this menu item'))
@@ -281,17 +630,38 @@ class Menu( BaseModel ):
 			verbose_name = _('Url Target'), help_text=_('Target to open url: Same window or new window. It will open in a tab in most browsers'))
 	language = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, db_column='LANGUAGE', 
 			verbose_name=_('Language'), help_text=_('Language'))
+	country = models.CharField(max_length=2, choices=Choices.COUNTRY, blank=True, null=True, db_column='COUNTRY',
+			verbose_name=_('Country'), help_text=_('Country'))
+	device = models.CharField(max_length=10, choices=Choices.DEVICES, default=Choices.DEVICE_PC, db_column='DEVICE',
+			verbose_name=_('Device'), help_text=_('Device: Personal Computer, Tablet, Phone'))
 	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
 			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
-		return str(self.titleShort)
+		return self.titleShort
 	class Meta:
 		db_table = 'CORE_MENU'
 		verbose_name = 'Menu'
 		verbose_name_plural = "Menus"
 
 class ViewMenu( BaseModel ):
-	"""Menus associated to a view"""
+	"""
+	
+	Menus associated to a view
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``order``:IntegerField
+	* ``hasSeparator``:BooleanField
+	* ``zone``:CharField(10)
+	
+	**Relationships**
+	
+	* ``parent`` -> self
+	* ``view`` -> View
+	* ``menu`` -> Menu
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_MENU')
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
 			verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
@@ -306,15 +676,34 @@ class ViewMenu( BaseModel ):
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
 	def __unicode__(self):
-		return str(self.view) + '-' + str(self.menu)
+		return '%s - %s' % (self.view, self.menu)
 	class Meta:
+		unique_together = (('menu','view'),)
 		db_table = 'CORE_VIEW_MENU'
 		verbose_name = 'View Menu'
 		verbose_name_plural = "Views for Menus"
-		#TODO: Unique for menu and view
 
 class MenuParam( BaseModel ):
-	"""Parameters or attributes feeded to views"""
+	"""
+	
+	Parameters or attributes feeded to views through menus. 
+	
+	Views have entry parameters that can be inserted statically through the menu (are not variables). 
+	
+	You can have a view that accept a parameter and create as many menu items as static entry parameters to the view.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``operator``:CharField(10) : Operator as Choices.OP
+	* ``value``:CharField(20)
+	
+	**Relationships**
+	
+	* ``menu`` -> Menu
+	* ``name`` -> Param
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU_PARAM')
 	menu = models.ForeignKey('core.Menu', db_column='ID_MENU',
 			verbose_name=_('Menu'), help_text=_('Menu'))
@@ -325,40 +714,12 @@ class MenuParam( BaseModel ):
 	value = models.CharField(max_length=20, db_column='VALUE',
 			verbose_name=_('Value'), help_text=_('Value'))
 	def __unicode__(self):
-		return str(self.menu) + '-' + str(self.name)
+		return '%s' % (self.name)
 	class Meta:
 		db_table = 'CORE_MENU_PARAM'
 		verbose_name = 'Menu Param'
 		verbose_name_plural = "Menu Params"
 
-class View( BaseModel ):
-	"""View"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
-	parent = models.ForeignKey('self', null=True, blank=True, related_name='view_parent', 
-		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
-			verbose_name=_('Application'), help_text=_('Application for the view'))
-	name = models.CharField(max_length=30, db_column='NAME', 
-			verbose_name=_('View Name'), help_text=_('View Name'))
-	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
-			verbose_name=_('Implementation'), help_text=_('Service class and method that will show view'))
-	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
-			verbose_name=_('Templates'), help_text=_('Templates for view'))
-	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
-			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
-	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW, db_column='WIN_TYPE',
-			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
-	slug = models.SlugField(max_length=200,
-		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
-	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
-			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
-	def __unicode__(self):
-		return str(self.name)
-	class Meta:
-		db_table = 'CORE_VIEW'
-		verbose_name = 'View'
-		verbose_name_plural = "Views"
-		unique_together = ("application", "name")
 
 class ViewMeta( BaseModel ):
 	"""
@@ -368,7 +729,7 @@ class ViewMeta( BaseModel ):
 	**Attributes**
 	
 	* ``id`` : Primary key
-	* ``value``:CharField(255) : Key value
+	* ``value``:TextField : Key value
 	
 	**Relationships**
 	
@@ -379,7 +740,7 @@ class ViewMeta( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_META')
 	view = models.ForeignKey(View, db_column='ID_VIEW',
 				verbose_name = _('View'), help_text = _('View'))
-	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+	meta = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': K.PARAM_META},
 				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	def __unicode__(self):
@@ -390,21 +751,64 @@ class ViewMeta( BaseModel ):
 		verbose_name_plural = "View META"
 
 class ViewTmpl( BaseModel ):
-	"""View Template"""
+	"""
+	
+	View Template
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key 
+	
+	**Relationships**
+	
+	* ``view`` -> View
+	* ``template`` -> XpTemplate
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_TMPL')
 	view = models.ForeignKey('core.View', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
 	template = models.ForeignKey('core.XpTemplate', db_column='ID_TEMPLATE',
 			verbose_name=_('Template'), help_text=_('Template'))
 	def __unicode__(self):
-		return str(self.view) + '-' + str(self.template)
+		return '%s - %s' % (self.view, self.template)
 	class Meta:
 		db_table = 'CORE_VIEW_TMPL'
 		verbose_name = 'View Template'
 		verbose_name_plural = "View Templates"
 
 class XpTemplate( BaseModel ):
-	"""Template"""
+	"""
+	
+	Ximpia Template.
+	
+	Views can have N templates with language, country and device target features. You can target templates with device and localization.
+	In case you want to provide different templates for user groups, profiles, etc... you would need to create different views and then
+	map those views to access groups. Each of those views would have default templates and templates targetted at pads, smartphones,
+	desktop and localization if required.
+	
+	Templates can window types:
+	
+	* Window - Views which render whole available screen area.
+	* Popup - Modal views that popup when user clicks on actions or menu items.
+	* Panel (Coming soon) - This window types is embedded within content, as a tooltip when user clicks on action or mouse goes
+	over
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``name``:CharField(50)
+	* ``alias``:CharField(20)
+	* ``language``:CharField(2) : As Choices.LANG
+	* ``country``:CharField(2) : As Choices.COUNTRY
+	* ``winType``:CharField(20) : As Choices.WIN_TYPES
+	* ``device``:CharField(10) : As Choices.DEVICES : Desktop computer, smartphones and tablets
+	
+	**Relationships**
+	
+	* ``application`` -> Application 
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_TEMPLATE')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the template'))
@@ -417,40 +821,50 @@ class XpTemplate( BaseModel ):
 	country = models.CharField(max_length=2, choices=Choices.COUNTRY, blank=True, null=True, db_column='COUNTRY',
 			verbose_name=_('Country'), help_text=_('Country'))
 	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW, db_column='WIN_TYPE',
-			verbose_name=_('Window Types'), help_text=_('Window type: Window, Popup'))
+			verbose_name=_('Window Type'), help_text=_('Window type: Window, Popup'))
 	device = models.CharField(max_length=10, choices=Choices.DEVICES, default=Choices.DEVICE_PC, db_column='DEVICE',
 			verbose_name=_('Device'), help_text=_('Device: Personal Computer, Tablet, Phone'))
 	def __unicode__(self):
-		return str(self.name)
+		return self.name
 	class Meta:
 		db_table = 'CORE_TEMPLATE'
 		verbose_name = 'Template'
 		verbose_name_plural = "Templates"
 		unique_together = ("application", "name")
 
-class Action( BaseModel ):
-	"""Action"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
-			verbose_name=_('Application'), help_text=_('Application for the action'))
-	name = models.CharField(max_length=30, db_column='NAME',
-			verbose_name=_('Action Name'), help_text=_('Action Name'))
-	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
-			verbose_name=_('Implementation'), help_text=_('Service class and method that will process action'))
-	slug = models.SlugField(max_length=200,
-		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
-	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
-			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
-	def __unicode__(self):
-		return str(self.name)
-	class Meta:
-		db_table = 'CORE_ACTION'
-		verbose_name = 'Action'
-		verbose_name_plural = "Actions"
-		unique_together = ("application", "name")
-
 class Workflow( BaseModel ):
-	"""WorkFlow"""
+	"""
+	
+	WorkFlow.
+	
+	Ximpia comes with a basic application workflow to provide navigation for your views.
+	
+	Navigation is provided in window and popup window types.
+	
+	You "mark" as workflow view any service method with flow code (decorator). Actions are also "marked" as worflow actions with
+	decorators.
+	
+	When actions are triggered by clicking on a button or similar, action logic is executed, and user displays view based on flow
+	information and data inserted in the flow by actions. You do not have to map navigation inside your service operations.
+	
+	Plugging in a new view is pretty simple. You code the service view operation, include it in your flow, and view (window or popup)
+	will be displayed when requirements are met 
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``code``:CharField(15) : Flow code
+	* ``resetStart``:BooleanField : The flow data will be deleted when user displays first view of flow. The flow will be reset when
+	user visits again any page in the flow.
+	* ``deleteOnEnd``:BooleanField : Flow data is deleted when user gets to final view in the flow.
+	* ``jumpToView``:BooleanField : When user visits first view in the flow, will get redirected to last visited view in the flow. User
+	jumps to last view in the flow.
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW')
 	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
 			verbose_name = _('Application'), help_text = _('Application'))
@@ -463,123 +877,186 @@ class Workflow( BaseModel ):
 	jumpToView = models.BooleanField(default=True, db_column='JUMP_TO_VIEW',
 			verbose_name = _('Jump to View'), help_text = _('Jump to View: In case user wants to display view and flow is in another view, the flow view will be shown'))
 	def __unicode__(self):
-		return str(self.code)
+		return self.code
 	class Meta:
 		db_table = 'CORE_WORKFLOW'
 		verbose_name = 'Workflow'
 		verbose_name_plural = "Workflows"
 
 class WorkflowView( BaseModel ):
-	"""WorkFlow View"""
+	"""
+	
+	WorkFlow View. Relationship between flows and your views.
+	
+	Source view triggers action, logic is executed and target view is displayed to user.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``order``:IntegerField : View orderi flow. You can place order like 10, 20, 30 for views in our flow. And then later inyect views
+	between those values, like 15, for example.
+	
+	**Relationships**
+	
+	* ``flow`` -> WorkFlow
+	* ``viewSource`` -> View : Source view for flow
+	* ``viewTarget`` -> View : Target view for flow
+	* ``action`` -> Action : Action mapped to flow. Source view triggers action, logic is executed and target view is rendered and
+	displayed.
+	* ``params`` <-> Param through WFParamValue with related name 'flowView_params'
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW')
-	flow = models.ForeignKey('core.WorkFlow', related_name='flowView', db_column='ID_FLOW', 
+	flow = models.ForeignKey(Workflow, related_name='flowView', db_column='ID_FLOW', 
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
-	viewSource = models.ForeignKey('core.View', related_name='flowViewSource', db_column='ID_VIEW_SOURCE',
+	viewSource = models.ForeignKey(View, related_name='flowViewSource', db_column='ID_VIEW_SOURCE',
 			verbose_name=_('Source View'), help_text=_('View which starts flow'))
-	viewTarget = models.ForeignKey('core.View', related_name='flowViewTarget', db_column='ID_VIEW_TARGET',
+	viewTarget = models.ForeignKey(View, related_name='flowViewTarget', db_column='ID_VIEW_TARGET',
 			verbose_name=_('target View'), help_text=_('View destiny for flow'))
-	action = models.ForeignKey('core.Action', related_name='wf_action', unique=True, db_column='ID_ACTION',
+	action = models.ForeignKey(Action, related_name='wf_action', unique=True, db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
-	params = models.ManyToManyField('core.Param', through='core.WFParamValue', related_name='flowView_params', null=True, blank=True,
+	params = models.ManyToManyField(Param, through='core.WFParamValue', related_name='flowView_params', null=True, blank=True,
 			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
 	order = models.IntegerField(default=10, db_column='ORDER',
 			verbose_name=_('Order'), help_text=_('Order'))
 	def __unicode__(self):
-		return str(self.flow) +  ' - ' + str(self.viewSource) + ' - ' + str(self.viewTarget) + ' - op - ' + str(self.action)
+		return '%s - %s - %s - op - %s' % (self.flow, self.viewSource, self.viewTarget, self.action)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_VIEW'
 		verbose_name = 'Workflow View'
-		verbose_name_plural = "Workflow View"
+		verbose_name_plural = "Workflow Views"
 		unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
 
-class WFViewEntryParam( BaseModel ):
-	"""Relates flows with view entry parameters."""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW_PARAM')
-	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewEntryParam', db_column='ID_FLOW_VIEW', 
+class ViewParamValue( BaseModel ):
+	"""
+	
+	Parameter Values for Workflow.
+	
+	This table holds the parameter values that trigger redirection to target views.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``operator``:CharField(10) : Operator comparisson : equal, not equal, greater, etc..., as Choices.OP
+	* ``value``:CharField(20)
+	
+	**Relationships**
+	
+	* ``view`` -> View
+	* ``name`` -> Param
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')
+	view = models.ForeignKey(View, related_name='viewParam', db_column='ID_VIEW',
+			verbose_name=_('View'), help_text=_('View for entry parameters'))
+	name = models.ForeignKey(Param, db_column='ID_NAME',
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, db_column='VALUE',
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return '%s %s %s' % (self.name, self.operator, self.value)
+	class Meta:
+		db_table = 'CORE_VIEW_PARAM_VALUE'
+		verbose_name = 'View Parameter Value'
+		verbose_name_plural = "View Parameter Values"
+
+
+"""class WFViewEntryParam( BaseModel ):
+	
+	
+	Relates flows with view entry parameters.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	
+	**Relationships**
+	
+	* ``flowView`` -> WorkflowView
+	* ``viewParam`` -> ViewParamValue
+	
+	"""
+"""id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW_PARAM')
+	flowView = models.ForeignKey(WorkflowView, related_name='flowViewEntryParam', db_column='ID_FLOW_VIEW', 
 			verbose_name=_('Flow View'), help_text=_('Work Flow Views'))
-	viewParam= models.ForeignKey('core.ViewParamValue', related_name='', db_column='ID_VIEW_PARAM',
+	viewParam= models.ForeignKey(ViewParamValue, db_column='ID_VIEW_PARAM',
 			verbose_name=_('View Param'), help_text=_('View parameter value'))
 	def __unicode__(self):
-		return str(self.flow) + ' - ' + str(self.viewParam)
+		return '%s - %s' % (self.flowView, self.viewParam)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_VIEW_PARAM'
 		verbose_name = 'Workflow View Entry Param'
-		verbose_name_plural = "Workflow View Entry Params"
+		verbose_name_plural = "Workflow View Entry Params" """
 
 class WorkflowData( BaseModel ):
-	"""Workflow Data"""
+	"""
+	
+	User Workflow Data
+	
+	userId is the workflow user id. Flows support authenticated users and anonymous users. When flows start, in case not authenticated,
+	workflow user id is generated. This feature allows having a flow starting at non-authenticated views and ending in authenticated 
+	views, as well as non-auth flows.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``userId``:CharField(40) : Workflow user id
+	* ``data``:TextField : Workflow data encoded in json and base64
+	
+	**Relationships**
+	
+	* ``flow`` -> Workflow
+	* ``view`` -> View
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_DATA')
 	userId = models.CharField(max_length=40, db_column='USER_ID',
 			verbose_name = _('Workflow User Id'), help_text = _('User Id saved as a cookie for workflow'))
-	flow = models.ForeignKey('core.WorkFlow', related_name='flowData', db_column='ID_FLOW', 
+	flow = models.ForeignKey(Workflow, related_name='flowData', db_column='ID_FLOW', 
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
-	view = models.ForeignKey('core.View', related_name='viewFlowData', db_column='ID_VIEW',
+	view = models.ForeignKey(View, related_name='viewFlowData', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View in flow. View where users is in flow'))
 	data = models.TextField(default = _jsf.encode64Dict(getBlankWfData({})), db_column='DATA',
 			verbose_name=_('Data'), help_text=_('Worflow data'))
 	def __unicode__(self):
-		return str(self.userId) + ' - ' + str(self.flow)
+		return '%s - %s' % (self.userId, self.flow)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_DATA'
 		verbose_name = 'Workflow Data'
 		verbose_name_plural = "Workflow Data"
 		unique_together = ('userId', 'flow')
 
-class Param( BaseModel ):
-	"""Parameters for WF and Views"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAM')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION', 
-				verbose_name = _('Application'), help_text = _('Application'))
-	name = models.CharField(max_length=15, db_column='NAME',
-				verbose_name=_('Name'), help_text=_('Name'))
-	title = models.CharField(max_length=30, db_column='TITLE',
-				verbose_name=_('Title'), help_text=_('Title text for the parameter'))
-	paramType = models.CharField(max_length=10, choices=Choices.BASIC_TYPES, db_column='PARAM_TYPE',
-				verbose_name=_('Type'), help_text=_('Type'))
-	isView = models.BooleanField(default=False, db_column='IS_VIEW',
-				verbose_name=_('View'), help_text=_('Parameter for View?'))
-	isWorkflow = models.BooleanField(default=False, db_column='IS_WORKFLOW',
-				verbose_name=_('Workflow'), help_text=_('Parameter for workflow?'))
-	def __unicode__(self):
-		return str(self.title)
-	class Meta:
-		db_table = 'CORE_PARAM'
-		verbose_name = 'Parameter'
-		verbose_name_plural = "Parameters for views and workflow"
-		unique_together = ('application','name')
-
-
-class ViewParamValue( BaseModel ):
-	"""Parameter Values for WF"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')
-	view = models.ForeignKey('core.View', related_name='viewParam', db_column='ID_VIEW',
-			verbose_name=_('View'), help_text=_('View for entry parameters'))
-	name = models.ForeignKey('core.Param', db_column='ID_NAME',
-			verbose_name=_('Parameter'), help_text=_('Parameter'))
-	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
-			verbose_name=_('Operator'), help_text=_('Operator'))
-	value = models.CharField(max_length=20, db_column='VALUE',
-			verbose_name=_('Value'), help_text=_('Value'))
-	def __unicode__(self):
-		return str(self.name) + ' ' + str(self.operator) + ' ' + str(self.value)
-	class Meta:
-		db_table = 'CORE_VIEW_PARAM_VALUE'
-		verbose_name = 'View Parameter Value'
-		verbose_name_plural = "View Parameter Values"
 
 class WFParamValue( BaseModel ):
-	"""Parameter Values for WF"""
+	"""
+	
+	Parameter Values for Workflow.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``operator``:CharField(10) : Operator as Choices.OP
+	* ``value``:CharField(20) : Workflow parameter value
+	
+	**Relationships**
+	
+	* ``flowView`` -> WorkflowView
+	* ``name`` -> Param
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_PARAM_VALUE')
-	flowView = models.ForeignKey('core.WorkFlowView', related_name='flowViewParamValue', db_column='ID_FLOW_VIEW', 
+	flowView = models.ForeignKey(WorkflowView, related_name='flowViewParamValue', db_column='ID_FLOW_VIEW', 
 			verbose_name=_('Flow View'), help_text=_('Work Flow Views'))
-	name = models.ForeignKey('core.Param', db_column='ID_NAME',
+	name = models.ForeignKey(Param, db_column='ID_NAME',
 			verbose_name=_('Parameter'), help_text=_('Parameter'))
 	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
 			verbose_name=_('Operator'), help_text=_('Operator'))
 	value = models.CharField(max_length=20, db_column='VALUE',
 			verbose_name=_('Value'), help_text=_('Value'))
 	def __unicode__(self):
-		return str(self.name) + ' ' + str(self.operator) + ' ' + str(self.value)
+		return '%s %s %s' % (self.name, self.operator, self.value)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_PARAM_VALUE'
 		verbose_name = 'Workflow Parameter Value'
@@ -601,7 +1078,7 @@ class Settings ( BaseModel ):
 	
 	"""
 	
-	name = models.ForeignKey(MetaKey, db_column='ID_META',
+	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__name': K.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
 	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
 	description = models.CharField(max_length=255,
@@ -609,11 +1086,16 @@ class Settings ( BaseModel ):
 	mustAutoload = models.BooleanField(default=False,
 	        verbose_name = _('Must Autoload?'), help_text = _('Must Autoload?'), db_column='MUST_AUTOLOAD')
 	def __unicode__(self):
-		return str(self.name)
+		return self.name.name
 	class Meta:
 		db_table = 'CORE_SETTINGS'
 		verbose_name = _('Settings')
 		verbose_name_plural = _('Settings')
+
+
+
+##############################################################################################
+
 
 
 class XpMsgException( Exception ):

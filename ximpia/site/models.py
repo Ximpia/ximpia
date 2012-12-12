@@ -18,6 +18,7 @@ class Param ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``mode``:CharField(20) : Parameter mode. When parameters have same mode, table with key->value can be obtained.
 	* ``name``:CharField(20) : Parameter name
 	* ``value``:CharField(100) : Parameter value
@@ -49,6 +50,7 @@ class MetaKey( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id``:AutoField : Primary key
 	* ``name``:CharField(20) : Key META name
 	
 	**Relationships**
@@ -56,6 +58,8 @@ class MetaKey( BaseModel ):
 	* ``keyType`` : META Key type from SITE_PARAMETER table
 	
 	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_META_KEY')
 	name = models.CharField(max_length=20,
 	        verbose_name = _('Key Name'), help_text = _('Meta Key Name'), db_column='NAME')
 	keyType = models.ForeignKey(Param, limit_choices_to={'mode': CoreK.PARAM_META_TYPE}, db_column='ID_SITE_PARAMETER',
@@ -75,6 +79,7 @@ class TagMode ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``mode``:CharField(30) : Tag mode (type)
 	* ``isPublic``:BooleanField : is tag public or private?
 	
@@ -99,9 +104,17 @@ class Tag ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``name``:CharField(30) : Tag name
 	* ``popularity``IntegerField : Tag popularity
 	* ``isPublic``:BooleanField : is tag public or private?
+	
+	**Relationships**
+	
+	* ``mode`` -> TagMode
+	
+	**Properties**
+	
 	* ``url`` : Built by services / business to provide an url for tags. tag.url = myUrl
 	
 	"""
@@ -109,7 +122,7 @@ class Tag ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_TAG')
 	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name = _('Name'), help_text = _('Tag name'))
-	mode = models.ForeignKey(TagMode, related_name='Tag_Mode', db_column='ID_MODE',
+	mode = models.ForeignKey(TagMode, related_name='tag_mode', db_column='ID_MODE',
 			verbose_name = _('Mode'), help_text = _('Tag mode'))
 	popularity = models.IntegerField(default=1, null=True, blank=True, db_column='POPULARITY',
 			verbose_name = _('Popularity'), help_text = _('Popularity'))
@@ -149,6 +162,7 @@ class UserChannel ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``title``CharField(20) : Title for the user channel
 	* ``name``:CharField(20) : Name. Default USER name. When creating users, USER channel is created. Later on, more channels can
 	be added
@@ -167,10 +181,10 @@ class UserChannel ( BaseModel ):
 	groups = models.ManyToManyField('site.GroupChannel', related_name='userchannel_groups', through='UserChannelGroups',  
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	title = models.CharField(max_length=20, db_column='TITLE',
-				verbose_name = _('Channel Title'), help_text=_('Title for the social channel'))
+				verbose_name = _('Title'), help_text=_('Title for the user channel'))
 	name = models.CharField(max_length=20, default=K.USER, db_column='NAME',
-				verbose_name = _('Social Channel Name'), help_text = _('Name for the social channel'))
-	tag = models.ForeignKey(Tag, db_column='ID_TAG',
+				verbose_name = _('Name'), help_text = _('Name for the user channel'))
+	tag = models.ForeignKey(Tag, db_column='ID_TAG', null=True, blank=True,
 				verbose_name=_('Tag'), help_text=_('User channel tag'))
 	def __unicode__(self):
 		return str(self.user.username) + '-' + str(self.name)
@@ -200,6 +214,7 @@ class Category ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``name``:CharField(55) : Category name.
 	* ``slug``:CharField(200) : Category slug to build urls.
 	* ``description``:CharField(255) : Category description.
@@ -210,14 +225,17 @@ class Category ( BaseModel ):
 	* ``isPublic``:BooleanField : Category is private or public.
 	*  ``popularity``:IntegerField : Category popularity
 	* ``menuOrder``:PositiveSmallIntegerField : Menu order. Used by menu systems to display categories in ordered lists.
-	* ``url``:String : Url built from layers using slugs and parent slugs to provide hierarchable urls.
-	* ``imgThumbnail``:String : Image version for showing in lists.
-	* ``count``:int : Number of elements in category. Using aggregation features of django, this value is created by layers and shown
-	in this model entity.
 	
 	**Relationships**
 	
 	* ``parent`` -> self : Foreign key to self for hierarchy
+	
+	**Properties**
+
+	* ``url``:String : Url built from layers using slugs and parent slugs to provide hierarchable urls.
+	* ``imgThumbnail``:String : Image version for showing in lists.
+	* ``count``:int : Number of elements in category. Using aggregation features of django, this value is created by layers and shown
+	in this model entity.
 	
 	"""
 
@@ -239,7 +257,7 @@ class Category ( BaseModel ):
 		    verbose_name = _('Image'), help_text = _('Category image. Will be shown in listing categories or links to category'), 
 		    db_column='IMAGE')
 	type = models.CharField(max_length=20, choices=Choices.CATEGORY_TYPE, default=Choices.CATEGORY_TYPE_DEFAULT,
-		verbose_name = _('Type'), help_text = _('Category Type: Blog or site'), db_column='TYPE')
+		verbose_name = _('Type'), help_text = _('Category Type'), db_column='TYPE')
 	isPublished = models.BooleanField(default=False,
 		verbose_name = _('Is Published?'), help_text = _('Is Published?'), db_column='IS_PUBLISHED')
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
@@ -293,6 +311,7 @@ class SocialNetworkUser ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``socialNetwork``:CharField(20) : Social network.
 	* ``socialId``:IntegerField : Social user id for network.
 	* ``token``:CharField(255) : Token for user in network.
@@ -301,13 +320,14 @@ class SocialNetworkUser ( BaseModel ):
 	**Relationships**
 	
 	* ``user`` -> User : Foreign key to User mode.
+	* ``socialNetwork`` -> CoreParam. Limit choices to 'mode=net'
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_USER')
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_NETWORK_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	socialNetwork = models.ForeignKey('core.CoreParam', limit_choices_to={'mode__lte': K}, db_column='ID_CORE_PARAMETER',
+	socialNetwork = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreK.NET}, db_column='ID_CORE_PARAMETER',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
 	socialId = models.IntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
 	token = models.CharField(max_length=255, db_column='TOKEN',
@@ -319,10 +339,10 @@ class SocialNetworkUser ( BaseModel ):
 	def getName(self):
 		return self.socialNetwork
 	class Meta:
-		db_table = 'SITE_SOCIAL_USER'
+		db_table = 'SITE_SOCIAL_NETWORK_USER'
 		unique_together = ("user", "socialNetwork")
-		verbose_name = 'Social Networks for User'
-		verbose_name_plural = "Social Networks for Users"
+		verbose_name = 'User Network'
+		verbose_name_plural = "User Networks"
 
 class Settings ( BaseModel ):
 	"""
@@ -330,6 +350,7 @@ class Settings ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id``:AutoField : Primary key
 	* ``value``:TextField : Settings value.
 	* ``description``:CharField(255) : Setting description.
 	* ``mustAutoload``:BooleanField : Has to load settings on cache?
@@ -340,7 +361,8 @@ class Settings ( BaseModel ):
 	
 	"""
 	
-	name = models.ForeignKey(MetaKey, db_column='ID_META',
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SETTINGS')
+	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': CoreK.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
 	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
 	description = models.CharField(max_length=255,
@@ -362,6 +384,7 @@ class UserMeta ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``value``:TextField : User meta value.
 	
 	**Relationships**
@@ -374,14 +397,14 @@ class UserMeta ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_PROFILE')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+	meta = models.ForeignKey(MetaKey, limit_choices_to={'keyType__value': CoreK.PARAM_META}, db_column='ID_META',
 				verbose_name=_('Meta Key'), help_text=_('Meta Key'))
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	
 	class Meta:
 		db_table = 'SITE_USER_META'
-		verbose_name = 'User Meta Keys'
-		verbose_name_plural = "Users Meta Keys"
+		verbose_name = 'User Meta'
+		verbose_name_plural = "Users Meta"
 
 class UserProfile ( BaseModel ):
 	"""
@@ -390,6 +413,7 @@ class UserProfile ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``image``:FileBrowserField(200) : User image profile.
 	
 	**Relationships**
@@ -422,6 +446,7 @@ class GroupChannel ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``groupNameId``:CharField(20)
 	* ``isPublic``:BooleanField
 	
@@ -452,23 +477,25 @@ class GroupChannel ( BaseModel ):
 				verbose_name=_('Category'), help_text=_('Category for group'))
 	
 	def __unicode__(self):
-		if self.account != None:
-			return '%s %s' % (self.account, self.group)
-		else:
-			return self.group
+		return self.group.name
 	class Meta:
 		db_table = 'SITE_GROUP'
-		verbose_name = 'Group Channel'
-		verbose_name_plural = "Group Channels"
+		verbose_name = 'Group'
+		verbose_name_plural = "Groups"
 
 class GroupChannelAccess ( BaseModel ):
 	"""
 	
 	Access to group channels : User profiles.
 	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
 	**Relationships**
 	
-	* ``groupChannel`` -> GroupChannel
+	* ``groupChannelFrom`` -> GroupChannel
+	* ``groupChannelTo`` -> GroupChannel
 	
 	"""
 	
@@ -493,6 +520,7 @@ class UserChannelGroups ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``relationship``:CharField(20) : Choices.ACCESS_RELATIONSHIP : user, admin, manager, owner
 	
 	**Relationships**
@@ -523,6 +551,10 @@ class GroupChannelTags ( BaseModel ):
 	"""
 	
 	Tags for group channels
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
 	
 	**Relationships**
 	
@@ -576,6 +608,7 @@ class SignupData ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``user``:CharField(30) : User id.
 	* ``activationCode``:POsitiveSmallIntegerField : Activation code used in validation message (email).
 	* ``data``:TextField : User data.
@@ -588,6 +621,7 @@ class SignupData ( BaseModel ):
 	activationCode = models.PositiveSmallIntegerField(db_column='ACTIVATION_CODE', 
 			verbose_name = _('Activation Code'), help_text = _('Activation code'))
 	data = models.TextField(db_column='DATA', verbose_name = _('Data'), help_text = _('Data'))
+
 	def __unicode__(self):
 		return str(self.user)
 	class Meta:
@@ -602,6 +636,7 @@ class Address ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``street`` :CharField(50) : Street address.
 	* ``city``:CharField(20) : City.
 	* ``region``:CharField(20) : Region.
@@ -640,6 +675,7 @@ class Invitation ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``invitationCode``:CharField(10) : Invitation code.
 	* ``email``:EmailField : Invitation sent to this email address.
 	* ``status``:CharField(10) : Invitation status from Choices.INVITATION_STATUS.
@@ -663,6 +699,8 @@ class Invitation ( BaseModel ):
 				verbose_name = _('Number'), help_text = _('Invitation Number'))
 	message = models.TextField(null=True, blank=True, db_column='MESSAGE',
 				verbose_name = _('Message'), help_text = _('Message'))
+	meta = models.ManyToManyField(MetaKey, through='site.InvitationMeta', related_name='invitation_meta',
+			verbose_name=_('META Keys'), help_text=_('META Keys for invitation') )
 	def __unicode__(self):
 		return '%s %s' % (self.fromUser, self.invitationCode)
 	class Meta:
@@ -677,6 +715,7 @@ class InvitationMeta ( BaseModel ):
 	
 	**Attributes**
 	
+	* ``id`` : Primary key
 	* ``value``:TextField : User meta value.
 	
 	**Relationships**
@@ -689,7 +728,7 @@ class InvitationMeta ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_PROFILE')
 	invitation = models.ForeignKey(Invitation, db_column='ID_INVITATION',
 				verbose_name = _('Invitation'), help_text = _('Invitation'))
-	meta = models.ForeignKey(MetaKey, db_column='ID_META',
+	meta = models.ForeignKey(MetaKey, limit_choices_to={'keyType__value': CoreK.PARAM_META}, db_column='ID_META',
 				verbose_name=_('Meta Key'), help_text=_('Meta Key'))
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	
