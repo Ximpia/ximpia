@@ -219,7 +219,8 @@ class Application( BaseModel ):
 	**Attributes**
 	
 	* ``id`` : Primary key
-	* ``name``:CharField(15)
+	* ``name``:CharField(15) : Application path, like ximpia.site. Must contain package name and application name. Has format similar
+	to installed apps django setting.
 	* ``slug``:SlugField(30)
 	* ``title``:CharField(30)
 	* ``isSubscription``:BooleanField
@@ -1254,6 +1255,8 @@ class Context ( object ):
 	wfUserId = None
 	isLogin = False
 	container = {}
+	doneResult = False
+	isServerTmpl = False
 	
 	"""
 	
@@ -1261,40 +1264,43 @@ class Context ( object ):
 	
 	**Attributes**
 	
-	* ``app``:String
-	* ``user``:User
-	* ``lang``:String
-	* ``settings``:String
-	* ``session``:String
-	* ``cookies``:object
-	* ``meta``:object
-	* ``post``:object
-	* ``request``:object
-	* ``get``:object
-	* ``userChannel``:String
-	* ``auth``:Dict
-	* ``form``:object
-	* ``forms``:Dict
-	* ``captcha``:String
-	* ``rawRequest``:object
-	* ``ctx``:object
-	* ``jsData``:JsResultDict
-	* ``viewNameSource``:String
-	* ``viewNameTarget``:String
-	* ``action``:String
-	* ``isView``:Boolean
-	* ``isAction``:Boolean
-	* ``flowCode``:String
-	* ``flowData``:String
-	* ``isFlow``:Boolean
+	* ``app``:String : Application name
+	* ``user``:User : User
+	* ``lang``:String : Language
+	* ``settings``:String : Django settings
+	* ``session``:String : Django session object
+	* ``cookies``:object : Django cookies
+	* ``meta``:object : Django META object
+	* ``post``:object . Django POST request
+	* ``request``:object . Django request object
+	* ``get``:object : Django get result
+	* ``userChannel``:String : User channel name
+	* ``auth``:Dict : User has logged in?
+	* ``form``:object : Main form for view
+	* ``forms``:Dict : Forms container for view
+	* ``captcha``:String : Captcha text
+	* ``rawRequest``:object : Raw request
+	* ``ctx``:object : Context
+	* ``jsData``:JsResultDict : json data response object, JsResultDict()
+	* ``viewNameSource``:String : For workflows, source view name. In case we have no workflow, this value will be the requested view
+	* ``viewNameTarget``:String : For workflows, target view name.
+	* ``action``:String : Action name
+	* ``isView``:Boolean : View is requested
+	* ``isAction``:Boolean : Action is requested
+	* ``flowCode``:String : Flow code
+	* ``flowData``:String : Flow data
+	* ``isFlow``:Boolean : When True, view is inside workflow.
 	* ``set_cookies``:List
-	* ``device``:String
-	* ``country``:String
-	* ``winType``:String
-	* ``tmpl``:String
-	* ``wfUserId``:String
-	* ``isLogin``:Boolean
-	* ``container``:Dict
+	* ``device``:String : Device
+	* ``country``:String : Country code
+	* ``winType``:String : Type of windows: window, popup
+	* ``tmpl``:String : Template container
+	* ``wfUserId``:String : Workflow user id
+	* ``isLogin``:Boolean : Weather user has logged in
+	* ``container``:Dict : Container with key->value in dict format
+	* ``doneResult``:Boolean : Used by decorators to define that result has been built.
+	* ``isServerTmpl``:Boolean : Defines if requesting JSON or web response. In case we have an AJAX request, we will have this to False.
+	In case we request an url this value will be True. ServiceDecorator will build different response based on this.
 	
 	"""
 	
@@ -1333,7 +1339,15 @@ class Context ( object ):
 		self.wfUserId = None
 		self.isLogin = False
 		self.container = {}
+		self.doneResult = False
+		self.isServerTmpl = False
 
+	def get_is_server_tmpl(self):
+		return self.__isServerTmpl
+	def set_is_server_tmpl(self, value):
+		self.__isServerTmpl = value
+	def del_is_server_tmpl(self):
+		del self.__isServerTmpl
 	def get_app(self):
 		return self.__app
 	def get_user(self):
@@ -1400,6 +1414,8 @@ class Context ( object ):
 		return self.__isLogin
 	def get_container(self):
 		return self.__container
+	def get_done_result(self):
+		return self.__doneResult
 	def set_app(self, value):
 		self.__app = value
 	def set_user(self, value):
@@ -1466,6 +1482,8 @@ class Context ( object ):
 		self.__isLogin = value
 	def set_container(self, value):
 		self.__container = value
+	def set_done_result(self, value):
+		self.__doneResult = value
 	def del_app(self):
 		del self.__app
 	def del_user(self):
@@ -1532,6 +1550,8 @@ class Context ( object ):
 		del self.__isLogin
 	def del_container(self):
 		del self.__container
+	def del_done_result(self):
+		del self.__doneResult
 
 	app = property(get_app, set_app, del_app, "app's docstring")
 	user = property(get_user, set_user, del_user, "user's docstring")
@@ -1566,17 +1586,18 @@ class Context ( object ):
 	wfUserId = property(get_wf_user_id, set_wf_user_id, del_wf_user_id, "wfUserId's docstring")
 	isLogin = property(get_is_login, set_is_login, del_is_login, "isLogin's docstring")
 	container = property(get_container, set_container, del_container, "container's docstring")
+	doneResult = property(get_done_result, set_done_result, del_done_result, "doneResult's docstring")
+	isServerTmpl = property(get_is_server_tmpl, set_is_server_tmpl, del_is_server_tmpl, "isServerTmpl's docstring")
 
 class ContextDecorator(object):
 	_app = ''
 	def __init__(self, **args):
-		"""if args.has_key('app'):
-			self._app = args['app']"""
 		pass
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			try:
+				logger.debug('Holaaaa!!!!!!!!!!!!!!!!!')
 				request = argsTuple[0]
 				REQ = request.REQUEST
 				self._app = request.REQUEST['app'] if request.REQUEST.has_key('app') else ''
@@ -1586,8 +1607,11 @@ class ContextDecorator(object):
 				if lang not in langs:
 					lang = 'en'
 				# Instantiate app Context
-				cls = getClass( self._app + '.service.Context' )
-				ctx = cls()
+				try:
+					cls = getClass( self._app + '.service.Context' )
+					ctx = cls()
+				except AttributeError:
+					ctx = Context()
 				if False: ctx = Context()
 				ctx.app = self._app
 				ctx.user = request.user
@@ -1609,9 +1633,9 @@ class ContextDecorator(object):
 				ctx.form = None
 				ctx.forms = {}
 				ctx.captcha = None 
-				ctx.viewNameSource = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
-				ctx.viewNameTarget = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
-				ctx.action = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
+				ctx.viewNameSource = REQ['viewNameSource'] if REQ.has_key('viewNameSource') else ''
+				ctx.viewNameTarget = REQ['viewNameTarget'] if REQ.has_key('viewNameTarget') else ''
+				ctx.action = REQ['action'] if REQ.has_key('action') else ''
 				# Set isView and isAction. Used by data layer, to define which database name to use
 				if request.REQUEST.has_key('view'):
 					ctx.isView = True
@@ -1631,7 +1655,7 @@ class ContextDecorator(object):
 				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
 					ctx.userChannel = request.session['userChannel']
-					logger.debug( 'Context :: userChannel: ' + ctx[self.USER_CHANNEL] )
+					logger.debug( 'Context :: userChannel: ' + ctx.userChannel )
 				if request.user.is_authenticated():
 					ctx.isLogin = True
 				else:
@@ -1658,32 +1682,43 @@ class ContextViewDecorator(object):
 			self.__mode = args['mode']
 		else:
 			self.__mode = 'view'
+		if len(argList) != 0:
+			logger.debug('argList: %s' % (argList) )
+			self._app = '.'.join(argList[0].split('.')[:2])
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
 			try:
 				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
+				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
+				
 								
-				if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
+				if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
+					request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 8') != -1:
 					result = render_to_response( 'noHTML5.html', RequestContext(request) )
 					return result				
 
 				if self.__mode == 'view':
 					if args.has_key('app') and len(args['app']) != 0:
+						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
 						self._app = args['app']
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						self._app = 'site'
+						#self._app = 'ximpia.site'
 						self.__viewName = 'home'
 				else:
 					if args.has_key('app') and len(args['app']) != 0:
+						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
 						self._app = args['app']
 						#self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						self._app = 'site'
+						#self._app = 'ximpia.site'
 						#self.__viewName = 'home'
+						pass
+				
+				logger.debug( 'ContectViewDecorator :: app: %s' % (self._app) )
 				
 				REQ = request.REQUEST 
 				langs = ('en')
@@ -1692,10 +1727,13 @@ class ContextViewDecorator(object):
 				if lang not in langs:
 					lang = 'en'
 				# Instantiate app Context
-				cls = getClass( self._app + '.service.Context' )
-				ctx = cls()
+				try:
+					cls = getClass( self._app + '.service.Context' )
+					ctx = cls()
+				except AttributeError:
+					ctx = Context()
 				if False: ctx = Context()
-				ctx.ap = self._app
+				ctx.app = self._app
 				ctx.user = request.user
 				ctx.lang = lang
 				ctx.settings = settings
@@ -1715,9 +1753,9 @@ class ContextViewDecorator(object):
 				ctx.form = None
 				ctx.forms = {}
 				ctx.captcha = None 
-				ctx.viewNameSource = REQ[self.VIEW_NAME_SOURCE] if REQ.has_key(self.VIEW_NAME_SOURCE) else ''
-				ctx.viewNameTarget = REQ[self.VIEW_NAME_TARGET] if REQ.has_key(self.VIEW_NAME_TARGET) else ''
-				ctx.action = REQ[self.ACTION] if REQ.has_key(self.ACTION) else ''
+				ctx.viewNameSource = REQ['viewNameSource'] if REQ.has_key('viewNameSource') else ''
+				ctx.viewNameTarget = REQ['viewNameTarget'] if REQ.has_key('viewNameTarget') else ''
+				ctx.action = REQ['action'] if REQ.has_key('action') else ''
 				# Set isView and isAction. Used by data layer, to define which database name to use
 				if request.REQUEST.has_key('view'):
 					ctx.isView = True
@@ -1733,6 +1771,7 @@ class ContextViewDecorator(object):
 				ctx.isFlow = False
 				ctx.jsData = ''
 				ctx.wfUserId = ''
+				ctx.isServerTmpl = True
 				#if request.REQUEST.has_key('socialChannel') and request.user.is_authenticated():
 				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session

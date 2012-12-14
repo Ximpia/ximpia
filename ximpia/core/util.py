@@ -1,4 +1,25 @@
+import os
 from HTMLParser import HTMLParser
+
+def getClass( kls ):
+	"""
+	
+	Document here
+	
+	"""
+	parts = kls.split('.')
+	module = ".".join(parts[:-1])
+	m = __import__( module )
+	for comp in parts[1:]:
+		m = getattr(m, comp)            
+	return m
+
+
+# Import settings and logging
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+import logging.config
+logging.config.dictConfig(settings.LOGGING)
+logger = logging.getLogger(__name__)
 
 class TemplateParser(HTMLParser):
 	__startTitle = False
@@ -34,7 +55,10 @@ class TemplateParser(HTMLParser):
 		"""Get attributes in html element"""
 		attrsStr = ''
 		for attr in attrs:
-			attrsStr += ' ' + attr[0] + '="' + attr[1] + '"'
+			if attr[1] != None:
+				attrsStr += ' ' + attr[0] + '="' + attr[1] + '"'
+			else:
+				attrsStr += ' ' + attr[0]
 		return attrsStr
 	def handle_starttag(self, tag, attrs):
 		"""
@@ -122,10 +146,3 @@ class TemplateParser(HTMLParser):
 	titleBar = property(get_title_bar, set_title_bar, del_title_bar, "titleBar's docstring")
 	content = property(get_content, set_content, del_content, "content's docstring")
 
-def getClass( kls ):
-	parts = kls.split('.')
-	module = ".".join(parts[:-1])
-	m = __import__( module )
-	for comp in parts[1:]:
-		m = getattr(m, comp)            
-	return m

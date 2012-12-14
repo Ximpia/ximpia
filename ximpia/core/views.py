@@ -9,13 +9,12 @@ import os
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.http import Http404
-from django.core.cache import cache
 
 from yacaptcha.models import Captcha
 
 from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
-from service import XpMsgException, ViewDecorator, SearchService, TemplateService
+from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService
 from data import ViewDAO, ActionDAO
 
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
@@ -248,12 +247,14 @@ def jxService(request, **args):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
+	print 'holaaaaaaaaaaaaaaa'
+	print 'args: ', args
 	logger.debug( 'jxService...' )
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
 	request.session.delete_test_cookie()
 	logger.debug( 'session: ' + json.dumps(request.session.items()) )
-	#logger.debug( 'session: ' json.dumps(request.session.items()) + ' ' + json.dumps(request.session.session_key) )
+	#logger.debug( 'session: %s' % json.dumps(request.session.items()) + ' ' + json.dumps(request.session.session_key) )
 	if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
 		viewAttrs = {}
 		if request.REQUEST.has_key('view'):
@@ -261,22 +262,23 @@ def jxService(request, **args):
 			view = request.REQUEST['view']
 			logger.debug( 'view: ' + view )
 			dbView = ViewDAO(args['ctx'])
-			impl = dbView.get(application__code=app, name=view).implementation
+			impl = dbView.get(application__name=app, name=view).implementation
 			# view attributes 
 			viewAttrs = json.loads(request.REQUEST['params'])
-			args['ctx']['viewNameSource'] = view
+			args['ctx'].viewNameSource = view
 		elif request.REQUEST.has_key('action'):
 			app = request.REQUEST['app']
 			action = request.REQUEST['action']
 			logger.debug( 'action: ' + action )
 			dbAction = ActionDAO(args['ctx'])
 			dbView = ViewDAO(args['ctx'])
-			actionObj = dbAction.get(application__code=app, name=action)
-			if args['ctx'].has_key('viewNameSource') and len(args['ctx']['viewNameSource']) != 0:
+			actionObj = dbAction.get(application__name=app, name=action)
+			#if args['ctx'].has_key('viewNameSource') and len(args['ctx']['viewNameSource']) != 0:
+			if len(args['ctx'].viewNameSource) != 0:
 				# Get view name and check its application code with application code of action
-				logger.debug( 'viewNameSource' + args['ctx']['viewNameSource'] )
-				viewObj = dbView.get(application__code=app, name=args['ctx']['viewNameSource'])
-				if actionObj.application.code != viewObj.application.code:
+				logger.debug( 'viewNameSource: %s' % (args['ctx'].viewNameSource) )
+				viewObj = dbView.get(application__name=app, name=args['ctx'].viewNameSource)
+				if actionObj.application.name != viewObj.application.name:
 					raise XpMsgException(None, _('Action is not in same application as view source'))
 			impl = actionObj.implementation
 		implFields = impl.split('.')
@@ -299,7 +301,7 @@ def jxService(request, **args):
 	return result
 
 @ContextViewDecorator()
-@ViewDecorator()
+@ViewTmplDecorator()
 def showView(request, app, viewName, viewAttrs, **args):
 	"""Show url view. Application code and view name are parsed from the url.
 	@param request: Request
@@ -307,10 +309,10 @@ def showView(request, app, viewName, viewAttrs, **args):
 	@param viewName: View name
 	@return: result"""
 	# Get view from viewName
-	#logger.debug( 'core :: context: ' + json.dumps(args['ctx']) )
+	logger.debug( 'core showView :: context: ' + json.dumps(args['ctx']) )
 	db = ViewDAO(args['ctx'])
 	#view = db.get(name=viewName)
-	view = db.get(application__code=app, name=viewName)
+	view = db.get(application__name=app, name=viewName)
 	impl = view.implementation
 	# Parse method and class path
 	implFields = impl.split('.')
@@ -337,11 +339,11 @@ def showView(request, app, viewName, viewAttrs, **args):
 	return result
 
 @ContextViewDecorator(mode='action')
-@ViewDecorator()
+@ViewTmplDecorator()
 def execActionMsg(request, app, actionName, actionAttrs, **args):
 	"""Executes an action and shows a message of result of action."""
 	db = ActionDAO(args['ctx'])
-	action = db.get(application__code=app, name=actionName)
+	action = db.get(application__name=app, name=actionName)
 	impl = action.implementation
 	implFields = impl.split('.')
 	method = implFields[len(implFields)-1] 

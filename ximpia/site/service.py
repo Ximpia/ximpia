@@ -22,7 +22,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 import forms
-from data import ParamDAO, UserChannelDAO, XmlMessageDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO
+from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO
 from forms import UserSignupInvitationForm #@UnusedImport
 import messages as _m
 import constants as K
@@ -96,7 +96,7 @@ class LoginServiceOld ( CommonService ):
 	def __init__(self, ctx):
 		super(LoginServiceOld, self).__init__(ctx)
 		self._dbUserSys = UserDAO(ctx)
-		self._dbXmlMessage = XmlMessageDAO(ctx)
+		self._dbXmlMessage = SettingsDAO(ctx)
 		self._dbUserChannel = UserChannelDAO(ctx)
 		self._dbParam = ParamDAO(ctx)	
 	
@@ -255,7 +255,7 @@ class SignupService ( CommonService ):
 		self._dbUserChannel = UserChannelDAO(ctx)
 		#self._dbGroupChannel = GroupChannelDAO(ctx)
 		self._dbSignupData = SignupDataDAO(ctx)
-		self._dbXmlMessage = XmlMessageDAO(ctx)
+		self._dbXmlMessage = SettingsDAO(ctx)
 		self._dbSocialNetworkUser = SocialNetworkUserDAO(ctx)
 	
 	@ValidationDecorator()
@@ -341,7 +341,7 @@ class SignupService ( CommonService ):
 			logger.debug( xmlMessage )
 			EmailService.send(xmlMessage, {'scheme': settings.XIMPIA_SCHEME, 
 							'host': settings.XIMPIA_BACKEND_HOST,
-							'app': K.APP,
+							'app': self._ctx.app,
 							'firstName': self._f()['firstName'], 
 							'user': self._f()['ximpiaId'],
 							'activationCode': activationCode}, [self._f()['email']])

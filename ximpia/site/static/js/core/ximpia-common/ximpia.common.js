@@ -241,6 +241,7 @@ ximpia.console = {};
  * logData
  */
 ximpia.console.log = (function(logData, level) {
+	//TODO: Treat browsers. Browsers ot supporting console.log will not output logs
 	if (typeof(level) == 'undefined') {
 		level = ximpia.constants.main.DEBUG_DEBUG;
 	}
@@ -631,7 +632,7 @@ ximpia.common.Path.getServer = (function() {
 	return server;
 });
 ximpia.common.Path.getBusiness = (function() {
-	var path = ximpia.common.Path.getServer() + 'jxBusiness';
+	var path = ximpia.common.Path.getServer() + 'jxService';
 	return path
 })
 /*
@@ -1912,6 +1913,7 @@ ximpia.common.PageAjax.doFormsRender = (function ( obj ) {
 	ximpia.common.Browser.setXpDataView(obj.viewName, obj.data);
 	ximpia.console.log('doFormsRender :: forms length: ' + document.forms.length);
 	ximpia.console.log(document.forms);
+	ximpia.common.PageAjax.positionBars();
 	for (var i = 0; i<document.forms.length; i++) {
 		var myForm = document.forms[i];
 		var xpForm = 'xpData-view-' + obj.viewName +  '.' + myForm.id;
@@ -1925,7 +1927,7 @@ ximpia.common.PageAjax.doFormsRender = (function ( obj ) {
 		// Post-Page : Page logic
 		var oForm = ximpia.common.Form();
 		oForm.doBindBubbles();
-		ximpia.common.PageAjax.positionBars();
+		//ximpia.common.PageAjax.positionBars();
 	});
 });
 /**
@@ -1972,6 +1974,7 @@ ximpia.common.PageAjax.positionBars = (function ( obj ) {
 			ximpia.console.log('********************** buttons html:  ' + html);
 			$('.sectionComp').append(html);
 			$('#id_sectionButton').html('');
+			$('#id_pageButton').css('top', '15px');
 			//margin-bottom: 0px; left: 0px
 		}
 		if ((typeof obj != 'undefined' && !obj.hasOwnProperty('skipVisibility')) || typeof obj == 'undefined') {

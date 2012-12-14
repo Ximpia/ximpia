@@ -182,12 +182,12 @@ class XBaseForm( forms.Form ):
 
 	def _validateCaptcha(self):
 		"""Validate captcha"""
-		if self._ctx[Ctx.REQUEST].has_key('recaptcha_challenge_field'):
+		if self._ctx.request.has_key('recaptcha_challenge_field'):
 			logger.debug( 'XBaseForm :: _validateCapctha() ...' )
-			captchaResponse = captcha.submit(self._ctx[Ctx.REQUEST]['recaptcha_challenge_field'],
-							self._ctx[Ctx.REQUEST]['recaptcha_response_field'], 
+			captchaResponse = captcha.submit(self._ctx.request['recaptcha_challenge_field'],
+							self._ctx.request['recaptcha_response_field'], 
 							settings.RECAPTCHA_PRIVATE_KEY, 
-							self._ctx[Ctx.META]['REMOTE_ADDR'])			
+							self._ctx.meta['REMOTE_ADDR'])			
 			if captchaResponse.is_valid == False:
 				self.addInvalidError(_('Words introduced in Captcha do not correspond to image. You can reload for another image.'))
 	def addInvalidError(self, sError):

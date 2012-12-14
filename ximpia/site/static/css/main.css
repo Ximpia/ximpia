@@ -42,6 +42,7 @@ section:focus {
 
 input[type='text'] {
 	width: 180px;
+	border: 1px solid #ccc;
 }
 
 input.fieldBig {
@@ -110,7 +111,7 @@ input.Small, input.SmallMust {
 
 input.field, input.fieldMust {
     padding-left: 5px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 select {
@@ -1605,7 +1606,7 @@ legend {
 	float: left; 
 	height: 35px; 
 	margin-top: 3px; 
-	border-radius: 7px; 
+	border-radius: 5px; 
 	margin-left: 5px;  
 	background-color: #333; 
 	border: 1px solid #444;
