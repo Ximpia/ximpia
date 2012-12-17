@@ -1,0 +1,337 @@
+[
+    {
+        "pk": 1,
+        "model": "site.param",
+        "fields": {
+            "name": "META",
+            "dateCreate": "2012-12-12T13:53:52",
+            "dateModify": "2012-12-12T13:53:52",
+            "value": "META",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 2,
+        "model": "site.param",
+        "fields": {
+            "name": "SETTINGS",
+            "dateCreate": "2012-12-12T13:54:04",
+            "dateModify": "2012-12-12T13:54:04",
+            "value": "SETTINGS",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 3,
+        "model": "site.param",
+        "fields": {
+            "name": "PENDING",
+            "dateCreate": "2012-12-12T15:13:41",
+            "dateModify": "2012-12-12T15:13:41",
+            "value": "Pending",
+            "mode": "USER_STATUS",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+  {
+    "model": "site.GroupChannel",
+    "pk": 1,
+    "fields": {
+      "group": 1
+    }
+  },
+    {
+        "pk": 1, 
+        "model": "site.userchannel", 
+        "fields": {
+            "name": "user", 
+            "title": "Jorge",  
+            "dateCreate": "2012-04-24 14:56:02", 
+            "dateModify": "2012-04-24 14:56:02", 
+            "user": 1, 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "isDeleted": false
+        }
+    },
+    {
+    	"pk": 1,
+    	"model": "site.userchannelgroups",
+    	"fields": {
+    	    "userChannel": 1,
+    	    "groupChannel": 1,
+    	    "relationship": "user",
+            "dateCreate": "2012-04-24 14:56:02", 
+            "dateModify": "2012-04-24 14:56:02",
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "isDeleted": false
+    	}
+    },
+    {
+        "pk": 1, 
+        "model": "site.invitation", 
+        "fields": {
+            "status": "pending", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-13 23:13:22", 
+            "number": 1, 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "fromUser": 1, 
+            "message": "", 
+            "invitationCode": "AAAAAAAAAA", 
+            "email": "jalegre39@gmail.com", 
+            "isDeleted": false
+        }
+    },
+  {
+    "model": "auth.Group",
+    "pk": 1,
+    "fields": {
+      "name": "Users"
+    }
+  },
+    {
+        "pk": 1, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "twitter", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "Twitter", 
+            "mode": "net", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "facebook", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "Facebook", 
+            "mode": "net", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "linkedin", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "LinkedIn", 
+            "mode": "net", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "ok", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "Ok", 
+            "mode": "status", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "blocked", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "Blocked", 
+            "mode": "status", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "unblocked", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "UnBlocked", 
+            "mode": "status", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "sms", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "SMS", 
+            "mode": "COMMTYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "email", 
+            "dateCreate": "2012-04-11 11:49:54", 
+            "dateModify": "2012-04-11 11:49:54", 
+            "value": "Email", 
+            "mode": "COMMTYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "core.coreparam", 
+        "fields": { 
+            "name": "web", 
+            "dateCreate": "2012-04-16 12:17:57", 
+            "dateModify": "2012-04-16 12:18:36", 
+            "value": "web", 
+            "mode": "channel", 
+            "userCreateId": 1, 
+            "userModifyId": 1,  
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 10,
+        "model": "core.coreparam",
+        "fields": {
+            "name": "META",
+            "dateCreate": "2012-12-12T13:53:52",
+            "dateModify": "2012-12-12T13:53:52",
+            "value": "META",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 11,
+        "model": "core.coreparam",
+        "fields": {
+            "name": "SETTINGS",
+            "dateCreate": "2012-12-12T13:54:04",
+            "dateModify": "2012-12-12T13:54:04",
+            "value": "SETTINGS",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "site.settings", 
+        "fields": {
+            "name": 1, 
+            "dateCreate": "2012-12-12T21:42:32", 
+            "dateModify": "2012-12-12T21:42:32", 
+            "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Message of contact</Subject>\r\n\t\t<Message>\r\n\t\tname: $name\r\n\t\temail: $email\r\n\t\t=========================================================\r\n\t\t$message\r\n\t\t=========================================================\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "mustAutoload": true, 
+            "isDeleted": false, 
+            "description": "Contact us message english language"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "site.settings", 
+        "fields": {
+            "name": 2, 
+            "dateCreate": "2012-12-12T21:43:06", 
+            "dateModify": "2012-12-12T21:43:06", 
+            "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Join the Team</Subject>\r\n\t\t<Message>\r\n\t\tI have received arequest to join the team.\r\n\t\t\r\n\t\tname: $name\r\n\t\temail: $email\r\n\t\tknowledge: $knowledge\r\n\t\tlinkedIn: $linkedInProfile\r\n\t\tgithub: $githubProfile\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia\r\n\t\t\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "mustAutoload": true, 
+            "isDeleted": false, 
+            "description": "Join Us message english language"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "site.settings", 
+        "fields": {
+            "name": 3, 
+            "dateCreate": "2012-12-12T21:43:40", 
+            "dateModify": "2012-12-12T21:43:40", 
+            "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Password Reminder</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tYou requested to remember you password in Ximpia. You can change your password by clicking on:\t\t\r\n\t\thttp://localhost:8000/view/changePassword/$userAccount/$reminderId\r\n\t\t\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "mustAutoload": true, 
+            "isDeleted": false, 
+            "description": "Password reminder message english language"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "site.settings", 
+        "fields": {
+            "name": 4, 
+            "dateCreate": "2012-12-12T21:44:20", 
+            "dateModify": "2012-12-12T21:44:20", 
+            "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Account Verification</Subject>\r\n\t\t<Message>\r\n\t\tAdministrator,\r\n\t\t\r\n\t\tAn organization account has been created.\r\n\t\t\r\n\t\tAccount: $account\r\n\t\tOrganization: $organizationName\r\n\t\tGroup: $organizationGroup\r\n\t\tLinkedIn: linkedin\r\n\t\tName: $name\t\t\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>\r\n", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "mustAutoload": true, 
+            "isDeleted": false, 
+            "description": "Admin Notify english language"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "site.settings", 
+        "fields": {
+            "name": 5, 
+            "dateCreate": "2012-12-12T21:44:48", 
+            "dateModify": "2012-12-12T21:44:48", 
+            "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Email Validation</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tThanks for signing up in Ximpia.\r\n\t\t\r\n\t\tWe need to confirm your email address. Just click on the link:\t\t\r\n\t\t$scheme://$host/apps/$app/do/activateUser/$user/$activationCode\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\twebmaster@ximpia.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "mustAutoload": true, 
+            "isDeleted": false, 
+            "description": "Signup user message english language"
+        }
+    }
+]

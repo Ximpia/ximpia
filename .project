@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>XimpiaDjango</name>
+	<name>ximpia</name>
 	<comment></comment>
 	<projects>
-		<project>CoreDjango</project>
-		<project>Misc</project>
-		<project>Site Packages</project>
-		<project>XimpiaApps</project>
-		<project>XimpiaFront</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
