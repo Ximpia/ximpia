@@ -77,7 +77,7 @@ class ComponentRegisterBusiness ( object ):
 		@param name: Application name
 		@param isAdmin: Is app admin backdoor?. Values True / False"""
 		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug)
-		logger.debug( 'Register application: %s %s' % (app, created) )
+		logger.info( 'Register application: %s %s' % (app, created) )
 	
 	def cleanAll(self, appName=None):
 		"""
@@ -91,27 +91,27 @@ class ComponentRegisterBusiness ( object ):
 		
 		"""
 		View.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all views for %s' % appName )
+		logger.info( 'deleted all views for %s' % appName )
 		Action.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all actions for %s' % appName )
+		logger.info( 'deleted all actions for %s' % appName )
 		Workflow.objects.filter(application__name=appName).delete()
 		WorkflowData.objects.filter(flow__application__name=appName).delete()
-		logger.debug( 'deleted all flows for %s' % appName )
+		logger.info( 'deleted all flows for %s' % appName )
 		Menu.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all menus for %s' % appName )
+		logger.info( 'deleted all menus for %s' % appName )
 		XpTemplate.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all templates for %s' % appName )
+		logger.info( 'deleted all templates for %s' % appName )
 	
 	def registerViewMenu(self, appName=None, viewName=None, menus=[], **argsDict):
 		"""Register views associated with a menu
 		@param appName: Application code
 		@param viewName: View name
 		@param menus: List of menus dictionaries"""
-		logger.debug( 'register view Menus...' )
+		logger.info( 'register view Menus...' )
 		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName)
 		# Menu
-		logger.debug( 'View menus...' )
+		logger.info( 'View menus...' )
 		ViewMenu.objects.filter(view=view).delete()
 		groupDict = {}
 		singleList = []
@@ -131,8 +131,8 @@ class ComponentRegisterBusiness ( object ):
 			try:
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
-				logger.debug( 'data: %s' % (counter) )
+				#logger.info( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.info( 'data: %s' % (counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter)
 				counterDict[dd[K.MENU_NAME]] = counter
@@ -150,8 +150,8 @@ class ComponentRegisterBusiness ( object ):
 					dd[K.ZONE] = K.VIEW
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				#logger.debug( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
-				logger.debug( 'data: %s' % ( counter) )
+				#logger.info( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.info( 'data: %s' % ( counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
 				counter += 10	
@@ -159,7 +159,7 @@ class ComponentRegisterBusiness ( object ):
 	def cleanViews(self, appName=None):
 		"""Clean all views for application."""
 		View.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all views for %s' % appName )
+		logger.info( 'deleted all views for %s' % appName )
 	
 	def registerView(self, appName=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
 			hasAuth=True, **argsDict):
@@ -174,7 +174,7 @@ class ComponentRegisterBusiness ( object ):
 		@param hasAuth: Does view needs login?
 		@param argsDict: Dictionary that contains the view entry parameters. Having format name => [value1, value2, ...]"""
 		# TODO: Validate entry arguments: There is no None arguments, types, etc...
-		logger.debug( 'register views...' )
+		logger.info( 'register views...' )
 		classPath = str(myClass).split("'")[1]
 		app = Application.objects.get(name=appName)
 		view, created = View.objects.get_or_create(application=app, name=viewName) #@UnusedVariable
@@ -194,7 +194,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
 		Action.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all actions for %s' % appName )
+		logger.info( 'deleted all actions for %s' % appName )
 	
 	def registerAction(self, appName=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
 		"""Registers action
@@ -231,7 +231,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean all flows for application."""
 		Workflow.objects.filter(application__name=appName).delete()
 		WorkflowData.objects.filter(flow__application__name=appName).delete()
-		logger.debug( 'deleted all flows for %s' % appName )
+		logger.info( 'deleted all flows for %s' % appName )
 	
 	def registerFlow(self, appName=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
 		"""Reister flow
@@ -275,7 +275,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean all menus for application
 		@param appCode: Application code"""
 		Menu.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all menus for %s' % appName )
+		logger.info( 'deleted all menus for %s' % appName )
 	
 	def registerMenu(self, appName=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
 			urlTarget='', **argsDict):
@@ -289,7 +289,7 @@ class ComponentRegisterBusiness ( object ):
 		@param viewName: View name
 		@param url: Url to trigger
 		@param urlTarget: Target to open window: same or new tab"""
-		logger.debug( 'register menus...' )
+		logger.info( 'register menus...' )
 		app = Application.objects.get(name=appName)
 		# Icon
 		icon, created = CoreParam.objects.get_or_create(mode=K.PARAM_ICON, name=iconName, value=iconName) #@UnusedVariable
@@ -314,7 +314,7 @@ class ComponentRegisterBusiness ( object ):
 			menu.view = view
 		menu.save()
 		# MenuParam
-		logger.debug( 'argsDict: %s' % argsDict )
+		logger.info( 'argsDict: %s' % argsDict )
 		for name in argsDict:
 			operator, value = argsDict[name]
 			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
@@ -326,7 +326,7 @@ class ComponentRegisterBusiness ( object ):
 		@param viewName: View name
 		@param actionName: Action name"""
 		wordList = resources.Index.parseText(text)
-		logger.debug( 'wordList: %s' % wordList )
+		logger.info( 'wordList: %s' % wordList )
 		view = View.objects.get(name=viewName) if viewName != None else None
 		action = Action.objects.get(name=actionName) if actionName != None else None
 		app = Application.objects.get(name=appName)
@@ -354,7 +354,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean templates for the application
 		@param appCode: Application code"""
 		XpTemplate.objects.filter(application__name=appName).delete()
-		logger.debug( 'deleted all templates for %s' % appName )
+		logger.info( 'deleted all templates for %s' % appName )
 	
 	def registerTemplate(self, appName=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
 			device=None, alias=None):

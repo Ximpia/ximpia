@@ -922,10 +922,16 @@ class ViewTmplDecorator ( object ):
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
+			
+			logger.debug( 'ViewTmplDecorator :: args: %s' % args )
+			
+			# Data instances
+			dbApp = ApplicationDAO(args['ctx'])
+			
 			ctx = args['ctx']
 			if False: ctx = Context()
-			if args.has_key('app') and len(args['app']) != 0:
-				self.__APP = args['app']
+			if args.has_key('appSlug') and len(args['appSlug']) != 0:
+				self.__APP = dbApp.get(slug=args['appSlug']).name
 				if args.has_key('viewName'):
 					logger.debug( 'set from args view name' )
 					self.__viewName = args['viewName']
@@ -935,27 +941,27 @@ class ViewTmplDecorator ( object ):
 				# TODO: Use here the default app for project settings and default view...
 				#self.__APP = 'ximpia.site'
 				self.__viewName = 'home'
-			logger.debug('ViewDecorator :: app: %s' % (self.__APP) )
+			logger.debug('ViewTmplDecorator :: app: %s' % (self.__APP) )
 			ctx.viewNameSource = self.__viewName
 			resultJs = f(request, **args)
 			if len(ctx.viewNameTarget) != 0:
 				self.__viewName = ctx.viewNameTargett
-			logger.debug( 'ViewDecorator :: resultJs: %s' % resultJs )
-			logger.debug( 'ViewDecorator :: viewName: %s target: %s source: %s ' % 
+			logger.debug( 'ViewTmplDecorator :: resultJs: %s' % resultJs )
+			logger.debug( 'ViewTmplDecorator :: viewName: %s target: %s source: %s ' % 
 				(self.__viewName, args['ctx'].viewNameTarget, args['ctx'].viewNameSource) )
 			template = TemplateService(ctx)
 			templates = template.resolve(self.__viewName)
-			logger.debug( 'ViewDecorator :: templates: %s' % templates )
+			logger.debug( 'ViewTmplDecorator :: templates: %s' % templates )
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
-				logger.debug( 'ViewDecorator :: tmplName: %s' % tmplName )				
+				logger.debug( 'ViewTmplDecorator :: tmplName: %s' % tmplName )				
 				# Get template data
 				tmplService = TemplateService(ctx)
 				tmplData = tmplService.get(self.__APP, 'window', tmplName)
-				#logger.debug('ViewDecorator :: tmplData: %s' % (tmplData) )
+				#logger.debug('ViewTmplDecorator :: tmplData: %s' % (tmplData) )
 				parser = TemplateParser()
 				parser.feed(tmplData)
-				logger.debug('ViewDecorator :: title: %s' % (parser.title) )
+				logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
 				result = render_to_response( 'main.html', RequestContext(request, 
 												{	'title': parser.title,
 													'titleBar': parser.titleBar,

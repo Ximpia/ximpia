@@ -241,7 +241,7 @@ class Application( BaseModel ):
 	name = models.CharField(max_length=100,
 		verbose_name = _('Name'), help_text = _('Application name. It must contain package and module for application with . as \
 			separator, like ximpia.site'))
-	slug = models.SlugField(max_length=30,
+	slug = models.SlugField(max_length=30, unique=True,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	title = models.CharField(max_length=30, db_column='TITLE',
 		verbose_name = _('Title'), help_text = _('Application title'))
@@ -1688,11 +1688,11 @@ class ContextViewDecorator(object):
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
-			try:
+			try: 
+				
 				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
 				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
-				
 								
 				if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
@@ -1701,17 +1701,17 @@ class ContextViewDecorator(object):
 					return result				
 
 				if self.__mode == 'view':
-					if args.has_key('app') and len(args['app']) != 0:
+					if args.has_key('appSlug') and len(args['appSlug']) != 0:
 						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
-						self._app = args['app']
+						self._app = Application.objects.get(slug=args['appSlug']).name
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
 						#self._app = 'ximpia.site'
 						self.__viewName = 'home'
 				else:
-					if args.has_key('app') and len(args['app']) != 0:
+					if args.has_key('appSlug') and len(args['appSlug']) != 0:
 						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
-						self._app = args['app']
+						self._app = Application.objects.get(slug=args['appSlug']).name
 						#self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
 						#self._app = 'ximpia.site'

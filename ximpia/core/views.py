@@ -302,17 +302,18 @@ def jxService(request, **args):
 
 @ContextViewDecorator()
 @ViewTmplDecorator()
-def showView(request, app, viewName, viewAttrs, **args):
+def showView(request, appSlug, viewName, viewAttrs, **args):
 	"""Show url view. Application code and view name are parsed from the url.
 	@param request: Request
 	@param app: Application code
 	@param viewName: View name
 	@return: result"""
 	# Get view from viewName
-	logger.debug( 'core showView :: context: ' + json.dumps(args['ctx']) )
+	#logger.debug( 'core showView :: context: ' + json.dumps(args['ctx']) )
 	db = ViewDAO(args['ctx'])
 	#view = db.get(name=viewName)
-	view = db.get(application__name=app, name=viewName)
+	view = db.get(application__slug=appSlug, name=viewName)
+	logger.debug('coew showView :: view: %s' % (view) )
 	impl = view.implementation
 	# Parse method and class path
 	implFields = impl.split('.')
