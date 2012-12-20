@@ -3,17 +3,20 @@ import datetime
 import random
 import os
 
+from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext as _
 
-from models import XpMsgException, getBlankWfData
+from models import XpMsgException, XpRegisterException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
-	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData
+	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service
+from ximpia.site.models import Category, Tag
 from ximpia.util import resources
 from models import CoreParam
 import constants as K
 
 # Settings
 from ximpia.core.util import getClass
+from ximpia.core.models import MetaKey, ServiceMenu
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -28,13 +31,13 @@ from ximpia.util.js import Form as _jsf
 
 class AppCompRegCommonBusiness ( object ):
 	_ctx = None
-	def __init__(self, ctx=None, appName=None, doClean=True):
+	def __init__(self, compName, ctx=None, doClean=False):
 		"""Parent class for application component registering."""
 		self._ctx = ctx
+		appName = self.__getAppName(compName)
 		self._reg = ComponentRegisterBusiness()
 		if appName != None and doClean == True:
 			self._reg.cleanAll(appName)
-		self.main()
 		self.views()
 		self.templates()
 		self.actions()
@@ -42,9 +45,8 @@ class AppCompRegCommonBusiness ( object ):
 		self.menus()
 		self.viewMenus()
 		self.search()
-	def main(self):
-		"""Doc."""
-		pass
+	def __getAppName(self, compName):
+		return '.'.join(compName.split('.')[:2])
 	def views(self):
 		"""Doc."""
 		pass
@@ -66,31 +68,119 @@ class AppCompRegCommonBusiness ( object ):
 	def search(self):
 		pass
 
-class ComponentRegisterBusiness ( object ):
+
+# TODO: Attribute validation
+class ComponentRegisterBusiness ( object ):	
 	
 	def __init__(self):
 		pass
 	
-	def registerApp(self, name=None, title=None, isAdmin=False, slug=''):
-		"""Register application
-		@param code: Application code
-		@param name: Application name
-		@param isAdmin: Is app admin backdoor?. Values True / False"""
-		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug)
-		logger.info( 'Register application: %s %s' % (app, created) )
+	def __getAppName(self, compName):
+		return '.'.join(compName.split('.')[:2])
 	
-	def cleanAll(self, appName=None):
+	def registerApp(self, compName, title=None, isAdmin=False, slug='', **args):
+		"""
+		
+		Register application
+		
+		**Required Attributes**
+		
+		* ``compName``:StringType : Component name, __name__ from components module
+		* ``title``:StringType : Application title
+		* ``isAdmin``:BooleanType : Application is admin type
+		* ``slug``:StringType : Application slug to show in urls 
+		
+		**Optional Attributes**
+		
+		* ``isSubscription``
+		* ``isPrivate``
+		* ``isAdmin``
+		* ``developer``
+		* ``developerOrg``
+		* ``parentSlug``
+		* ``meta``
+		* ``category``:StringType
+		* ``tags``:ListType
+		
+		**Returns**
+		
+		None
+		
+		"""
+		if title == None or slug == '':
+			raise XpRegisterException(AttributeError, 'registerApp requires title and slug attributes')
+		name = self.__getAppName(compName)
+		# Create group application if not exists		
+		group, exists = Group.objects.get_or_create(name=title) #@UnusedVariable
+		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug, accessGroup=group) #@UnusedVariable
+		# Optional data
+		if args.has_key('isSubscription'):
+			app.isSubscription = args['isSubscription']
+		if args.has_key('isPrivate'):
+			app.isPrivate = args['isPrivate']
+		if args.has_key('isAdmin'):
+			app.isAdmin = args['isAdmin']
+		if args.has_key('developer'):
+			app.developer = User.objects.get(username=args['developer'])
+		if args.has_key('developerOrg'):
+			app.developerOrg = Group.objects.get(name=args['developerOrg'])
+		if args.has_key('parentSlug'):
+			app.parent = Application.objects.get(slug=args['parentSlug'])
+		if args.has_key('category'):
+			app.category = Category.objects.get(name=args['category'])
+		app.save()
+		# Meta
+		if args.has_key('meta'):
+			# get meta keys
+			metaKeys = MetaKey.objects.filter(name__in=args['meta'].keys())
+			for metaKey in args['meta']:
+				ApplicationMeta.objects.create(application=app, meta=metaKeys.get(name=metaKey), value=args['meta'][metaKey])
+		# Tags
+		if args.has_key('tags'):
+			tags = Tag.objects.filter(name__in=[args['tags']])
+			for tag in tags:
+				ApplicationTag.objects.create(application=app, tag=tags.filter(name=tag.name))
+		logger.info( 'Registered application: %s' % (app) )
+	
+	def registerService(self, compName, serviceName=None, className=None):
+		"""
+		
+		Register service
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``serviceName``
+		* ``className``
+		
+		**Optional Attributes**
+		
+		**Returns**
+		
+		"""
+		if serviceName == None or className == None: raise AttributeError
+		appName = self.__getAppName(compName)
+		classPath = str(className).split("'")[1]
+		app = Application.objects.get(name=appName)
+		impl = classPath
+		Service.objects.create(application=app, implementation=impl, name=serviceName)
+		logger.info( 'Registered service %s' % (serviceName) )
+	
+	def cleanAll(self, compName):
 		"""
 		
 		Clean views, actions, workflows, menus, search and templates for application
 		
 		**Attributes**
 		
-		* ``appName`` : Application name, like 'ximpia.site'. Package and module for application, like in installed apps in settings
-		file
+		* ``compName`` : __name__ from components module. From this value we get the application name
 		
 		"""
-		View.objects.filter(application__name=appName).delete()
+		
+		appName = self.__getAppName(compName)
+		Application.objects.filter(name=appName).delete()
+		logger.info( 'deleted application %s' % appName )
+		"""View.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all views for %s' % appName )
 		Action.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all actions for %s' % appName )
@@ -100,14 +190,97 @@ class ComponentRegisterBusiness ( object ):
 		Menu.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all menus for %s' % appName )
 		XpTemplate.objects.filter(application__name=appName).delete()
-		logger.info( 'deleted all templates for %s' % appName )
+		logger.info( 'deleted all templates for %s' % appName )"""
 	
-	def registerViewMenu(self, appName=None, viewName=None, menus=[], **argsDict):
-		"""Register views associated with a menu
-		@param appName: Application code
-		@param viewName: View name
-		@param menus: List of menus dictionaries"""
+	def registerServMenu(self, compName, serviceName=None, menus=[]):
+		"""
+		
+		Register application menus for zone main and sys. Application menus will be shown for all views in an application
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``serviceName``
+		* ``menus``
+		
+		**Optional Attributes**
+		
+		**Returns**
+		
+		None
+		
+		"""
+		if len(menus) == 0 or serviceName == None: raise AttributeError
+		appName = self.__getAppName(compName)
+		app = Application.objects.get(name=appName)
+		service = Service.objects.get(name=serviceName) #@UnusedVariable
+		# Menu
+		ServiceMenu.objects.filter(service=service).delete()
+		groupDict = {}
+		singleList = []
+		counterDict = {}
+		for dd in menus:
+			if dd.has_key(K.GROUP):
+				if not groupDict.has_key(dd[K.GROUP]):
+					groupDict[dd[K.GROUP]] = []
+				groupDict[dd[K.GROUP]].append(dd)
+			else:
+				singleList.append(dd)
+		# Single Menus - Not Grouped
+		counter = 100
+		for dd in singleList:
+			if not dd.has_key(K.ZONE):
+				dd[K.ZONE] = K.VIEW
+			try:
+				menu = Menu.objects.get(name=dd[K.MENU_NAME])
+				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.debug( 'counter: %s' % (counter) )
+				serviceMenu, created = ServiceMenu.objects.get_or_create(service=service, menu=menu, hasSeparator=sep, #@UnusedVariable
+										zone=dd[K.ZONE], order=counter)
+				counterDict[dd[K.MENU_NAME]] = counter
+				counter += 100
+			except Menu.DoesNotExist:
+				pass
+		# Grouped Menus
+		for groupName in groupDict:
+			fields = groupDict[groupName]
+			menuParent = Menu.objects.get(name=groupName)
+			viewMenuParent = ServiceMenu.objects.get(service=service, menu=menuParent)
+			counter = viewMenuParent.order + 10
+			for dd in fields:
+				if not dd.has_key(K.ZONE):
+					dd[K.ZONE] = K.VIEW
+				menu = Menu.objects.get(name=dd[K.MENU_NAME])
+				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
+				#logger.debug( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
+				logger.debug( 'data: %s' % ( counter) )
+				serviceMenu, created = ServiceMenu.objects.get_or_create(application=app, menu=menu, hasSeparator=sep, #@UnusedVariable
+										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
+				counter += 10
+		logger.info( 'Registered menus for service %s' % (serviceName) )
+	
+	def registerViewMenu(self, compName, viewName=None, menus=[]):
+		"""
+		
+		Register views associated with a menu
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``viewName``
+		* ``menus``
+		
+		**Optional Attributes**
+		
+		**Returns**
+		
+		None
+		
+		"""
 		logger.info( 'register view Menus...' )
+		if viewName == None or len(menus) == 0: raise AttributeError
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName)
 		# Menu
@@ -154,63 +327,108 @@ class ComponentRegisterBusiness ( object ):
 				logger.info( 'data: %s' % ( counter) )
 				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
 										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
-				counter += 10	
+				counter += 10
+		logger.info( 'Registered menus for view %s' % (viewName) )
 	
-	def cleanViews(self, appName=None):
+	def cleanViews(self, compName):
 		"""Clean all views for application."""
+		appName = self.__getAppName(compName)
 		View.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all views for %s' % appName )
 	
-	def registerView(self, appName=None, viewName=None, myClass=None, method=None, menus=[], winType=Choices.WIN_TYPE_WINDOW, hasUrl=False,
-			hasAuth=True, **argsDict):
+	def registerView(self, compName, serviceName=None, viewName=None, className=None, method=None, winType=Choices.WIN_TYPE_WINDOW, 
+				hasUrl=False, hasAuth=True, slug='', **args):
 		"""Registers view
-		@param appName: Application code
-		@param viewName: View name
-		@param myClass: Class that shows view
-		@param method: Method that shows view
-		@param menus: List of menu dictionaries
-		@param winType: Type of window: window or popup
-		@param hasUrl: Is view triggered with a server url?
-		@param hasAuth: Does view needs login?
-		@param argsDict: Dictionary that contains the view entry parameters. Having format name => [value1, value2, ...]"""
-		# TODO: Validate entry arguments: There is no None arguments, types, etc...
-		logger.info( 'register views...' )
-		classPath = str(myClass).split("'")[1]
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``serviceName``
+		* ``viewName``
+		* ``impl``
+		* ``winType``
+		* ``hasUrl``
+		* ``hasAuth``
+		* ``slug``
+		
+		**Optional Attributes**
+		
+		* ``params``:DictType : View entry parameters entry by **args:DictType Having format name => [value1, value2, ...]
+		* ``image``
+		* ``meta``
+		* ``category``
+		* ``tags``
+		
+		**Returns**
+		
+		None
+		
+		"""
+		# TODO: Validate entry arguments: There is no None arguments, types, etc...		
+		if viewName == None or className == None or method == None or slug == '':
+			raise XpRegisterException(AttributeError, 'registerView requires viewName, className, method and slug attributes')
+		appName = self.__getAppName(compName)
+		# from impl take myClass and method
+		# '.'.join(compName.split('.')[:2])
+		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
-		view, created = View.objects.get_or_create(application=app, name=viewName) #@UnusedVariable
+		service = Service.objects.get(name=serviceName)
+		view, created = View.objects.get_or_create(application=app, service=service, name=viewName) #@UnusedVariable
 		view.implementation = classPath + '.' + method
 		view.winType = winType
 		view.isUrl = hasUrl
 		view.isAuth = hasAuth
+		view.slug = slug
 		view.save()
 		# Parameters
-		for name in argsDict:
+		for name in args:
 			param = Param.objects.get(application=app, name=name)
-			fields = argsDict[name]
+			fields = args[name]
 			for value in fields:
 				theTuple = ViewParamValue.objects.get_or_create(view=view, name=param, operator='eq', value=value) #@UnusedVariable
+		logger.info( 'Registered view %s' % (viewName) )
 	
-	def cleanActions(self, appName=None):
+	def cleanActions(self, compName):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
+		appName = self.__getAppName(compName)
 		Action.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all actions for %s' % appName )
 	
-	def registerAction(self, appName=None, actionName=None, myClass=None, method=None, hasUrl=False, hasAuth=True):
+	def registerAction(self, compName, serviceName=None, actionName=None, className=None, method=None, slug=None, **args):
 		"""Registers action
-		@param appName: Application code
-		@param actionName: Action name
-		@param myClass: Class for action
-		@param method: Method that executes action"""
-		classPath = str(myClass).split("'")[1]
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``serviceName``
+		* ``actionName``
+		* ``slug``
+		* ``className``
+		* ``method``
+		
+		**Optional Attributes**
+		
+		* ``hasAuth``
+		
+		**Returns**
+		
+		None
+		"""
+		if actionName == None or className == None or method == None or slug == None:
+			raise XpRegisterException(AttributeError, 'registerAction requires actionName, slug, className and method attributes')
+		appName = self.__getAppName(compName)
+		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
-		action, created = Action.objects.get_or_create(application=app, name=actionName) #@UnusedVariable
+		service = Service.objects.get(name=serviceName)
+		action, created = Action.objects.get_or_create(application=app, name=actionName, service=service, slug=slug) #@UnusedVariable
 		action.implementation = classPath + '.' + method
-		action.hasUrl = hasUrl
-		action.hasAuth = hasAuth
+		if args.has_key('hasAuth'):
+			action.hasAuth = args['hasAuth']
 		action.save()
+		logger.info('Registered action %s' % (actionName) )
 	
-	def registerParam(self, appName=None, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
+	def registerParam(self, compName, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
 		"""Register view / workflow parameter
 		@param appName: Application code
 		@param name: Parameter name
@@ -218,6 +436,7 @@ class ComponentRegisterBusiness ( object ):
 		@param paramType: Parameter type
 		@param isView: Boolean if parameter used in view
 		@param isWorkflow: Boolean if parameter used in flow to resolve view"""
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		param, created = Param.objects.get_or_create(application=app, name=name)
 		if created:
@@ -227,19 +446,21 @@ class ComponentRegisterBusiness ( object ):
 			param.workflow = isWorkflow
 			param.save()
 	
-	def cleanFlows(self, appName=None):
+	def cleanFlows(self, compName):
 		"""Clean all flows for application."""
+		appName = self.__getAppName(compName)
 		Workflow.objects.filter(application__name=appName).delete()
 		WorkflowData.objects.filter(flow__application__name=appName).delete()
 		logger.info( 'deleted all flows for %s' % appName )
 	
-	def registerFlow(self, appName=None, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
+	def registerFlow(self, compName, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
 		"""Reister flow
 		@param appName: Application code
 		@param flowcode: Flow code
 		@param resetStart: Is flow reset at start of flow?
 		@param deleteOnEnd: Is flow data deleted at end of flow?
 		@param jumpToView: Does flow needs to jump to last view in flow?"""
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode) #@UnusedVariable
 		flow.resetStart = resetStart
@@ -247,7 +468,7 @@ class ComponentRegisterBusiness ( object ):
 		flow.jumpToView = jumpToView
 		flow.save()
 		
-	def registerFlowView(self, appName=None, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
+	def registerFlowView(self, compName, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
 			paramDict={}, viewParamDict={}):
 		"""Reister flow
 		@param appName: Application code
@@ -257,6 +478,7 @@ class ComponentRegisterBusiness ( object ):
 		@param actionName: Action name
 		@param order: Order to evaluate view target resolution
 		@param paramDict: Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)"""
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		viewSource = View.objects.get(application=app, name=viewNameSource)
 		viewTarget = View.objects.get(application=app, name=viewNameTarget)
@@ -271,60 +493,82 @@ class ComponentRegisterBusiness ( object ):
 		# Entry View parameters
 		# TODO: Complete entry view parameters
 	
-	def cleanMenu(self, appName=None):
+	def cleanMenu(self, compName):
 		"""Clean all menus for application
 		@param appCode: Application code"""
+		appName = self.__getAppName(compName)
 		Menu.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all menus for %s' % appName )
 	
-	def registerMenu(self, appName=None, name='', titleShort='', title='', iconName='', actionName='', viewName='', url='', 
-			urlTarget='', **argsDict):
+	def registerMenu(self, compName, name='', title='', **args):
 		"""Register menu item
-		@param appName: Application code
-		@param name: Menu name
-		@param titleShort: Menu short title
-		@param title: Menu title
-		@param iconName: Name of icon
-		@param actionName: Name of action
-		@param viewName: View name
-		@param url: Url to trigger
-		@param urlTarget: Target to open window: same or new tab"""
-		logger.info( 'register menus...' )
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``name``
+		* ``title``
+		
+		**Optional Attributes**
+		
+		* ``iconName``
+		* ``description``
+		* ``actionName`` : Either actionName or viewName must be informed
+		* ``viewName`` : Either actionName or viewName must be informed
+		* ``url``
+		* ``urlTarget``
+		* ``params``:DictType
+		
+		**Returns**
+		
+		None
+		"""
+		if name == '' or title == '':
+			raise XpRegisterException(AttributeError, 'registerMenu requires attributes name and title')
+		if not args.has_key('viewName') and not args.has_key('actionName'):
+			raise XpRegisterException(AttributeError, """registerMenu requires menu items be lined to a view or action. Need to inform 
+					either one.""")
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		# Icon
-		icon, created = CoreParam.objects.get_or_create(mode=K.PARAM_ICON, name=iconName, value=iconName) #@UnusedVariable
+		if args.has_key('iconName'):
+			icon, created = CoreParam.objects.get_or_create(mode=K.PARAM_ICON, name=args['iconName'], value=args['iconName']) #@UnusedVariable
 		# Menu
 		try:
 			menu = Menu.objects.get(name=name)
 		except Menu.DoesNotExist:
 			menu = Menu(	application=app,
-					name=name,
-					titleShort=titleShort,
-					title=title,
-					icon=icon
-				)
-		if len(url) != 0:
-			menu.url = url
-			menu.urlTarget = urlTarget
-		if actionName != '':
-			action = Action.objects.get(name=actionName)
+							name=name,
+							title=title,
+							icon=icon
+							)
+			if args.has_key('description'):
+				menu.description = args['description']
+			if args.has_key('iconName'):
+				menu.icon = icon
+		if args.has_key('url'):
+			menu.url = args['url']
+			menu.urlTarget = args['urlTarget']
+		if args.has_key('actionName'):
+			action = Action.objects.get(name=args['actionName'])
 			menu.action = action
-		if viewName != '':
-			view = View.objects.get(application__name=appName, name=viewName)
+		if args.has_key('viewName'):
+			view = View.objects.get(application__name=appName, name=args['viewName'])
 			menu.view = view
 		menu.save()
 		# MenuParam
-		logger.info( 'argsDict: %s' % argsDict )
-		for name in argsDict:
-			operator, value = argsDict[name]
-			menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
+		if args.has_key('params'):
+			for name in args['params']:
+				operator, value = args['params'][name]
+				menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
 	
-	def registerSearch(self, text='', appName=None, viewName=None, actionName=None, params={}):
+	def registerSearch(self, compName, text='', viewName=None, actionName=None, params={}):
 		"""Register application operation. It will be used in view search.
 		@param text: Text to index
 		@param appName: Application code
 		@param viewName: View name
 		@param actionName: Action name"""
+		appName = self.__getAppName(compName)
 		wordList = resources.Index.parseText(text)
 		logger.info( 'wordList: %s' % wordList )
 		view = View.objects.get(name=viewName) if viewName != None else None
@@ -350,38 +594,52 @@ class ComponentRegisterBusiness ( object ):
 			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
 								value=params[paramName])
 	
-	def cleanTemplates(self, appName=None):
+	def cleanTemplates(self, compName):
 		"""Clean templates for the application
 		@param appCode: Application code"""
+		appName = self.__getAppName(compName)
 		XpTemplate.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all templates for %s' % appName )
 	
-	def registerTemplate(self, appName=None, viewName=None, name=None, language=None, country=None, winType=Choices.WIN_TYPE_WINDOW, 
-			device=None, alias=None):
+	def registerTemplate(self, compName, viewName=None, name=None, **args):
 		"""Register template
-		@param appName: Application code
-		@param viewName: View name
-		@param name: Template name
-		@param language: Language to target template
-		@param country: Country to target template
-		@param winType: Type of window for template, window or popup
-		@param device: Device to target template
-		@param alias: Template alias"""
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``viewName``
+		* ``name``
+		
+		**Optional Attributes**
+		
+		* ``language``
+		* ``country``
+		* ``winType``
+		* ``device``
+		* ``alias``
+		
+		**Returns**
+		
+		None
+		"""
+		if viewName == None or name == None:
+			raise XpRegisterException(AttributeError, 'registerTemplate requires viewName and template name attributes')
+		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName) if viewName != None else None
 		paramDict = {}
 		paramDict['application'] = app
 		paramDict['name'] = name
-		if language != None:
-			paramDict['language'] = language
-		if country != None:
-			paramDict['country'] = country
-		if winType != None:
-			paramDict['winType'] = winType
-		if device != None:
-			paramDict['device'] = device
-		if alias != None:
-			paramDict['alias'] = alias
+		if args.has_key('language'):
+			paramDict['language'] = args['language']
+		if args.has_key('country'):
+			paramDict['country'] = args['country']
+		if args.has_key('winType'):
+			paramDict['winType'] = args['winType']
+		if args.has_key('device'):
+			paramDict['device'] = args['device']
+		if args.has_key('alias'):
+			paramDict['alias'] = args['alias']
 		else:
 			paramDict['alias'] = viewName		
 		try:
@@ -391,6 +649,7 @@ class ComponentRegisterBusiness ( object ):
 		template = XpTemplate.objects.create( **paramDict )
 		# View
 		ViewTmpl.objects.create(view=view, template=template)
+		logger.info('Registered template %s for view %s' % (name, viewName) )
 	
 class WorkFlowBusiness (object):	
 	_ctx = {}

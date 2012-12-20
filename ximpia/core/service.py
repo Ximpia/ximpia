@@ -22,7 +22,7 @@ from util import TemplateParser
 from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
-from data import MenuParamDAO, ViewMenuDAO, ApplicationAccessDAO, ActionDAO
+from data import MenuParamDAO, ViewMenuDAO, ActionDAO
 from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.util import resources
 from choices import Choices
@@ -1043,6 +1043,30 @@ class WorkflowViewDecorator ( object ):
 			return result
 		return wrapped_f
 
+class WorkflowActionDecorator ( object ):
+	"""
+	
+	Decorator for workflow actions
+	
+	"""
+	
+	__form = None
+	__flowCode = None
+	
+	def __init__(self, flowCode, form):
+		self.__flowCode = flowCode
+		self.__form = form
+
+	def __call__(self, f):
+		"""Decorator call method"""		
+		@ValidateFormDecorator(self.__form)
+		@WFActionDecorator()
+		def wrapped_f(request, *argsTuple, **argsDict):
+			logger.debug('WorkflowActionDecorator :: form: %s' % (self.__form) )
+			result = f(request, *argsTuple, **argsDict)			
+			return result
+		return wrapped_f
+
 class MenuService( object ):
 	_ctx = None
 	def __init__(self, ctx):
@@ -1051,7 +1075,7 @@ class MenuService( object ):
 		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
 		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
 		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
-		self._dbAppAccess = ApplicationAccessDAO(self._ctx)
+		#self._dbAppAccess = ApplicationAccessDAO(self._ctx)
 	def getMenus(self, viewName):
 		"""Build menus in a dictionary
 		@param viewName: View name"""

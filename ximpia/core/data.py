@@ -2,8 +2,7 @@ import random
 import os
 from django.utils.translation import ugettext as _
 
-from ximpia.core.models import ContextDecorator as Ctx
-from models import XpMsgException, CoreParam, Application, Action, ApplicationAccess
+from models import XpMsgException, CoreParam, Application, Action
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
@@ -316,11 +315,6 @@ class ActionDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ActionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = Action
-
-class ApplicationAccessDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ApplicationAccessDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
-		self._model = ApplicationAccess
 
 class MenuDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

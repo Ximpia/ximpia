@@ -89,10 +89,12 @@ class Choices(object):
 	MENU_ZONE_SYS = 'sys'
 	MENU_ZONE_MAIN = 'main'
 	MENU_ZONE_VIEW = 'view'
+	MENU_ZONE_SERVICE = 'service'
 	MENU_ZONES = (
 		(MENU_ZONE_SYS, _('System')),
 		(MENU_ZONE_MAIN, _('Main')),
-		(MENU_ZONE_VIEW, _('View')))
+		(MENU_ZONE_VIEW, _('View')),
+		(MENU_ZONE_SERVICE, _('Service')))
 	# WINDOW_TYPE
 	WIN_TYPE_WINDOW = 'window'
 	WIN_TYPE_POPUP = 'popup'

@@ -9,6 +9,7 @@ from django.template import RequestContext
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext as _
 from django.utils import translation
+from filebrowser.fields import FileBrowseField
 
 from choices import Choices
 import constants as K
@@ -110,8 +111,8 @@ class Param( BaseModel ):
 		return self.title
 	class Meta:
 		db_table = 'CORE_PARAM'
-		verbose_name = 'Parameter'
-		verbose_name_plural = "Parameters for views and workflow"
+		verbose_name = 'Entry Parameter'
+		verbose_name_plural = "Entry Parameters"
 		unique_together = ('application','name')
 
 
@@ -160,7 +161,7 @@ class CoreParam( BaseModel ):
 			db_column='PARAM_TYPE',
 			verbose_name=_('Parameter Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
-		return '%s - %s' % (self.mode, self.name)
+		return '%s' % (self.name)
 	class Meta:
 		db_table = 'CORE_PARAMETER'
 		verbose_name = "Parameter"
@@ -232,6 +233,7 @@ class Application( BaseModel ):
 	* ``developer`` -> User
 	* ``developerOrg`` -> Group
 	* ``parent`` -> self
+	* ``accessGroup`` -> Group
 	* ``users`` <-> UserChannel through ApplicationAccess and related name 'app_access'
 	* ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
 	
@@ -239,15 +241,17 @@ class Application( BaseModel ):
 	
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION')
 	name = models.CharField(max_length=100,
-		verbose_name = _('Name'), help_text = _('Application name. It must contain package and module for application with . as \
+		verbose_name = _('Application Name'), help_text = _('Application name. It must contain package and module for application with . as \
 			separator, like ximpia.site'))
 	slug = models.SlugField(max_length=30, unique=True,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	title = models.CharField(max_length=30, db_column='TITLE',
-		verbose_name = _('Title'), help_text = _('Application title'))
+		verbose_name = _('Application Title'), help_text = _('Application title'))
 	developer = models.ForeignKey(User, null=True, blank=True, db_column='ID_DEVELOPER',
 		verbose_name = _('Developer'), help_text = _('Developer'))
-	developerOrg = models.ForeignKey(Group, null=True, blank=True, db_column='ID_DEVELOPER_ORG',
+	accessGroup = models.ForeignKey(Group, db_column='ID_GROUP', related_name='app_access', 
+		verbose_name = _('Access Group'), help_text = _('Application access group. Group created for application when registering app.') )
+	developerOrg = models.ForeignKey(Group, null=True, blank=True, db_column='ID_DEVELOPER_ORG', related_name='app_dev_org',
 		verbose_name = _('Organization'), help_text = _('Developer organization'))
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
 		verbose_name = 'Parent Application', help_text = 'Used for application groups. Application which this app is related to')
@@ -255,10 +259,12 @@ class Application( BaseModel ):
 		verbose_name = _('Subscription'), help_text = _('Is this application subscription based?'))
 	isPrivate = models.BooleanField(default=False, db_column='IS_PRIVATE',
 		verbose_name = _('Private'), help_text = _('Is this application private to a list of groups?'))
-	users = models.ManyToManyField('site.UserChannel', through='core.ApplicationAccess', related_name='app_access', null=True, blank=True,
-			verbose_name=_('Users'), help_text=_('Users that have access to the application'))
 	isAdmin = models.BooleanField(default=False, db_column='IS_ADMIN',
 		verbose_name = _('Is Admin?'), help_text = _('Is this application an admin backdoor?'))
+	category = models.ForeignKey('site.Category', null=True, blank=True, db_column='ID_CATEGORY',
+				verbose_name=_('Category'), help_text=_('Category for group'))
+	tags = models.ManyToManyField('site.Tag', through='core.ApplicationTag', null=True, blank=True, related_name='application_tags',
+				verbose_name = _('Tags'), help_text = _('View Tags'))
 	meta = models.ManyToManyField(MetaKey, through='core.ApplicationMeta', related_name='app_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for application') )
 	def __unicode__(self):
@@ -267,6 +273,67 @@ class Application( BaseModel ):
 		db_table = 'CORE_APPLICATION'
 		verbose_name = _('Application')
 		verbose_name_plural = _('Applications')
+
+class ApplicationTag ( BaseModel ):
+	"""
+	
+	Tags for group channels
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
+	**Relationships**
+	
+	* ``application`` -> Application
+	* ``tag`` -> Tag
+	
+	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_TAG')
+	application = models.ForeignKey(Application, db_column='ID_VIEW',
+					verbose_name=_('Application'), help_text=_('Application'))
+	tag = models.ForeignKey('site.Tag', db_column='ID_TAG',
+					verbose_name=_('Tag'), help_text=_('Tag'))
+	
+	def __unicode__(self):
+		return '%s - %s' % (self.application, self.tag)
+	
+	class Meta:
+		db_table = 'CORE_APPLICATION_TAG'
+		verbose_name = 'Application Tag'
+		verbose_name_plural = "Application Tags"
+
+class ApplicationMedia( BaseModel ):
+	"""
+	
+	Application media: images, etc...
+	
+	**Attributes**
+	
+	* ``id``
+	* ``image``
+	
+	**Relationships**
+	
+	* ``application``
+	* ``type``
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_MEDIA')
+	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
+				verbose_name = _('Application'), help_text = _('Application'))
+	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
+		    verbose_name = _('Image'), help_text = _('Application image'), 
+		    db_column='IMAGE')
+	type = models.ForeignKey(CoreParam, db_column='ID_TYPE', limit_choices_to={'mode': K.PARAM_MEDIA_TYPE},
+				verbose_name=_('Type'), help_text=_('Media Type'))
+	def __unicode__(self):
+		return ''
+	class Meta:
+		db_table = 'CORE_APPLICATION_MEDIA'
+		verbose_name = _('Application Media')
+		verbose_name_plural = _('Application Media')
 
 class ApplicationMeta( BaseModel ):
 	"""
@@ -296,34 +363,6 @@ class ApplicationMeta( BaseModel ):
 		db_table = 'CORE_APPLICATION_META'
 		verbose_name = 'Application META'
 		verbose_name_plural = "Application META"
-
-class ApplicationAccess( BaseModel ):
-	"""
-	
-	User that have access to application. Used for subscription and private applications.
-	
-	**Attributes**
-	
-	* ``id``:AutoField : Primary key
-	
-	**Relationships**
-	
-	* ``application`` -> Application
-	* ``userChannel`` -> UserChannel
-	
-	"""
-	
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_APP_ACCESS')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
-				verbose_name = _('Application'), help_text = _('Application'))
-	userChannel = models.ForeignKey('site.UserChannel', db_column='ID_USER_CHANNEL',
-				verbose_name = _('User'), help_text = _('User channel needed to access application'))
-	def __unicode__(self):
-		return '%s' % (self.userChannel.user.username)
-	class Meta:
-		db_table = 'CORE_APPLICATION_ACCESS'
-		verbose_name = 'Application Access'
-		verbose_name_plural = "Application Access"
 
 class SearchIndex( BaseModel ):
 	"""
@@ -454,6 +493,35 @@ class SearchIndexParam( BaseModel ):
 		verbose_name = 'Index Parameters'
 		verbose_name_plural = "Index Parameters"
 
+class Service( BaseModel ):
+	"""
+
+	**Attributes**
+	
+	* ``id``
+	* ``name``
+	* ``implementation``
+	
+	**Relationships**
+	
+	* ``application``
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SERVICE')
+	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
+			verbose_name=_('Application'), help_text=_('Application for the view'))
+	name = models.CharField(max_length=30, db_column='NAME', 
+			verbose_name=_('Service Name'), help_text=_('Service Name'))
+	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
+			verbose_name=_('Implementation'), help_text=_('Service class'))
+	def __unicode__(self):
+		return self.name
+	class Meta:
+		unique_together = (('application', 'name'),)
+		db_table = 'CORE_SERVICE'
+		verbose_name = 'Service'
+		verbose_name_plural = "Services"
+
 class View( BaseModel ):
 	"""
 	
@@ -487,14 +555,18 @@ class View( BaseModel ):
 	* ``winType``:CharField(20) : Window type, as Choices.WIN_TYPE_WINDOW
 	* ``slug``:SlugField(50) : View slug to form url to call view
 	* ``hasAuth``:BooleanField : Needs view authentication?
+	* ``image``:FileBrowserField : View image
 	
 	**Relationships**
 	
 	* ``parent`` -> self
 	* ``application`` -> Application
+	* ``service`` -> Service
+	* ``category`` -> site.Category
 	* ``templates`` <-> XpTemplate through ViewTmpl with related name `view_templates`
 	* ``params`` <-> Param through ViewParamValue with related nam 'view_params'
 	* ``menus`` <-> Menu through ViewMenu with related name 'view_menus'
+	* ``tags`` <-> site.Tag
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
@@ -502,6 +574,8 @@ class View( BaseModel ):
 		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
 	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the view'))
+	service = models.ForeignKey(Service, db_column='ID_SERVICE',
+			verbose_name=_('Service'), help_text=_('Service for the view'))
 	name = models.CharField(max_length=30, db_column='NAME', 
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
@@ -516,8 +590,17 @@ class View( BaseModel ):
 			verbose_name=_('Window Type'), help_text=_('Window type: Window, Popup'))
 	slug = models.SlugField(max_length=50,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
-	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
+	hasAuth = models.BooleanField(default=False, db_column='HAS_AUTH',
 			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
+	category = models.ForeignKey('site.Category', null=True, blank=True, db_column='ID_CATEGORY',
+				verbose_name=_('Category'), help_text=_('Category for group'))
+	tags = models.ManyToManyField('site.Tag', through='core.ViewTag', null=True, blank=True, related_name='view_tags',
+				verbose_name = _('Tags'), help_text = _('View Tags'))
+	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
+		    verbose_name = _('Image'), help_text = _('View image'), 
+		    db_column='IMAGE')
+	meta = models.ManyToManyField(MetaKey, through='core.ViewMeta', related_name='view_meta',
+			verbose_name=_('META Keys'), help_text=_('META Keys for view') )
 	def __unicode__(self):
 		return self.name
 	class Meta:
@@ -525,6 +608,36 @@ class View( BaseModel ):
 		verbose_name = 'View'
 		verbose_name_plural = "Views"
 		unique_together = ("application", "name")
+
+class ViewTag ( BaseModel ):
+	"""
+	
+	Tags for group channels
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
+	**Relationships**
+	
+	* ``view`` -> View
+	* ``tag`` -> Tag
+	
+	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_TAG')
+	view = models.ForeignKey(View, db_column='ID_VIEW',
+					verbose_name=_('View'), help_text=_('View'))
+	tag = models.ForeignKey('site.Tag', db_column='ID_TAG',
+					verbose_name=_('Tag'), help_text=_('Tag'))
+	
+	def __unicode__(self):
+		return '%s - %s' % (self.view, self.tag)
+	
+	class Meta:
+		db_table = 'CORE_VIEW_TAG'
+		verbose_name = 'View Tag'
+		verbose_name_plural = "View Tags"
 
 class Action( BaseModel ):
 	"""
@@ -543,23 +656,30 @@ class Action( BaseModel ):
 	* ``implementation``:CharField(100)
 	* ``slug``:SlugField(50)
 	* ``hasAuth``:BooleanField
+	* ``image``:FileBrowserField
 	
 	**Relationships**
 	
 	* ``application`` -> Application
+	* ``service`` -> Service
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
 	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the action'))
+	service = models.ForeignKey(Service, db_column='ID_SERVICE',
+			verbose_name=_('Service'), help_text=_('Service for the view'))
 	name = models.CharField(max_length=30, db_column='NAME',
 			verbose_name=_('Action Name'), help_text=_('Action Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
 			verbose_name=_('Implementation'), help_text=_('Service class and method that will process action'))
 	slug = models.SlugField(max_length=50,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
-	hasAuth = models.BooleanField(default=True, db_column='HAS_AUTH',
+	hasAuth = models.BooleanField(default=False, db_column='HAS_AUTH',
 			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
+	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
+		    verbose_name = _('Image'), help_text = _('View image'), 
+		    db_column='IMAGE')
 	def __unicode__(self):
 		return self.name
 	class Meta:
@@ -599,11 +719,11 @@ class Menu( BaseModel ):
 			verbose_name=_('Application'), help_text=_('Application for the menu'))
 	name = models.CharField(max_length=20, unique=True, db_column='NAME',
 			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
-	titleShort = models.CharField(max_length=15, db_column='TITLE_SHORT',
-			verbose_name=_('Short Title'), help_text=_('Short title for menu. Used under big icons'))
-	title = models.CharField(max_length=30, db_column='TITLE',
-			verbose_name=_('Menu Title'), help_text=_('Title for menu item'))
-	icon = models.ForeignKey(CoreParam, limit_choices_to={'mode': K.PARAM_ICON}, db_column='ID_ICON',
+	title = models.CharField(max_length=15, db_column='TITLE',
+			verbose_name=_('Title'), help_text=_('title for menu'))
+	description = models.CharField(max_length=30, null=True, blank=True, db_column='DESCRIPTION',
+			verbose_name=_('Description'), help_text=_('Description for menu item, shown in a tool tip'))
+	icon = models.ForeignKey(CoreParam, null=True, blank=True, limit_choices_to={'mode': K.PARAM_ICON}, db_column='ID_ICON',
 			verbose_name=_('Icon'), help_text=_('Icon'))
 	view = models.ForeignKey(View, null=True, blank=True, related_name='menu_view', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
@@ -622,7 +742,7 @@ class Menu( BaseModel ):
 	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
 			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
-		return self.titleShort
+		return self.title
 	class Meta:
 		db_table = 'CORE_MENU'
 		verbose_name = 'Menu'
@@ -642,17 +762,18 @@ class ViewMenu( BaseModel ):
 	
 	**Relationships**
 	
-	* ``parent`` -> self
-	* ``view`` -> View
-	* ``menu`` -> Menu
+	* ``parent`` -> self NULL
+	* ``view`` -> View NULL
+	* ``menu`` -> Menu NOT NULL
+	* ``application`` -> Application NOT NULL
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_MENU')
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
 			verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
-	view = models.ForeignKey('core.View', db_column='ID_VIEW',
+	view = models.ForeignKey(View, null=True, blank=True, db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
-	menu = models.ForeignKey('core.Menu', db_column='ID_MENU',
+	menu = models.ForeignKey(Menu, db_column='ID_MENU',
 			verbose_name=_('Menu'), help_text=_('Menu'))
 	order = models.IntegerField(default=10, db_column='ORDER',
 			verbose_name=_('Order'), help_text=_('Order for the menu item. Start with 10, increment by 10'))
@@ -661,12 +782,52 @@ class ViewMenu( BaseModel ):
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
 	def __unicode__(self):
-		return '%s - %s' % (self.view, self.menu)
+		return '%s' % (self.menu)
 	class Meta:
 		unique_together = (('menu','view'),)
 		db_table = 'CORE_VIEW_MENU'
 		verbose_name = 'View Menu'
 		verbose_name_plural = "Views for Menus"
+
+class ServiceMenu ( BaseModel ):
+	"""
+	
+	Menu items for service
+	
+	**Attributes**
+	
+	* ``id``
+	* ``order``
+	* ``hasSeparator``
+	* ``zone``
+	
+	**Relationships**
+	
+	* ``parent`` -> self
+	* ``service`` -> Service
+	* ``menu`` -> Menu
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SERVICE_MENU')
+	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
+			verbose_name=_('Parent Menu'), help_text=_('Parent menu for menu item'))
+	service = models.ForeignKey(Service, db_column='ID_SERVICE',
+			verbose_name=_('Service'), help_text=_('Service for the view menu'))
+	menu = models.ForeignKey(Menu, db_column='ID_MENU',
+			verbose_name=_('Menu'), help_text=_('Menu'))
+	order = models.IntegerField(default=10, db_column='ORDER',
+			verbose_name=_('Order'), help_text=_('Order for the menu item. Start with 10, increment by 10'))
+	hasSeparator = models.BooleanField(default=False, db_column='HAS_SEPARATOR',
+			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
+	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
+				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
+	def __unicode__(self):
+		return '%s' % (self.menu)
+	class Meta:
+		#unique_together = (('menu','application','view'),)
+		db_table = 'CORE_SERVICE_MENU'
+		verbose_name = 'Service Menu'
+		verbose_name_plural = "Service for Menus"
 
 class MenuParam( BaseModel ):
 	"""

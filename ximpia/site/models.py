@@ -37,7 +37,7 @@ class Param ( BaseModel ):
 			db_column='PARAM_TYPE',
 			verbose_name=_('Parameter Type'), help_text=_('Type: either parameter or table'))
 	def __unicode__(self):
-		return str(self.mode) + ' - ' + str(self.name)
+		return self.name
 	class Meta:
 		db_table = 'SITE_PARAMETER'
 		verbose_name = "Parameter"
@@ -148,6 +148,45 @@ class Tag ( BaseModel ):
 		ordering = ['-popularity']
 	url = property(get_url, set_url, del_url, "Url for tag")
 
+class Address ( BaseModel ):
+	"""
+	
+	Address model. It can store only cities and countries or sholw addresses with geo spatial information.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``street`` :CharField(50) : Street address.
+	* ``city``:CharField(20) : City.
+	* ``region``:CharField(20) : Region.
+	* ``zipCode``:CharField(20) : Zip code.
+	* ``country``:CharField(2) : Country from Choices.COUNTRY
+	* ``long``:DecimalField(18,12) : Longitude for address (Geo Data)
+	* ``lat``:DecimalField(18,12) : Latitude for address (Geo Data)
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_ADDRESS')
+	street = models.CharField(max_length=50, null=True, blank=True, db_column='STREET',
+			verbose_name = _('Street'), help_text = _('Street'))
+	city = models.CharField(max_length=20, db_column='CITY',
+			verbose_name = _('City'), help_text = _('City'))
+	region = models.CharField(max_length=20, null=True, blank=True, db_column='REGION',
+			verbose_name = _('Region'), help_text = _('Region'))
+	zipCode = models.CharField(max_length=20, null=True, blank=True, db_column='ZIP_CODE',
+			verbose_name = _('Zip Code'), help_text = _('Zip Code'))
+	country = models.CharField(max_length=2, choices=Choices.COUNTRY, db_column='COUNTRY',
+			verbose_name = _('Country'), help_text = _('Country'))
+	long = models.DecimalField(max_digits=18, decimal_places=12, null=True, blank=True,
+			verbose_name=_('Geo Longitude'), help_text=_('Geo longitude'))
+	lat = models.DecimalField(max_digits=18, decimal_places=12, null=True, blank=True,
+			verbose_name=_('Geo Latitude'), help_text=_('Geo latitude'))
+	def __unicode__(self):
+		return '%s %s' % (self.street, self.city)
+	class Meta:
+		db_table = 'SITE_ADDRESS'
+		verbose_name = _('Address')
+		verbose_name_plural = _('Addresses')
+
 class UserChannel ( BaseModel ):
 	"""
 	
@@ -178,7 +217,7 @@ class UserChannel ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField('site.GroupChannel', related_name='userchannel_groups', through='UserChannelGroups',  
+	groups = models.ManyToManyField('site.GroupChannel', related_name='userchannel_groups', through='UserChannelGroup',  
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	title = models.CharField(max_length=20, db_column='TITLE',
 				verbose_name = _('Title'), help_text=_('Title for the user channel'))
@@ -431,11 +470,30 @@ class UserProfile ( BaseModel ):
 		    db_column='IMAGE')
 	status = models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_USER_STATUS}, db_column='ID_SITE_PARAMETER',
 			verbose_name=_('Status'), help_text=_('User Status') )
+	addresses = models.ManyToManyField(Address, through='site.UserAddress', related_name='userprofile_addresses',  
+				verbose_name = _('Addresses'), help_text = _('User addresses'))
 	
+	def __unicode__(self):
+		return self.user
 	class Meta:
 		db_table = 'SITE_USER_PROFILE'
 		verbose_name = 'User Profile'
 		verbose_name_plural = "User Profiles"
+
+class UserAddress ( BaseModel ):
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_ADDRESS')
+	userProfile = models.ForeignKey(UserProfile, db_column='ID_SITE_USER_PROFILE',
+				verbose_name = _('User Profile'), help_text = _('User Profile'))
+	address = models.ForeignKey(Address, db_column='ID_ADDRESS',
+				verbose_name = _('Address'), help_text = _('User Address') )
+	type = models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_ADRESS_TYPE}, db_column='ID_SITE_PARAMETER',
+			verbose_name=_('Type'), help_text=_('Address Type') )
+	def __unicode__(self):
+		return self.user
+	class Meta:
+		db_table = 'SITE_USER_ADDRESS'
+		verbose_name = 'User Address'
+		verbose_name_plural = "User Addresses"
 
 class GroupChannel ( BaseModel ):
 	"""
@@ -471,7 +529,7 @@ class GroupChannel ( BaseModel ):
 				verbose_name = _('Public'), help_text = _('Group is public'))
 	accessGroups = models.ManyToManyField('self', through='site.GroupChannelAccess', related_name='groupchannel_access', symmetrical=False, 
 				verbose_name = _('Access Groups'), help_text = _('Profiles that have access to this group'))
-	tags = models.ManyToManyField(Tag, through='site.GroupChannelTags', null=True, blank=True, related_name='groupchannel_tags',
+	tags = models.ManyToManyField(Tag, through='site.GroupChannelTag', null=True, blank=True, related_name='groupchannel_tags',
 				verbose_name = _('Tags'), help_text = _('Tags'))
 	category = models.ForeignKey(Category, null=True, blank=True, db_column='ID_CATEGORY',
 				verbose_name=_('Category'), help_text=_('Category for group'))
@@ -513,7 +571,7 @@ class GroupChannelAccess ( BaseModel ):
 		verbose_name = 'Group Channel Profiles'
 		verbose_name_plural = "Group Channel Profiles"
 
-class UserChannelGroups ( BaseModel ):
+class UserChannelGroup ( BaseModel ):
 	"""
 	
 	User related to channel and their role (relationship). Relationships can be user, owner, admin and manager.
@@ -530,7 +588,7 @@ class UserChannelGroups ( BaseModel ):
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_USERS')
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_USER')
 	groupChannel = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL',
 					verbose_name=_('Group'), help_text=_('Group Channel'))
 	userChannel = models.ForeignKey(UserChannel, db_column='ID_USER_CHANNEL',
@@ -543,11 +601,11 @@ class UserChannelGroups ( BaseModel ):
 		return '%s %s' % (self.groupChannel, self.userChannel)
 	
 	class Meta:
-		db_table = 'SITE_GROUP_CHANNEL_USERS'
-		verbose_name = 'Group Channel Users'
+		db_table = 'SITE_GROUP_CHANNEL_USER'
+		verbose_name = 'Group Channel User'
 		verbose_name_plural = "Group Channel Users"
 
-class GroupChannelTags ( BaseModel ):
+class GroupChannelTag ( BaseModel ):
 	"""
 	
 	Tags for group channels
@@ -563,7 +621,7 @@ class GroupChannelTags ( BaseModel ):
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_TAGS')
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_TAG')
 	groupChannel = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL',
 					verbose_name=_('Group'), help_text=_('Group Channel'))
 	tag = models.ForeignKey(Tag, db_column='ID_TAG',
@@ -573,8 +631,8 @@ class GroupChannelTags ( BaseModel ):
 		return '%s - %s' % (self.groupChannel, self.tag)
 	
 	class Meta:
-		db_table = 'SITE_GROUP_CHANNEL_TAGS'
-		verbose_name = 'Group Channel Tags'
+		db_table = 'SITE_GROUP_CHANNEL_TAG'
+		verbose_name = 'Group Channel Tag'
 		verbose_name_plural = "Group Channel Tags"
 
 class SignupData ( BaseModel ):
@@ -606,44 +664,6 @@ class SignupData ( BaseModel ):
 		verbose_name = _('Signup Data')
 		verbose_name_plural = _('Signup Data')
 
-class Address ( BaseModel ):
-	"""
-	
-	Address model. It can store only cities and countries or sholw addresses with geo spatial information.
-	
-	**Attributes**
-	
-	* ``id`` : Primary key
-	* ``street`` :CharField(50) : Street address.
-	* ``city``:CharField(20) : City.
-	* ``region``:CharField(20) : Region.
-	* ``zipCode``:CharField(20) : Zip code.
-	* ``country``:CharField(2) : Country from Choices.COUNTRY
-	* ``long``:DecimalField(18,12) : Longitude for address (Geo Data)
-	* ``lat``:DecimalField(18,12) : Latitude for address (Geo Data)
-	
-	"""
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_ADDRESS')
-	street = models.CharField(max_length=50, null=True, blank=True, db_column='STREET',
-			verbose_name = _('Street'), help_text = _('Street'))
-	city = models.CharField(max_length=20, db_column='CITY',
-			verbose_name = _('City'), help_text = _('City'))
-	region = models.CharField(max_length=20, null=True, blank=True, db_column='REGION',
-			verbose_name = _('Region'), help_text = _('Region'))
-	zipCode = models.CharField(max_length=20, null=True, blank=True, db_column='ZIP_CODE',
-			verbose_name = _('Zip Code'), help_text = _('Zip Code'))
-	country = models.CharField(max_length=2, choices=Choices.COUNTRY, db_column='COUNTRY',
-			verbose_name = _('Country'), help_text = _('Country'))
-	long = models.DecimalField(max_digits=18, decimal_places=12, null=True, blank=True,
-			verbose_name=_('Geo Longitude'), help_text=_('Geo longitude'))
-	lat = models.DecimalField(max_digits=18, decimal_places=12, null=True, blank=True,
-			verbose_name=_('Geo Latitude'), help_text=_('Geo latitude'))
-	def __unicode__(self):
-		return '%s %s' % (self.street, self.city)
-	class Meta:
-		db_table = 'SITE_ADDRESS'
-		verbose_name = _('Address')
-		verbose_name_plural = _('Addresses')
 
 class Invitation ( BaseModel ):
 	"""
