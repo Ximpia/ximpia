@@ -158,7 +158,8 @@ class ComponentRegisterBusiness ( object ):
 		**Returns**
 		
 		"""
-		if serviceName == None or className == None: raise AttributeError
+		if serviceName == None or className == None:
+			raise XpRegisterException(AttributeError, 'registerService requires serviceName and className')
 		appName = self.__getAppName(compName)
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
@@ -210,7 +211,8 @@ class ComponentRegisterBusiness ( object ):
 		None
 		
 		"""
-		if len(menus) == 0 or serviceName == None: raise AttributeError
+		if len(menus) == 0 or serviceName == None:
+			raise XpRegisterException(AttributeError, 'registerServMenu requires attributes serviceName and menus')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		service = Service.objects.get(name=serviceName) #@UnusedVariable
@@ -279,7 +281,8 @@ class ComponentRegisterBusiness ( object ):
 		
 		"""
 		logger.info( 'register view Menus...' )
-		if viewName == None or len(menus) == 0: raise AttributeError
+		if viewName == None or len(menus) == 0:
+			raise XpRegisterException(AttributeError, 'registerViewMenu requires attributes viewName and menus')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName)
@@ -430,12 +433,25 @@ class ComponentRegisterBusiness ( object ):
 	
 	def registerParam(self, compName, name=None, title=None, paramType=None, isView=False, isWorkflow=False):
 		"""Register view / workflow parameter
-		@param appName: Application code
-		@param name: Parameter name
-		@param title: Parameter title
-		@param paramType: Parameter type
-		@param isView: Boolean if parameter used in view
-		@param isWorkflow: Boolean if parameter used in flow to resolve view"""
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``name``
+		* ``title``
+		* ``paramType``
+		* ``isView``
+		* ``isWorkflow``
+		
+		**Optional Attributes**
+		
+		**Returns**
+		
+		None
+		
+		"""
+		if name == None or title == None or paramType == None:
+			raise XpRegisterException(AttributeError, 'registerParam requires attributes name, title and paramType')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		param, created = Param.objects.get_or_create(application=app, name=name)
@@ -454,12 +470,26 @@ class ComponentRegisterBusiness ( object ):
 		logger.info( 'deleted all flows for %s' % appName )
 	
 	def registerFlow(self, compName, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
-		"""Reister flow
-		@param appName: Application code
-		@param flowcode: Flow code
-		@param resetStart: Is flow reset at start of flow?
-		@param deleteOnEnd: Is flow data deleted at end of flow?
-		@param jumpToView: Does flow needs to jump to last view in flow?"""
+		"""
+		Reister flow
+		
+		**Required Attributes**
+		
+		* ``flowCode``
+		
+		**Optional Attributes**
+		
+		* ``resetStart``
+		* ``deleteOnEnd``
+		* ``jumoToView``
+		
+		**Returns**
+		
+		None
+		
+		"""
+		if flowCode == None:
+			raise XpRegisterException(AttributeError, 'registerFlow requires flowCode')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode) #@UnusedVariable
@@ -469,15 +499,31 @@ class ComponentRegisterBusiness ( object ):
 		flow.save()
 		
 	def registerFlowView(self, compName, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
-			paramDict={}, viewParamDict={}):
-		"""Reister flow
-		@param appName: Application code
-		@param flowcode: Flow code
-		@param viewNameSource: View name origin for flow
-		@param viewNameTarget: View name destiny for flow
-		@param actionName: Action name
-		@param order: Order to evaluate view target resolution
-		@param paramDict: Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)"""
+			**args):
+		"""
+		Reister flow
+		
+		**Required Attributes**
+		
+		* ``flowCode``
+		* ``viewNameSource``
+		* ``viewNameTarget``
+		* ``actionName``
+		* ``order`` : Order to evaluate view target resolution
+		
+		**Optional Attributes**
+		
+		* ``params`` : Workflow parameters. Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)
+		* ``viewParams`` : View entry parameters
+		
+		**Returns**
+		
+		None
+		
+		"""
+		if flowCode == None or viewNameSource == None or viewNameTarget == None or actionName == None:
+			raise XpRegisterException(AttributeError, """registerFlowView requires attributes flowCode, viewNameSource, viewNameTarget,
+															and actionName""")
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		viewSource = View.objects.get(application=app, name=viewNameSource)
@@ -487,15 +533,25 @@ class ComponentRegisterBusiness ( object ):
 		flowView, created = WorkflowView.objects.get_or_create(flow=flow, viewSource=viewSource, viewTarget=viewTarget, #@UnusedVariable
 								action=action, order=order)
 		# Parameters
-		for name in paramDict:
-			operator, value = paramDict[name]
-			wfParamValue, created = WFParamValue.objects.get_or_create(flow=flow, name=name, operator=operator, value=value) #@UnusedVariable
+		if args.has_key('params'):
+			for name in args['params']:
+				operator, value = args['params'][name]
+				wfParamValue, created = WFParamValue.objects.get_or_create(flow=flow, name=name, operator=operator, value=value) #@UnusedVariable
 		# Entry View parameters
 		# TODO: Complete entry view parameters
 	
 	def cleanMenu(self, compName):
-		"""Clean all menus for application
-		@param appCode: Application code"""
+		"""
+		Clean all menus for application
+		
+		**Attributes**
+		
+		* ``compName``
+		
+		**Returns**
+		
+		None
+		"""
 		appName = self.__getAppName(compName)
 		Menu.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all menus for %s' % appName )
@@ -562,12 +618,29 @@ class ComponentRegisterBusiness ( object ):
 				operator, value = args['params'][name]
 				menuValue, created = MenuParam.objects.get_or_create(menu=menu, name=name, operator=operator, value=value) #@UnusedVariable
 	
-	def registerSearch(self, compName, text='', viewName=None, actionName=None, params={}):
-		"""Register application operation. It will be used in view search.
-		@param text: Text to index
-		@param appName: Application code
-		@param viewName: View name
-		@param actionName: Action name"""
+	def registerSearch(self, compName, text='', viewName=None, actionName=None, **args):
+		"""
+		Register application operation. It will be used in view search.
+		
+		**Required Attributes**
+		
+		* ``compName``
+		* ``text``
+		* ``viewName``
+		* ``actionName``
+		
+		**Optional Attributes**
+		
+		* ``params``
+		
+		**Returns**
+		
+		None
+		"""
+		if viewName == None and actionName == None:
+			raise XpRegisterException(AttributeError, 'registerSearch requires either viewName or actionName')
+		if text == '' or (viewName == None and actionName == None):
+			raise XpRegisterException(AttributeError, 'registerSearch requires attributes text, viewName or actionName. ')
 		appName = self.__getAppName(compName)
 		wordList = resources.Index.parseText(text)
 		logger.info( 'wordList: %s' % wordList )
@@ -589,10 +662,11 @@ class ComponentRegisterBusiness ( object ):
 			word, created = Word.objects.get_or_create(word=wordName) #@UnusedVariable
 			# SearchIndexWord
 			searchWord = SearchIndexWord.objects.create(word=word, index=search) #@UnusedVariable
-		for paramName in params:
-			param = Param.objects.get_or_create(application=app, name=paramName)
-			indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
-								value=params[paramName])
+		if args.has_key('params'):
+			for paramName in args['params']:
+				param = Param.objects.get_or_create(application=app, name=paramName)
+				indexParam = SearchIndexParam.objects.create(searchIndex=search, name=param, operator=Choices.OP_EQ, #@UnusedVariable
+									value=args['params'][paramName])
 	
 	def cleanTemplates(self, compName):
 		"""Clean templates for the application
