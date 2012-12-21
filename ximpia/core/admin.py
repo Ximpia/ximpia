@@ -101,7 +101,7 @@ class ServiceAdmin(admin.ModelAdmin):
 class MenuAdmin(admin.ModelAdmin):
 	list_display = ('id','name','title','description','view','application','action','icon','language',\
 		'userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
-	list_display_links = ('title',)
+	list_display_links = ('name',)
 	list_filter = ('application__title',)
 	search_fields = ('description','name','title')
 	raw_id_fields = ('application','view','action')

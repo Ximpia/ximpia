@@ -111,7 +111,7 @@ class ComponentRegisterBusiness ( object ):
 			raise XpRegisterException(AttributeError, 'registerApp requires title and slug attributes')
 		name = self.__getAppName(compName)
 		# Create group application if not exists		
-		group, exists = Group.objects.get_or_create(name=title) #@UnusedVariable
+		group, exists = Group.objects.get_or_create(name=slug) #@UnusedVariable
 		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug, accessGroup=group) #@UnusedVariable
 		# Optional data
 		if args.has_key('isSubscription'):
@@ -556,17 +556,17 @@ class ComponentRegisterBusiness ( object ):
 		Menu.objects.filter(application__name=appName).delete()
 		logger.info( 'deleted all menus for %s' % appName )
 	
-	def registerMenu(self, compName, name='', title='', **args):
+	def registerMenu(self, compName, name='', **args):
 		"""Register menu item
 		
 		**Required Attributes**
 		
 		* ``compName``
 		* ``name``
-		* ``title``
 		
 		**Optional Attributes**
 		
+		* ``title``
 		* ``iconName``
 		* ``description``
 		* ``actionName`` : Either actionName or viewName must be informed
@@ -579,11 +579,13 @@ class ComponentRegisterBusiness ( object ):
 		
 		None
 		"""
-		if name == '' or title == '':
-			raise XpRegisterException(AttributeError, 'registerMenu requires attributes name and title')
+		if name == '':
+			raise XpRegisterException(AttributeError, 'registerMenu requires attributes name')
 		if not args.has_key('viewName') and not args.has_key('actionName'):
 			raise XpRegisterException(AttributeError, """registerMenu requires menu items be lined to a view or action. Need to inform 
 					either one.""")
+		if not args.has_key('title') and not args.has_key('icon'):
+			raise XpRegisterException(AttributeError, 'registerMenu needs either text or icon')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		# Icon
@@ -594,10 +596,10 @@ class ComponentRegisterBusiness ( object ):
 			menu = Menu.objects.get(name=name)
 		except Menu.DoesNotExist:
 			menu = Menu(	application=app,
-							name=name,
-							title=title,
-							icon=icon
+							name=name
 							)
+			if args.has_key('title'):
+				menu.title = args['title']
 			if args.has_key('description'):
 				menu.description = args['description']
 			if args.has_key('iconName'):

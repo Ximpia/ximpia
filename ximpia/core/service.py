@@ -22,7 +22,7 @@ from util import TemplateParser
 from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
-from data import MenuParamDAO, ViewMenuDAO, ActionDAO
+from data import MenuParamDAO, ViewMenuDAO, ActionDAO, MenuDAO, ServiceMenuDAO
 from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.util import resources
 from choices import Choices
@@ -1072,52 +1072,42 @@ class MenuService( object ):
 	def __init__(self, ctx):
 		"""Menu building and operations"""
 		self._ctx = ctx
-		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
+		"""self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
 		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
-		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
+		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)"""
 		#self._dbAppAccess = ApplicationAccessDAO(self._ctx)
-	def getMenus(self, viewName):
-		"""Build menus in a dictionary
-		@param viewName: View name"""
-		logger.debug( 'getMenus...' )
-		logger.debug( 'getMenus :: appName: %s' % (self._ctx.app) )
-		view = self._dbView.get(name=viewName, application__name=self._ctx.app)
-		logger.debug( 'getMenus :: view: %s' % (view) )
-		# TODO: Play around to get list of codes using common methods
-		#logger.debug( 'getMenus :: userChannel: ', self._ctx.userChannel )
-		userAccessCodeList = []
-		if self._ctx.userChannel != None:
-			userAccessList = self._dbAppAccess.search(userChannel=self._ctx.userChannel)
-			for userAccess in userAccessList:
-				userAccessCodeList.append(userAccess.application.name)
-			logger.debug( 'getMenus :: userAccessCodeList: ', userAccessCodeList )
-		# TODO: Remove the SN code simulator, use the one built from userChannel
-		# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		userAccessCodeList = ['SN']
-		viewMenus = self._dbViewMenu.search( 	Q(menu__application__isSubscription = False) | 
-							Q(menu__application__isSubscription = True) & 
-							Q(menu__application__name__in=userAccessCodeList), view=view).order_by('order')
-		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
-		#logger.debug( 'getMenus :: viewMenus: ', viewMenus )
-		#logger.debug( 'getMenus :: viewMenus All: ', self._dbViewMenu.getAll() )
-		menuDict = {}
-		menuDict[Choices.MENU_ZONE_SYS] = []
-		menuDict[Choices.MENU_ZONE_MAIN] = []
-		menuDict[Choices.MENU_ZONE_VIEW] = []
+	
+	def __getList(self, menuDict, menuList):
+		"""
+		Append menu dictionary to list of menu items
+		
+		**Attributes**
+		
+		* ``menuDict`` : Menu data in dictionary format with atributes about menu item attributes
+		* ``menuList`` : Queryset with menu items
+		
+		**Returns**
+		
+		None
+		"""
 		container = {}
-		for viewMenu in viewMenus:
+		for viewMenu in menuList:
 			#logger.debug( 'getMenus :: viewMenu: ', viewMenu )
 			#logger.debug( 'getMenus :: action: ', viewMenu.menu.action )
 			#logger.debug( 'getMenus :: view: ', viewMenu.menu.view )
 			menuObj = {}
+			if viewMenu.menu.view != None:
+				menuObj['service'] = viewMenu.menu.view.service.name
+			if viewMenu.menu.action != None:
+				menuObj['service'] = viewMenu.menu.action.service.name
 			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
 			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
 			menuObj['winType'] = viewMenu.menu.view.winType if viewMenu.menu.view != None else ''
 			menuObj['sep'] = viewMenu.hasSeparator
 			menuObj['name'] = viewMenu.menu.name
 			menuObj['title'] = viewMenu.menu.title
-			menuObj['titleShort'] = viewMenu.menu.titleShort
-			menuObj['icon'] = viewMenu.menu.icon.value
+			menuObj['description'] = viewMenu.menu.description
+			menuObj['icon'] = viewMenu.menu.icon.value if viewMenu.menu.icon != None else ''
 			menuObj['zone'] = viewMenu.zone
 			if viewMenu.menu.view != None:
 				menuObj['app'] = viewMenu.menu.view.application.name
@@ -1132,6 +1122,8 @@ class MenuService( object ):
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
 			container[viewMenu.menu.name] = menuObj
+			if viewMenu.menu.view != None:
+				menuObj['isCurrent'] = True if viewMenu.menu.view.name == self.__viewName else False
 			#logger.debug( 'menuObj: ', menuObj )
 			if viewMenu.parent == None:
 				menuObj['items'] = []
@@ -1147,6 +1139,81 @@ class MenuService( object ):
 				parentMenuObj = container[viewMenu.parent.menu.name]
 				parentMenuObj['items'].append(menuObj)
 		logger.debug( 'getMenus :: menuDict: ', menuDict )
+	
+	def getMenus(self, viewName):
+		"""
+		Build menus in dictionary format
+		
+		**Attributes**
+		
+		* ``viewName`` : View name
+		
+		**Returns**
+		
+		menuDict:DictType having the format:
+		
+		{
+			'sys': [...],
+			'main': [...],
+			'service': [
+							{ 
+								'service' : StringType,
+								'action': StringType,
+								'view': StringType,
+								'winType': StringType,
+								'hasSep' : BooleanType,
+								'name' : StringType,
+								'title' : StringType,
+								'description' : StringType,
+								'icon' : StringType,
+								'zone' : StringType,
+								'app' : StringType,
+								'params' : DictType,
+								'items' : ListType<DictType>,
+								'isCurrent' : BooleanType
+							}
+			],
+			'view': [...]
+		}
+		
+		items value will be a list of dictionaries with menu dict keys (action, view, etc..)
+		
+		params have format key -> value as normal dictionaries.
+		"""
+		self.__viewName = viewName
+		# db instances
+		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
+		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
+		self._dbServiceMenu = ServiceMenuDAO(self._ctx, relatedDepth=3)
+		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
+		# logic		
+		logger.debug( 'getMenus...' )
+		logger.debug( 'getMenus :: appName: %s' % (self._ctx.app) )
+		view = self._dbView.get(name=viewName, application__name=self._ctx.app)
+		logger.debug( 'getMenus :: view: %s' % (view) )
+		
+		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
+		#logger.debug( 'getMenus :: viewMenus: ', viewMenus )
+		#logger.debug( 'getMenus :: viewMenus All: ', self._dbViewMenu.getAll() )
+		menuDict = {}
+		menuDict[Choices.MENU_ZONE_SYS] = []
+		menuDict[Choices.MENU_ZONE_MAIN] = []
+		menuDict[Choices.MENU_ZONE_SERVICE] = []
+		menuDict[Choices.MENU_ZONE_VIEW] = []		
+		
+		# TODO: Get main and sys without link, from settings
+		# linked to service
+		menuList = self._dbServiceMenu.search( 	Q(menu__application__isSubscription=False) |
+												Q(menu__application__isSubscription=True) &
+												Q(menu__application__accessGroup__user=self._ctx.user) , 
+												service=view.service ).order_by('order')
+		self.__getList(menuDict, menuList)
+		# linked to view
+		menuList = self._dbViewMenu.search( 	Q(menu__application__isSubscription=False) |
+												Q(menu__application__isSubscription=True) &
+												Q(menu__application__accessGroup__user=self._ctx.user) , 
+												view=view ).order_by('order')
+		self.__getList(menuDict, menuList)
 		return menuDict
 
 class SearchService ( object ):

@@ -2055,6 +2055,9 @@ ximpia.common.PageAjax.processMenus = (function(responseMap) {
 	if (menuObj.hasOwnProperty('main')) {
 		menuSessObj['main'] = menuObj['main']
 	}
+	if (menuObj.hasOwnProperty('service')) {
+		menuSessObj['service'] = menuObj['service']
+	}
 	menuSessObj['view'] = menuObj['view']
 	if (responseMap['response']['isLogin'] == false && menuSessObj.hasOwnProperty('sys')) {
 		delete menuSessObj['sys']

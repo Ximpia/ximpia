@@ -16,10 +16,23 @@
         	}
         	paramStr += '}';
 		var htmlContent = '';
-		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock\" title=\"" + obj.title + "\" >";
-		htmlContent += "<a href=\"#\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";
-		htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";
-		htmlContent += "<div >" + obj.titleShort + "</div>";
+		var classPlus = '';
+		if (obj.isCurrent == true && obj.zone == 'service') {
+			classPlus = ' iconMenuCurrent';
+		}
+		ximpia.console.log('classPlus: ' + classPlus);
+		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock" + classPlus + "\" title=\"" + obj.description + "\" >";
+		htmlContent += "<a href=\"#\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
+		if (obj.title != '' && obj.icon != '') {
+			// Have text and icon
+			htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";
+			htmlContent += "<div >" + obj.title + "</div>";
+		} else if (obj.title == '' && obj.icon != '') {
+			// We center icon since we have no text
+			htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" style=\"margin-left: 0px\" />";
+		} else if (obj.title != '' && obj.icon == '') {
+			htmlContent += "<div style=\"margin-left: 7px\" >" + obj.title + "</div>";
+		}
 		return htmlContent;
         };
         var buildBlankIcon = function( obj ) {
@@ -64,7 +77,11 @@
 				var menuObj = menus['main'][i]
 				menuObj.align = 'left';
 				var elemId = 'id_icon_' + menuObj.name;
-				if (!$('#' + elemId).length) {
+				ximpia.console.log('elemId: ' + elemId + ' ' + !$('#' + elemId).length);
+				// Check if #id_mainIcons already has this icon. If not, add to #id_mainIcons
+				ximpia.console.log('exsists: ' + $('#id_mainIcons:has(#' + elemId + ')').length);
+				ximpia.console.log($('#id_mainIcons:has(#' + elemId + ')').length);
+				if ($('#id_mainIcons:has(#' + elemId + ')').length == 0) {
 					ximpia.console.log('menuObj');
 					ximpia.console.log(menuObj);
 					var htmlContent = buildIcon(menuObj);
@@ -73,6 +90,24 @@
 					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));
 				}
 			}			
+			
+			//Parse service
+			ximpia.console.log('Parse service...');
+			ximpia.console.log(menus);
+			ximpia.console.log(menus['service']);
+			$('#id_serviceIcons').empty();
+			for (i in menus['service']) {
+				if (i < 7) {
+					var menuObj = menus['service'][i]
+					menuObj.align = 'right';
+					var elemId = 'id_icon_' + menuObj.name;
+					ximpia.console.log(menuObj);
+					var htmlContent = buildIcon(menuObj);
+					ximpia.console.log(htmlContent);
+					$('#id_serviceIcons').prepend(htmlContent);
+					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));					
+				}
+			}
 			
 			// Parse view
 			$('#id_viewIcons').empty();

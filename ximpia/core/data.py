@@ -3,7 +3,7 @@ import os
 from django.utils.translation import ugettext as _
 
 from models import XpMsgException, CoreParam, Application, Action
-from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData
+from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, ServiceMenu
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
 
 # Settings
@@ -325,6 +325,11 @@ class ViewMenuDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ViewMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = ViewMenu
+
+class ServiceMenuDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ServiceMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = ServiceMenu
 
 class MenuParamDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):

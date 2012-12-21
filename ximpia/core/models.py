@@ -328,6 +328,8 @@ class ApplicationMedia( BaseModel ):
 		    db_column='IMAGE')
 	type = models.ForeignKey(CoreParam, db_column='ID_TYPE', limit_choices_to={'mode': K.PARAM_MEDIA_TYPE},
 				verbose_name=_('Type'), help_text=_('Media Type'))
+	menuOrder = models.PositiveSmallIntegerField(default=1,
+				verbose_name = _('Menu Order'), help_text = _('Menu Order'), db_column='MENU_ORDER')
 	def __unicode__(self):
 		return ''
 	class Meta:
@@ -719,7 +721,7 @@ class Menu( BaseModel ):
 			verbose_name=_('Application'), help_text=_('Application for the menu'))
 	name = models.CharField(max_length=20, unique=True, db_column='NAME',
 			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
-	title = models.CharField(max_length=15, db_column='TITLE',
+	title = models.CharField(max_length=15, null=True, blank=True, db_column='TITLE',
 			verbose_name=_('Title'), help_text=_('title for menu'))
 	description = models.CharField(max_length=30, null=True, blank=True, db_column='DESCRIPTION',
 			verbose_name=_('Description'), help_text=_('Description for menu item, shown in a tool tip'))

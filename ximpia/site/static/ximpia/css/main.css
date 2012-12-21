@@ -1612,6 +1612,17 @@ legend {
 	border: 1px solid #444;
 }
 
+.iconMenuCurrent {
+	border: 1px solid blue;
+	background-color: #555;
+}
+
+.iconMenuCurrent:hover, .iconMenuCurrent.sfhover {
+	/*border: 1px solid #646464;*/
+	/*border: 1px solid #777;*/
+	background-color: #666;
+}
+
 .iconMenuBlock img {
 	/*margin-left: 5px;
 	margin-right: 5px;
@@ -1628,7 +1639,7 @@ legend {
 
 .iconMenuBlock:hover, .iconMenuBlock.sfhover {
 	/*border: 1px solid #646464;*/
-	border: 1px solid #777;
+	/*border: 1px solid #777;*/
 	background-color: #555;
 }
 
