@@ -25,6 +25,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 from data import WorkflowDataDAO, WorkflowDAO, WFParamValueDAO, ParamDAO, ViewDAO, WorkflowViewDAO
+from models import Context, JsResultDict
 from choices import Choices
 
 from ximpia.util.js import Form as _jsf
@@ -1011,3 +1012,48 @@ class CommonBusiness ( object ):
 	
 	def __init__(self, ctx):
 		self._ctx = ctx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =========================================
+# Eclipse Dumb Classes for code completion
+# =========================================
+
+class ContextDumbClass (object):
+	def __init__(self):
+		if False: self._ctx = Context()
+		if False: self._ctx.user = User()
+		if False: self._ctx.jsData = JsResultDict()

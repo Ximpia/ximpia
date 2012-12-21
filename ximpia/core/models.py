@@ -1057,7 +1057,7 @@ class WorkflowView( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW')
 	flow = models.ForeignKey(Workflow, related_name='flowView', db_column='ID_FLOW', 
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
-	viewSource = models.ForeignKey(View, related_name='flowViewSource', db_column='ID_VIEW_SOURCE',
+	viewSource = models.ForeignKey(View, null=True, blank=True, related_name='flowViewSource', db_column='ID_VIEW_SOURCE',
 			verbose_name=_('Source View'), help_text=_('View which starts flow'))
 	viewTarget = models.ForeignKey(View, related_name='flowViewTarget', db_column='ID_VIEW_TARGET',
 			verbose_name=_('target View'), help_text=_('View destiny for flow'))
@@ -1420,6 +1420,7 @@ class Context ( object ):
 	container = {}
 	doneResult = False
 	isServerTmpl = False
+	dbName = None
 	
 	"""
 	
@@ -1464,6 +1465,7 @@ class Context ( object ):
 	* ``doneResult``:Boolean : Used by decorators to define that result has been built.
 	* ``isServerTmpl``:Boolean : Defines if requesting JSON or web response. In case we have an AJAX request, we will have this to False.
 	In case we request an url this value will be True. ServiceDecorator will build different response based on this.
+	* ``dbName`` : Resolved connection from data layer. Assigned for first operation, either action or view. 
 	
 	"""
 	
@@ -1504,6 +1506,19 @@ class Context ( object ):
 		self.container = {}
 		self.doneResult = False
 		self.isServerTmpl = False
+		self.dbName = None
+
+	def get_db_name(self):
+		return self.__dbName
+
+
+	def set_db_name(self, value):
+		self.__dbName = value
+
+
+	def del_db_name(self):
+		del self.__dbName
+
 
 	def get_is_server_tmpl(self):
 		return self.__isServerTmpl
@@ -1751,6 +1766,7 @@ class Context ( object ):
 	container = property(get_container, set_container, del_container, "container's docstring")
 	doneResult = property(get_done_result, set_done_result, del_done_result, "doneResult's docstring")
 	isServerTmpl = property(get_is_server_tmpl, set_is_server_tmpl, del_is_server_tmpl, "isServerTmpl's docstring")
+	dbName = property(get_db_name, set_db_name, del_db_name, "dbName's docstring")
 
 class ContextDecorator(object):
 	_app = ''

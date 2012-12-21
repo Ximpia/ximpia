@@ -1,10 +1,12 @@
 import random
 import os
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 from models import XpMsgException, CoreParam, Application, Action
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, ServiceMenu
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
+from models import Context, JsResultDict
 
 # Settings
 from ximpia.core.util import getClass
@@ -93,22 +95,25 @@ class CommonDAO(object):
 		Data about view or action is obtained from the context."""
 		#TODO: Include application mapping with settings variable XIMPIA_DATABASE_APPS = {}
 		# Build master and slave lists
-		dbList = settings.DATABASES.keys()
-		dbListMaster = []
-		dbListSlave = []
-		for dbNameI in dbList:
-			if dbNameI == 'default' or dbNameI.find('master') == 0:
-				dbListMaster.append(dbNameI)
-			elif dbNameI.find('slave') == 0:
-				dbListSlave.append(dbNameI)
-		dbName = ''
-		if self._ctx.isView == True:
-			if len(dbListSlave) != 0:
-				dbName = random.choice(dbListSlave)
-			else:
-				dbName = 'default'
-		elif self._ctx.isAction == True:
-			dbName = random.choice(dbListMaster)
+		if self._ctx.dbName == None:
+			dbList = settings.DATABASES.keys()
+			dbListMaster = []
+			dbListSlave = []
+			for dbNameI in dbList:
+				if dbNameI == 'default' or dbNameI.find('master') == 0:
+					dbListMaster.append(dbNameI)
+				elif dbNameI.find('slave') == 0:
+					dbListSlave.append(dbNameI)
+			dbName = ''
+			if self._ctx.isView == True:
+				if len(dbListSlave) != 0:
+					dbName = random.choice(dbListSlave)
+				else:
+					dbName = 'default'
+			elif self._ctx.isAction == True:
+				dbName = random.choice(dbListMaster)
+		else:
+			dbName = self._ctx.dbName
 		logger.debug('CommonDAO :: dbName: ' + dbName + ' view: ' + self._ctx.viewNameSource )
 		return dbName
 	
@@ -395,3 +400,48 @@ class ViewTmplDAO(CommonDAO):
 	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
 		super(ViewTmplDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = ViewTmpl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =========================================
+# Eclipse Dumb Classes for code completion
+# =========================================
+
+class ContextDumbClass (object):
+	def __init__(self):
+		if False: self._ctx = Context()
+		if False: self._ctx.user = User()
+		if False: self._ctx.jsData = JsResultDict()

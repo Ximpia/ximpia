@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 from django.db.models import Q
+from django.contrib.auth.models import User
 
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render_to_response
@@ -22,13 +23,13 @@ from util import TemplateParser
 from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
-from data import MenuParamDAO, ViewMenuDAO, ActionDAO, MenuDAO, ServiceMenuDAO
+from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO
 from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.util import resources
 from choices import Choices
 
 from ximpia.util import ut_email
-from models import JsResultDict, ContextDecorator as Ctx, ContextDecorator
+from models import JsResultDict, ContextDecorator
 import constants as K
 
 # Settings
@@ -1418,3 +1419,46 @@ class DefaultService ( CommonService ):
 	def show(self):
 		"""Method to execute for view with no business code, only showing a html template."""
 		pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =========================================
+# Eclipse Dumb Classes for code completion
+# =========================================
+
+class ContextDumbClass (object):
+	def __init__(self):
+		if False: self._ctx = Context()
+		if False: self._ctx.user = User()
+		if False: self._ctx.jsData = JsResultDict()
