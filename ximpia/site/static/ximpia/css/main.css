@@ -1587,7 +1587,7 @@ legend {
 	margin-top: 5px; 
 	margin-right: 8px; 
 	margin-left: 3px; 
-	font-size: 8pt; 
+	font-size: 9pt; 
 	color: #ddd;
 }
 
@@ -1609,18 +1609,19 @@ legend {
 	border-radius: 5px; 
 	margin-left: 5px;  
 	background-color: #333; 
-	border: 1px solid #444;
+	border: 2px solid #444;
 }
 
 .iconMenuCurrent {
-	border: 1px solid blue;
-	background-color: #555;
+	border: 2px solid blue;
+	/*background-color: #555;*/
 }
 
 .iconMenuCurrent:hover, .iconMenuCurrent.sfhover {
 	/*border: 1px solid #646464;*/
 	/*border: 1px solid #777;*/
-	background-color: #666;
+	border: 2px solid blue !important;
+	background-color: #555 !important;
 }
 
 .iconMenuBlock img {
@@ -1641,6 +1642,19 @@ legend {
 	/*border: 1px solid #646464;*/
 	/*border: 1px solid #777;*/
 	background-color: #555;
+	border: 2px solid #555;
+}
+
+#id_mainIcons {
+	margin-left: 5px;
+}
+
+#id_viewIcons {
+	margin-right: 5px; border: 0px solid #fff; float: right;
+}
+
+#id_serviceIcons {
+	margin-right: 5px; border: 0px solid #fff; float: right;
 }
 
 /* ****** */
