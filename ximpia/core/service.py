@@ -1196,6 +1196,7 @@ class MenuService( object ):
 		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
 		#logger.debug( 'getMenus :: viewMenus: ', viewMenus )
 		#logger.debug( 'getMenus :: viewMenus All: ', self._dbViewMenu.getAll() )
+		logger.debug('getMenus :: user: %s %s' % (self._ctx.user, type(self._ctx.user)) )
 		menuDict = {}
 		menuDict[Choices.MENU_ZONE_SYS] = []
 		menuDict[Choices.MENU_ZONE_MAIN] = []
@@ -1204,13 +1205,23 @@ class MenuService( object ):
 		
 		# TODO: Get main and sys without link, from settings
 		# linked to service
-		menuList = self._dbServiceMenu.search( 	Q(menu__application__isSubscription=False) |
+		if self._ctx.user.is_anonymous():
+			menuList = self._dbServiceMenu.search( 	menu__application__isSubscription=False,
+													menu__view__hasAuth=False,
+													service=view.service ).order_by('order')
+		else:
+			menuList = self._dbServiceMenu.search( 	Q(menu__application__isSubscription=False) |
 												Q(menu__application__isSubscription=True) &
 												Q(menu__application__accessGroup__user=self._ctx.user) , 
 												service=view.service ).order_by('order')
 		self.__getList(menuDict, menuList)
 		# linked to view
-		menuList = self._dbViewMenu.search( 	Q(menu__application__isSubscription=False) |
+		if self._ctx.user.is_anonymous():
+			menuList = self._dbViewMenu.search( 	menu__application__isSubscription=False,
+													menu__view__hasAuth=False,
+													view=view ).order_by('order')
+		else:
+			menuList = self._dbViewMenu.search( 	Q(menu__application__isSubscription=False) |
 												Q(menu__application__isSubscription=True) &
 												Q(menu__application__accessGroup__user=self._ctx.user) , 
 												view=view ).order_by('order')
