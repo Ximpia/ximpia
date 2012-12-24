@@ -603,6 +603,8 @@ class View( BaseModel ):
 		    db_column='IMAGE')
 	meta = models.ManyToManyField(MetaKey, through='core.ViewMeta', related_name='view_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for view') )
+	accessGroups = models.ManyToManyField(Group, through='core.ViewAccessGroup', related_name='view_access',
+			verbose_name=_('Access Groups'), help_text=_('View access groups'))
 	def __unicode__(self):
 		return self.name
 	class Meta:
@@ -610,6 +612,37 @@ class View( BaseModel ):
 		verbose_name = 'View'
 		verbose_name_plural = "Views"
 		unique_together = ("application", "name")
+
+class ViewAccessGroup ( BaseModel ):
+	"""
+	
+	Access to views. Defines groups that can access view. Allows views available only to user profiles.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
+	**Relationships**
+	
+	* ``view`` -> View
+	* ``group`` -> Group
+	
+	
+	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
+	view = models.ForeignKey(View, db_column='ID_VIEW',
+					verbose_name=_('View'), help_text=_('View'))
+	group = models.ForeignKey(Group, db_column='ID_GROUP', 
+		verbose_name = _('Access Group'), help_text = _('View access group.') )
+	
+	def __unicode__(self):
+		return ''
+	
+	class Meta:
+		db_table = 'CORE_VIEW_ACCESS_GROUP'
+		verbose_name = 'View Access Group'
+		verbose_name_plural = "View Access Groups"
 
 class ViewTag ( BaseModel ):
 	"""

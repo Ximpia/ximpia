@@ -1,6 +1,6 @@
 from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Settings, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
-from models import ApplicationTag, Service, ServiceMenu
+from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup
 
 from django.contrib import admin
 
@@ -38,6 +38,13 @@ class WorkflowViewParamValueInline(admin.StackedInline):
 
 class ApplicationMediaInline(admin.StackedInline):
 	model = ApplicationMedia
+
+class ViewAccessGroupInline(admin.StackedInline):
+	model = ViewAccessGroup
+	raw_id_fields = ('group',)
+	related_lookup_fields = {
+	        'fk': ['group'],
+	    }
 
 # INLINES
 
@@ -125,7 +132,7 @@ class ViewAdmin(admin.ModelAdmin):
 	related_lookup_fields = {
 	        'fk': ['parent'],
 	    }
-	inlines = [ ViewMetaInline, ViewParamValueInline, ViewTemplateInline, ViewMenuInline, ViewTagsInline ]
+	inlines = [ ViewMetaInline, ViewParamValueInline, ViewTemplateInline, ViewMenuInline, ViewTagsInline, ViewAccessGroupInline ]
 	exclude = ['implementation']
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
