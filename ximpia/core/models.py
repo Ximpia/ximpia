@@ -6,7 +6,7 @@ import os
 from django.db import models
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.utils import translation
 from filebrowser.fields import FileBrowseField
@@ -39,7 +39,7 @@ class BaseModel( models.Model ):
 	"""
 	
 	Abstract Base Model with fields for all other models. Ximpia models have this model as parent. This model provides audit
-	informatioon like date creating and updating, as well as user involved in the update or creation.
+	information like date creating and updating, as well as user involved in the update or creation.
 	
 	When you delete rows in Ximpia, ``isDeleted``field is set to True. You can force to physical delete by passing ``real=True`` to 
 	data delete methods (db.delete, db.deleteById and db.deleteIfExists).
@@ -231,9 +231,9 @@ class Application( BaseModel ):
 	**Relationships**
 	
 	* ``developer`` -> User
-	* ``developerOrg`` -> Group
+	* ``developerOrg`` -> 'site.Group'
 	* ``parent`` -> self
-	* ``accessGroup`` -> Group
+	* ``accessGroup`` -> 'site.Group'
 	* ``users`` <-> UserChannel through ApplicationAccess and related name 'app_access'
 	* ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
 	
@@ -249,9 +249,9 @@ class Application( BaseModel ):
 		verbose_name = _('Application Title'), help_text = _('Application title'))
 	developer = models.ForeignKey(User, null=True, blank=True, db_column='ID_DEVELOPER',
 		verbose_name = _('Developer'), help_text = _('Developer'))
-	accessGroup = models.ForeignKey(Group, db_column='ID_GROUP', related_name='app_access', 
+	accessGroup = models.ForeignKey('site.Group', db_column='ID_GROUP', related_name='app_access', 
 		verbose_name = _('Access Group'), help_text = _('Application access group. Group created for application when registering app.') )
-	developerOrg = models.ForeignKey(Group, null=True, blank=True, db_column='ID_DEVELOPER_ORG', related_name='app_dev_org',
+	developerOrg = models.ForeignKey('site.Group', null=True, blank=True, db_column='ID_DEVELOPER_ORG', related_name='app_dev_org',
 		verbose_name = _('Organization'), help_text = _('Developer organization'))
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
 		verbose_name = 'Parent Application', help_text = 'Used for application groups. Application which this app is related to')
@@ -568,7 +568,8 @@ class View( BaseModel ):
 	* ``templates`` <-> XpTemplate through ViewTmpl with related name `view_templates`
 	* ``params`` <-> Param through ViewParamValue with related nam 'view_params'
 	* ``menus`` <-> Menu through ViewMenu with related name 'view_menus'
-	* ``tags`` <-> site.Tag
+	* ``tags`` <-> site.Tag through ViewTag
+	* ``accessGroups`` <-> site.Group through ViewAccessGroup
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
@@ -603,7 +604,7 @@ class View( BaseModel ):
 		    db_column='IMAGE')
 	meta = models.ManyToManyField(MetaKey, through='core.ViewMeta', related_name='view_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for view') )
-	accessGroups = models.ManyToManyField(Group, through='core.ViewAccessGroup', related_name='view_access',
+	accessGroups = models.ManyToManyField('site.Group', through='core.ViewAccessGroup', related_name='view_access',
 			verbose_name=_('Access Groups'), help_text=_('View access groups'))
 	def __unicode__(self):
 		return self.name
@@ -633,7 +634,7 @@ class ViewAccessGroup ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
 	view = models.ForeignKey(View, db_column='ID_VIEW',
 					verbose_name=_('View'), help_text=_('View'))
-	group = models.ForeignKey(Group, db_column='ID_GROUP', 
+	group = models.ForeignKey('site.Group', db_column='ID_GROUP', 
 		verbose_name = _('Access Group'), help_text = _('View access group.') )
 	
 	def __unicode__(self):
@@ -697,6 +698,7 @@ class Action( BaseModel ):
 	
 	* ``application`` -> Application
 	* ``service`` -> Service
+	* ``accessGroups`` <-> site.Group through ActionAccessGroup
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
@@ -715,6 +717,8 @@ class Action( BaseModel ):
 	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
 		    verbose_name = _('Image'), help_text = _('View image'), 
 		    db_column='IMAGE')
+	accessGroups = models.ManyToManyField('site.Group', through='core.ActionAccessGroup', related_name='action_access',
+			verbose_name=_('Access Groups'), help_text=_('Action access groups'))
 	def __unicode__(self):
 		return self.name
 	class Meta:
@@ -722,6 +726,37 @@ class Action( BaseModel ):
 		verbose_name = 'Action'
 		verbose_name_plural = "Actions"
 		unique_together = ("application", "name")
+
+class ActionAccessGroup ( BaseModel ):
+	"""
+	
+	Access to actions. Defines groups that can process actions. Allows actions available only to user profiles.
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
+	**Relationships**
+	
+	* ``action`` -> Action
+	* ``group`` -> Group
+	
+	
+	"""
+	
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
+	action = models.ForeignKey(Action, db_column='ID_ACTION',
+					verbose_name=_('Action'), help_text=_('Action'))
+	group = models.ForeignKey('site.Group', db_column='ID_GROUP', 
+		verbose_name = _('Access Group'), help_text = _('Action access group.') )
+	
+	def __unicode__(self):
+		return ''
+	
+	class Meta:
+		db_table = 'CORE_ACTION_ACCESS_GROUP'
+		verbose_name = 'Action Access Group'
+		verbose_name_plural = "Action Access Groups"
 
 class Menu( BaseModel ):
 	"""

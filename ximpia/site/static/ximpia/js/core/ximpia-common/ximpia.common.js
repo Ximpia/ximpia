@@ -1694,28 +1694,11 @@ ximpia.common.PageAjax = function() {
 					ximpia.console.log('renderCtx :: xpForm: ' + xpForm);
 					// Do menus
 					responseMap = dataObj;
-					/*ximpia.console.log('renderCtx :: menus...');
-					 var menuObj = responseMap['response']['menus'];
-					 var menuSessObj = ximpia.common.Browser.getObject('menus');
-					 if (menuSessObj == null) {
-					 menuSessObj = {};
-					 }
-					 if (menuObj.hasOwnProperty('sys')) {
-					 menuSessObj['sys'] = menuObj['sys']
-					 }
-					 if (menuObj.hasOwnProperty('main')) {
-					 menuSessObj['main'] = menuObj['main']
-					 }
-					 menuSessObj['view'] = menuObj['view']
-					 if (responseMap['response']['isLogin'] == false && menuSessObj.hasOwnProperty('sys')) {
-					 delete menuSessObj['sys']
-					 }
-					 ximpia.common.Browser.setObject('menus', menuSessObj);
-					 $("[data-xp-type='icon']").xpObjIcon('renderMenu');*/
-					ximpia.common.PageAjax.processMenus(responseMap);
-					ximpia.common.PageAjax.doRender(xpForm);
+					ximpia.common.PageAjax.processMenus(responseMap);					
+					
 					ximpia.common.timeOutCounter(function() {
 						ximpia.common.PageAjax.positionBars();
+						ximpia.common.PageAjax.doRender(xpForm);
 						ximpia.common.PageAjax.doFade();
 						var oForm = ximpia.common.Form();
 						oForm.doBindBubbles();
@@ -1727,12 +1710,15 @@ ximpia.common.PageAjax = function() {
 					$("body").before(html);
 				}
 			},
-			doForm : function(obj) {
+			doForm : function(obj, state) {
 				/**
 				 * Process forms for view request
 				 */
 				ximpia.console.log('doForm...');
 				ximpia.console.log(obj);
+				if (typeof(state) == 'undefined') {
+					state = true;
+				}
 				$.post(_attr.priv.path, obj, function(data) {
 					// Get responseMap
 					var responseMap = eval(data);
@@ -1768,6 +1754,26 @@ ximpia.common.PageAjax = function() {
 						// Update session data into SessionStorage
 						ximpia.common.PageAjax.processLogin(responseMap);
 						$(".ui-tooltip").remove();
+						// TODO: Place state logic in method
+						ximpia.console.log('window state info: ' + state);
+						if (state == true) {
+							var title = $(dataTmpl).filter('title').text();
+							var appSlug = responseMap['response']['appSlug'];
+							var viewSlug = responseMap['response']['viewSlug'];
+							$('title').text(title);
+							var location = '/apps/' + appSlug + '/' + viewSlug + '/';
+							var stateData = {
+												appSlug: appSlug,
+												viewSlug: viewSlug,
+												app: responseMap['response']['app'],
+												view: responseMap['response']['view']
+							}
+							if (viewName != 'home') {
+								window.history.pushState(stateData, title, location);
+							} else {
+								window.history.pushState(stateData, title, '/');
+							}
+						}
 					}).error(function(jqXHR, textStatus, errorThrown) {
 						ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
 					});
@@ -1777,7 +1783,7 @@ ximpia.common.PageAjax = function() {
 					$("body").before(html);
 				});
 			},
-			getView : function(obj) {
+			getView : function(obj, state) {
 				//_attr.priv.path = _attr.priv.path + '?view=' + obj.view
 				try {
 					$('div.loadError').remove();
@@ -1797,7 +1803,7 @@ ximpia.common.PageAjax = function() {
 							view : obj.view,
 							app : obj.app,
 							params : obj.params
-						});
+						}, state);
 					}
 				} catch (err) {
 					ximpia.console.log('getView :: Exception catched in getting view');
@@ -1834,6 +1840,7 @@ ximpia.common.PageAjax.doFade = function() {
  * Do fade out wait icon and show page
  */
 ximpia.common.PageAjax.doFadeIn = function() {
+	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
 	$("#id_sect_loading").fadeIn('fast');
 	$(".sectionComp").css('visibility', 'hidden');
 	$("#id_titleBar").empty();

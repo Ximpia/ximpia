@@ -1,9 +1,9 @@
 from ximpia.core.data import CommonDAO
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group as GroupSys
 
 from models import UserChannel
-from models import Param, SignupData, SocialNetworkUser, Settings, Category, Tag, TagMode, Invitation, Address, GroupChannel
+from models import Param, SignupData, SocialNetworkUser, Settings, Category, Tag, TagMode, Invitation, Address, Group
 
 class UserDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -25,15 +25,15 @@ class UserDAO(CommonDAO):
 		return invitation"""
 		pass
 
-class GroupDAO(CommonDAO):
+class GroupSysDAO(CommonDAO):
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(GroupSysDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = GroupSys
+
+class GroupDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(GroupDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Group
-
-class GroupChannelDAO( CommonDAO ):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(GroupChannelDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = GroupChannel
 
 class AddressDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):

@@ -6,7 +6,7 @@ urlpatterns = patterns('',
     # Exec Server action
     (r'^apps/(?P<app>.*)/do/(?P<actionName>.*)/(?P<actionAttrs>.*)$', 'ximpia.core.views.execActionMsg'),		
     # Show Server View
-    (r'^apps/(?P<appSlug>.*)/(?P<viewName>.*)/(?P<viewAttrs>.*)$', 'ximpia.core.views.showView'),
+    (r'^apps/(?P<appSlug>.*)/(?P<viewSlug>.*)/(?P<viewAttrs>.*)$', 'ximpia.core.views.showView'),
     # Ajax Urls
     (r'^jxSuggestList$', 'ximpia.core.views.jxSuggestList'),
     (r'^jxJSON$', 'ximpia.core.views.jxJSON'),

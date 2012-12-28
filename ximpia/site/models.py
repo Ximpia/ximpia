@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext as _
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group as GroupSys
 from filebrowser.fields import FileBrowseField
 
 from ximpia.core.models import BaseModel, MetaKey
@@ -209,7 +209,7 @@ class UserChannel ( BaseModel ):
 	**Relationships**
 	
 	* ``user`` -> Foreign key to User
-	* ``groups`` <-> Many to many relationship with GroupChannel
+	* ``groups`` <-> Many to many relationship with Group
 	* ``tag`` -> Foreign key relationship with Tag 
 	
 	"""
@@ -217,7 +217,7 @@ class UserChannel ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField('site.GroupChannel', related_name='userchannel_groups', through='UserChannelGroup',  
+	groups = models.ManyToManyField('site.Group', related_name='user_groups', through='UserChannelGroup',  
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	title = models.CharField(max_length=20, db_column='TITLE',
 				verbose_name = _('Title'), help_text=_('Title for the user channel'))
@@ -279,11 +279,6 @@ class Category ( BaseModel ):
 	"""
 
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_CATEGORY')
-	user = models.ForeignKey(UserChannel, related_name='category_owner',  
-		    verbose_name = _('User'), help_text = _('User'), db_column='ID_USER_CHANNEL')
-	relationship = models.CharField(max_length=20, choices=Choices.ACCESS_RELATIONSHIP, default=Choices.ACCESS_RELATIONSHIP_USER, 
-				db_column='RELATIONSHIP',
-				verbose_name=_('Relationship'), help_text=_('Access relationship: User, Owner, Admin and Manager'))
 	name = models.CharField(max_length=55,
 		verbose_name = _('name'), help_text = _('Category name'), db_column='NAME')
 	slug = models.SlugField(max_length=200,
@@ -295,8 +290,8 @@ class Category ( BaseModel ):
 	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
 		    verbose_name = _('Image'), help_text = _('Category image. Will be shown in listing categories or links to category'), 
 		    db_column='IMAGE')
-	type = models.CharField(max_length=20, choices=Choices.CATEGORY_TYPE, default=Choices.CATEGORY_TYPE_DEFAULT,
-		verbose_name = _('Type'), help_text = _('Category Type'), db_column='TYPE')
+	type = 	models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_CATEGORY_TYPE}, db_column='ID_SITE_PARAMETER',
+			verbose_name=_('Category Type'), help_text=_('Category Type') )
 	isPublished = models.BooleanField(default=False,
 		verbose_name = _('Is Published?'), help_text = _('Is Published?'), db_column='IS_PUBLISHED')
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
@@ -495,12 +490,12 @@ class UserAddress ( BaseModel ):
 		verbose_name = 'User Address'
 		verbose_name_plural = "User Addresses"
 
-class GroupChannel ( BaseModel ):
+class Group ( BaseModel ):
 	"""
 	
-	Group channels. This model has been designed to allow discussion groups, definition of departments inside organizations,
-	work groups inside departments, user profiles, etc... It is a pretty flexible design to accomodate your needs. Groups can
-	be tagged and categorized to provide group types: profiles, departments, work groups...
+	Groups with access information, tagging and categorization. This model has been designed to allow discussion groups, definition of 
+	departments inside organizations, work groups inside departments, user profiles, etc... It is a pretty flexible design to accommodate 
+	your needs. Groups can be tagged and categorized to provide group types: profiles, departments, work groups...
 	
 	**Attributes**
 	
@@ -510,16 +505,16 @@ class GroupChannel ( BaseModel ):
 	
 	**Relationships**
 	
-	* ``group`` -> Group
-	* ``parent`` -> GroupChannel
-	* ``accessGroups`` <-> GroupChannelAccess
-	* ``tags`` <-> GroupChannelTags
+	* ``group`` -> GroupSys
+	* ``parent`` -> Group
+	* ``accessGroups`` <-> GroupAccess
+	* ``tags`` <-> GroupTags
 	* ``category`` -> Category	
 	
 	"""
 	
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP')
-	group = models.ForeignKey(Group, unique=True, db_column='ID_GROUP',
+	group = models.ForeignKey(GroupSys, unique=True, db_column='ID_GROUP_SYS',
 				verbose_name = _('Group'), help_text = _('Group'))
 	parent = models.ForeignKey('self', null=True, blank=True, related_name='groupchannel_parent', 
 		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
@@ -527,11 +522,11 @@ class GroupChannel ( BaseModel ):
 				verbose_name = _('Group Name Id'), help_text = _('Identification for group'))
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 				verbose_name = _('Public'), help_text = _('Group is public'))
-	accessGroups = models.ManyToManyField('self', through='site.GroupChannelAccess', related_name='groupchannel_access', symmetrical=False, 
+	accessGroups = models.ManyToManyField('self', through='site.GroupAccess', related_name='group_access', symmetrical=False, 
 				verbose_name = _('Access Groups'), help_text = _('Profiles that have access to this group'))
-	tags = models.ManyToManyField(Tag, through='site.GroupChannelTag', null=True, blank=True, related_name='groupchannel_tags',
+	tags = models.ManyToManyField(Tag, through='site.GroupTag', null=True, blank=True, related_name='groupchannel_tags',
 				verbose_name = _('Tags'), help_text = _('Tags'))
-	category = models.ForeignKey(Category, null=True, blank=True, db_column='ID_CATEGORY',
+	category = models.ForeignKey(Category, limit_choices_to={}, db_column='ID_CATEGORY',
 				verbose_name=_('Category'), help_text=_('Category for group'))
 	
 	def __unicode__(self):
@@ -541,7 +536,7 @@ class GroupChannel ( BaseModel ):
 		verbose_name = 'Group'
 		verbose_name_plural = "Groups"
 
-class GroupChannelAccess ( BaseModel ):
+class GroupAccess ( BaseModel ):
 	"""
 	
 	Access to group channels : User profiles.
@@ -552,24 +547,24 @@ class GroupChannelAccess ( BaseModel ):
 	
 	**Relationships**
 	
-	* ``groupChannelFrom`` -> GroupChannel
-	* ``groupChannelTo`` -> GroupChannel
+	* ``groupFrom`` -> Group
+	* ``groupTo`` -> Group
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
-	groupChannelFrom = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL_FROM', related_name='groupchannelaccess_from',
-					verbose_name=_('Group'), help_text=_('Group Channel'))
-	groupChannelTo = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL_TO', related_name='groupchannelaccess_to',
-					verbose_name=_('Group'), help_text=_('Group Channel'))
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_ACCESS')
+	groupFrom = models.ForeignKey(Group, db_column='ID_GROUP_FROM', related_name='groupaccess_from',
+					verbose_name=_('Group'), help_text=_('Group to grant access to'))
+	groupTo = models.ForeignKey(Group, db_column='ID_GROUP_TO', related_name='groupaccess_to',
+					verbose_name=_('Access Group'), help_text=_('Access Group for Group'))
 	
 	def __unicode__(self):
-		return '%s %s' % (self.groupChannel, self.userChannel)
+		return '%s %s' % (self.groupFrom, self.groupTo)
 	
 	class Meta:
-		db_table = 'SITE_GROUP_CHANNEL_ACCESS'
-		verbose_name = 'Group Channel Profiles'
-		verbose_name_plural = "Group Channel Profiles"
+		db_table = 'SITE_GROUP_ACCESS'
+		verbose_name = 'Access Group'
+		verbose_name_plural = "Access Groups"
 
 class UserChannelGroup ( BaseModel ):
 	"""
@@ -583,29 +578,26 @@ class UserChannelGroup ( BaseModel ):
 	
 	**Relationships**
 	
-	* ``groupChannel`` -> GroupChannel
+	* ``group`` -> Group
 	* ``userChannel`` -> UserChannel
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_USER')
-	groupChannel = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL',
-					verbose_name=_('Group'), help_text=_('Group Channel'))
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_GROUP')
+	group = models.ForeignKey(Group, db_column='ID_GROUP',
+					verbose_name=_('Group'), help_text=_('Group'))
 	userChannel = models.ForeignKey(UserChannel, db_column='ID_USER_CHANNEL',
 					verbose_name=_('User'), help_text=_('User channel'))
-	relationship = models.CharField(max_length=20, choices=Choices.ACCESS_RELATIONSHIP, default=Choices.ACCESS_RELATIONSHIP_USER, 
-				db_column='RELATIONSHIP',
-				verbose_name=_('Relationship'), help_text=_('Access relationship: User, Owner, Admin and Manager'))
 	
 	def __unicode__(self):
-		return '%s %s' % (self.groupChannel, self.userChannel)
+		return '%s %s' % (self.group, self.userChannel)
 	
 	class Meta:
-		db_table = 'SITE_GROUP_CHANNEL_USER'
-		verbose_name = 'Group Channel User'
-		verbose_name_plural = "Group Channel Users"
+		db_table = 'SITE_USER_GROUP'
+		verbose_name = 'User Group'
+		verbose_name_plural = "User Groups"
 
-class GroupChannelTag ( BaseModel ):
+class GroupTag ( BaseModel ):
 	"""
 	
 	Tags for group channels
@@ -616,24 +608,24 @@ class GroupChannelTag ( BaseModel ):
 	
 	**Relationships**
 	
-	* ``groupChannel`` -> GroupChannel
+	* ``group`` -> Group
 	* ``tag`` -> Tag
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_TAG')
-	groupChannel = models.ForeignKey(GroupChannel, db_column='ID_GROUP_CHANNEL',
-					verbose_name=_('Group'), help_text=_('Group Channel'))
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_TAG')
+	group = models.ForeignKey(Group, db_column='ID_GROUP',
+					verbose_name=_('Group'), help_text=_('Group'))
 	tag = models.ForeignKey(Tag, db_column='ID_TAG',
 					verbose_name=_('Tag'), help_text=_('Tag'))
 	
 	def __unicode__(self):
-		return '%s - %s' % (self.groupChannel, self.tag)
+		return '%s - %s' % (self.group, self.tag)
 	
 	class Meta:
-		db_table = 'SITE_GROUP_CHANNEL_TAG'
-		verbose_name = 'Group Channel Tag'
-		verbose_name_plural = "Group Channel Tags"
+		db_table = 'SITE_GROUP_TAG'
+		verbose_name = 'Group Tag'
+		verbose_name_plural = "Group Tags"
 
 class SignupData ( BaseModel ):
 	

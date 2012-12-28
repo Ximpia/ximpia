@@ -451,6 +451,8 @@ class ServiceDecorator(object):
 					obj._setMainForm(self._form())
 				f(*argsTuple, **argsDict)
 				if not obj._ctx.doneResult:
+					# Instances
+					dbApp = ApplicationDAO(obj._ctx)
 					# Menu
 					logger.debug( 'ServiceDecorator :: viewNameTarget: %s' % (str(obj._ctx.viewNameTarget)) )
 					logger.debug( 'ServiceDecorator :: viewNameSource: %s' % (str(obj._ctx.viewNameSource)) )
@@ -472,12 +474,14 @@ class ServiceDecorator(object):
 					logger.debug( 'ServiceDecorator :: view: %s' % ('*' + str(obj._ctx.jsData['response']['view']) + '*') )
 					# App
 					obj._ctx.jsData['response']['app'] = obj._ctx.app
+					obj._ctx.jsData['response']['appSlug'] = dbApp.get(name=obj._ctx.app).slug
 					# winType
 					if len(obj._ctx.jsData['response']['view'].strip()) != 0:
 						dbView = ViewDAO(obj._ctx)
 						view = dbView.get(application__name=obj._ctx.app, name=obj._ctx.jsData['response']['view'])
 						logger.debug( 'ServiceDecorator :: winType: %s' % (str(view.winType)) )
 						obj._ctx.jsData['response']['winType'] = view.winType
+						obj._ctx.jsData['response']['viewSlug'] = view.slug
 					# User authenticate and session
 					if obj._ctx.user.is_authenticated():
 						# login: context variable isLogin = True
@@ -918,7 +922,7 @@ class ViewTmplDecorator ( object ):
 	_settings = {}
 	def __init__(self, *argsTuple, **argsDict):
 		if len(argsTuple) != 0:
-			logger.debug('argList: %s' % (argsTuple) )
+			logger.debug('ViewTmplDecorator :: argList: %s' % (argsTuple) )
 			self.__APP = '.'.join(argsTuple[0].split('.')[:2])
 	def __call__(self, f):
 		"""Decorator call method"""
@@ -928,14 +932,17 @@ class ViewTmplDecorator ( object ):
 			
 			# Data instances
 			dbApp = ApplicationDAO(args['ctx'])
+			dbView = ViewDAO(args['ctx'])
 			
 			ctx = args['ctx']
 			if False: ctx = Context()
-			if args.has_key('appSlug') and len(args['appSlug']) != 0:
+			if args.has_key('appSlug') and len(args['appSlug']) != 0: 
 				self.__APP = dbApp.get(slug=args['appSlug']).name
-				if args.has_key('viewName'):
-					logger.debug( 'set from args view name' )
-					self.__viewName = args['viewName']
+				if args.has_key('viewSlug'):
+					logger.debug( 'ViewTmplDecorator :: set from args view name' )
+					view = dbView.get(slug=args['viewSlug'])
+					logger.debug('ViewTmplDecorator :: viewName: %s' % (view.name) )
+					self.__viewName = view.name
 				else:
 					self.__viewName = ''
 			else:
@@ -962,18 +969,25 @@ class ViewTmplDecorator ( object ):
 				#logger.debug('ViewTmplDecorator :: tmplData: %s' % (tmplData) )
 				parser = TemplateParser()
 				parser.feed(tmplData)
-				logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
-				result = render_to_response( 'main.html', RequestContext(request, 
-												{	'title': parser.title,
-													'titleBar': parser.titleBar,
-													'content': parser.content,
-													'buttons': parser.buttons,
-													'result': json.dumps(resultJs),
-													'settings': settings
-												}))
+				try:
+					logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
+					result = render_to_response( 'main.html', RequestContext(request, 
+													{	'title': parser.title,
+														'titleBar': parser.titleBar,
+														'content': parser.content,
+														'buttons': parser.buttons,
+														'result': json.dumps(resultJs),
+														'settings': settings,
+														'view': resultJs['response']['view'],
+														'viewSlug': resultJs['response']['viewSlug'],
+														'app': self.__APP,
+														'appSlug': ''
+													}))
+				except AttributeError as e:
+					raise XpMsgException(e, _('Error in getting attributes from template. Check that title, titleBar, content and bottom button area exists.'))
 				#result = result.replace('{{result}}', json.dumps(resultJs))
 			else:
-				raise XpMsgException(None, _('Error in resolving template for view'))			
+				raise XpMsgException(None, _('Error in resolving template for view %s' % (self.__viewName) ))			
 			
 			return result
 		return wrapped_f
@@ -1103,6 +1117,11 @@ class MenuService( object ):
 				menuObj['service'] = viewMenu.menu.action.service.name
 			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
 			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
+			menuObj['viewSlug'] = viewMenu.menu.view.slug if viewMenu.menu.view != None else ''
+			if viewMenu.menu.view != None and viewMenu.menu.view.image != None:
+				menuObj['image'] = viewMenu.menu.view.image
+			else:
+				menuObj['image'] = ''
 			menuObj['winType'] = viewMenu.menu.view.winType if viewMenu.menu.view != None else ''
 			menuObj['sep'] = viewMenu.hasSeparator
 			menuObj['name'] = viewMenu.menu.name
@@ -1112,8 +1131,10 @@ class MenuService( object ):
 			menuObj['zone'] = viewMenu.zone
 			if viewMenu.menu.view != None:
 				menuObj['app'] = viewMenu.menu.view.application.name
+				menuObj['appSlug'] = viewMenu.menu.view.application.slug
 			elif viewMenu.menu.action != None:
 				menuObj['app'] = viewMenu.menu.action.application.name
+				menuObj['appSlug'] = viewMenu.menu.action.application.slug
 			# params
 			params = self._dbMenuParam.search(menu=viewMenu.menu)
 			paramDict = {}
@@ -1205,6 +1226,7 @@ class MenuService( object ):
 		
 		# TODO: Get main and sys without link, from settings
 		# linked to service
+		# TODO: Move this to data layer????
 		if self._ctx.user.is_anonymous():
 			menuList = self._dbServiceMenu.search( 	menu__application__isSubscription=False,
 													menu__view__hasAuth=False,
@@ -1212,7 +1234,7 @@ class MenuService( object ):
 		else:
 			menuList = self._dbServiceMenu.search( 	Q(menu__application__isSubscription=False) |
 												Q(menu__application__isSubscription=True) &
-												Q(menu__application__accessGroup__user=self._ctx.user) , 
+												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												service=view.service ).order_by('order')
 		self.__getList(menuDict, menuList)
 		# linked to view
@@ -1223,7 +1245,7 @@ class MenuService( object ):
 		else:
 			menuList = self._dbViewMenu.search( 	Q(menu__application__isSubscription=False) |
 												Q(menu__application__isSubscription=True) &
-												Q(menu__application__accessGroup__user=self._ctx.user) , 
+												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												view=view ).order_by('order')
 		self.__getList(menuDict, menuList)
 		return menuDict

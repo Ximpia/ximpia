@@ -20,9 +20,13 @@
 		if (obj.isCurrent == true && obj.zone == 'service') {
 			classPlus = ' iconMenuCurrent';
 		}
+		var path = '/apps/' + obj.appSlug + '/' + obj.viewSlug + '/';
+		if (obj.view == 'home') {
+			path = '/';
+		}
 		ximpia.console.log('classPlus: ' + classPlus);
 		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock" + classPlus + "\" title=\"" + obj.description + "\" >";
-		htmlContent += "<a href=\"#\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
+		htmlContent += "<a href=\"" + path + "\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
 		if (obj.title != '' && obj.icon != '') {
 			// Have text and icon
 			htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";

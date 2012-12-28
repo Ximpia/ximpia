@@ -44,8 +44,125 @@
             "isDeleted": false
         }
     },
+    {
+        "pk": 4, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Default", 
+            "dateCreate": "2012-12-26T21:48:30", 
+            "dateModify": "2012-12-26T21:48:30", 
+            "value": "Default", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Apps", 
+            "dateCreate": "2012-12-26T22:15:19", 
+            "dateModify": "2012-12-26T22:18:04", 
+            "value": "Apps", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Views", 
+            "dateCreate": "2012-12-26T22:19:14", 
+            "dateModify": "2012-12-26T22:22:32", 
+            "value": "Views", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Groups", 
+            "dateCreate": "2012-12-26T22:20:20", 
+            "dateModify": "2012-12-26T22:22:25", 
+            "value": "Groups", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "site.param", 
+        "fields": {
+            "name": "App Gallery", 
+            "dateCreate": "2012-12-26T22:24:36", 
+            "dateModify": "2012-12-26T22:24:36", 
+            "value": "App Galery", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "site.category", 
+        "fields": {
+            "popularity": 1, 
+            "name": "Apps", 
+            "parent": null, 
+            "type": 6, 
+            "dateCreate": "2012-12-26T22:25:14", 
+            "isPublic": true, 
+            "dateModify": "2012-12-26T22:25:14", 
+            "isPublished": true, 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "menuOrder": 1, 
+            "image": "", 
+            "slug": "apps", 
+            "isDeleted": false, 
+            "description": ""
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "site.category", 
+        "fields": {
+            "popularity": 1, 
+            "name": "Groups", 
+            "parent": null, 
+            "type": 8, 
+            "dateCreate": "2012-12-26T22:27:23", 
+            "isPublic": true, 
+            "dateModify": "2012-12-26T22:27:23", 
+            "isPublished": true, 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "menuOrder": 1, 
+            "image": "", 
+            "slug": "groups", 
+            "isDeleted": false, 
+            "description": ""
+        }
+    },
   {
-    "model": "site.GroupChannel",
+    "model": "site.Group",
     "pk": 1,
     "fields": {
       "group": 1

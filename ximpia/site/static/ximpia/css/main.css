@@ -173,7 +173,7 @@ div#Wrapper {
 .sectionContent {
 	/*margin-top: 0px;*/
 	/*height: 500px;*/
-	min-height: 350px;
+	min-height: 300px;
 	/*padding-top: 10px;*/
 	/*border: solid 0px;*/
 	padding-right: 0px;
@@ -195,14 +195,27 @@ div#Wrapper {
 
 #id_sect_loading {
 	position: absolute; 
-	border: 0px solid #000; 
-	visibility: visible; 
+	/*border: 0px solid #000;*/ 
+	visibility: visible;
+	/*border: 1px solid;*/ 
 	top: 80px; 
+	left: 100px;
 	/*width: 870px;*/ 
 	width: 1000px;
+	display: none; 
 	margin-left: auto;
+	margin-right: auto;
 	height: 300px; 
-	background: url(../images/loading_big.gif) no-repeat center center; 
+	/*background: url(../images/loading_big.gif) no-repeat center center;*/ 
+	/*background: url(../images/loadingBar.gif) no-repeat center center;*/
+}
+
+#id_loading_text {
+	padding-left: 7px; 
+	border: 0px solid; 
+	margin-top: -5px; 
+	height: 20px; 
+	line-height: 20px;
 }
 
 div#id_header_wrapper {

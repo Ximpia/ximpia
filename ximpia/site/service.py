@@ -125,7 +125,7 @@ class SiteService ( CommonService ):
 		"""Show logout view"""
 		self._ctx.jsData.addAttr('isLogin', False)
 	
-	@WorkflowActionDecorator(forms.LoginForm)
+	@WorkflowActionDecorator('login', forms.LoginForm)
 	def login(self):
 		"""Performs the login action
 		@param ctx: Context

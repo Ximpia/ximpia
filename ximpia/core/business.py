@@ -3,13 +3,13 @@ import datetime
 import random
 import os
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group as GroupSys
 from django.utils.translation import ugettext as _
 
 from models import XpMsgException, XpRegisterException, getBlankWfData
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service
-from ximpia.site.models import Category, Tag
+from ximpia.site.models import Category, Tag, Group
 from ximpia.util import resources
 from models import CoreParam
 import constants as K
@@ -69,8 +69,6 @@ class AppCompRegCommonBusiness ( object ):
 	def search(self):
 		pass
 
-
-# TODO: Attribute validation
 class ComponentRegisterBusiness ( object ):	
 	
 	def __init__(self):
@@ -111,8 +109,12 @@ class ComponentRegisterBusiness ( object ):
 		if title == None or slug == '':
 			raise XpRegisterException(AttributeError, 'registerApp requires title and slug attributes')
 		name = self.__getAppName(compName)
-		# Create group application if not exists		
-		group, exists = Group.objects.get_or_create(name=slug) #@UnusedVariable
+		# Create group application if not exists
+		logger.debug('registerApp :: slug: %s' % (slug) )
+		category = Category.objects.get(name='Apps')
+		logger.debug('registerApp :: category: %s' % (category) )
+		groupSys, exists = GroupSys.objects.get_or_create(name=slug) #@UnusedVariable
+		group, exists = Group.objects.get_or_create(group=groupSys, groupNameId=slug, category=category)
 		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug, accessGroup=group) #@UnusedVariable
 		# Optional data
 		if args.has_key('isSubscription'):
@@ -180,19 +182,19 @@ class ComponentRegisterBusiness ( object ):
 		"""
 		
 		appName = self.__getAppName(compName)
-		Application.objects.filter(name=appName).delete()
-		logger.info( 'deleted application %s' % appName )
-		"""View.objects.filter(application__name=appName).delete()
-		logger.info( 'deleted all views for %s' % appName )
-		Action.objects.filter(application__name=appName).delete()
-		logger.info( 'deleted all actions for %s' % appName )
+		#Application.objects.filter(name=appName).delete()
+		#logger.info( 'deleted application %s' % appName )
+		#View.objects.filter(application__name=appName).delete()
+		#logger.info( 'deleted all views for %s' % appName )
+		#Action.objects.filter(application__name=appName).delete()
+		#logger.info( 'deleted all actions for %s' % appName )
 		Workflow.objects.filter(application__name=appName).delete()
 		WorkflowData.objects.filter(flow__application__name=appName).delete()
 		logger.info( 'deleted all flows for %s' % appName )
-		Menu.objects.filter(application__name=appName).delete()
-		logger.info( 'deleted all menus for %s' % appName )
-		XpTemplate.objects.filter(application__name=appName).delete()
-		logger.info( 'deleted all templates for %s' % appName )"""
+		#Menu.objects.filter(application__name=appName).delete()
+		#logger.info( 'deleted all menus for %s' % appName )
+		#XpTemplate.objects.filter(application__name=appName).delete()
+		#logger.info( 'deleted all templates for %s' % appName )
 	
 	def registerServMenu(self, compName, serviceName=None, menus=[]):
 		"""
@@ -310,8 +312,14 @@ class ComponentRegisterBusiness ( object ):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.info( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.info( 'data: %s' % (counter) )
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
-										zone=dd[K.ZONE], order=counter)
+				try:
+					viewMenu = ViewMenu.objects.get(view=view, menu=menu)
+				except ViewMenu.DoesNotExist:
+					viewMenu = ViewMenu(view=view, menu=menu)
+				viewMenu.hasSeparator = sep
+				viewMenu.zone=dd[K.ZONE]
+				viewMenu.order = counter
+				viewMenu.save()
 				counterDict[dd[K.MENU_NAME]] = counter
 				counter += 100
 			except Menu.DoesNotExist:
@@ -329,8 +337,15 @@ class ComponentRegisterBusiness ( object ):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.info( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.info( 'data: %s' % ( counter) )
-				viewMenu, created = ViewMenu.objects.get_or_create(view=view, menu=menu, hasSeparator=sep, #@UnusedVariable
-										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
+				try:
+					viewMenu = ViewMenu.objects.get(view=view, menu=menu)
+				except ViewMenu.DoesNotExist:
+					viewMenu = ViewMenu(view=view, menu=menu)
+				viewMenu.hasSeparator = sep
+				viewMenu.zone=dd[K.ZONE]
+				viewMenu.order = counter
+				viewMenu.parent=viewMenuParent
+				viewMenu.save()
 				counter += 10
 		logger.info( 'Registered menus for view %s' % (viewName) )
 	

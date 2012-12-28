@@ -1,5 +1,5 @@
-from models import Tag, GroupChannel, Invitation, Param, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
-	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupChannelTag, UserAddress 
+from models import Tag, Invitation, Param, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
+	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupTag, UserAddress, Group
 
 from django.contrib import admin
 
@@ -9,7 +9,7 @@ class InvitationMetaInline(admin.StackedInline):
 	model = InvitationMeta
 
 class GroupTagsInline(admin.StackedInline):
-	model = GroupChannelTag
+	model = GroupTag
 
 
 class AddressInline(admin.StackedInline):
@@ -129,11 +129,11 @@ class UserProfileAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
-class GroupChannelAdmin(admin.ModelAdmin):
-	list_display = ('id','groupNameId','isPublic','group','parent','category','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
-	list_display_links = ('groupNameId',)
+class GroupAdmin(admin.ModelAdmin):
+	list_display = ('id','group','groupNameId','isPublic','parent','category','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+	list_display_links = ('group',)
 	list_filter = ('category','isPublic')
-	search_fields = ('groupNameId',)
+	search_fields = ('groupNameId','group__name')
 	raw_id_fields = ('group','parent',)
 	related_lookup_fields = {
 	        'fk': ['group','parent'],
@@ -173,7 +173,7 @@ class SettingsAdmin(admin.ModelAdmin):
 		obj.save()
 
 class CategoryAdmin(admin.ModelAdmin):
-	list_display = ('id','name','type','isPublished','isPublic','menuOrder',\
+	list_display = ('id','name','parent','type','isPublished','isPublic','menuOrder',\
 		'userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
 	list_display_links = ('name',)
 	list_filter = ('type','isPublished','isPublic')
@@ -209,7 +209,7 @@ admin.site.register(SocialNetworkUser, SocialNetworkUserAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(TagMode, TagModeAdmin)
 admin.site.register(UserChannel, UserChannelAdmin)
-admin.site.register(GroupChannel, GroupChannelAdmin)
+admin.site.register(Group, GroupAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Settings, SettingsAdmin)
 admin.site.register(Address, AddressAdmin)

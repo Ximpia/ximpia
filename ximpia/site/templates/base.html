@@ -70,7 +70,11 @@
 <nav id="id_navBar" >
 </nav>
 
-<section id="id_sect_loading" >
+<section id="id_sect_loading">
+<div style="width: 300px; margin: auto; margin-top: 100px">
+<img src="{% static "ximpia/images/loadingBar.gif" %}" />
+<div id="id_loading_text" >Loading...</div>
+</div>
 </section>
 
 <section id="id_sectionTitle" class="sectionTitle">
@@ -80,18 +84,16 @@
 
 </section>
 
-
-
 <section id="id_content" class="sectionContent" >
 
-<form id="form_main" action="" method="post" data-xp="{}" >	
+<!--  <form id="form_main" action="" method="post" data-xp="{}" >-->	
 
 {% block sectionContent %}
 {% endblock%}
 
 <input type="hidden" name="result" value="{{result}}" />
 
-</form>
+<!--  </form>-->
 
 </section>
 
@@ -156,6 +158,9 @@
 
 jQuery(document).ready(function($){
 
+	//alert('Holaaa');
+	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
+	$("#id_sect_loading").css('display', 'block');
 	ximpia.common.Page.init();
 	//var viewData = ximpia.common.Window.getViewAttrs();
 	//ximpia.console.log('viewData...');
@@ -164,6 +169,7 @@ jQuery(document).ready(function($){
 	var data = $('[name="result"]').val();
 	ximpia.console.log('data...');
 	ximpia.console.log(data);
+	
 	pageJx.renderCtx(data);
 	/*ximpia.common.Page.init();
 	var viewData = ximpia.common.Window.getViewAttrs();
@@ -175,6 +181,24 @@ jQuery(document).ready(function($){
 			callback: callback,
 			verbose: true});
 	pageJx.renderCtx(data)*/
+
+	// Menu navigation
+	$(window).bind('popstate', function(event) {
+		var state = event.originalEvent.state;
+		if (state) {
+			ximpia.console.log(state);
+			pageJx.getView({ view: state.view, params: JSON.stringify({}), app: state.app}, state=false);
+		}
+	});
+
+	var stateData = {
+			appSlug: "{{appSlug}}",
+			viewSlug: "{{viewSlug}}",
+			app: "{{app}}",
+			view: "{{view}}"
+	};
+	window.history.pushState(stateData, "{{title}}", "{{request.path}}");
+	
 });
 
 </script>
