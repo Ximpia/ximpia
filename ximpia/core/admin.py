@@ -1,6 +1,7 @@
 from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Settings, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
 from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup
+from models import SearchIndex, SearchIndexWord, SearchIndexParam
 
 from django.contrib import admin
 
@@ -52,6 +53,12 @@ class ActionAccessGroupInline(admin.StackedInline):
 	related_lookup_fields = {
 	        'fk': ['group'],
 	    }
+
+class IndexWordInline(admin.StackedInline):
+	model = SearchIndexWord
+
+class IndexParamInline(admin.StackedInline):
+	model = SearchIndexParam
 
 # INLINES
 
@@ -233,6 +240,22 @@ class SettingsAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
+class SearchIndexAdmin(admin.ModelAdmin):
+	list_display = ('id','title', 'application','view','action','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+	list_display_links = ('title',)
+	list_filter = ('application__slug',)
+	search_fields = ('title',)
+	raw_id_fields = ('application','view','action',)
+	related_lookup_fields = {
+	        'fk': ['application','view','action',],
+	    }
+	inlines = [ IndexWordInline, IndexParamInline ]
+	def save_model(self, request, obj, form, change):
+		obj.userModifyId = request.user.id
+		if not obj.id:
+			obj.userCreateId = request.user.id
+		obj.save()
+
 admin.site.register(CoreParam, CoreParamAdmin)
 admin.site.register(Param, ParamAdmin)
 admin.site.register(Application, ApplicationAdmin)
@@ -245,3 +268,4 @@ admin.site.register(WorkflowView, WorkflowViewAdmin)
 admin.site.register(XpTemplate, XpTemplateAdmin)
 admin.site.register(MetaKey, MetaKeyAdmin)
 admin.site.register(Settings, SettingsAdmin)
+admin.site.register(SearchIndex, SearchIndexAdmin)

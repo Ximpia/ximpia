@@ -75,7 +75,7 @@ class Flows:
 
 class AppReg ( AppCompRegCommonBusiness ):
 	def __init__(self):
-		super(AppReg, self).__init__(__name__, doClean=True)
+		super(AppReg, self).__init__(__name__)
 		# Application
 		self._reg.registerApp(__name__, title='Ximpia Site', slug=Slugs.SITE)
 		# Services

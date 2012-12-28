@@ -77,7 +77,7 @@ class ComponentRegisterBusiness ( object ):
 	def __getAppName(self, compName):
 		return '.'.join(compName.split('.')[:2])
 	
-	def registerApp(self, compName, title=None, isAdmin=False, slug='', **args):
+	def registerApp(self, compName, title=None, slug='', **args):
 		"""
 		
 		Register application
@@ -86,11 +86,11 @@ class ComponentRegisterBusiness ( object ):
 		
 		* ``compName``:StringType : Component name, __name__ from components module
 		* ``title``:StringType : Application title
-		* ``isAdmin``:BooleanType : Application is admin type
 		* ``slug``:StringType : Application slug to show in urls 
 		
 		**Optional Attributes**
 		
+		* ``isAdmin``:BooleanType : Application is admin type
 		* ``isSubscription``
 		* ``isPrivate``
 		* ``isAdmin``
@@ -115,7 +115,12 @@ class ComponentRegisterBusiness ( object ):
 		logger.debug('registerApp :: category: %s' % (category) )
 		groupSys, exists = GroupSys.objects.get_or_create(name=slug) #@UnusedVariable
 		group, exists = Group.objects.get_or_create(group=groupSys, groupNameId=slug, category=category)
-		app, created = Application.objects.get_or_create(name=name, title=title, isAdmin=isAdmin, slug=slug, accessGroup=group) #@UnusedVariable
+		try:
+			app = Application.objects.get(name=name)
+		except Application.DoesNotExist:
+			app = Application(name=name, slug=slug) 
+		app.title = title
+		app.accessGroup = group
 		# Optional data
 		if args.has_key('isSubscription'):
 			app.isSubscription = args['isSubscription']
@@ -137,12 +142,18 @@ class ComponentRegisterBusiness ( object ):
 			# get meta keys
 			metaKeys = MetaKey.objects.filter(name__in=args['meta'].keys())
 			for metaKey in args['meta']:
-				ApplicationMeta.objects.create(application=app, meta=metaKeys.get(name=metaKey), value=args['meta'][metaKey])
+				try:
+					appMeta = ApplicationMeta.objects.get(application=app, meta=metaKeys.get(name=metaKey))
+				except ApplicationMeta.DoesNotExist:
+					ApplicationMeta.objects.create(application=app, meta=metaKeys.get(name=metaKey), value=args['meta'][metaKey])
 		# Tags
 		if args.has_key('tags'):
 			tags = Tag.objects.filter(name__in=[args['tags']])
 			for tag in tags:
-				ApplicationTag.objects.create(application=app, tag=tags.filter(name=tag.name))
+				try:
+					appTag = ApplicationTag.objects.get(application=app, tag=tags.filter(name=tag.name))
+				except ApplicationTag.DoesNotExist:
+					ApplicationTag.objects.create(application=app, tag=tags.filter(name=tag.name))
 		logger.info( 'Registered application: %s' % (app) )
 	
 	def registerService(self, compName, serviceName=None, className=None):
@@ -167,7 +178,12 @@ class ComponentRegisterBusiness ( object ):
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
 		impl = classPath
-		Service.objects.create(application=app, implementation=impl, name=serviceName)
+		try:
+			service = Service.objects.get(application=app, name=serviceName)
+			service.implementation = impl
+			service.save()
+		except Service.DoesNotExist:
+			Service.objects.create(application=app, implementation=impl, name=serviceName)
 		logger.info( 'Registered service %s' % (serviceName) )
 	
 	def cleanAll(self, compName):
@@ -182,15 +198,15 @@ class ComponentRegisterBusiness ( object ):
 		"""
 		
 		appName = self.__getAppName(compName)
-		#Application.objects.filter(name=appName).delete()
-		#logger.info( 'deleted application %s' % appName )
+		Application.objects.filter(name=appName).update(isDeleted=True)
+		logger.info( 'deleted application %s' % appName )
 		#View.objects.filter(application__name=appName).delete()
 		#logger.info( 'deleted all views for %s' % appName )
 		#Action.objects.filter(application__name=appName).delete()
 		#logger.info( 'deleted all actions for %s' % appName )
-		Workflow.objects.filter(application__name=appName).delete()
-		WorkflowData.objects.filter(flow__application__name=appName).delete()
-		logger.info( 'deleted all flows for %s' % appName )
+		#Workflow.objects.filter(application__name=appName).delete()
+		#WorkflowData.objects.filter(flow__application__name=appName).delete()
+		#logger.info( 'deleted all flows for %s' % appName )
 		#Menu.objects.filter(application__name=appName).delete()
 		#logger.info( 'deleted all menus for %s' % appName )
 		#XpTemplate.objects.filter(application__name=appName).delete()
@@ -220,7 +236,7 @@ class ComponentRegisterBusiness ( object ):
 		app = Application.objects.get(name=appName)
 		service = Service.objects.get(name=serviceName) #@UnusedVariable
 		# Menu
-		ServiceMenu.objects.filter(service=service).delete()
+		#ServiceMenu.objects.filter(service=service).delete()
 		groupDict = {}
 		singleList = []
 		counterDict = {}
@@ -241,8 +257,14 @@ class ComponentRegisterBusiness ( object ):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.debug( 'counter: %s' % (counter) )
-				serviceMenu, created = ServiceMenu.objects.get_or_create(service=service, menu=menu, hasSeparator=sep, #@UnusedVariable
-										zone=dd[K.ZONE], order=counter)
+				try:
+					serviceMenu = ServiceMenu.objects.get(service=service, menu=menu)
+				except ServiceMenu.DoesNotExist:
+					serviceMenu = ServiceMenu(service=service, menu=menu)
+				serviceMenu.hasSeparator = sep
+				serviceMenu.zone=dd[K.ZONE]
+				serviceMenu.order = counter
+				serviceMenu.save()
 				counterDict[dd[K.MENU_NAME]] = counter
 				counter += 100
 			except Menu.DoesNotExist:
@@ -251,7 +273,7 @@ class ComponentRegisterBusiness ( object ):
 		for groupName in groupDict:
 			fields = groupDict[groupName]
 			menuParent = Menu.objects.get(name=groupName)
-			viewMenuParent = ServiceMenu.objects.get(service=service, menu=menuParent)
+			serviceMenuParent = ServiceMenu.objects.get(service=service, menu=menuParent)
 			counter = viewMenuParent.order + 10
 			for dd in fields:
 				if not dd.has_key(K.ZONE):
@@ -260,8 +282,15 @@ class ComponentRegisterBusiness ( object ):
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
 				#logger.debug( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.debug( 'data: %s' % ( counter) )
-				serviceMenu, created = ServiceMenu.objects.get_or_create(application=app, menu=menu, hasSeparator=sep, #@UnusedVariable
-										zone=dd[K.ZONE], order=counter, parent=viewMenuParent)
+				try:
+					serviceMenu = ServiceMenu.objects.get(service=service, menu=menu)
+				except ServiceMenu.DoesNotExist:
+					serviceMenu = ServiceMenu(service=service, menu=menu)
+				serviceMenu.hasSeparator = sep
+				serviceMenu.zone=dd[K.ZONE]
+				serviceMenu.order = counter
+				serviceMenu.parent = serviceMenuParent
+				serviceMenu.save()
 				counter += 10
 		logger.info( 'Registered menus for service %s' % (serviceName) )
 	
@@ -352,7 +381,7 @@ class ComponentRegisterBusiness ( object ):
 	def cleanViews(self, compName):
 		"""Clean all views for application."""
 		appName = self.__getAppName(compName)
-		View.objects.filter(application__name=appName).delete()
+		View.objects.filter(application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all views for %s' % appName )
 	
 	def registerView(self, compName, serviceName=None, viewName=None, className=None, method=None, winType=Choices.WIN_TYPE_WINDOW, 
@@ -392,7 +421,10 @@ class ComponentRegisterBusiness ( object ):
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
 		service = Service.objects.get(name=serviceName)
-		view, created = View.objects.get_or_create(application=app, service=service, name=viewName) #@UnusedVariable
+		try:
+			view = View.objects.get(application=app, service=service, name=viewName)
+		except View.DoesNotExist:
+			view = View(application=app, service=service, name=viewName)
 		view.implementation = classPath + '.' + method
 		view.winType = winType
 		view.isUrl = hasUrl
@@ -411,7 +443,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean all actions for application.
 		@param appCode: Application code"""
 		appName = self.__getAppName(compName)
-		Action.objects.filter(application__name=appName).delete()
+		Action.objects.filter(application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all actions for %s' % appName )
 	
 	def registerAction(self, compName, serviceName=None, actionName=None, className=None, method=None, slug=None, **args):
@@ -440,7 +472,11 @@ class ComponentRegisterBusiness ( object ):
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
 		service = Service.objects.get(name=serviceName)
-		action, created = Action.objects.get_or_create(application=app, name=actionName, service=service, slug=slug) #@UnusedVariable
+		try:
+			action = Action.objects.get(application=app, name=actionName, service=service)
+		except Action.DoesNotExist:
+			action = Action(application=app, name=actionName, service=service)
+		action.slug = slug
 		action.implementation = classPath + '.' + method
 		if args.has_key('hasAuth'):
 			action.hasAuth = args['hasAuth']
@@ -470,19 +506,21 @@ class ComponentRegisterBusiness ( object ):
 			raise XpRegisterException(AttributeError, 'registerParam requires attributes name, title and paramType')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
-		param, created = Param.objects.get_or_create(application=app, name=name)
-		if created:
-			param.title = title
-			param.paramType=paramType
-			param.view = isView
-			param.workflow = isWorkflow
-			param.save()
+		try:
+			param = Param.objects.get(application=app, name=name)
+		except Param.DoesNotExist:
+			param = Param(application=app, name=name)
+		param.title = title
+		param.paramType=paramType
+		param.view = isView
+		param.workflow = isWorkflow
+		param.save()
 	
 	def cleanFlows(self, compName):
 		"""Clean all flows for application."""
 		appName = self.__getAppName(compName)
-		Workflow.objects.filter(application__name=appName).delete()
-		WorkflowData.objects.filter(flow__application__name=appName).delete()
+		Workflow.objects.filter(application__name=appName).update(isDeleted=True)
+		WorkflowData.objects.filter(flow__application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all flows for %s' % appName )
 	
 	def registerFlow(self, compName, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
@@ -508,21 +546,22 @@ class ComponentRegisterBusiness ( object ):
 			raise XpRegisterException(AttributeError, 'registerFlow requires flowCode')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
-		flow, created = Workflow.objects.get_or_create(application=app, code=flowCode) #@UnusedVariable
+		try:
+			flow = Workflow.objects.get(application=app, code=flowCode)
+		except Workflow.DoesNotExist:
+			flow = Workflow(application=app, code=flowCode)		
 		flow.resetStart = resetStart
 		flow.deleteOnEnd = deleteOnEnd
 		flow.jumpToView = jumpToView
 		flow.save()
 		
-	def registerFlowView(self, compName, flowCode=None, viewNameSource=None, viewNameTarget=None, actionName=None, order=10, 
-			**args):
+	def registerFlowView(self, compName, flowCode=None, viewNameTarget=None, actionName=None, order=10, **args):
 		"""
 		Reister flow
 		
 		**Required Attributes**
 		
 		* ``flowCode``
-		* ``viewNameSource``
 		* ``viewNameTarget``
 		* ``actionName``
 		* ``order`` : Order to evaluate view target resolution
@@ -531,6 +570,7 @@ class ComponentRegisterBusiness ( object ):
 		
 		* ``params`` : Workflow parameters. Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)
 		* ``viewParams`` : View entry parameters
+		* ``viewNameSource`` 
 		
 		**Returns**
 		
@@ -542,12 +582,19 @@ class ComponentRegisterBusiness ( object ):
 															and actionName""")
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
-		viewSource = View.objects.get(application=app, name=viewNameSource)
+		
 		viewTarget = View.objects.get(application=app, name=viewNameTarget)
 		action = Action.objects.get(application=app, name=actionName)
 		flow = Workflow.objects.get(code=flowCode)
-		flowView, created = WorkflowView.objects.get_or_create(flow=flow, viewSource=viewSource, viewTarget=viewTarget, #@UnusedVariable
-								action=action, order=order)
+		try:
+			flow = WorkflowView.objects.get(flow=flow, viewTarget=viewTarget, action=action)
+		except WorkflowView.DoesNotExist:
+			flow = WorkflowView(flow=flow, viewTarget=viewTarget, action=action)
+		if args.has_key('viewNameSource'):
+			viewSource = View.objects.get(application=app, name=args['viewNameSource'])
+			flow.viewSource = viewSource
+		flow.order = order
+		flow.save()		
 		# Parameters
 		if args.has_key('params'):
 			for name in args['params']:
@@ -569,7 +616,7 @@ class ComponentRegisterBusiness ( object ):
 		None
 		"""
 		appName = self.__getAppName(compName)
-		Menu.objects.filter(application__name=appName).delete()
+		Menu.objects.filter(application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all menus for %s' % appName )
 	
 	def registerMenu(self, compName, name='', **args):
@@ -666,20 +713,25 @@ class ComponentRegisterBusiness ( object ):
 		action = Action.objects.get(name=actionName) if actionName != None else None
 		app = Application.objects.get(name=appName)
 		# Create search index
-		search, created = SearchIndex.objects.get_or_create(application=app, title=text) #@UnusedVariable
+		try:
+			search = SearchIndex.objects.get(application=app, title=text)
+		except SearchIndex.DoesNotExist:
+			search = SearchIndex(application=app, title=text)
 		if view != None:
 			search.view = view
 		if action != None:
 			search.action = action
-		if view != None or action != None:
-			search.save()
+		search.save()
 		# delete all words for search in SearchIndexWord
-		SearchIndexWord.objects.filter(index=search, word__in=wordList).delete()
+		SearchIndexWord.objects.filter(index=search, word__word__in=wordList).delete()
 		for wordName in wordList:
 			# Word
 			word, created = Word.objects.get_or_create(word=wordName) #@UnusedVariable
 			# SearchIndexWord
-			searchWord = SearchIndexWord.objects.create(word=word, index=search) #@UnusedVariable
+			try:
+				searchWord = SearchIndexWord.objects.get(word=word, index=search)
+			except SearchIndexWord.DoesNotExist:
+				searchWord = SearchIndexWord.objects.create(word=word, index=search) #@UnusedVariable
 		if args.has_key('params'):
 			for paramName in args['params']:
 				param = Param.objects.get_or_create(application=app, name=paramName)
@@ -690,7 +742,7 @@ class ComponentRegisterBusiness ( object ):
 		"""Clean templates for the application
 		@param appCode: Application code"""
 		appName = self.__getAppName(compName)
-		XpTemplate.objects.filter(application__name=appName).delete()
+		XpTemplate.objects.filter(application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all templates for %s' % appName )
 	
 	def registerTemplate(self, compName, viewName=None, name=None, **args):
@@ -719,28 +771,28 @@ class ComponentRegisterBusiness ( object ):
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
 		view = View.objects.get(application=app, name=viewName) if viewName != None else None
-		paramDict = {}
-		paramDict['application'] = app
-		paramDict['name'] = name
-		if args.has_key('language'):
-			paramDict['language'] = args['language']
-		if args.has_key('country'):
-			paramDict['country'] = args['country']
-		if args.has_key('winType'):
-			paramDict['winType'] = args['winType']
-		if args.has_key('device'):
-			paramDict['device'] = args['device']
-		if args.has_key('alias'):
-			paramDict['alias'] = args['alias']
-		else:
-			paramDict['alias'] = viewName		
 		try:
-			XpTemplate.objects.get(name=name).delete()
+			template = XpTemplate.objects.get(name=name)
 		except XpTemplate.DoesNotExist:
-			pass
-		template = XpTemplate.objects.create( **paramDict )
+			template = XpTemplate(application=app, name=name)
+		if args.has_key('language'):
+			template.language = args['language']
+		if args.has_key('country'):
+			template.country = args['country']
+		if args.has_key('winType'):
+			template.winType = args['winType']
+		if args.has_key('device'):
+			template.device = args['device']
+		if args.has_key('alias'):
+			template.alias = args['alias']
+		else:
+			template.alias = viewName		
+		template.save()
 		# View
-		ViewTmpl.objects.create(view=view, template=template)
+		try:
+			viewTmpl = ViewTmpl.objects.get(view=view, template=template)
+		except ViewTmpl.DoesNotExist:
+			ViewTmpl.objects.create(view=view, template=template)
 		logger.info('Registered template %s for view %s' % (name, viewName) )
 	
 class WorkFlowBusiness (object):	
