@@ -1,5 +1,5 @@
 from models import Tag, Invitation, Param, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
-	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupTag, UserAddress, Group
+	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupTag, UserAddress, Group, UserChannelGroup
 
 from django.contrib import admin
 
@@ -19,6 +19,9 @@ class AddressInline(admin.StackedInline):
 	        'fk': ['address',],
 	    }
 
+class GroupsInline(admin.StackedInline):
+	model = UserChannelGroup
+
 # INLINES
 
 class AddressAdmin(admin.ModelAdmin):
@@ -36,6 +39,7 @@ class ParamAdmin(admin.ModelAdmin):
 	list_filter = ('mode','paramType')
 	list_display_links = ('name','mode')
 	search_fields = ('name',)
+	ordering = ('mode',)
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
@@ -91,7 +95,7 @@ class UserChannelAdmin(admin.ModelAdmin):
 	related_lookup_fields = {
 	        'fk': ['user','user'],
 	    }
-	inlines = []
+	inlines = [ GroupsInline ]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:

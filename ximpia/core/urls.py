@@ -4,7 +4,7 @@ urlpatterns = patterns('',
     # Ximpia Templates
     (r'^jxTemplate/(?P<app>.*)/(?P<mode>.*)/(?P<tmplName>.*)$', 'ximpia.core.views.jxTemplate'),
     # Exec Server action
-    (r'^apps/(?P<app>.*)/do/(?P<actionName>.*)/(?P<actionAttrs>.*)$', 'ximpia.core.views.execActionMsg'),		
+    (r'^apps/(?P<appSlug>.*)/do/(?P<actionSlug>[a-zA-Z0-9-]+)/(?P<actionAttrs>.*)$', 'ximpia.core.views.execActionMsg'),		
     # Show Server View
     (r'^apps/(?P<appSlug>.*)/(?P<viewSlug>.*)/(?P<viewAttrs>.*)$', 'ximpia.core.views.showView'),
     # Ajax Urls

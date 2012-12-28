@@ -6,6 +6,7 @@ from ximpia.core.business import AppCompRegCommonBusiness
 
 #import business
 from service import SiteService
+from constants import Services, Slugs, Views, Actions, Menus, Tmpls, Flows
 
 # Settings
 from ximpia.core.util import getClass
@@ -15,60 +16,6 @@ settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
-
-class Services:
-	USERS = 'Users'
-
-class Slugs:
-	LOGIN = 'login'
-	LOGOUT = 'logout'
-	REMINDER_NEW_PASSWORD = 'reminder-new-password'
-	CHANGE_PASSWORD = 'change-password'
-	SIGNUP = 'signup'
-	ACTIVATION_USER = 'activation-user'
-	HOME_LOGIN = 'home-login'
-	SITE = 'site'
-	REQUEST_REMINDER = 'request-reminder'
-	FINALIZE_REMINDER = 'finalize-reminder'
-	ACTIVATE_USER = 'activate-user'
-
-class Views:
-	LOGIN = 'login'
-	LOGOUT = 'logout'
-	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
-	CHANGE_PASSWORD = 'changePassword'
-	SIGNUP = 'signup'
-	ACTIVATION_USER = 'activationUser'
-	HOME_LOGIN = 'homeLogin'
-
-class Actions:
-	LOGIN = 'login'
-	REQUEST_REMINDER = 'requestReminder'
-	FINALIZE_REMINDER = 'finalizeReminder'
-	LOGOUT = 'logout'
-	SIGNUP = 'signup'
-	CHANGE_PASSWORD = 'changePassword'
-	ACTIVATE_USER = 'activateUser'	
-
-class Menus:
-	SYS = 'sys'
-	SIGN_OUT = 'signOut'
-	CHANGE_PASSWORD = 'changePassword'
-	HOME_LOGIN = 'homeLogin'
-	HOME = 'home'
-
-class Tmpls:
-	LOGIN = 'login'
-	PASSWORD_REMINDER = 'passwordReminder'
-	LOGOUT = 'logout'
-	CHANGE_PASSWORD = 'changePassword'
-	SIGNUP = 'signup'
-	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
-	ACTIVATION_USER = 'activationUser'
-	HOME_LOGIN = 'homeLogin'
-
-class Flows:
-	pass
 
 #################### APPLICATION COMPONENTS : CLEAN AND MISC   ###################
 
@@ -158,6 +105,8 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		self._reg.registerMenu(__name__, name=Menus.HOME_LOGIN, title='', description='Home', iconName='iconHome', 
 							viewName=Views.HOME_LOGIN)
 		#self._reg.registerMenu(__name__, name=Menus.HOME, title='Home', description='Home', iconName='iconHome', viewName=Views.HOME_LOGIN)
+		self._reg.registerMenu(__name__, name=Menus.LOGIN, title='Login', description='Login', iconName='iconUnlock',
+							viewName=Views.LOGIN)
 
 	def viewMenus(self):
 		self._reg.registerViewMenu(__name__, viewName=Views.HOME_LOGIN, menus=[
@@ -166,6 +115,14 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.CHANGE_PASSWORD},
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.SIGN_OUT},
 						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.HOME_LOGIN}
+					])
+		self._reg.registerViewMenu(__name__, viewName=Views.ACTIVATION_USER, menus=[
+						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.HOME},
+						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.LOGIN}
+					])
+		self._reg.registerViewMenu(__name__, viewName=Views.SIGNUP, menus=[
+						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.HOME},
+						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.LOGIN}
 					])
 	
 	def search(self):

@@ -1453,6 +1453,7 @@ def context(f):
 class Context ( object ):
 
 	app = None
+	application = None
 	user = None
 	lang = None
 	settings = None
@@ -1489,6 +1490,7 @@ class Context ( object ):
 	doneResult = False
 	isServerTmpl = False
 	dbName = None
+	path = None
 	
 	"""
 	
@@ -1533,7 +1535,9 @@ class Context ( object ):
 	* ``doneResult``:Boolean : Used by decorators to define that result has been built.
 	* ``isServerTmpl``:Boolean : Defines if requesting JSON or web response. In case we have an AJAX request, we will have this to False.
 	In case we request an url this value will be True. ServiceDecorator will build different response based on this.
-	* ``dbName`` : Resolved connection from data layer. Assigned for first operation, either action or view. 
+	* ``dbName`` : Resolved connection from data layer. Assigned for first operation, either action or view.
+	* ``path`` : Path for actions or vies, like /apps/appSlug/viewSlug or /apps/appSlug/do/actionSlug. Filled by decorators
+	* ``application`` : Application model instance 
 	
 	"""
 	
@@ -1575,6 +1579,32 @@ class Context ( object ):
 		self.doneResult = False
 		self.isServerTmpl = False
 		self.dbName = None
+		self.path = None
+		self.application = None
+
+	def getApplication(self):
+	    return self.__application
+	
+	
+	def setApplication(self, value):
+	    self.__application = value
+	
+	
+	def delApplication(self):
+	    del self.__application
+
+
+	def getPath(self):
+	    return self.__path
+	
+	
+	def setPath(self, value):
+	    self.__path = value
+	
+	
+	def delPath(self):
+	    del self.__path
+
 
 	def get_db_name(self):
 		return self.__dbName
@@ -1835,6 +1865,8 @@ class Context ( object ):
 	doneResult = property(get_done_result, set_done_result, del_done_result, "doneResult's docstring")
 	isServerTmpl = property(get_is_server_tmpl, set_is_server_tmpl, del_is_server_tmpl, "isServerTmpl's docstring")
 	dbName = property(get_db_name, set_db_name, del_db_name, "dbName's docstring")
+	path = property(getPath, setPath, delPath, "Path's Docstring")
+	application = property(getApplication, setApplication, delApplication, "Application's Docstring")
 
 class ContextDecorator(object):
 	_app = ''
@@ -1844,7 +1876,6 @@ class ContextDecorator(object):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			try:
-				logger.debug('Holaaaa!!!!!!!!!!!!!!!!!')
 				request = argsTuple[0]
 				REQ = request.REQUEST
 				self._app = request.REQUEST['app'] if request.REQUEST.has_key('app') else ''

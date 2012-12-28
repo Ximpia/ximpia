@@ -221,6 +221,7 @@ class CommonService( object ):
 	def _setForm(self, formInstance):
 		"""Sets the form instance"""
 		self._ctx.form = formInstance
+		self._isFormOK = self._ctx.form.is_valid()
 	
 	def _getPostDict(self):
 		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
@@ -295,13 +296,13 @@ class CommonService( object ):
 		and errorName for error message display at the front
 		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
 		logger.debug( 'validateNotExists...' )
-		logger.debug( 'dbDataList : ', dbDataList )
+		logger.debug( 'dbDataList : %s' % (dbDataList) )
 		for dbData in dbDataList:
 			dbObj, qArgs, fieldName, errMsg = dbData
 			exists = dbObj.check(**qArgs)
-			logger.debug( 'Exists : ', exists )
+			logger.debug( 'Exists : %s' % (exists) )
 			if exists:
-				logger.debug( 'I add error: ', fieldName, errMsg )
+				logger.debug( 'I add error: %s %s' % (fieldName, errMsg) )
 				self._addError(fieldName, errMsg)
 		
 	def _validateContext(self, ctxDataList):
@@ -335,7 +336,7 @@ class CommonService( object ):
 		"""Checks if no errors have been written to error container.
 		If not, raises XpMsgException """
 		self._errorDict = self._getErrors()
-		logger.debug( '_isValid() :: errorDict : ', self._errorDict, self._isBusinessOK() )
+		logger.debug( '_isValid() :: errorDict : %s %s' % (self._errorDict, self._isBusinessOK()) )
 		if not self._isBusinessOK():
 			# Here throw the BusinessException
 			logger.debug( 'I raise error on business validation!!!!!!!!!!!!!!!!!!' )
@@ -401,9 +402,34 @@ class EmailService(object):
 	@staticmethod
 	def send(xmlMessage, subsDict, fromAddr, recipientList):
 		"""Send email
-		@param keyName: keyName for datastore
-		@subsDict : Dictionary with substitution values for template
-		@param recipientList: List of emails to send message"""
+		
+		@staticmethod
+		
+		Run this to simulate email server:
+		python -m smtpd -n -c DebuggingServer localhost:1025
+		
+		and have this in your settings.py:
+		EMAIL_HOST = 'localhost'
+		EMAIL_PORT = 1025
+		
+		**Attributes**
+		
+		``xmlMessage`` : Xml message (from settings)
+		``subsDict`` : Substitution dictionary, like...
+			{'scheme': settings.XIMPIA_SCHEME, 
+							'host': settings.XIMPIA_BACKEND_HOST,
+							'appSlug': K.Slugs.SITE,
+							'activate': K.Slugs.ACTIVATE_USER,
+							'firstName': self._f()['firstName'], 
+							'user': self._f()['ximpiaId'],
+							'activationCode': activationCode}
+			Email Xml message should have variables marked with '$', like $host, $appslug, etc...
+		``fromAddr``:String
+		``recipientList``:List<String>
+		
+		**Returns**
+		None
+		"""
 		#logger.debug( 'subsDict: ', subsDict )
 		subject, message = ut_email.getMessage(xmlMessage)
 		message = string.Template(message).substitute(**subsDict)
@@ -953,7 +979,7 @@ class ViewTmplDecorator ( object ):
 			ctx.viewNameSource = self.__viewName
 			resultJs = f(request, **args)
 			if len(ctx.viewNameTarget) != 0:
-				self.__viewName = ctx.viewNameTargett
+				self.__viewName = ctx.viewNameTarget
 			logger.debug( 'ViewTmplDecorator :: resultJs: %s' % resultJs )
 			logger.debug( 'ViewTmplDecorator :: viewName: %s target: %s source: %s ' % 
 				(self.__viewName, args['ctx'].viewNameTarget, args['ctx'].viewNameSource) )
@@ -1394,7 +1420,11 @@ class TemplateService ( object ):
 		if settings.DEBUG == True:
 			package, module = app.split('.')
 			m = getClass(package + '.' + module)
-			path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+			if app == 'ximpia.site':
+				path = settings.XIMPIA_TMPL_SITE + '/' + mode + '/' + tmplName + '.html'
+			else:
+				path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+			logger.debug('TemplateService.get :: path: %s' % (path) )
 			f = open(path)
 			tmpl = f.read()
 			f.close()
@@ -1404,7 +1434,11 @@ class TemplateService ( object ):
 			if not tmpl:
 				package, module = app.split('.')
 				m = getClass(package + '.' + module)
-				path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+				if app == 'ximpia.site':
+					path = settings.XIMPIA_TMPL_SITE + '/' + mode + '/' + tmplName + '.html'
+				else:
+					path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+				logger.debug('TemplateService.get :: path: %s' % (path) )
 				f = open(path)
 				tmpl = f.read()
 				f.close()

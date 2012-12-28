@@ -1,4 +1,60 @@
 
+class Services:
+	USERS = 'Users'
+
+class Slugs:
+	LOGIN = 'login'
+	LOGOUT = 'logout'
+	REMINDER_NEW_PASSWORD = 'reminder-new-password'
+	CHANGE_PASSWORD = 'change-password'
+	SIGNUP = 'signup'
+	ACTIVATION_USER = 'activation-user'
+	HOME_LOGIN = 'home-login'
+	SITE = 'site'
+	REQUEST_REMINDER = 'request-reminder'
+	FINALIZE_REMINDER = 'finalize-reminder'
+	ACTIVATE_USER = 'activate-user'
+
+class Views:
+	LOGIN = 'login'
+	LOGOUT = 'logout'
+	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
+	CHANGE_PASSWORD = 'changePassword'
+	SIGNUP = 'signup'
+	ACTIVATION_USER = 'activationUser'
+	HOME_LOGIN = 'homeLogin'
+
+class Actions:
+	LOGIN = 'login'
+	REQUEST_REMINDER = 'requestReminder'
+	FINALIZE_REMINDER = 'finalizeReminder'
+	LOGOUT = 'logout'
+	SIGNUP = 'signup'
+	CHANGE_PASSWORD = 'changePassword'
+	ACTIVATE_USER = 'activateUser'	
+
+class Menus:
+	SYS = 'sys'
+	SIGN_OUT = 'signOut'
+	CHANGE_PASSWORD = 'changePassword'
+	HOME_LOGIN = 'homeLogin'
+	HOME = 'home'
+	LOGIN = 'login'
+
+class Tmpls:
+	LOGIN = 'login'
+	PASSWORD_REMINDER = 'passwordReminder'
+	LOGOUT = 'logout'
+	CHANGE_PASSWORD = 'changePassword'
+	SIGNUP = 'signup'
+	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
+	ACTIVATION_USER = 'activationUser'
+	HOME_LOGIN = 'homeLogin'
+
+class Flows:
+	pass
+
+
 #APP = 'site'
 XIMPIA = 'ximpia'
 TWITTER = 'twitter'
@@ -54,5 +110,10 @@ SIGNUP_USER_GROUP_ID = '1'
 PARAM_LOGIN = 'LOGIN'
 PARAM_REMINDER_DAYS = 'REMINDER_DAYS'
 PARAM_USER_STATUS = 'USER_STATUS'
-PARAM_ADRESS_TYPE = 'ADDRESS_TYPE'
+PARAM_USER_STATUS_PENDING = 'PENDING'
+PARAM_USER_STATUS_ACTIVE = 'ACTIVE'
+PARAM_ADDRESS_TYPE = 'ADDRESS_TYPE'
+PARAM_ADDRESS_TYPE_PERSONAL = 'PERSONAL'
 PARAM_CATEGORY_TYPE = 'CATEGORY_TYPE'
+
+KEY_HAS_VALIDATED_EMAIL = 'HAS_VALIDATED_EMAIL'

@@ -913,6 +913,8 @@ ximpia.common.Form = function() {
 			bindAction : function(obj) {
 				//$("#" + obj.formId).val(ximpia.common.Path.getBusiness());
 				//ximpia.console.log('Submit form: ' + $("#" + obj.formId).val());
+				ximpia.console.log('bindAction :: obj...');
+				ximpia.console.log(obj);
 				var idOkMsg = '';
 				var okMsg = '';
 				var doMsgError = false;
@@ -935,7 +937,9 @@ ximpia.common.Form = function() {
 									ximpia.console.log('isMsg: ' + obj.isMsg);
 									if (obj.isMsg == true) {
 										$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
-										okMsg = responseMap['response'][obj.attrs.form]['msg_ok']['value'];
+										var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
+										var okMessages = JSON.parse(okMessagesStr);
+										okMsg = okMessages[obj.attrs.msg];
 										ximpia.console.log('okMsg: ' + okMsg);
 										$("#" + obj.idMsg + "_text").text(okMsg);
 									} else {
@@ -1899,7 +1903,8 @@ ximpia.common.PageAjax.doShowPasswordStrength = (function(userId, passwordId) {
 	// Password Strength
 	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
 	// TODO: Include validation of strength when clicking on signup button or buttons
-	$('.passStrength').passStrengthener({
+	// TODO: Way to integrate settings into visual engine and define settings for password strength
+	$('#' + passwordId).passStrengthener({
 		userid : "#" + userId
 		/*strengthCallback:function(score, strength) {
 		 ximpia.console.log('strength : ' + strength)

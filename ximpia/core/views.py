@@ -6,6 +6,7 @@ import types
 import traceback
 import os
 
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.http import Http404
@@ -15,7 +16,7 @@ from yacaptcha.models import Captcha
 from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
 from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService
-from data import ViewDAO, ActionDAO
+from data import ViewDAO, ActionDAO, ApplicationDAO
 
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
@@ -243,12 +244,11 @@ def jxTemplate(request, app, mode, tmplName):
 	return HttpResponse(tmpl)
 
 @ContextDecorator()
+@transaction.commit_on_success
 def jxService(request, **args):
 	"""Excutes the business class: bsClass, method {bsClass: '', method: ''}
 	@param request: Request
 	@param result: Result"""
-	print 'holaaaaaaaaaaaaaaa'
-	print 'args: ', args
 	logger.debug( 'jxService...' )
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
@@ -257,17 +257,20 @@ def jxService(request, **args):
 	#logger.debug( 'session: %s' % json.dumps(request.session.items()) + ' ' + json.dumps(request.session.session_key) )
 	if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
 		viewAttrs = {}
-		if request.REQUEST.has_key('view'):
-			app = request.REQUEST['app']
+		dbApplication = ApplicationDAO(args['ctx'])
+		app = request.REQUEST['app']
+		application = dbApplication.get(name=app)
+		if request.REQUEST.has_key('view'):			
 			view = request.REQUEST['view']
 			logger.debug( 'view: ' + view )
 			dbView = ViewDAO(args['ctx'])
-			impl = dbView.get(application__name=app, name=view).implementation
+			viewObj = dbView.get(application__name=app, name=view)
+			impl = viewObj.implementation
 			# view attributes 
 			viewAttrs = json.loads(request.REQUEST['params'])
 			args['ctx'].viewNameSource = view
+			args['ctx'].path = '/apps/' + application.slug + '/' + viewObj.slug
 		elif request.REQUEST.has_key('action'):
-			app = request.REQUEST['app']
 			action = request.REQUEST['action']
 			logger.debug( 'action: ' + action )
 			dbAction = ActionDAO(args['ctx'])
@@ -281,6 +284,7 @@ def jxService(request, **args):
 				if actionObj.application.name != viewObj.application.name:
 					raise XpMsgException(None, _('Action is not in same application as view source'))
 			impl = actionObj.implementation
+			args['ctx'].path = '/apps/' + application.slug + '/do/' + actionObj.slug
 		implFields = impl.split('.')
 		method = implFields[len(implFields)-1]
 		classPath = ".".join(implFields[:-1])
@@ -303,13 +307,25 @@ def jxService(request, **args):
 @ContextViewDecorator()
 @ViewTmplDecorator()
 def showView(request, appSlug, viewSlug, viewAttrs, **args):
-	"""Show url view. Application code and view name are parsed from the url.
+	"""
+	Show url view. Application code and view name are parsed from the url.
+	
+	**Required Attributes**
+	
+	**Optional Attributes**
+	
+	**Returns**
+	
 	"""
 	#logger.debug( 'core showView :: context: ' + json.dumps(args['ctx']) )
+	dbApplication = ApplicationDAO(args['ctx'])
+	application = dbApplication.get(slug=appSlug)
 	db = ViewDAO(args['ctx'])
-	view = db.get(application__slug=appSlug, slug=viewSlug)
+	view = db.get(application=application, slug=viewSlug)
 	# Assign context viewNameSource to resolved view
 	args['ctx'].viewNameSource = view.name
+	args['ctx'].path = '/apps/' + application.slug + '/' + view.slug
+	logger.debug('core showView :: path: %s' % (args['ctx'].path) )
 	logger.debug('core showView :: view: %s' % (view) )
 	impl = view.implementation
 	# Parse method and class path
@@ -336,18 +352,25 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
 		raise Http404
 	return result
 
+@transaction.commit_on_success
 @ContextViewDecorator(mode='action')
 @ViewTmplDecorator()
-def execActionMsg(request, app, actionName, actionAttrs, **args):
-	"""Executes an action and shows a message of result of action."""
+def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
+	"""
+	Executes an action and shows a message of result of action.
+	"""
+	logger.debug('appslug: %s actionslug: %s actionAttrs: %s' % (appSlug, actionSlug, actionAttrs) )
+	dbApplication = ApplicationDAO(args['ctx'])
+	application = dbApplication.get(slug=appSlug)
 	db = ActionDAO(args['ctx'])
-	action = db.get(application__name=app, name=actionName)
+	action = db.get(application=application, slug=actionSlug)
 	impl = action.implementation
 	implFields = impl.split('.')
 	method = implFields[len(implFields)-1] 
 	classPath = ".".join(implFields[:-1])
-	if actionAttrs.find('-') != -1:
-		actionAttrTuple = actionAttrs.split('-')
+	args['ctx'].path = '/apps/' + application.slug + '/' + action.slug
+	if actionAttrs.find('/') != -1:
+		actionAttrTuple = actionAttrs.split('/')
 	else:
 		if len(actionAttrs) == 0:
 			actionAttrTuple = []

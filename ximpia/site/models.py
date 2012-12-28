@@ -469,22 +469,36 @@ class UserProfile ( BaseModel ):
 				verbose_name = _('Addresses'), help_text = _('User addresses'))
 	
 	def __unicode__(self):
-		return self.user
+		return self.user.username
 	class Meta:
 		db_table = 'SITE_USER_PROFILE'
 		verbose_name = 'User Profile'
 		verbose_name_plural = "User Profiles"
 
 class UserAddress ( BaseModel ):
+	"""
+	User addresses
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	
+	**Relationships**
+	
+	* ``userProfile`` -> UserProfile
+	* ``address`` -> Address
+	+ ``type`` -> Param. mode=K.PARAM_ADDRESS_TYPE
+	
+	"""
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER_ADDRESS')
 	userProfile = models.ForeignKey(UserProfile, db_column='ID_SITE_USER_PROFILE',
 				verbose_name = _('User Profile'), help_text = _('User Profile'))
 	address = models.ForeignKey(Address, db_column='ID_ADDRESS',
 				verbose_name = _('Address'), help_text = _('User Address') )
-	type = models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_ADRESS_TYPE}, db_column='ID_SITE_PARAMETER',
+	type = models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_ADDRESS_TYPE}, db_column='ID_SITE_PARAMETER',
 			verbose_name=_('Type'), help_text=_('Address Type') )
 	def __unicode__(self):
-		return self.user
+		return self.userProfile.user.username
 	class Meta:
 		db_table = 'SITE_USER_ADDRESS'
 		verbose_name = 'User Address'

@@ -45,6 +45,11 @@ input[type='text'] {
 	border: 1px solid #ccc;
 }
 
+input[type='password'] {
+	width: 180px;
+	border: 1px solid #ccc;
+}
+
 input.fieldBig {
 	width: 300px;
 }
@@ -697,13 +702,13 @@ div.jqDockLabelNew {
 }
 
 .error {
-	border: 1px solid;
-	border-color: Red;
+	border: 1px solid Red !important;
+	/*border-color: Red;*/
 }
 
 .valid {
-	border: 1px solid;
-	border-color: Green;
+	border: 1px solid Green !important;
+	/*border-color: Green;*/
 }
 
 /*select.error {
@@ -1707,6 +1712,10 @@ legend {
 /* iconLogout */
 .iconLogout { 
 	background: url(../images/logout_32.png) no-repeat;
+}
+
+.iconUnlock {
+	background: url(../images/unlock_32.png) no-repeat;
 }
 
 /* iconSmall */

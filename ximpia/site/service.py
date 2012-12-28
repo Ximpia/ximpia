@@ -23,7 +23,8 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 import forms
-from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO
+from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
+from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO
 from forms import UserSignupInvitationForm #@UnusedImport
 import messages as _m
 import constants as K
@@ -61,7 +62,25 @@ class SiteService ( CommonService ):
 				])
 	
 	def _createUser(self):
-		"""Create user """
+		"""
+		Create user
+		
+		Will create user and related information
+		
+		1. Creates django user
+		2. Sets password
+		3. Creates UserChannel
+		4. Obtains params statusActive, addressTypePersonal
+		5. Gets or create address with city and country
+		6. Creates UserProfile with user and status active
+		7. Creates UserAddress with userProfile, address and addressTypePersonal
+		8. Creates user meta variable HAS_VALIDATED_EMAIL to 'True'
+		9. In case social network signup, links socialId, socialToken
+		10. Associates django groups and ximpia groups to user
+		
+		** Returns**
+		None
+		"""
 		# System User
 		user = self._dbUser.create(username=self._f()['ximpiaId'], email=self._f()['email'], 
 						first_name=self._f()['firstName'], last_name=self._f()['lastName'])
@@ -70,17 +89,25 @@ class SiteService ( CommonService ):
 		user.save()
 		# Ximpia User
 		userChannel = self._dbUserChannel.create(user=user, name=K.USER, title=self._f()['firstName'], userCreateId=user.id)
-		userDetail = self._dbUserDetail.create(user=user, name=self._f()['firstName'] + ' ' + self._f()['lastName'], #@UnusedVariable
-						hasValidatedEmail=True)
+		# Profile (Address, UserProfile, UserAddress)
+		statusActive = self._dbParam.getUserStatusActive()
+		address, created = self._dbAddress.getCreate(city=self._f()['city'], country=self._f()['country'])
+		addressTypePersonal = self._dbParam.getAddressTypePersonal()
+		userProfile = self._dbUserProfile.create(user=user, status=statusActive)
+		userAddress = self._dbUserAddress.create(userProfile=userProfile, address=address, type=addressTypePersonal)
+		# User Meta
+		keyEmail = self._dbMetaKey.get(name=K.KEY_HAS_VALIDATED_EMAIL)
+		self._dbUserMeta.create(user=user, meta=keyEmail, value='True')
 		# Social networks
 		if self._f()['authSource'] != 'password':
 			self._dbSocialNetworkUser.create(user=userDetail, socialNetwork=self._f()['authSource'], 
 							socialId=self._f()['socialId'], token=self._f()['socialToken'])			
 		# Groups
 		userGroupId = json.loads(self._f()['params'])['userGroup']
-		group = self._dbGroup.get(id=userGroupId)
-		user.groups.add(group)
-		userChannel.groups.add(group)
+		groupSys = self._dbGroupSys.get(id=userGroupId)
+		user.groups.add(groupSys)
+		group = self._dbGroup.get(group__group=groupSys)
+		self._dbUserChannelGroup.create(userChannel=userChannel, group=group)
 	
 	@ValidationDecorator()
 	def _validateUser(self):
@@ -106,6 +133,25 @@ class SiteService ( CommonService ):
 					[self._dbUserSys, {'email': self._f()['email']}, 'email', _m.ERR_emailDoesNotExist]
 				])
 	
+	def _doDbInstancesForUser(self):
+		"""
+		Instances for user creation
+		"""
+		self._dbSettings = SettingsDAO(self._ctx)
+		self._dbSignupData = SignupDataDAO(self._ctx)
+		self._dbUser = UserDAO(self._ctx)
+		self._dbSocialNetworkUser = SocialNetworkUserDAO(self._ctx)
+		self._dbUserProfile = UserProfileDAO(self._ctx)
+		self._dbUserChannel = UserChannelDAO(self._ctx)
+		self._dbUserChannelGroup = UserChannelGroupDAO(self._ctx)
+		self._dbAddress = AddressDAO(self._ctx)
+		self._dbUserAddress = UserAddressDAO(self._ctx)
+		self._dbMetaKey= MetaKeyDAO(self._ctx)
+		self._dbUserMeta = UserMetaDAO(self._ctx)
+		self._dbGroup = GroupDAO(self._ctx)
+		self._dbGroupSys = GroupSysDAO(self._ctx)
+		self._dbParam = ParamDAO(self._ctx)
+	
 	@WorkflowViewDecorator('login', form=forms.HomeForm)
 	def viewLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
@@ -123,6 +169,7 @@ class SiteService ( CommonService ):
 	@ViewDecorator(DefaultForm)
 	def viewLogout(self):
 		"""Show logout view"""
+		# TODO: Add service method to add to response dictionary: self._addAttr('isLogin', False)
 		self._ctx.jsData.addAttr('isLogin', False)
 	
 	@WorkflowActionDecorator('login', forms.LoginForm)
@@ -149,28 +196,37 @@ class SiteService ( CommonService ):
 	
 	@ActionDecorator(forms.UserSignupInvitationForm)
 	def signup(self):
-		"""Signup user
-		@param ctx: Context"""
+		"""
+		Signup user
+		
+		**Attributes**
+		
+		**Returns**
+		"""
+		# Instances
+		self._doDbInstancesForUser()
 		# Business Validation
-		self._validateInvUserSignup()
+		self._validateUserNotSignedUp()
 		if self._f()['authSource'] != K.PASSWORD:
 			self._createUser()
 		else:
 			# user/password. Save in temp table user data
 			activationCode = random.randrange(10, 100)
-			logger.debug( 'doUser :: activationCode: ', activationCode )
+			logger.debug( 'doUser :: activationCode: %s' % (activationCode) )
 			formSerialized = base64.encodestring(self._f().serializeJSON())
-			self._dbSignupData.deleteIfExists(user=self._f()['ximpiaId'])
+			self._dbSignupData.deleteIfExists(user=self._f()['ximpiaId'], real=True)
 			self._dbSignupData.create(user=self._f()['ximpiaId'], data=formSerialized, activationCode=activationCode)
 			# Send email to user to validate email
-			xmlMessage = self._dbXmlMessage.get(name='Msg/Site/Signup/User/', lang='en').body
+			xmlMessage = self._dbSettings.get(name__name='Msg/Site/Signup/User/_en').value
 			logger.debug( xmlMessage )
+			logger.debug('path: %s' % (self._ctx.path) )
 			EmailService.send(xmlMessage, {'scheme': settings.XIMPIA_SCHEME, 
 							'host': settings.XIMPIA_BACKEND_HOST,
-							'app': self._ctx.app,
+							'appSlug': K.Slugs.SITE,
+							'activate': K.Slugs.ACTIVATE_USER,
 							'firstName': self._f()['firstName'], 
 							'user': self._f()['ximpiaId'],
-							'activationCode': activationCode}, [self._f()['email']])
+							'activationCode': activationCode}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 			logger.debug( 'doUser :: sent Email' )
 	
 	@ViewDecorator(forms.ActivateUserForm)
@@ -178,20 +234,24 @@ class SiteService ( CommonService ):
 		"""Confirmation message for user activation"""
 		pass
 	
-	@ActionDecorator(forms.ActivateUserForm)
+	@ViewDecorator(forms.ActivateUserForm)
 	def activateUser(self, ximpiaId, activationCode):
 		"""Create user in system with validation link from email. Only used in case auth source is user/password."""
+		# Instances
+		self._doDbInstancesForUser()
+		logger.debug('activateUser...')
+		# Logic
 		formStr64 = self._dbSignupData.get(user=ximpiaId).data
 		formDict = json.loads(base64.decodestring(formStr64))
 		form = forms.UserSignupInvitationForm(formDict, ctx=self._ctx)
 		self._setForm(form)
 		# validate form again
-		self._validateInvUserSignup()
+		self._validateUserNotSignedUp()
 		# Create user
 		self._createUser() 
-		self._dbSignupData.deleteIfExists(user=ximpiaId)
+		self._dbSignupData.deleteIfExists(user=ximpiaId, real=True)
 		# show view
-		self._showView('activateUser')
+		self._showView(K.Views.ACTIVATION_USER) 
 	
 	@ViewDecorator(forms.UserSignupInvitationForm)
 	def viewSignup(self):
