@@ -187,15 +187,15 @@ class WorkflowAdmin(admin.ModelAdmin):
 		obj.save()
 
 class WorkflowViewAdmin(admin.ModelAdmin):
-	list_display = ('id','order','flow','viewSource','viewTarget','action',\
-		'userCreateId', 'userModifyId','dateCreate', 'dateModify')
-	list_display_links = ('id',)
-	list_filter = ('flow__code',)
-	raw_id_fields = ('flow','viewSource','viewTarget','action')
-	related_lookup_fields = {
-	        'fk': ['flow','viewSource','viewTarget','action'],
-	    }
-	inlines = [ WorkflowViewParamValueInline ]
+	#list_display = ('id','order','flow','viewSource','viewTarget','action','userCreateId', 'userModifyId','dateCreate', 'dateModify')
+	list_display = ('id','userCreateId', 'userModifyId','dateCreate', 'dateModify')
+	#list_display_links = ('id',)
+	#list_filter = ('flow__code',)
+	#raw_id_fields = ('flow','viewSource','viewTarget','action')
+	#related_lookup_fields = {
+	#        'fk': ['flow','viewSource','viewTarget','action'],
+	#    }
+	#inlines = [ WorkflowViewParamValueInline ]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:

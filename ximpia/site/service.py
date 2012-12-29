@@ -159,7 +159,7 @@ class SiteService ( CommonService ):
 		@return: result"""
 		# Check if login:
 		logger.debug( 'login...' )
-		if not self._ctx['user'].is_authenticated():
+		if not self._ctx.user.is_authenticated():
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
 			self._ctx.jsData.addAttr('isLogin', False)

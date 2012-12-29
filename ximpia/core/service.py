@@ -785,7 +785,7 @@ class WFViewDecorator( object ):
 				elif isFirstView == True and flow.resetStart == True:
 					logger.debug( 'reset Flow... resetStart=True and first view in flow...' )
 					obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
-			obj._ctx['viewNameTarget'] = viewName
+			obj._ctx.viewNameTarget = viewName
 			# Jump to View in case jumpToView = True and viewName resolved from flow is different from current view
 			#logger.debug( 'Jumps... ', viewName, obj._ctx.viewNameSource )
 			if viewName != obj._ctx.viewNameSource:
@@ -945,6 +945,8 @@ class ViewTmplDecorator ( object ):
 	""""Decorator for django views in core module."""
 	__viewName = ''
 	__APP = ''
+	__APP_OBJ = None
+	__APP_SLUG = ''
 	_settings = {}
 	def __init__(self, *argsTuple, **argsDict):
 		if len(argsTuple) != 0:
@@ -962,8 +964,10 @@ class ViewTmplDecorator ( object ):
 			
 			ctx = args['ctx']
 			if False: ctx = Context()
-			if args.has_key('appSlug') and len(args['appSlug']) != 0: 
-				self.__APP = dbApp.get(slug=args['appSlug']).name
+			if args.has_key('appSlug') and len(args['appSlug']) != 0:
+				self.__APP_OBJ =  dbApp.get(slug=args['appSlug'])
+				self.__APP = self.__APP_OBJ.name
+				self.__APP_SLUG = self.__APP_OBJ.slug
 				if args.has_key('viewSlug'):
 					logger.debug( 'ViewTmplDecorator :: set from args view name' )
 					view = dbView.get(slug=args['viewSlug'])
@@ -1007,7 +1011,7 @@ class ViewTmplDecorator ( object ):
 														'view': resultJs['response']['view'],
 														'viewSlug': resultJs['response']['viewSlug'],
 														'app': self.__APP,
-														'appSlug': ''
+														'appSlug': self.__APP_SLUG
 													}))
 				except AttributeError as e:
 					raise XpMsgException(e, _('Error in getting attributes from template. Check that title, titleBar, content and bottom button area exists.'))
@@ -1392,13 +1396,59 @@ class SearchService ( object ):
 		return resultsFinal
 
 class TemplateService ( object ):
-	"""Logic for templates"""
+	"""	
+	Template service with operations to resolve and obtain templates
+	"""
 	_ctx = None
+	__MODES = ['window','popup']
+	__app = ''
+	__mode = ''
+	__tmplName = ''
 	def __init__(self, ctx):
 		"""Menu building and operations"""
 		self._ctx = ctx
 		self._dbViewTmpl = ViewTmplDAO(self._ctx, relatedDepth=2)
 		self._dbTemplate = TemplateDAO(self._ctx)
+	def __findTemplPath(self, module):
+		"""
+		Find template searching on templates/ directory in application
+		
+		**Attributes**
+		
+		* ``module``:Object : Application module. For app='ximpia.site', module would be same as from ximpia import site
+		* ``mode``:String : window or popup
+		
+		**Returns**
+		
+		* ``path``:String : Path to template
+		"""
+		#path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+		path = ''
+		pathMain = module.__file__.split('__init__')[0] + 'templates'
+		fileList = os.listdir(pathMain)
+		for item in fileList:
+			if item != 'site':
+				if item in self.__MODES:
+					fileList = os.listdir(pathMain + '/' + item)
+					for file in fileList:
+						if file == self.__tmplName + '.html':
+							path = pathMain + '/' + item + '/' + file
+							break
+				else:
+					if os.path.exists(pathMain + '/' + item + '/' + self.__mode):
+						fileList = os.listdir(pathMain + '/' + item + '/' + self.__mode)
+						for file in fileList:
+							if file == self.__tmplName + '.html':
+								path = pathMain + '/' + item + '/' + self.__mode + '/' +  file
+								break
+					else:
+						raise XpMsgException(None, _('Template directory has no ' + ' or '.join(self.__MODES) + ' modes') )
+			if path != '':
+				break
+		if path == '':
+			raise XpMsgException(None, _('Could not obtaine template file for applciation=%s, mode=%s, templName=%s' %\
+										 (self.__app, self.__mode, self.__tmplName) ))
+		return path
 	def get(self, app, mode, tmplName):
 		"""
 		Get template
@@ -1414,6 +1464,7 @@ class TemplateService ( object ):
 		* ``tmpl``:String
 		
 		"""
+		self.__app, self.__mode, self.__tmplName = app, mode, tmplName
 		
 		logger.debug('TemplateService :: app: %s' % app)
 		
@@ -1421,9 +1472,14 @@ class TemplateService ( object ):
 			package, module = app.split('.')
 			m = getClass(package + '.' + module)
 			if app == 'ximpia.site':
-				path = settings.XIMPIA_TMPL_SITE + '/' + mode + '/' + tmplName + '.html'
+				appModulePath = settings.__file__.split('settings')[0]
+				pathSite = appModulePath + 'web/templates/site'
+				if os.path.exists(pathSite) and os.path.isdir(pathSite):
+					path = pathSite + '/' + mode + '/' + tmplName + '.html'
+				else:
+					raise XpMsgException(None, _('site directory inside templates does not exist'))
 			else:
-				path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+				path = self.__findTemplPath(m)
 			logger.debug('TemplateService.get :: path: %s' % (path) )
 			f = open(path)
 			tmpl = f.read()
@@ -1435,9 +1491,14 @@ class TemplateService ( object ):
 				package, module = app.split('.')
 				m = getClass(package + '.' + module)
 				if app == 'ximpia.site':
-					path = settings.XIMPIA_TMPL_SITE + '/' + mode + '/' + tmplName + '.html'
+					appModulePath = settings.__file__.split('settings')[0]
+					pathSite = appModulePath + 'web/templates/site'
+					if os.path.exists(pathSite) and os.path.isdir(pathSite):
+						path = pathSite + '/' + mode + '/' + tmplName + '.html'
+					else:
+						raise XpMsgException(None, _('site directory inside templates does not exist'))
 				else:
-					path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
+					path = self.__findTemplPath(m)
 				logger.debug('TemplateService.get :: path: %s' % (path) )
 				f = open(path)
 				tmpl = f.read()

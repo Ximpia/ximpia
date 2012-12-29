@@ -1129,19 +1129,20 @@ class WorkflowView( BaseModel ):
 			verbose_name=_('Source View'), help_text=_('View which starts flow'))
 	viewTarget = models.ForeignKey(View, related_name='flowViewTarget', db_column='ID_VIEW_TARGET',
 			verbose_name=_('target View'), help_text=_('View destiny for flow'))
-	action = models.ForeignKey(Action, related_name='wf_action', unique=True, db_column='ID_ACTION',
+	action = models.ForeignKey(Action, related_name='wf_action', db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
 	params = models.ManyToManyField(Param, through='core.WFParamValue', related_name='flowView_params', null=True, blank=True,
 			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
 	order = models.IntegerField(default=10, db_column='ORDER',
 			verbose_name=_('Order'), help_text=_('Order'))
 	def __unicode__(self):
-		return '%s - %s - %s - op - %s' % (self.flow, self.viewSource, self.viewTarget, self.action)
+		#return '%s - %s - %s - op - %s' % (self.flow, self.viewSource, self.viewTarget, self.action)
+		return 'id: %s' % (self.id)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_VIEW'
 		verbose_name = 'Workflow View'
 		verbose_name_plural = "Workflow Views"
-		unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
+		#unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
 
 class ViewParamValue( BaseModel ):
 	"""

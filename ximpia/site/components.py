@@ -92,7 +92,10 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 								className=SiteService, method='activateUser')
 
 	def flows(self):
-		pass
+		# login
+		self._reg.registerFlow(__name__, flowCode='login')
+		self._reg.registerFlowView(__name__, flowCode='login', viewNameSource='login', viewNameTarget='homeLogin', 
+								actionName='login', order=10)
 
 	def menus(self):		
 		# Ximpia Menu
