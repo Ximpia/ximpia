@@ -1981,17 +1981,12 @@ ximpia.common.PageAjax.positionBars = (function(obj) {
 	// Position title bar and content
 	if ($('#id_titleBar').hasOwnProperty('length')) {
 		//
-		$('#id_sectionTitle').css('visibility', 'visible');
 		var height = $('#id_titleBar').height();
 		if ($('#id_titleBar').offset().top == $('#id_content').offset().top) {
 			$('#id_content').offset({
 				top : height + $('#id_content').offset().top + 4
 			});
 		}
-
-		$('#id_titleBar').offset({
-			left : $('#id_content').offset().left
-		});
 		//$('#id_content').css('border-top-left-radius', '0px');
 		//$('#id_content').css('border-top-right-radius', '0px');
 		//$('#id_content').css('border-top', '0px');
@@ -2004,6 +1999,7 @@ ximpia.common.PageAjax.positionBars = (function(obj) {
 		//$('header').css('border-bottom-left-radius', '0px');
 		$('#id_titleBar').css('width', parseInt($('.sectionComp').css('width')) - 5 + 'px');
 		$('#id_titleBar').css('visibility', 'visible');
+		$('#id_sectionTitle').css('visibility', 'visible');
 	}
 	// position page button bar
 	if ($('#id_pageButton').hasOwnProperty('length')) {

@@ -1392,7 +1392,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	/*top: 0px;*/
 	/*border: 1px solid;*/
 	z-index: 10;
-	width: 1002px;
+	/*width: 1002px;*/
+	width: 100%;
 	/*margin-top: 0px;*/
 	margin-left: auto; 
 	margin-right: auto;
@@ -1417,6 +1418,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	border-top-left-radius: 8px;
 	border-top-right-radius: 8px;
 	visibility: hidden;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 /* Button Message Result */
@@ -1447,7 +1450,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	margin-top: 5px; 
 	z-index: 10; 
 	position: fixed;  
-	width: 1002px;
+	/*width: 1002px;*/
+	width: 100%
 	bottom: 0p;
 	margin-bottom: 0px;	
 }

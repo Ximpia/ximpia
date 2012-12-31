@@ -152,7 +152,7 @@ class SiteService ( CommonService ):
 		self._dbGroupSys = GroupSysDAO(self._ctx)
 		self._dbParam = ParamDAO(self._ctx)
 	
-	@WorkflowViewDecorator('login', form=forms.HomeForm)
+	@WorkflowViewDecorator('login', form=forms.LoginForm)
 	def viewLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@param ctx: Context
