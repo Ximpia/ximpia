@@ -716,6 +716,20 @@ ximpia.common.Browser.getObject = (function(keyName) {
 	return data
 })
 /**
+ * Get response object
+ * 
+ * **Attributes**
+ * 
+ * **Returns**
+ * 
+ * Response object from xpData-view session storage variable
+ *  
+ */
+ximpia.common.Browser.getResponse = (function() {
+	var viewObj = ximpia.common.Browser.getObject('xpData-view');
+	return viewObj.response;
+});
+/**
  * Delete key from session storage
  */
 ximpia.common.Browser.deleteObject = (function(keyName) {
@@ -1364,6 +1378,47 @@ ximpia.common.Form.doAttributes = (function(obj) {
 	}
 	attrDataS += '}';
 	$("#" + obj.idElement).attr('data-xp', attrDataS);
+});
+
+
+/**
+ * Condition
+ * 
+ * Class with operations for ximpia condition rules and condition matching
+ *  
+ */
+ximpia.common.Condition = {};
+/**
+ * Evaluate condition 
+ * 
+ * condition like...
+ * ``settings.SIGNUP_USER_PASSWORD == true``
+ * 
+ * OR : ``||``
+ * AND : ``&&``
+ * NOT : `!```
+ * 
+ * **Attributes**
+ * 
+ * * ``condition``:String : Evaluate condition
+ * 
+ * **Returns**
+ * 
+ * true / false
+ * 
+ */
+ximpia.common.Condition.eval = (function(condition) {
+	var resp = ximpia.common.Browser.getResponse();
+	var patt = /[a-zA-Z0-9._]+ ==/g;
+	conditionNew = condition.replace(patt,		
+		function( $0, $1, $2){
+			// $0 will be the variable, like $0 == 32
+			//ximpia.console.log('$0: ' + $0 + ' $1: ' + $1 + ' $2: ' + $2);
+			return( "resp." + $0 );
+		} 
+	);
+	ximpia.console.log('common.Condition.eval :: conditionNew: ' + conditionNew);
+	return eval(conditionNew);
 });
 
 ximpia.common.Ajax = {};

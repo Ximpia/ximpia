@@ -23,7 +23,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 import forms
-from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingsDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
+from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
 from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO
 from forms import UserSignupInvitationForm #@UnusedImport
 import messages as _m
@@ -137,7 +137,7 @@ class SiteService ( CommonService ):
 		"""
 		Instances for user creation
 		"""
-		self._dbSettings = SettingsDAO(self._ctx)
+		self._dbSettings = SettingDAO(self._ctx)
 		self._dbSignupData = SignupDataDAO(self._ctx)
 		self._dbUser = UserDAO(self._ctx)
 		self._dbSocialNetworkUser = SocialNetworkUserDAO(self._ctx)

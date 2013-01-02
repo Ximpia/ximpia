@@ -1,4 +1,4 @@
-from models import Tag, Invitation, Param, UserChannel, SocialNetworkUser, Settings, Address, Category, MetaKey,\
+from models import Tag, Invitation, Param, UserChannel, SocialNetworkUser, Setting, Address, Category, MetaKey,\
 	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupTag, UserAddress, Group, UserChannelGroup
 
 from django.contrib import admin
@@ -165,10 +165,14 @@ class InvitationAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
-class SettingsAdmin(admin.ModelAdmin):
-	list_display = ('id','name','description','mustAutoload','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+class SettingAdmin(admin.ModelAdmin):
+	list_display = ('id','name','application','description','mustAutoload','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
 	list_display_links = ('name',)
 	list_filter = ('mustAutoload',)
+	raw_id_fields = ('application',)
+	related_lookup_fields = {
+	        'fk': ['application',],
+	    }
 	ordering = ['name']
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
@@ -215,7 +219,7 @@ admin.site.register(TagMode, TagModeAdmin)
 admin.site.register(UserChannel, UserChannelAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(Settings, SettingsAdmin)
+admin.site.register(Setting, SettingAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(MetaKey, MetaKeyAdmin)

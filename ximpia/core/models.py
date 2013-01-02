@@ -1279,7 +1279,7 @@ class WFParamValue( BaseModel ):
 		verbose_name = 'Workflow Parameter Value'
 		verbose_name_plural = "Workflow Parameter Values"
 
-class Settings ( BaseModel ):
+class Setting ( BaseModel ):
 	"""
 	Settings model
 	
@@ -1295,6 +1295,9 @@ class Settings ( BaseModel ):
 	
 	"""
 	
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SETTING')
+	application = models.ForeignKey('core.Application', null=True, blank=True, related_name='core_setting_app', db_column='ID_CORE_APPLICATION',
+			verbose_name=_('Application'), help_text=_('Application for setting'))
 	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__name': K.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
 	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
@@ -1305,8 +1308,8 @@ class Settings ( BaseModel ):
 	def __unicode__(self):
 		return self.name.name
 	class Meta:
-		db_table = 'CORE_SETTINGS'
-		verbose_name = _('Settings')
+		db_table = 'CORE_SETTING'
+		verbose_name = _('Setting')
 		verbose_name_plural = _('Settings')
 
 

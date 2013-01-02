@@ -378,7 +378,7 @@ class SocialNetworkUser ( BaseModel ):
 		verbose_name = 'User Network'
 		verbose_name_plural = "User Networks"
 
-class Settings ( BaseModel ):
+class Setting ( BaseModel ):
 	"""
 	Settings model
 	
@@ -395,7 +395,9 @@ class Settings ( BaseModel ):
 	
 	"""
 	
-	id = models.AutoField(primary_key=True, db_column='ID_SITE_SETTINGS')
+	id = models.AutoField(primary_key=True, db_column='ID_SITE_SETTING')
+	application = models.ForeignKey('core.Application', null=True, blank=True, related_name='site_setting_app', db_column='ID_CORE_APPLICATION',
+			verbose_name=_('Application'), help_text=_('Application for setting'))
 	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': CoreK.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
 	value = models.TextField(verbose_name = _('Value'), help_text = _('Settings value'), db_column='VALUE')
@@ -406,8 +408,8 @@ class Settings ( BaseModel ):
 	def __unicode__(self):
 		return str(self.name)
 	class Meta:
-		db_table = 'SITE_SETTINGS'
-		verbose_name = _('Settings')
+		db_table = 'SITE_SETTING'
+		verbose_name = _('Setting')
 		verbose_name_plural = _('Settings')
 
 class UserMeta ( BaseModel ):

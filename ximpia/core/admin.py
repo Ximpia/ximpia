@@ -1,4 +1,4 @@
-from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Settings, MetaKey, WorkflowView
+from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Setting, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
 from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup
 from models import SearchIndex, SearchIndexWord, SearchIndexParam
@@ -229,10 +229,14 @@ class MetaKeyAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
-class SettingsAdmin(admin.ModelAdmin):
-	list_display = ('id','name','description','mustAutoload','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+class SettingAdmin(admin.ModelAdmin):
+	list_display = ('id','name','application','description','mustAutoload','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
 	list_display_links = ('name',)
 	list_filter = ('mustAutoload',)
+	raw_id_fields = ('application',)
+	related_lookup_fields = {
+	        'fk': ['application',],
+	    }
 	ordering = ['name']
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
@@ -267,5 +271,5 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowView, WorkflowViewAdmin)
 admin.site.register(XpTemplate, XpTemplateAdmin)
 admin.site.register(MetaKey, MetaKeyAdmin)
-admin.site.register(Settings, SettingsAdmin)
+admin.site.register(Setting, SettingAdmin)
 admin.site.register(SearchIndex, SearchIndexAdmin)

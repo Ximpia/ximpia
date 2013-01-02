@@ -1,8 +1,9 @@
 from ximpia.core.data import CommonDAO
 
 from django.contrib.auth.models import User, Group as GroupSys
+from django.db.models import Q
 
-from models import Address, Category, Group, GroupAccess, GroupTag, Invitation, InvitationMeta, MetaKey, Param, Settings, SignupData
+from models import Address, Category, Group, GroupAccess, GroupTag, Invitation, InvitationMeta, MetaKey, Param, Setting, SignupData
 from models import SocialNetworkUser, Tag, TagMode, UserAddress, UserChannel, UserChannelGroup, UserMeta, UserProfile
 
 import constants as K
@@ -108,10 +109,25 @@ class SocialNetworkUserDAO(CommonDAO):
 		super(SocialNetworkUserDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = SocialNetworkUser
 
-class SettingsDAO(CommonDAO):
+class SettingDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(SettingsDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = Settings
+		super(SettingDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = Setting
+	def searchSettings(self, appName):
+		"""
+		Search settings with mustAutoLoad=True for global settings and settings linked to an application. Settings will be included
+		in the response in the field ``settings``.
+		
+		** Attributes**
+		
+		* ``appName``:String : Application name
+		
+		**Returns**
+		
+		Queryset with settings
+		"""
+		settings = self._model.objects.filter( Q(application = None) | Q(application__name=appName), mustAutoload=True)
+		return settings
 
 class UserAddressDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):

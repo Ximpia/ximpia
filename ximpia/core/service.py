@@ -34,6 +34,7 @@ import constants as K
 
 # Settings
 from ximpia.core.util import getClass
+from ximpia.site.data import SettingDAO
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -557,6 +558,18 @@ class ServiceDecorator(object):
 					#logger.debug( 'ServiceDecorator :: response keys : ', obj._ctx.jsData['response'].keys() )
 					# Result
 					#logger.debug( 'ServiceDecorator :: isServerTmpl: ', self._isServerTmpl )
+					# Settings
+					if not obj._ctx.jsData['response'].has_key('settings'):
+						obj._ctx.jsData['response']['settings'] = {}
+					# Get settings with mustAutoLoad=true for global and for this app
+					dbSetting = SettingDAO(obj._ctx, relatedDepth=1)
+					settings = dbSetting.searchSettings(obj._ctx.app)
+					for setting in settings: 
+						try:
+							value = eval(setting.value)
+						except NameError:
+							value = setting.value
+						obj._ctx.jsData['response']['settings'][setting.name.name] = value
 					if self._isServerTmpl == False:
 						result = obj._buildJSONResult(obj._ctx.jsData)
 						#logger.debug( obj._ctx.jsData )
@@ -573,7 +586,6 @@ class ServiceDecorator(object):
 							elif type(keyValue) != types.DictType:
 								logger.debug( 'ServiceDecorator :: response ' + key + ': ' + str(keyValue) )
 							else:
-								logger.debug( 'else...' )
 								for newKey in keyValue:
 									#logger.debug( 'newKey: ', newKey )
 									#logger.debug( keyValue[newKey] )
