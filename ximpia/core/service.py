@@ -1004,7 +1004,7 @@ class ViewTmplDecorator ( object ):
 			logger.debug( 'ViewTmplDecorator :: templates: %s' % templates )
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
-				logger.debug( 'ViewTmplDecorator :: tmplName: %s' % tmplName )				
+				logger.debug( 'ViewTmplDecorator :: tmplName: %s' % tmplName )
 				# Get template data
 				tmplService = TemplateService(ctx)
 				tmplData = tmplService.get(self.__APP, 'window', tmplName)
@@ -1014,7 +1014,8 @@ class ViewTmplDecorator ( object ):
 				try:
 					logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
 					result = render_to_response( 'main.html', RequestContext(request, 
-													{	'title': parser.title,
+													{	'id_view': parser.id_view,
+														'title': parser.title,
 														'titleBar': parser.titleBar,
 														'content': parser.content,
 														'buttons': parser.buttons,

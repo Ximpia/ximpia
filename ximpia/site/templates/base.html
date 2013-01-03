@@ -22,9 +22,6 @@
 <!-- Facebook should be supportted by external links: buttons that link to fb in modal window, etc... -->
 <!--<div id="fb-root"> </div>-->
 
-{% block id_view %}
-{% endblock %}
-
 <div id="id_header_wrapper">
 <div id="id_header" >
 	
@@ -78,6 +75,9 @@
 </section>
 
 <div id="id_view_zone" >
+
+{% block id_view %}
+{% endblock %}
 
 <section id="id_sectionTitle" class="sectionTitle">
 
@@ -135,6 +135,7 @@
 <script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/ximpia.contextMenu.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/ximpia.render_ext.js" %}"></script>
 
+<script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/visual-components/layout/ximpia.container.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/visual-components/input/ximpia.input.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/visual-components/list/ximpia.list.select.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/core/ximpia-plugins/visual-components/list/ximpia.list.field.js" %}"></script>
