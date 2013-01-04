@@ -61,45 +61,55 @@ $.extend({
 		defaults : {
 			type: 'class',
 			name: 'metadata',
-			cre: /({.*})/,
+			//cre: /({.*})/,
+			cre: /({[a-z0-9A-Z:'!=#|"\{\}\[\],._ \t\r\n]*})/m,
 			single: 'metadata'
 		},
 		setType: function( type, name ){
 			this.defaults.type = type;
 			this.defaults.name = name;
+			//console.log('type: ' + type);
 		},
 		get: function( elem, opts ){
 			var settings = $.extend({},this.defaults,opts);
 			// check for empty string in single property
 			if ( !settings.single.length ) settings.single = 'metadata';
 			
-			var data = $.data(elem, settings.single);
+			//var data = $.data(elem, settings.single);
 			// returned cached data if it already exists
-			if ( data ) return data;
+			//if ( data ) return data;
 			
 			data = "{}";
 			
 			if ( settings.type == "class" ) {
+				//console.log('class..')
 				var m = settings.cre.exec( elem.className );
 				if ( m )
 					data = m[1];
 			} else if ( settings.type == "elem" ) {
+				//console.log('elem')
 				if( !elem.getElementsByTagName )
 					return undefined;
 				var e = elem.getElementsByTagName(settings.name);
 				if ( e.length )
 					data = $.trim(e[0].innerHTML);
 			} else if ( elem.getAttribute != undefined ) {
+				//console.log('attr!!!!!!!!!!!!!');
 				var attr = elem.getAttribute( settings.name );
+				//console.log('metadata :: attr: ' + attr);
 				var m = settings.cre.exec( attr );
+				//console.log(m);
 				if ( attr && m)
 					data = m[1];
 			}
+			//ximpia.console.log('metadata :: name: ' + settings.name + ' type: ' + settings.type);
+			//ximpia.console.log('metadata :: data: ' + data);
 			
 			if ( data.indexOf( '{' ) <0 )
 			data = "{" + data + "}";
 			
 			data = eval("(" + data + ")");
+			//console.log(data);
 			
 			$.data( elem, settings.single, data );
 			return data;

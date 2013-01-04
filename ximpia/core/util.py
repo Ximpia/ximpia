@@ -4,11 +4,13 @@ from HTMLParser import HTMLParser
 def getClass( kls ):
 	"""
 	
-	Document here
+	Get class
 	
 	"""
+	print 'class: ', kls
 	parts = kls.split('.')
 	module = ".".join(parts[:-1])
+	print 'module: ', module
 	m = __import__( module )
 	for comp in parts[1:]:
 		m = getattr(m, comp)            

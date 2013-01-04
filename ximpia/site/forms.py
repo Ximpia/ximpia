@@ -141,7 +141,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'country': Choices.COUNTRY}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
 										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_SN_SIGNUP']]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))
 
 	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		"""Build initial values for form"""

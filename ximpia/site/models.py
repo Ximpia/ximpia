@@ -363,7 +363,7 @@ class SocialNetworkUser ( BaseModel ):
 				verbose_name = _('User'), help_text = _('User'))
 	socialNetwork = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreK.NET}, db_column='ID_CORE_PARAMETER',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
-	socialId = models.IntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
+	socialId = models.BigIntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
 	token = models.CharField(max_length=255, db_column='TOKEN',
 				verbose_name = _('Token'), help_text = _('Token'))
 	tokenSecret = models.CharField(max_length=255, null=True, blank=True, db_column='TOKEN_SECRET',

@@ -11,6 +11,8 @@ from ximpia.core.service import EmailService, CommonService
 from ximpia.core.service import ViewDecorator, ActionDecorator, ValidationDecorator, MenuActionDecorator, WorkflowViewDecorator,\
 		WorkflowActionDecorator
 from ximpia.core.models import Context as CoreContext
+from ximpia.core.data import CoreParameterDAO
+import ximpia.core.constants as CoreK
 from ximpia.core.forms import DefaultForm
 
 # Settings
@@ -100,7 +102,8 @@ class SiteService ( CommonService ):
 		self._dbUserMeta.create(user=user, meta=keyEmail, value='True')
 		# Social networks
 		if self._f()['authSource'] != 'password':
-			self._dbSocialNetworkUser.create(user=userDetail, socialNetwork=self._f()['authSource'], 
+			socialNetwork = self._dbCoreParam.get(mode=CoreK.NET, name=self._f()['authSource'])
+			self._dbSocialNetworkUser.create(user=user, socialNetwork=socialNetwork, 
 							socialId=self._f()['socialId'], token=self._f()['socialToken'])			
 		# Groups
 		userGroupId = json.loads(self._f()['params'])['userGroup']
@@ -151,6 +154,7 @@ class SiteService ( CommonService ):
 		self._dbGroup = GroupDAO(self._ctx)
 		self._dbGroupSys = GroupSysDAO(self._ctx)
 		self._dbParam = ParamDAO(self._ctx)
+		self._dbCoreParam = CoreParameterDAO(self._ctx)
 	
 	@WorkflowViewDecorator('login', form=forms.LoginForm)
 	def viewLogin(self):
@@ -209,6 +213,8 @@ class SiteService ( CommonService ):
 		self._validateUserNotSignedUp()
 		if self._f()['authSource'] != K.PASSWORD:
 			self._createUser()
+			# set ok message
+			self._setOkMsg('OK_SOCIAL_SIGNUP')
 		else:
 			# user/password. Save in temp table user data
 			activationCode = random.randrange(10, 100)
@@ -228,6 +234,8 @@ class SiteService ( CommonService ):
 							'user': self._f()['ximpiaId'],
 							'activationCode': activationCode}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 			logger.debug( 'doUser :: sent Email' )
+			# set ok message
+			self._setOkMsg('OK_USER_SIGNUP')
 	
 	@ViewDecorator(forms.ActivateUserForm)
 	def viewActivationUser(self):
@@ -256,7 +264,7 @@ class SiteService ( CommonService ):
 	@ViewDecorator(forms.UserSignupInvitationForm)
 	def viewSignup(self):
 		"""Show signup form. Get get invitation code."""
-		pass
+		self._addAttr('isSocialLogged', False)
 	
 	@MenuActionDecorator('logout')
 	def logout(self):

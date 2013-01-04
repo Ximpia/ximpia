@@ -1,7 +1,8 @@
 from django.utils.translation import ugettext as _
 
 # Messages
-OK_SN_SIGNUP = _('Your signup has been received, check your email')
+OK_USER_SIGNUP = _('Your signup has been received, check your email')
+OK_SOCIAL_SIGNUP = _('Thanks! Signup complete. You can now login')
 OK_PASSWORD_REMINDER = _('OK!. We sent you an email to reset password')
 OK_PASSWORD_CHANGE = _('OK! Password changed')
 

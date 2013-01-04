@@ -43,6 +43,7 @@ ximpia.external.Facebook = {};
 ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 	ximpia.console.log('facebook API :: renderLogin :: ');
 	ximpia.console.log('facebook API :: attrs...');
+	//ximpia.console.log('facebook API :: callable: ' + callable);
 	ximpia.console.log(attrs);
 	// Facebook button
 	FB.init({
@@ -61,7 +62,8 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			ximpia.console.log(response);
 			//$("#id_passwordAuth").css('display', 'none');
 			$("#id_passwordAuth").remove();
-			$("#id_socialAuth span").css('display', 'none');
+			$("#id_socialNetText").css('display', 'none');
+			$("#id_socialAuth .caption").css('display', 'none');
 			$("input[name='authSource']").attr('value', 'facebook');
 			// A user has logged in, and a new cookie has been saved
 			$("input[name='socialId']").attr('value', response.authResponse.userID);
@@ -74,9 +76,17 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				ximpia.console.log('facebook API :: responseProfile...');
 				ximpia.console.log(responseProfile);
 				// Fillout fields in form
+				ximpia.common.Browser.putAttr('isSocialLogged', true);
+				ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_signup');
 				$("input[name='firstName']").attr('value', responseProfile.first_name);
 				$("input[name='lastName']").attr('value', responseProfile.last_name);
 				$("input[name='email']").attr('value', responseProfile.email);
+				// Disable controls
+				$("input[name='firstName']").attr('readonly', 'readonly');
+				$("input[name='lastName']").attr('readonly', 'readonly');
+				$("input[name='email']").attr('readonly', 'readonly');
+				$("#id_country_input").attr('readonly', 'readonly');
+				$("input[name='city']").attr('readonly', 'readonly');
 				var locationName = responseProfile.location.name;
 				var locationFields = locationName.split(',');
 				setTimeout(function() {
@@ -85,6 +95,9 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 					});
 					eval('new callable(attrs)');
 				}, 500);
+				var oGoogleMaps = ximpia.common.GoogleMaps();
+				oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
+				eval('new callable(attrs)');
 			});
 			//callable();
 			//ximpia.common.PageAjax.positionBars();
@@ -93,11 +106,14 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			eval('new callable(attrs)');
 			// The user has logged out, and the cookie has been cleared
 			//alert('Out....');
+			var oGoogleMaps = ximpia.common.GoogleMaps();
+			oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
+			eval('new callable(attrs)');
 		}
 	});
-	var oGoogleMaps = ximpia.common.GoogleMaps();
+	/*var oGoogleMaps = ximpia.common.GoogleMaps();
 	oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
-	eval('new callable(attrs)');
+	eval('new callable(attrs)');*/
 });
 /*
  * Facebook login
@@ -781,6 +797,27 @@ ximpia.common.Browser.getView = (function(xpForm) {
 	var viewName = xpForm.split('.')[0].split('-')[2]
 	return viewName
 });
+/*
+ * Add response attribute
+ * 
+ * ** Attributes**
+ * 
+ * * ``name``:String
+ * * ``value``:String
+ * 
+ * ** Returns **
+ * 
+ * None
+ * 
+ */
+ximpia.common.Browser.putAttr = (function(name, value) {
+	// I get the xpData-view object with response data
+	var viewObj = ximpia.common.Browser.getObject('xpData-view');
+	// Set attribute
+	viewObj.response[name] = value;
+	// Set new response
+	ximpia.common.Browser.setObject('xpData-view', viewObj);
+});
 
 ximpia.common.Session = {};
 /**
@@ -951,9 +988,10 @@ ximpia.common.Form = function() {
 									ximpia.console.log('isMsg: ' + obj.isMsg);
 									if (obj.isMsg == true) {
 										$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
-										var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
-										var okMessages = JSON.parse(okMessagesStr);
-										okMsg = okMessages[obj.attrs.msg];
+										//var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
+										//var okMessages = JSON.parse(okMessagesStr);
+										//okMsg = okMessages[obj.attrs.msg];
+										okMsg = responseMap['response'][obj.attrs.form]['msg_ok'].value;
 										ximpia.console.log('okMsg: ' + okMsg);
 										$("#" + obj.idMsg + "_text").text(okMsg);
 									} else {
@@ -1154,6 +1192,9 @@ ximpia.common.Form = function() {
 					},
 					errorPlacement : function(error, element) {
 						ximpia.console.log('error placement...');
+						ximpia.console.log(error);
+						ximpia.console.log(element);
+						ximpia.console.log('error placement...');
 						element.next("img table").after(error);
 					}
 				});
@@ -1274,19 +1315,53 @@ ximpia.common.Form = function() {
 	return _attr.pub;
 }
 /**
- *
+ * Has to render
+ * 
+ * ** Attributes **
+ * 
+ * * ``element``:Object
+ * * ``reRender``:Bolean
+ * 
+ * **Returns**
+ * 
+ * Boolean
+ * 
  */
 ximpia.common.Form.doRender = (function(element, reRender) {
-	var isRender = false;
 	if ( typeof $(element).attr('data-xp-render') != 'undefined') {
-		isRender = $(element).attr('data-xp-render');
-	}
-	//ximpia.console.log('isRender: ', isRender);
-	var doRender = false;
-	if (isRender == false || reRender == true) {
-		doRender = true;
+		var isRender = $(element).attr('data-xp-render');
+		ximpia.console.log('Form.doRender :: isRender: ', isRender);
+		var doRender = false;
+		//if (isRender == false || reRender == true) {
+		if (reRender == true) {
+			doRender = true;
+		} else if (isRender == '' || isRender == 'true') {
+			doRender = true;
+		} else {
+			doRender = false;
+		}
+	} else {
+		var isRender = false;
+		ximpia.console.log('Form.doRender :: isRender: ', isRender);
+		var doRender = true;
 	}
 	return doRender;
+});
+/**
+ * Has to render
+ * 
+ * ** Attributes **
+ * 
+ * * ``element``:Object
+ * * ``reRender``:Bolean
+ * 
+ * **Returns**
+ * 
+ * Boolean
+ * 
+ */
+ximpia.common.Form.hasToRender = (function(element, reRender) {
+	return ximpia.common.Form.doRender(element, reRender);
 });
 /**
  * Get for from xpForm
@@ -1419,6 +1494,76 @@ ximpia.common.Condition.eval = (function(condition) {
 	);
 	ximpia.console.log('common.Condition.eval :: conditionNew: ' + conditionNew);
 	return eval(conditionNew);
+});
+/*
+ * Processing evaluation condition rules. Returns evaluation object.
+ * 
+ * ** Attributes**
+ * 
+ * ** Returns ** 
+ * 
+ * Evaluation object:
+ * 
+ * {
+ * 	conditionRule:Boolean
+ * }
+ * 
+ * Processes all condition rules from attribute ``data-xp-cond-rules`` in ``id_view`` node and adds to evaluation object.
+ * 
+ * It calls method ``eval`` sending conditionRule.
+ * 
+ */
+ximpia.common.Condition.processRules = (function() {
+	// Get condition rules and Eval conditions and built evals 
+	$.metadata.setType("attr", "data-xp-cond-rules");
+	var conditionRules = $("#id_view").metadata();
+	var evals = {};
+	for (conditionRule in conditionRules) {
+		var checkCondition = ximpia.common.Condition.eval(conditionRules[conditionRule]);
+		evals[conditionRule] = checkCondition;
+	}
+	ximpia.console.log('xpObjContainer :: evals...');
+	ximpia.console.log(evals);
+	return evals;
+});
+/*
+ * Process condition actions: Render
+ * 
+ * ** Attributes**
+ * 
+ * * ``element``:Object : Element
+ * * ``evals``:Object : Condition evaluations
+ * 
+ * ** Returns **
+ * 
+ */
+ximpia.common.Condition.doElement = (function(evals, element) {
+	var conditions = $(element).metadata({type: 'attr', name: 'data-xp-cond'});
+	ximpia.console.log('xpObjContainer :: conditions...');
+	ximpia.console.log(conditions);
+	if (conditions.hasOwnProperty('conditions')) {
+		for (var c=0; c<conditions['conditions'].length; c++) {
+			var condition = conditions['conditions'][c];
+			ximpia.console.log('xpObjContainer :: condition: ' + condition.condition);
+			if (condition.action == 'render') {
+				var conditionCheck =  evals[condition.condition];
+				ximpia.console.log('xpObjContainer :: conditionCheck: ' + conditionCheck + ' condition.value: ' + condition.value);
+				if (condition.value == true && conditionCheck == true) {
+					$(element).css('display', 'block');
+					$(element).children().attr('data-xp-render', 'true');
+					$(element).children().css('display', 'block');
+					// TODO: Call render api method of component
+				} else {
+					$(element).css('display', 'none');
+					$(element).children().attr('data-xp-render', 'false');
+					$(element).children().css('display', 'none');
+					$(element).children().children().remove();
+					// TODO: Call unrender api method of component
+				}
+			} else if (condition.action == 'disable') {				
+			}
+		}
+	}
 });
 
 ximpia.common.Ajax = {};
@@ -1797,10 +1942,17 @@ ximpia.common.PageAjax = function() {
 					ximpia.console.log('viewName: ' + viewName);
 					$.get(tmplPath, function(dataTmpl) {
 						ximpia.console.log('Got template...');
-						var contentHtml = $(dataTmpl).filter('#id_content').html();
-						$('#id_sectionTitle').html($(dataTmpl).filter('#id_sectionTitle').html());
+						ximpia.console.log(dataTmpl);
+						ximpia.console.log($(dataTmpl));
+						var contentHtml = $(dataTmpl).filter('div#id_view_zone').find('#id_content').html();
+						$('#id_sectionTitle').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionTitle').html());
 						$('#id_content').html(contentHtml);
-						$('#id_sectionButton').html($(dataTmpl).filter('#id_sectionButton').html());
+						$('#id_sectionButton').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionButton').html());
+						var viewAttrs = $(dataTmpl).filter('div#id_view_zone').find('#id_view')[0].attributes;
+						ximpia.console.log(viewAttrs);
+						for (var a=0; a<viewAttrs.length; a++) {
+							$('#id_view').attr(viewAttrs[a].name, viewAttrs[a].value);
+						}
 						//$('#id_content').wrap('<form id="form_' + viewName + '" method="post" action="" />');
 						// Do menus
 						ximpia.common.PageAjax.processMenus(responseMap);
@@ -1978,18 +2130,68 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	ximpia.console.log('xpForm: ' + xpForm);
 	var formId = xpForm.split('.')[1];
 	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
+	// container
+	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
+	// function.render
 	$('#' + formId).find("[data-xp-type='function.render']").xpObjRenderExt('render', xpForm);
+	// basic.text
 	$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+	// #id_variables
 	$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
+	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+	// text.autocomplete
 	$('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	// basic.textarea
 	$('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+	// list.field
 	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
+	// button
 	$("[data-xp-type='button']").xpObjButton('render');
+	// link
 	$("[data-xp-type='link']").xpObjLink('render');
 	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	// passwordStrength
+	// TODO: Provide better ways to render password strength
 	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
 	//_attr.priv.doLocal();
+	// TODO: Include settings into general javascript settings class
+	$("#id_header_search").jsonSuggest({
+		url : '/jxSearchHeader',
+		maxHeight : 200,
+		minCharacters : 3,
+		onSelect : ximpia.common.Search.doClick
+	});
+}
+/*
+ * 
+ */
+ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
+	ximpia.console.log('xpForm: ' + xpForm);
+	var formId = xpForm.split('.')[1];
+	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
+	// container
+	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
+	// basic.text
+	$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+	// list.select
+	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+	// text.autocomplete
+	$('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	// basic.textarea
+	$('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+	// list.field
+	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
+	// button
+	$("[data-xp-type='button']").xpObjButton('render');
+	// link
+	$("[data-xp-type='link']").xpObjLink('render');
+	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	// passwordStrength
+	// TODO: Provide better ways to render password strength
+	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	//_attr.priv.doLocal();
+	// TODO: Include settings into general javascript settings class
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',
 		maxHeight : 200,

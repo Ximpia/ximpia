@@ -107,6 +107,20 @@ class CommonService( object ):
 				dd[name] = args[name]
 			self._ctx.form.base_fields['entryFields'].initial = json.dumps(dd)"""
 	
+	def _addAttr(self, name, value):
+		"""
+		Add attribute to jsData response object
+		
+		**Attributes**
+		
+		* ``name``
+		* ``value``
+		
+		** Returns **
+		
+		"""
+		self._ctx.jsData.addAttr(name, value)
+	
 	def _setTargetView(self, viewName):
 		"""Set the target view for navigation."""
 		self._viewNameTarget = viewName
@@ -347,6 +361,7 @@ class CommonService( object ):
 		"""Sets the ok message id"""
 		msgDict = _jsf.decodeArray(self._ctx.form.fields['okMessages'].initial)
 		self._ctx.form.fields['msg_ok'].initial = msgDict[idOK]
+		logger.debug('ok message: %s' % (self._ctx.form.fields['msg_ok'].initial) )
 	
 	def _setCookie(self, key, value):
 		"""Add to context cookies data. Decorators that build response will set cookie into respose object
@@ -732,14 +747,22 @@ class ValidateFormDecorator(object):
 					logger.debug( 'Validation error!!!!!' )
 					#logger.debug( obj._f )
 					logger.debug( obj._ctx.form.errors )
-					logger.debug( obj._ctx.form.errors['invalid'] )
+					if obj._ctx.form.errors.has_key('invalid'):
+						logger.debug( obj._ctx.form.errors['invalid'] )
 					traceback.print_exc()
 				if obj._ctx.form.errors.has_key('invalid'):
 					errorDict = {'': obj._ctx.form.errors['invalid'][0]}
+					logger.debug( 'errorDict: %s' % (errorDict) )
+					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
 				else:
-					errorDict = {'': 'Error validating your data. Check it out and send again'}
-				logger.debug( 'errorDict: ', errorDict )
-				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+					#errorDict = {'': 'Error validating your data. Check it out and send again'}
+					# Build errordict
+					errorDict = {}
+					for field in obj._ctx.form.errors:
+						if field != '__all__':
+							errorDict[field] = obj._ctx.form.errors[field][0]
+					logger.debug( 'errorDict: %s' % (errorDict) )
+					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=False))
 				return result
 		return wrapped_f
 

@@ -60,12 +60,12 @@ input.fieldTiny {
 
 input.SmallMust, select.SmallMust, textarea.SmallMust {
     /*background-color:#FFFF99;*/
-    background-color:#FFFFCC;
+    background-color:#FFFFCC !important;
 }
 
 input.fieldMust, select.fieldMust, textarea.fieldMust {
     /*background-color:#FFFF99;*/
-    background-color:#FFFFCC;
+    background-color:#FFFFCC !important;
 
 }
 

@@ -52,43 +52,16 @@
 			ximpia.console.log('xpObjContainer :: render...');
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			ximpia.console.log(data);
-			// Get condition rules and Eval conditions and built evals 
-			$.metadata.setType("attr", "data-xp-cond-rules");
-			var conditionRules = $("#id_view").metadata();
-			var evals = {};
-			for (conditionRule in conditionRules) {
-				var checkCondition = ximpia.common.Condition.eval(conditionRules[conditionRule]);
-				evals[conditionRule] = checkCondition;
-			}
-			ximpia.console.log('xpObjContainer :: evals...');
-			ximpia.console.log(evals);
+			// Process Condition rules
+			var evals = ximpia.common.Condition.processRules();
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpObjContainer :: Element ' + $(element).attr('id'));
 				var idInput = $(element).attr('id').split('_comp')[0];
-				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				if (doRender == true) {
-					// Will set render to false to all components inside
-					// data-xp-render
-					ximpia.console.log('xpObjContainer :: doRender: ' + doRender);
-					var nameInput = idInput.split('id_')[1];
-					$.metadata.setType("attr", "data-xp-cond");
-					var conditions = $(element).metadata();
-					ximpia.console.log('xpObjContainer :: conditions...');
-					ximpia.console.log(conditions);
-					if (conditions.hasOwnProperty('conditions')) {
-						for (var c=0; c<conditions['conditions'].length; c++) {
-							var condition = conditions['conditions'][c];
-							ximpia.console.log('xpObjContainer :: condition: ' + condition);
-							if (condition.action == 'render') { 
-								if (condition.value == true && evals[condition.condition] == true) {
-									$(element).css('display', 'block');
-								} else {
-									$(element).css('display', 'none');
-								}
-							}
-						}
-					}
+				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
+				if (hasToRender == true) {					
+					// do element conditions
+					ximpia.common.Condition.doElement(evals, element)
 				}
 			}
 		}
