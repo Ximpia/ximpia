@@ -41,25 +41,27 @@ class SiteService ( CommonService ):
 	@ValidationDecorator()
 	def _authenUser(self):
 		# TODO: Integrate signup mode from settings
-		if self._f()['authSource'] == K.FACEBOOK:
-			ximpiaId = 'fb_'+ self._f()['facebookId']
-		self._ctx.user = self._authenticateUser(	ximpiaId = ximpiaId, 
+		"""if self._f()['authSource'] == K.FACEBOOK:
+			ximpiaId = 'fb_'+ self._f()['facebookId']"""
+		self._ctx.user = self._authenticateUser(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrongPassword)
+		logger.debug('user: %s' % (self._ctx.user) )
+		"""self._ctx.user = self._authenticateUser(	ximpiaId = ximpiaId, 
 						token = self._f()['facebookToken'], 
-						errorTuple = _m.ERR_wrongPassword	)
+						errorTuple = _m.ERR_wrongPassword	)"""
 	
 	@ValidationDecorator()
 	def _validateUserNotSignedUp(self):
 		"""Validate user and email in system in case sign up with user/password. In case signup with social
-		networks, only validate that ximpiaId does not exist."""
+		networks, only validate that username does not exist."""
 		# TODO: Integrate signup mode from settings
 		if self._f()['authSource'] == K.PASSWORD:
 			self._validateNotExists([
-						[self._dbUser, {'username': self._f()['ximpiaId']}, 'ximpiaId', _m.ERR_ximpiaId],
+						[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
 						[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email]
 						])
 		else:
 			self._validateNotExists([
-				[self._dbUser, {'username': self._f()['ximpiaId']}, 'ximpiaId', _m.ERR_ximpiaId],
+				[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
 				[self._dbSocialNetworkUser, {'socialId': self._f()['socialId']}, 'socialNet', _m.ERR_socialIdExists]
 				])
 	
@@ -84,7 +86,7 @@ class SiteService ( CommonService ):
 		None
 		"""
 		# System User
-		user = self._dbUser.create(username=self._f()['ximpiaId'], email=self._f()['email'], 
+		user = self._dbUser.create(username=self._f()['username'], email=self._f()['email'], 
 						first_name=self._f()['firstName'], last_name=self._f()['lastName'])
 		if self._f()['authSource'] == 'password':
 			user.set_password(self._f()['password'])
@@ -118,14 +120,14 @@ class SiteService ( CommonService ):
 		self._ctx.user = self._authenticateUser(self._ctx.user, self._f()['password'], 'password', _m.ERR_wrongPassword)
 	
 	@ValidationDecorator()
-	def _validateReminder(self, ximpiaId, reminderId):
+	def _validateReminder(self, username, reminderId):
 		days = self._dbParam.get(mode=K.PARAM_LOGIN, name=K.PARAM_REMINDER_DAYS).valueId
 		newDate = date.today() + timedelta(days=days)
-		logger.debug( 'New Password Data : ', ximpiaId, newDate, reminderId )
+		logger.debug( 'New Password Data : ', username, newDate, reminderId )
 		# Show actual password, new password and confirm new password
 		self._validateExists([
-					[self._dbUserSys, {'username': ximpiaId}, 'ximpiaId', _m.ERR_changePassword],
-					[self._dbUserDetail, {	'user__username': ximpiaId, 
+					[self._dbUserSys, {'username': username}, 'username', _m.ERR_changePassword],
+					[self._dbUserDetail, {	'user__username': username, 
 								'reminderId': reminderId, 
 								'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
 					])
@@ -166,7 +168,7 @@ class SiteService ( CommonService ):
 		if not self._ctx.user.is_authenticated():
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
-			self._ctx.jsData.addAttr('isLogin', False)
+			self._addAttr('isLogin', False)
 			# Popup - Password reminder
 			self._addForm(forms.PasswordReminderForm())
 	
@@ -174,29 +176,53 @@ class SiteService ( CommonService ):
 	def viewLogout(self):
 		"""Show logout view"""
 		# TODO: Add service method to add to response dictionary: self._addAttr('isLogin', False)
-		self._ctx.jsData.addAttr('isLogin', False)
+		#self._ctx.jsData.addAttr('isLogin', False)
+		self._addAttr('isLogin', False)
+	
+	@ViewDecorator(DefaultForm)
+	def viewHomeLogin(self):
+		"""Show home after login"""
+		pass
 	
 	@WorkflowActionDecorator('login', forms.LoginForm)
 	def login(self):
-		"""Performs the login action
-		@param ctx: Context
-		@return: result"""
+		"""
+		Performs the login action. Puts workflow parameter username, write context variables userChannel and session.
+		
+		** Decorator **
+		
+		* ``@WorkflowActionDecorator('login', forms.LoginForm)`` : Flow code ``login``and form LoginForm.
+		
+		** Attributes **
+		
+		** Returns **
+		
+		None
+		"""
 		logger.debug( '***************************************************' )
-		logger.debug( 'doLogin...' )
+		logger.debug( 'login...' )
 		logger.debug( '***************************************************' )
-		"""logger.debug( 'form: ', self._ctx[Ctx.FORM] )
+		#logger.debug( 'form: %s' % (self._ctx.form) )
 		self._authenUser()
-		logger.debug( 'user: ', self._ctx[Ctx.USER] )
+		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		self._login()
-		self._putFlowParams(ximpiaId=self._ctx[Ctx.USER].username.encode(settings.DEFAULT_CHARSET))		
-		logger.debug( 'Session: ', self._ctx[Ctx.SESSION] )
-		logger.debug( 'user: ', self._ctx[Ctx.USER] )
-		logger.debug( 'cookies: ', self._ctx[Ctx.COOKIES] )
+		
+		# TODO: Integrate settings for user-password and social, social login
+		# Checks if we have password
+		# If password, normal login
+		# If not password and socialId and token, authen with social id
+		# Put parameters for login
+		
+		#self._putFlowParams(username=self._ctx.user.username.encode(settings.DEFAULT_CHARSET))		
+		logger.debug( 'login :: Session: %s' % (self._ctx.session) )
+		logger.debug( 'login :: user: %s' % (self._ctx.user) )
+		logger.debug( 'login :: cookies: %s' % (self._ctx.cookies) )
 		userChannelName = self._getUserChannelName()
-		logger.debug( 'userChannelName: ', userChannelName )
-		self._ctx[Ctx.USER_CHANNEL] = self._dbUserChannel.get(user=self._ctx[Ctx.USER], name=userChannelName)
-		self._ctx[Ctx.SESSION]['userChannel'] = self._ctx['userChannel']
-		logger.debug( 'userChannel: ', self._ctx['userChannel'] ) """
+		logger.debug( 'login :: userChannelName: %s' % (userChannelName) )
+		self._dbUserChannel = UserChannelDAO(self._ctx)
+		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=userChannelName)
+		self._ctx.session['userChannel'] = self._ctx.userChannel
+		logger.debug( 'login :: userChannel: %s' % (self._ctx.userChannel) )
 	
 	@ActionDecorator(forms.UserSignupInvitationForm)
 	def signup(self):
@@ -220,8 +246,8 @@ class SiteService ( CommonService ):
 			activationCode = random.randrange(10, 100)
 			logger.debug( 'doUser :: activationCode: %s' % (activationCode) )
 			formSerialized = base64.encodestring(self._f().serializeJSON())
-			self._dbSignupData.deleteIfExists(user=self._f()['ximpiaId'], real=True)
-			self._dbSignupData.create(user=self._f()['ximpiaId'], data=formSerialized, activationCode=activationCode)
+			self._dbSignupData.deleteIfExists(user=self._f()['username'], real=True)
+			self._dbSignupData.create(user=self._f()['username'], data=formSerialized, activationCode=activationCode)
 			# Send email to user to validate email
 			xmlMessage = self._dbSettings.get(name__name='Msg/Site/Signup/User/_en').value
 			logger.debug( xmlMessage )
@@ -231,7 +257,7 @@ class SiteService ( CommonService ):
 							'appSlug': K.Slugs.SITE,
 							'activate': K.Slugs.ACTIVATE_USER,
 							'firstName': self._f()['firstName'], 
-							'user': self._f()['ximpiaId'],
+							'user': self._f()['username'],
 							'activationCode': activationCode}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 			logger.debug( 'doUser :: sent Email' )
 			# set ok message
@@ -243,13 +269,13 @@ class SiteService ( CommonService ):
 		pass
 	
 	@ViewDecorator(forms.ActivateUserForm)
-	def activateUser(self, ximpiaId, activationCode):
+	def activateUser(self, username, activationCode):
 		"""Create user in system with validation link from email. Only used in case auth source is user/password."""
 		# Instances
 		self._doDbInstancesForUser()
 		logger.debug('activateUser...')
 		# Logic
-		formStr64 = self._dbSignupData.get(user=ximpiaId).data
+		formStr64 = self._dbSignupData.get(user=username).data
 		formDict = json.loads(base64.decodestring(formStr64))
 		form = forms.UserSignupInvitationForm(formDict, ctx=self._ctx)
 		self._setForm(form)
@@ -257,7 +283,7 @@ class SiteService ( CommonService ):
 		self._validateUserNotSignedUp()
 		# Create user
 		self._createUser() 
-		self._dbSignupData.deleteIfExists(user=ximpiaId, real=True)
+		self._dbSignupData.deleteIfExists(user=username, real=True)
 		# show view
 		self._showView(K.Views.ACTIVATION_USER) 
 	
@@ -289,12 +315,12 @@ class SiteService ( CommonService ):
 		user.save()
 	
 	@ViewDecorator(forms.ChangePasswordForm)
-	def viewReminderNewPassword(self, ximpiaId=None, reminderId=None):
+	def viewReminderNewPassword(self, username=None, reminderId=None):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
-		@param ximpiaId: ximpiaId
+		@param username: username
 		@param reminderId: reminderId"""
-		self._validateReminder(ximpiaId, reminderId)
-		self._f().putParamList(ximpiaId=ximpiaId)
+		self._validateReminder(username, reminderId)
+		self._f().putParamList(username=username)
 	
 	@ActionDecorator(forms.PasswordReminderForm)
 	def requestReminder(self):
@@ -323,7 +349,7 @@ class SiteService ( CommonService ):
 	@ActionDecorator(forms.ChangePasswordForm)
 	def finalizeReminder(self):
 		"""Saves new password, it does authenticate and login user."""
-		user = self._dbUserSys.get(username= self._f().getParam('ximpiaId'))
+		user = self._dbUserSys.get(username= self._f().getParam('username'))
 		user.set_password(self._f()['newPassword'])
 		user.save()
 		userDetail = self._dbUserDetail.get(user=user)

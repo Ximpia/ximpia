@@ -48,10 +48,10 @@ class JoinUsForm(XBaseForm):
 class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
-	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
+	username = XpUserField(_dbUser, '_dbUser.username', label='Username')
 	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6)
-	socialId = forms.CharField(widget=XpHiddenWidget)
-	socialToken = forms.CharField(widget=XpHiddenWidget)
+	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.FACEBOOK)
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'authSources': Choices.SOCIAL_NETS}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
@@ -118,7 +118,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbAddress = Address()
 	_dbInvitation = Invitation()
 	# Fields
-	ximpiaId = XpUserField(_dbUser, '_dbUser.username', label='XimpiaId')
+	username = XpUserField(_dbUser, '_dbUser.username', label='Username')
 	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsReq=False,  
 		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsVal=["{equalTo: '#id_password'}"], jsReq=False,

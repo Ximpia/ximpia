@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def oauth20(request, service):
 	"""Doc."""
-	logger.debug( 'GET : ' + json.dumps(request.GET) )
+	logger.debug( 'GET : %s' % (json.dumps(request.GET)) )
 	ContextDict = {
 				'service': service,
 				'status': '',
@@ -68,7 +68,7 @@ def oauth20(request, service):
 
 def oauth(request, service):
 	"""Oauth logic with all providers registered in settings"""
-	logger.debug( 'GET : ' + json.dumps(request.GET) )
+	logger.debug( 'GET : %s' % (json.dumps(request.GET)) )
 	# Think about methods in login: LinkedIn, parameters, etc...
 	ContextDict = {
 				'service': service,
@@ -111,7 +111,7 @@ def oauth(request, service):
 				client = oauth2.Client(consumer, token)
 				resp, content = client.request(settings.XIMPIA_OAUTH_URL_DICT[service]['access'][0], "POST")
 				access_token = dict(urlparse.parse_qsl(content))
-				logger.debug( 'access_token: ' + access_token )
+				logger.debug( 'access_token: %s' % (access_token) )
 				# Show web page... javascript logic and close window
 				ContextDict['status'] = 'OK'
 				ContextDict['token'] = access_token['oauth_token']
@@ -201,12 +201,12 @@ def searchHeader(request, **args):
 	"""Search ximpia for views and actions."""
 	try:
 		logger.debug( 'searchHeader...' )
-		logger.debug( 'search: ' + request.REQUEST['search'] )
+		logger.debug( 'search: %s' % (request.REQUEST['search']) )
 		# What are params in jxSuggestList?????
 		ctx = args['ctx']
 		searchObj = SearchService(ctx)
 		results = searchObj.search(request.REQUEST['search'])
-		logger.debug( 'results: ' + json.dumps(results) )
+		logger.debug( 'results: %s' % (json.dumps(results)) )
 	except:
 		traceback.print_exc()
 	return HttpResponse(json.dumps(results))
@@ -253,7 +253,7 @@ def jxService(request, **args):
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
 	request.session.delete_test_cookie()
-	logger.debug( 'session: ' + json.dumps(request.session.items()) )
+	#logger.debug( 'session: %s' % (json.dumps(request.session.items())) )
 	#logger.debug( 'session: %s' % json.dumps(request.session.items()) + ' ' + json.dumps(request.session.session_key) )
 	if (request.REQUEST.has_key('view') or request.REQUEST.has_key('action')) and request.is_ajax() == True:
 		viewAttrs = {}
@@ -262,7 +262,7 @@ def jxService(request, **args):
 		application = dbApplication.get(name=app)
 		if request.REQUEST.has_key('view'):			
 			view = request.REQUEST['view']
-			logger.debug( 'view: ' + view )
+			logger.debug( 'view: %s' % (view) )
 			dbView = ViewDAO(args['ctx'])
 			viewObj = dbView.get(application__name=app, name=view)
 			impl = viewObj.implementation
@@ -272,7 +272,7 @@ def jxService(request, **args):
 			args['ctx'].path = '/apps/' + application.slug + '/' + viewObj.slug
 		elif request.REQUEST.has_key('action'):
 			action = request.REQUEST['action']
-			logger.debug( 'action: ' + action )
+			logger.debug( 'action: %s' % (action) )
 			dbAction = ActionDAO(args['ctx'])
 			dbView = ViewDAO(args['ctx'])
 			actionObj = dbAction.get(application__name=app, name=action)
@@ -288,7 +288,7 @@ def jxService(request, **args):
 		implFields = impl.split('.')
 		method = implFields[len(implFields)-1]
 		classPath = ".".join(implFields[:-1])
-		logger.debug('classPath: ' + classPath)
+		logger.debug('classPath: %s' % (classPath) )
 		if method.find('_') == -1 or method.find('__') == -1:
 			cls = getClass( classPath ) 
 			obj = cls(args['ctx']) #@UnusedVariable
@@ -317,7 +317,7 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
 	**Returns**
 	
 	"""
-	#logger.debug( 'core showView :: context: ' + json.dumps(args['ctx']) )
+	#logger.debug( 'core showView :: context: %s' % (json.dumps(args['ctx'])) )
 	dbApplication = ApplicationDAO(args['ctx'])
 	application = dbApplication.get(slug=appSlug)
 	db = ViewDAO(args['ctx'])

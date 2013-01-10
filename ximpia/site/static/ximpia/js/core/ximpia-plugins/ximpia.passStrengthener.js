@@ -81,6 +81,8 @@
 					var jPass = jQuery(this);
 					var password = jPass.val()
 					var userID = jQuery(opts.userid).val();
+					//ximpia.console.log('passwordStrength :: userID: ' + userID);
+					//ximpia.console.log('passwordStrength :: password: ' + password);
 
 					var score = teststrength(jPass.val(), userID, opts);
 					

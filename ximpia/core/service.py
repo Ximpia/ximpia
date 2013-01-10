@@ -82,7 +82,7 @@ class CommonService( object ):
 		@return: result : HttpResponse"""
 		#logger.debug( 'Dumping...' )
 		sResult = json.dumps(resultDict)
-		#logger.debug( 'sResult : ', sResult )
+		#logger.debug( 'sResult : %s' % (sResult) )
 		result = HttpResponse(sResult)
 		return result
 	
@@ -154,9 +154,9 @@ class CommonService( object ):
 	def _getFlowParams(self, *nameList):
 		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
 		@param nameList: List of parameters to fetch"""
-		logger.debug( 'wfUserId: ', self._ctx.wfUserId, ' flowCode: ', self._ctx.flowCode )
+		logger.debug( 'wfUserId: %s flowCode: %s' % (self._ctx.wfUserId, self._ctx.flowCode) )
 		valueDict = self._wf.getFlowDataDict(self._ctx.wfUserId, self._ctx.flowCode)['data']
-		logger.debug( 'valueDict: ', valueDict )
+		logger.debug( 'valueDict: %s' % (valueDict) )
 		"""valueDict = {}
 		for name in nameList:
 			#value = self._wf.getParam(name)
@@ -230,7 +230,7 @@ class CommonService( object ):
 	
 	def _getForm(self):
 		"""Get form"""
-		#logger.debug( 'form: ', self._ctx.form )
+		#logger.debug( 'form: %s' % (self._ctx.form) )
 		return self._ctx.form
 	
 	def _setForm(self, formInstance):
@@ -273,14 +273,14 @@ class CommonService( object ):
 		@param idError: String : Id of error
 		@param form: Form
 		@param errorField: String : The field inside class form"""
-		form = self._getForm()
-		logger.debug( 'form: ', form )
+		#form = self._getForm()
+		#logger.debug( 'form: %s' % (form) )
 		#msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
 		idError = 'id_' + fieldName
 		if not self._errorDict.has_key(idError):
 			self._errorDict[idError] = {}
 		self._errorDict[idError] = errMsg
-		logger.debug( '_errorDict : ', self._errorDict )
+		logger.debug( '_errorDict : %s' % (self._errorDict) )
 
 	def _getErrors(self):
 		"""Get error dict
@@ -297,11 +297,12 @@ class CommonService( object ):
 		and errorName for error message display at the front
 		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
 		logger.debug( 'validateExists...' )
-		logger.debug( 'dbDataList : ', dbDataList )
+		logger.debug( 'dbDataList : %s' % (dbDataList) )
 		for dbData in dbDataList:
 			dbObj, qArgs, fieldName, errMsg = dbData
 			exists = dbObj.check(**qArgs)
-			logger.debug( 'validate Exists Data: args: ', qArgs, ' exists: ' + str(exists), ' fieldName: ' + str(fieldName) + ' errMsg: ' + str(errMsg) )
+			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' % 
+						(qArgs, str(exists), str(fieldName) + str(errMsg)) )
 			if not exists:
 				self._addError(fieldName, errMsg)
 	
@@ -384,7 +385,7 @@ class CommonService( object ):
 		"""Get user social name"""
 		if self._ctx.cookies.has_key('userChannelName'):
 			userChannelName = self._ctx.cookies['userChannelName']
-			logger.debug( 'COOKIE :: userChannelName: ', userChannelName )
+			logger.debug( 'COOKIE :: userChannelName: %s' % (userChannelName) )
 		else:
 			userChannelName = K.USER
 			self._setCookie('userChannelName', userChannelName)
@@ -392,13 +393,11 @@ class CommonService( object ):
 	
 	def _login(self):
 		"""Do login"""
-		#TODO: Call login to ximpia.com
 		login(self._ctx.rawRequest, self._ctx.user)
 		self._ctx.isLogin = True
 	
 	def _logout(self):
 		"""Do logout"""
-		#TODO: Call logout to ximpia.com
 		logout(self._ctx.rawRequest)
 		self._ctx.isLogin = False
 	
@@ -446,7 +445,7 @@ class EmailService(object):
 		**Returns**
 		None
 		"""
-		#logger.debug( 'subsDict: ', subsDict )
+		#logger.debug( 'subsDict: %s' % (subsDict) )
 		subject, message = ut_email.getMessage(xmlMessage)
 		message = string.Template(message).substitute(**subsDict)
 		#logger.debug( message )
@@ -564,15 +563,15 @@ class ServiceDecorator(object):
 						logger.debug( 'ServiceDecorator :: no View, no template...' )
 						obj._ctx.jsData['response']['tmpl'] = ''
 					# Forms
-					logger.debug( 'ServiceDecorator :: forms: ', obj._ctx.forms )
+					logger.debug( 'ServiceDecorator :: forms: %s' % (obj._ctx.forms) )
 					for formId in obj._ctx.forms:
 						form = obj._ctx.forms[formId]
 						if not obj._ctx.jsData.has_key(formId):							
 							form.buildJsData(obj._ctx.app, obj._ctx.jsData)
 						logger.debug( 'ServiceDecorator :: form: %s app: %s' % (formId, form.base_fields['app'].initial) )
-					#logger.debug( 'ServiceDecorator :: response keys : ', obj._ctx.jsData['response'].keys() )
+					#logger.debug( 'ServiceDecorator :: response keys : %s' % (obj._ctx.jsData['response'].keys()) )
 					# Result
-					#logger.debug( 'ServiceDecorator :: isServerTmpl: ', self._isServerTmpl )
+					#logger.debug( 'ServiceDecorator :: isServerTmpl: %s' % (self._isServerTmpl) )
 					# Settings
 					if not obj._ctx.jsData['response'].has_key('settings'):
 						obj._ctx.jsData['response']['settings'] = {}
@@ -591,23 +590,23 @@ class ServiceDecorator(object):
 						################# Print response
 						logger.debug('')
 						logger.debug( 'ServiceDecorator :: #################### RESPONSE ##################' )
-						#logger.debug( 'ServiceDecorator :: response keys: ', obj._ctx.jsData['response'].keys() )
+						#logger.debug( 'ServiceDecorator :: response keys: %s' % (obj._ctx.jsData['response'].keys()) )
 						keys = obj._ctx.jsData['response'].keys()
 						for key in keys:
 							keyValue = obj._ctx.jsData['response'][key]
-							#logger.debug( 'key: ', key, type(keyValue) )
+							#logger.debug( 'key: %s' % (key, type(keyValue)) )
 							if type(keyValue) == types.DictType and keyValue.has_key('value'):
-								logger.debug( 'ServiceDecorator :: response ' + key + ': ' + str(keyValue['value']) )								
+								logger.debug( 'ServiceDecorator :: response %s : %s' % (key, str(keyValue['value'])) )								
 							elif type(keyValue) != types.DictType:
-								logger.debug( 'ServiceDecorator :: response ' + key + ': ' + str(keyValue) )
+								logger.debug( 'ServiceDecorator :: response %s: %s' % (key, str(keyValue)) )
 							else:
 								for newKey in keyValue:
 									#logger.debug( 'newKey: ', newKey )
 									#logger.debug( keyValue[newKey] )
 									if type(keyValue[newKey]) == types.DictType and keyValue[newKey].has_key('value'):
-										logger.debug( 'ServiceDecorator :: response ' + key + ' ' + newKey + ': ' + str(keyValue[newKey]['value']) )
+										logger.debug( 'ServiceDecorator :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])) )
 									elif type(keyValue[newKey]) != types.DictType:
-										logger.debug( 'ServiceDecorator :: response ' + key + ' ' + newKey + ': ' + str(keyValue[newKey]) )
+										logger.debug( 'ServiceDecorator :: response %s %s: %s' %  (key, newKey, str(keyValue[newKey])) )
 									
 						################# Print response
 						logger.debug( 'ServiceDecorator :: #################### RESPONSE ##################' )
@@ -616,31 +615,30 @@ class ServiceDecorator(object):
 							maxAge = 5*12*30*24*60*60
 							result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
 									expires = cookie['expires'], max_age=maxAge)
-							logger.debug( 'ServiceDecorator :: Did set cookie into result...', cookie )
+							logger.debug( 'ServiceDecorator :: Did set cookie into result... %s' % (cookie) )
 					else:
 						result = obj._ctx.jsData
 						#logger.debug( result )
 						################# Print response
 						logger.debug( '' )
 						logger.debug( 'ServiceDecorator :: #################### RESPONSE ##################' )
-						#logger.debug( 'ServiceDecorator :: response keys: ', obj._ctx.jsData['response'].keys() )
+						#logger.debug( 'ServiceDecorator :: response keys: %s' % (obj._ctx.jsData['response'].keys()) )
 						keys = obj._ctx.jsData['response'].keys()
 						for key in keys:
 							keyValue = obj._ctx.jsData['response'][key]
 							#logger.debug( 'key: ', key, type(keyValue) )
 							if type(keyValue) == types.DictType and keyValue.has_key('value'):
-								logger.debug( 'ServiceDecorator :: response ' + key + ': ' + str(keyValue['value']) )								
+								logger.debug( 'ServiceDecorator :: response %s: %s' % (key, str(keyValue['value'])) )								
 							elif type(keyValue) != types.DictType:
-								logger.debug( 'ServiceDecorator :: response ' + key + ': ' + str(keyValue) )
+								logger.debug( 'ServiceDecorator :: response %s: %s' % (key, str(keyValue)) )
 							else:
-								logger.debug( 'else...' )
 								for newKey in keyValue:
-									#logger.debug( 'newKey: ', newKey )
+									#logger.debug( 'newKey: %s' % (newKey) )
 									#logger.debug( keyValue[newKey] )
 									if type(keyValue[newKey]) == types.DictType and keyValue[newKey].has_key('value'):
-										logger.debug( 'ServiceDecorator :: response ' + key + ' ' + newKey + ': ' + str(keyValue[newKey]['value']) )
+										logger.debug( 'ServiceDecorator :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])) )
 									elif type(keyValue[newKey]) != types.DictType:
-										logger.debug( 'ServiceDecorator :: response ' + key + ' ' + newKey + ': ' + str(keyValue[newKey]) )
+										logger.debug( 'ServiceDecorator :: response %s %s: %s' % (key, newKey, str(keyValue[newKey])) )
 									
 						################# Print response
 						logger.debug( 'ServiceDecorator :: #################### RESPONSE ##################' )
@@ -708,14 +706,14 @@ class ValidateFormDecorator(object):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			"""Doc."""
-			#logger.debug( 'ValidateFormDecorator :: ', argsTuple, argsDict )
+			#logger.debug( 'ValidateFormDecorator :: %s %s' % (argsTuple, argsDict) )
 			obj = argsTuple[0]
 			#result = f(*argsTuple, **argsDict)
 			obj._ctx.jsData = JsResultDict()
 			obj._ctx.form = self._form(obj._ctx.post, ctx=obj._ctx)
 			bForm = obj._ctx.form.is_valid()
 			#obj._ctx.form = obj._f
-			#logger.debug( 'ValidateFormDecorator :: Form Validation: ', bForm )
+			#logger.debug( 'ValidateFormDecorator :: Form Validation: %s' % (bForm) )
 			if bForm == True:
 				obj._setMainForm(obj._ctx.form)
 				result = f(*argsTuple, **argsDict)
@@ -777,54 +775,54 @@ class WFViewDecorator( object ):
 	def __call__(self, f):
 		"""Doc."""
 		def wrapped_f(*argsTuple, **argsDict):
-			#logger.debug( 'WFViewstartDecorator :: ', argsTuple, argsDict )
+			#logger.debug( 'WFViewstartDecorator :: %s %s' % (argsTuple, argsDict) )
 			obj = argsTuple[0]
 			#obj._wf = WorkFlowBusiness(obj._ctx)
 			obj._ctx.flowCode = self.__flowCode
 			obj._ctx.isFlow = True
-			logger.debug( 'flowCode: ', self.__flowCode )
+			logger.debug( 'WFViewDecorator :: flowCode: %s' % (self.__flowCode) )
 			flow = obj._wf.get(self.__flowCode)
 			viewName = obj._ctx.viewNameSource
-			logger.debug( 'View Current: ', obj._ctx.viewNameSource )
+			logger.debug( 'WFViewDecorator :: View Current: %s' % (obj._ctx.viewNameSource) )
 			# WorKflow User Id
 			"""if obj._ctx.cookies.has_key('wfUserId'):
 				obj._ctx.wfUserId = obj._ctx.cookies['wfUserId']
-				logger.debug( 'COOKIE :: WF User Id: ', obj._ctx.wfUserId )
+				logger.debug( 'WFViewDecorator :: COOKIE :: WF User Id: %s' % (obj._ctx.wfUserId) )
 			else:
 				obj._ctx.wfUserId = obj._wf.genUserId()
 				obj._setCookie('wfUserId', obj._ctx.wfUserId)
-				logger.debug( 'WF UserId: ', obj._ctx.wfUserId )"""
+				logger.debug( 'WFViewDecorator :: WF UserId: %s' % (obj._ctx.wfUserId) )"""
 			obj._ctx.wfUserId = obj._getWFUser()
-			logger.debug( 'WF UserId: ', obj._ctx.wfUserId )
+			logger.debug( 'WFViewDecorator :: WF UserId: %s' % (obj._ctx.wfUserId) )
 			hasFlow = True
 			try:
 				flowData = obj._wf.getFlowDataDict(obj._ctx.wfUserId, self.__flowCode)
-				logger.debug( 'flowData: ', flowData )
+				logger.debug( 'WFViewDecorator :: flowData: %s' % (flowData) )
 			except XpMsgException:
 				hasFlow = False
-			logger.debug( 'hasFlow: ', hasFlow )
+			logger.debug( 'WFViewDecorator :: hasFlow: %s' % (hasFlow) )
 			if flow.jumpToView == True and hasFlow == True:
 				# Get flow data, display view in flow data
 				try:
 					viewName = obj._wf.getView(obj._ctx.wfUserId, self.__flowCode)
-					logger.debug( 'Jump to View: ', obj._ctx.viewNameSource, viewName )
+					logger.debug( 'WFViewDecorator :: Jump to View: %s %s' % (obj._ctx.viewNameSource, viewName) )
 				except XpMsgException:
 					pass
 			else:
 				isFirstView = obj._wf.isFirstView(self.__flowCode, obj._ctx.viewNameSource)
-				logger.debug( 'Flow Data: ', hasFlow, isFirstView )
+				logger.debug( 'WFViewDecorator :: Flow Data: %s %s' % (hasFlow, isFirstView) )
 				# Check that this view is first in flow
 				if hasFlow == False and isFirstView == True:
-					logger.debug( 'reset Flow... no flow and first window' )
+					logger.debug( 'WFViewDecorator :: reset Flow... no flow and first window' )
 					obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
 				elif isFirstView == True and flow.resetStart == True:
-					logger.debug( 'reset Flow... resetStart=True and first view in flow...' )
+					logger.debug( 'WFViewDecorator :: reset Flow... resetStart=True and first view in flow...' )
 					obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
 			obj._ctx.viewNameTarget = viewName
 			# Jump to View in case jumpToView = True and viewName resolved from flow is different from current view
-			#logger.debug( 'Jumps... ', viewName, obj._ctx.viewNameSource )
+			#logger.debug( 'WFViewDecorator :: Jumps... %s %s' % (viewName, obj._ctx.viewNameSource) )
 			if viewName != obj._ctx.viewNameSource:
-				logger.debug( 'redirect to ...', viewName )				
+				logger.debug( 'WFViewDecorator :: redirect to ... %s' % (viewName) )				
 				dbView = ViewDAO(obj._ctx)
 				view = dbView.get(name=viewName)
 				viewAttrs = obj._wf.getViewParams(self.__flowCode, viewName)
@@ -857,7 +855,7 @@ class MenuActionDecorator(object):
 			# Show View
 			dbView = ViewDAO(obj._ctx)
 			view = dbView.get(name=self.__viewName)
-			logger.debug( 'MenuAction :: ', view.name )
+			logger.debug( 'MenuAction :: %s' % (view.name) )
 			obj._ctx['viewNameSource'] = view.name
 			impl = view.implementation
 			implFields = impl.split('.')
@@ -888,35 +886,35 @@ class WFActionDecorator(object):
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
 			try:
-				#logger.debug( 'viewNameSource: ', obj._ctx.viewNameSource )
-				#logger.debug( 'viewNameTarget: ', obj._ctx.viewNameTarget )
-				#logger.debug( 'actionName: ', obj._ctx.action )
+				#logger.debug( 'viewNameSource: %s' % (obj._ctx.viewNameSource) )
+				#logger.debug( 'viewNameTarget: %s' % (obj._ctx.viewNameTarget) )
+				#logger.debug( 'actionName: %s' % (obj._ctx.action) )
 				#obj._wf = WorkFlowBusiness()
 				actionName = obj._ctx.action
 				flow = obj._wf.getFlowViewByAction(actionName).flow
-				self.__app = flow.application.code
-				logger.debug( 'app: ', self.__app )
+				self.__app = flow.application.name
+				logger.debug( 'app: %s' % (self.__app) )
 				obj._ctx.flowCode = flow.code
 				obj._ctx.isFlow = True
-				#logger.debug( 'WFActionDecorator :: flowCode: ', obj._ctx.flowCode )
+				#logger.debug( 'WFActionDecorator :: flowCode: %s' % (obj._ctx.flowCode) )
 				obj._ctx.wfUserId = obj._ctx.cookies['wfUserId']
-				logger.debug( 'COOKIE :: WF User Id: ', obj._ctx.wfUserId )
+				logger.debug( 'COOKIE :: WF User Id: %s' % (obj._ctx.wfUserId) )
 				result = f(*argsTuple, **argsDict)
 				# Resolve View
-				#logger.debug( 'session', )
+				#logger.debug( 'session' % (obj._ctx.session) )
 				viewTarget = obj._wf.resolveView(obj._ctx.wfUserId, self.__app, obj._ctx.flowCode, 
 								obj._ctx.viewNameSource, obj._ctx.action)
 				viewName = viewTarget.name
-				#logger.debug( 'viewName: ', viewName )
+				#logger.debug( 'viewName: %s' % (viewName) )
 				# Insert view into workflow
 				obj._wf.setViewName(viewName)
 				viewAttrs = obj._wf.getViewParams(obj._ctx.flowCode, viewName)
-				#logger.debug( 'viewAttrs: ', viewAttrs )
+				#logger.debug( 'viewAttrs: %s' % (viewAttrs) )
 				# Save workflow
 				flowData = obj._wf.save(obj._ctx.wfUserId, obj._ctx.flowCode)
 				# Set Flow data dictionary into context
 				obj._ctx.flowData = obj._wf.buildFlowDataDict(flowData)
-				#logger.debug( 'flowDataDict: ', obj._ctx.flowData )
+				#logger.debug( 'flowDataDict: %s' % (obj._ctx.flowData) )
 				# Delete user flow if deleteOnEnd = True
 				if flow.deleteOnEnd == True and obj._wf.isLastView(obj._ctx.viewNameSource, viewName, obj._ctx.action):
 					obj._wf.removeData(obj._ctx.wfUserId, obj._ctx.flowCode)
@@ -961,12 +959,12 @@ class ViewOldDecorator ( object ):
 			request = argsTuple[0]
 			args['ctx'].viewNameSource = self.__viewName
 			resultJs = f(*argsTuple, **args)
-			#logger.debug( 'resultJs: ', resultJs )
+			#logger.debug( 'resultJs: %s' % (resultJs) )
 			template = TemplateService(args['ctx'])
 			templates = template.resolve(self.__viewName)
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
-				#logger.debug( 'tmplName: ', tmplName )
+				#logger.debug( 'tmplName: %s' % (tmplName) )
 				result = render_to_response( self.__APP + '/' + tmplName + '.html', RequestContext(request, 
 													{	'result': json.dumps(resultJs),
 														'settings': settings
@@ -1173,9 +1171,9 @@ class MenuService( object ):
 		"""
 		container = {}
 		for viewMenu in menuList:
-			#logger.debug( 'getMenus :: viewMenu: ', viewMenu )
-			#logger.debug( 'getMenus :: action: ', viewMenu.menu.action )
-			#logger.debug( 'getMenus :: view: ', viewMenu.menu.view )
+			#logger.debug( 'getMenus :: viewMenu: %s' % (viewMenu) )
+			#logger.debug( 'getMenus :: action: %s' % (viewMenu.menu.action) )
+			#logger.debug( 'getMenus :: view: %s' % (viewMenu.menu.view) )
 			menuObj = {}
 			if viewMenu.menu.view != None:
 				menuObj['service'] = viewMenu.menu.view.service.name
@@ -1212,21 +1210,22 @@ class MenuService( object ):
 			container[viewMenu.menu.name] = menuObj
 			if viewMenu.menu.view != None:
 				menuObj['isCurrent'] = True if viewMenu.menu.view.name == self.__viewName else False
-			#logger.debug( 'menuObj: ', menuObj )
+			#logger.debug( 'menuObj: %s' % (menuObj) )
 			if viewMenu.parent == None:
 				menuObj['items'] = []
-				if viewMenu.zone in ['sys','main']:
+				menuDict[viewMenu.zone].append(menuObj)
+				"""if viewMenu.zone in ['sys','main']:
 					if self._ctx.isLogin:
 						menuDict[viewMenu.zone].append(menuObj)
 					else:
 						if viewMenu.menu.name == 'home':
 							menuDict[viewMenu.zone].append(menuObj) 
 				else:
-					menuDict[viewMenu.zone].append(menuObj)
+					menuDict[viewMenu.zone].append(menuObj)"""
 			else:
 				parentMenuObj = container[viewMenu.parent.menu.name]
 				parentMenuObj['items'].append(menuObj)
-		logger.debug( 'getMenus :: menuDict: ', menuDict )
+		logger.debug( 'getMenus :: menuDict: %s' % (menuDict) )
 	
 	def getMenus(self, viewName):
 		"""
@@ -1281,8 +1280,8 @@ class MenuService( object ):
 		logger.debug( 'getMenus :: view: %s' % (view) )
 		
 		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
-		#logger.debug( 'getMenus :: viewMenus: ', viewMenus )
-		#logger.debug( 'getMenus :: viewMenus All: ', self._dbViewMenu.getAll() )
+		#logger.debug( 'getMenus :: viewMenus: %s' % (viewMenus) )
+		#logger.debug( 'getMenus :: viewMenus All: %s' % (self._dbViewMenu.getAll()) )
 		logger.debug('getMenus :: user: %s %s' % (self._ctx.user, type(self._ctx.user)) )
 		menuDict = {}
 		menuDict[Choices.MENU_ZONE_SYS] = []
@@ -1313,6 +1312,7 @@ class MenuService( object ):
 												Q(menu__application__isSubscription=True) &
 												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												view=view ).order_by('order')
+		logger.debug('menuList: %s' % (menuList) )
 		self.__getList(menuDict, menuList)
 		return menuDict
 
@@ -1361,27 +1361,27 @@ class SearchService ( object ):
 		# return best 15 matches with titile, link information and application icon
 		# return results in format needed by autocomplete plugin
 		wordList = resources.Index.parseText(text)
-		logger.debug( 'wordList: ', wordList )
+		logger.debug( 'wordList: %s' % (wordList) )
 		#results = self._dbIndexWord.search(word__word__in=wordList)[:100]
 		# Build Q instance
 		myQ = Q(word__word__startswith=wordList[0])
 		for word in wordList[1:]:
 			myQ = myQ | Q(word__word__startswith=word)
-		logger.debug( 'Q: ', str(myQ) )
+		logger.debug( 'Q: %s' % (str(myQ)) )
 		results = self._dbIndexWord.search(myQ)[:100]
-		logger.debug( 'search :: results: ', results )
+		logger.debug( 'search :: results: %s' % (results) )
 		logger.debug( results.query )
 		container = {}
 		containerData = {}
 		for data in results:
-			logger.debug( 'data: ', data )
+			logger.debug( 'data: %s' % (data) )
 			if not container.has_key(data.index.pk):
 				container[data.index.pk] = 0
 			container[data.index.pk] += 1
 			#container[data.index.pk] += 1 if container.has_key(data.index.pk) else 1
 			containerData[data.index.pk] = data
-		logger.debug( 'conatiner: ', container )
-		logger.debug( 'containerData: ', containerData )
+		logger.debug( 'conatiner: %s' % (container) )
+		logger.debug( 'containerData: %s' % (containerData) )
 		tupleList = []
 		for pk in container:
 			tupleList.append((container[pk], containerData[pk]))
@@ -1402,7 +1402,7 @@ class SearchService ( object ):
 			for param in params:
 				paramDict[param.name] = param.value
 			extraDict['params'] = paramDict
-			extraDict['app'] = data.index.application.code
+			extraDict['app'] = data.index.application.name
 			myDict['extra'] = extraDict
 			resultsFinal.append(myDict)
 		return resultsFinal
@@ -1411,7 +1411,7 @@ class SearchService ( object ):
 		@param text: text to search
 		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
 		results = self._dbSearch.search(title__icontains=text)[:15]
-		logger.debug( 'search :: results: ', results )
+		logger.debug( 'search :: results: %s' % (results) )
 		resultsFinal = []
 		for data in results:
 			myDict = {}
@@ -1426,7 +1426,7 @@ class SearchService ( object ):
 			for param in params:
 				paramDict[param.name] = param.value
 			extraDict['params'] = paramDict
-			extraDict['app'] = data.application.code
+			extraDict['app'] = data.application.name
 			myDict['extra'] = extraDict
 			resultsFinal.append(myDict)
 		return resultsFinal
@@ -1571,7 +1571,7 @@ class TemplateService ( object ):
 					tmplName = tmplList[0].template.name
 				else:
 					pass"""
-		#logger.debug( 'templates: ', templates )
+		#logger.debug( 'templates: %s' % (templates) )
 		return templates
 
 class DefaultService ( CommonService ):

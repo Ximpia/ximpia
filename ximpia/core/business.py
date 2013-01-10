@@ -274,7 +274,7 @@ class ComponentRegisterBusiness ( object ):
 			fields = groupDict[groupName]
 			menuParent = Menu.objects.get(name=groupName)
 			serviceMenuParent = ServiceMenu.objects.get(service=service, menu=menuParent)
-			counter = viewMenuParent.order + 10
+			counter = serviceMenuParent.order + 10
 			for dd in fields:
 				if not dd.has_key(K.ZONE):
 					dd[K.ZONE] = K.VIEW
@@ -385,7 +385,7 @@ class ComponentRegisterBusiness ( object ):
 		logger.info( 'deleted all views for %s' % appName )
 	
 	def registerView(self, compName, serviceName=None, viewName=None, className=None, method=None, winType=Choices.WIN_TYPE_WINDOW, 
-				hasUrl=False, hasAuth=True, slug='', **args):
+				hasAuth=False, slug='', **args):
 		"""Registers view
 		
 		**Required Attributes**
@@ -411,8 +411,7 @@ class ComponentRegisterBusiness ( object ):
 		
 		None
 		
-		"""
-		# TODO: Validate entry arguments: There is no None arguments, types, etc...		
+		"""		
 		if viewName == None or className == None or method == None or slug == '':
 			raise XpRegisterException(AttributeError, 'registerView requires viewName, className, method and slug attributes')
 		appName = self.__getAppName(compName)
@@ -427,8 +426,7 @@ class ComponentRegisterBusiness ( object ):
 			view = View(application=app, service=service, name=viewName)
 		view.implementation = classPath + '.' + method
 		view.winType = winType
-		view.isUrl = hasUrl
-		view.isAuth = hasAuth
+		view.hasAuth = hasAuth
 		view.slug = slug
 		view.save()
 		# Parameters
@@ -577,8 +575,8 @@ class ComponentRegisterBusiness ( object ):
 		None
 		
 		"""
-		if flowCode == None or viewNameSource == None or viewNameTarget == None or actionName == None:
-			raise XpRegisterException(AttributeError, """registerFlowView requires attributes flowCode, viewNameSource, viewNameTarget,
+		if flowCode == None or viewNameTarget == None or actionName == None:
+			raise XpRegisterException(AttributeError, """registerFlowView requires attributes flowCode, viewNameTarget,
 															and actionName""")
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
@@ -830,13 +828,13 @@ class WorkFlowBusiness (object):
 		@return: resolvedFlow : Resolved flow for flow code , login user or session"""
 		resolvedFlow = None
 		flows = self._dbWFData.search(flow__code=flowCode, userId=wfUserId)
-		logger.debug( 'flows: ', flows )
-		logger.debug( 'All: ', self._dbWFData.getAll() )
+		logger.debug( 'flows: %s' % (flows) )
+		logger.debug( 'All: %s' % (self._dbWFData.getAll()) )
 		if len(flows) > 0:
 			resolvedFlow = flows[0]
 		else:
 			raise XpMsgException(None, _('Error in resolving workflow for user'))
-		logger.debug( 'resolvedFlow: ', resolvedFlow )
+		logger.debug( 'resolvedFlow: %s' % (resolvedFlow) )
 		return resolvedFlow
 
 	def resolveView(self, wfUserId, appName, flowCode, viewNameSource, actionName):
@@ -854,7 +852,7 @@ class WorkFlowBusiness (object):
 				paramFlowDict[param.flowView.flow.code] = []
 			paramFlowDict[param.flowView.flow.code].append(param)
 		wfDict = self.getFlowDataDict(wfUserId, flowCode)
-		logger.debug( 'wfDict: ', wfDict )
+		logger.debug( 'wfDict: %s' % (wfDict) )
 		if len(flowViews) == 1:
 			viewTarget = flowViews[0].viewTarget
 		else:
@@ -923,7 +921,7 @@ class WorkFlowBusiness (object):
 		"""Saves the workflow into database for user
 		@param user: User
 		@param flowCode: Flow code"""
-		logger.debug( '__wfData: ', self.__wfData )
+		logger.debug( '__wfData: %s' % (self.__wfData) )
 		flows = self._dbWFData.search(userId=wfUserId, flow__code=flowCode)
 		flow = flows[0]
 		if flows > 0:
@@ -936,7 +934,7 @@ class WorkFlowBusiness (object):
 		flowData['viewName'] = self.__wfData['viewName']
 		view = self._dbView.get(name=self.__wfData['viewName'])
 		flow.view = view
-		logger.debug( 'save :: flowData: ', flowData )
+		logger.debug( 'save :: flowData: %s' % (flowData) )
 		flow.data = _jsf.encode64Dict(flowData)
 		flow.save()
 		return flow
@@ -947,10 +945,10 @@ class WorkFlowBusiness (object):
 		@param flowCode: Flow code"""
 		try:
 			flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
-			logger.debug( 'resetFlow :: flowData: ', flowData )
+			logger.debug( 'resetFlow :: flowData: %s' % (flowData) )
 			self.__wfData = getBlankWfData({})
 			self.__wfData['viewName'] = viewName
-			logger.debug( '__wfData: ', self.__wfData )
+			logger.debug( '__wfData: %s' % (self.__wfData) )
 			# Update flow data
 			view = self._dbView.get(name=viewName)
 			flowData.data = _jsf.encode64Dict(self.__wfData)
@@ -958,10 +956,10 @@ class WorkFlowBusiness (object):
 			flowData.save()
 		except XpMsgException:
 			# Create flow data
-			logger.debug( 'create flow...', wfUserId )
+			logger.debug( 'create flow... %s' % (wfUserId) )
 			self.__wfData = getBlankWfData({})
 			self.__wfData['viewName'] = viewName
-			logger.debug( '__wfData: ', self.__wfData )
+			logger.debug( '__wfData: %s' % (self.__wfData) )
 			view = self._dbView.get(name=viewName)
 			workflow = self._dbWorkflow.get(code=flowCode)
 			self._dbWFData.create(userId=wfUserId, flow=workflow, data = _jsf.encode64Dict(self.__wfData), view=view)
@@ -969,7 +967,7 @@ class WorkFlowBusiness (object):
 	def setViewName(self, viewName):
 		"""Set view name in Workflow
 		@param viewName: View name"""
-		logger.debug( 'setViewName :: ', self.__wfData )
+		logger.debug( 'setViewName :: %s' % (self.__wfData) )
 		self.__wfData['viewName'] = viewName
 		logger.debug( self.__wfData )
 
@@ -989,8 +987,8 @@ class WorkFlowBusiness (object):
 		@param name: Parameter name
 		@return: Parameter value"""
 		flowDataDict = self._ctx.flowData
-		logger.debug( 'flowDataDict: ', flowDataDict, type(flowDataDict) )
-		logger.debug( 'wfData: ', self.__wfData )
+		logger.debug( 'flowDataDict: %s type:%s' % (flowDataDict, type(flowDataDict)) )
+		logger.debug( 'wfData: %s' % (self.__wfData) )
 		return flowDataDict['data'][name]
 		
 	def buildFlowDataDict(self, flowData):
@@ -998,7 +996,7 @@ class WorkFlowBusiness (object):
 		@param flowData: Flow data
 		@return: flowDataDict"""
 		flowDataDict = _jsf.decode64dict(flowData.data)
-		logger.debug( 'build :: flowDataDict: ', flowDataDict )
+		logger.debug( 'build :: flowDataDict: %s' % (flowDataDict) )
 		return flowDataDict
 	
 	def getFlowDataDict(self, wfUserId, flowCode):
@@ -1008,7 +1006,7 @@ class WorkFlowBusiness (object):
 		@return: flowData : Dictionary"""
 		flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
 		flowDataDict = _jsf.decode64dict(flowData.data)
-		logger.debug( 'get :: flowDataDict: ', flowDataDict )
+		logger.debug( 'get :: flowDataDict: %s' % (flowDataDict) )
 		return flowDataDict
 	
 	def getFlowViewByAction(self, actionName):
@@ -1032,8 +1030,8 @@ class WorkFlowBusiness (object):
 		@param flowCode: Flow code
 		@param viewName: View name
 		@return: params : List of WFViewEntryParam"""
-		params = self._dbWFViewParam.search(flowView__flow__code=flowCode, viewParam__view__name = viewName)
-		logger.debug( 'params: ', params )
+		params = self._dbWFParams.search(flowView__flow__code=flowCode, flowView__viewTarget__name=viewName)
+		logger.debug( 'params: %s' % (params) )
 		paramDict = {}
 		for param in params:
 			paramDict[param.paramView.name] = param.paramView.value

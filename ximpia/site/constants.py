@@ -9,7 +9,7 @@ class Slugs:
 	CHANGE_PASSWORD = 'change-password'
 	SIGNUP = 'signup'
 	ACTIVATION_USER = 'activation-user'
-	HOME_LOGIN = 'home-login'
+	HOME_LOGIN = 'in'
 	SITE = 'site'
 	REQUEST_REMINDER = 'request-reminder'
 	FINALIZE_REMINDER = 'finalize-reminder'

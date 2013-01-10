@@ -812,7 +812,7 @@ class Menu( BaseModel ):
 	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
 			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
-		return self.title
+		return self.name
 	class Meta:
 		db_table = 'CORE_MENU'
 		verbose_name = 'Menu'
@@ -1938,7 +1938,7 @@ class ContextDecorator(object):
 				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
 					ctx.userChannel = request.session['userChannel']
-					logger.debug( 'Context :: userChannel: ' + ctx.userChannel )
+					logger.debug( 'Context :: userChannel: %s' % (ctx.userChannel) )
 				if request.user.is_authenticated():
 					ctx.isLogin = True
 				else:
@@ -2059,7 +2059,7 @@ class ContextViewDecorator(object):
 				if request.session.has_key('userChannel') and request.user.is_authenticated():
 					# TODO: Get this from session
 					ctx.userChannel = request.session['userChannel']
-					logger.debug( 'Context :: userChannel: ' + ctx[self.USER_CHANNEL] )
+					logger.debug( 'Context :: userChannel: %s' % (ctx.userChannel) )
 				if request.user.is_authenticated():
 					ctx.isLogin = True
 				else:

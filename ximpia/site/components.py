@@ -45,7 +45,7 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 							className=SiteService, method='viewReminderNewPassword')
 		# change password
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.CHANGE_PASSWORD, slug=Slugs.CHANGE_PASSWORD, 
-							className=SiteService, method='viewChangePassword')
+							className=SiteService, method='viewChangePassword', hasAuth=True)
 		# signup
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.SIGNUP, slug=Slugs.SIGNUP, 
 							className=SiteService, method='viewSignup')
@@ -53,7 +53,7 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 							className=SiteService, method='viewActivationUser')
 		# homeLogin
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.HOME_LOGIN, slug=Slugs.HOME_LOGIN, 
-							className=SiteService, method='viewHomeLogin')
+							className=SiteService, method='viewHomeLogin', hasAuth=True)
 	def templates(self):
 		self._reg.registerTemplate(__name__, viewName=Views.LOGIN, name=Tmpls.LOGIN)
 		self._reg.registerTemplate(__name__, viewName=Views.LOGIN, name=Tmpls.PASSWORD_REMINDER, winType=_Ch.WIN_TYPE_POPUP, 

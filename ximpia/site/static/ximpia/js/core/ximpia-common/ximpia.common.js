@@ -181,6 +181,9 @@ ximpia.external.Captcha.renderCaptcha = (function(attrs, callable) {
 //////////////////////////////////////////////////////////////////
 
 ximpia.common.List = {};
+/**
+ * Doc 
+ */
 ximpia.common.List.getValue = (function(id, key) {
 	ximpia.console.log('value : ' + $("#" + id).attr('value'));
 	var array = eval($("#" + id).attr('value'));
@@ -193,8 +196,14 @@ ximpia.common.List.getValue = (function(id, key) {
 	}
 	return value;
 });
+/**
+ * Doc
+ */
 ximpia.common.List.hasKey = (function(id, key) {
 });
+/*
+ * Doc
+ */
 ximpia.common.List.getValueFromList = (function(key, list) {
 	for (j in list) {
 		if (list[j][0] == key) {
@@ -203,6 +212,28 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 	}
 	return value;
 });
+
+ximpia.common.Object = {};
+/*
+ * Get values from object: key -> value
+ * 
+ * ** Attributes**
+ * 
+ * * ``obj``:Object
+ * 
+ * ** Returns **
+ * 
+ * * ``values``:List
+ * 
+ */
+ximpia.common.Object.values = (function(obj) {
+	var valueList = [];
+	for (key in obj) {
+		valueList.push(obj[key]);
+	}
+	return valueList
+});
+
 /*
  * set timeout for 6 seconds in periods of 1 second
  */
@@ -988,12 +1019,24 @@ ximpia.common.Form = function() {
 									ximpia.console.log('isMsg: ' + obj.isMsg);
 									if (obj.isMsg == true) {
 										$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
-										//var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
-										//var okMessages = JSON.parse(okMessagesStr);
-										//okMsg = okMessages[obj.attrs.msg];
+										var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
+										var okMessages = JSON.parse(okMessagesStr);
 										okMsg = responseMap['response'][obj.attrs.form]['msg_ok'].value;
-										ximpia.console.log('okMsg: ' + okMsg);
-										$("#" + obj.idMsg + "_text").text(okMsg);
+										var msg = '';
+										if (okMsg.length != 0) {
+											msg = okMsg;
+										} else {
+											if (obj.attrs.hasOwnProperty('msg')) {
+												msg = okMessages[obj.attrs.msg];
+											} else {
+												var msgList = ximpia.common.Object.values(okMessages);
+												if (msgList.length != 0) {
+													msg = ximpia.common.Object.values(okMessages)[0];
+												}
+											}
+										}
+										ximpia.console.log('okMsg: ' + msg);
+										$("#" + obj.idMsg + "_text").text(msg);
 									} else {
 										if (responseMap['response']['winType'] == 'popup') {
 											// popup : Must show in same popup
@@ -2106,12 +2149,12 @@ ximpia.common.PageAjax.getTmpl = function(obj, functionName) {
 /**
  * Process password strength
  */
-ximpia.common.PageAjax.doShowPasswordStrength = (function(userId, passwordId) {
+ximpia.common.PageAjax.doShowPasswordStrength = (function(userId) {
 	// Password Strength
 	// TODO: Analyze a common way of associating a new variable to a input field, and influence click of a given button
 	// TODO: Include validation of strength when clicking on signup button or buttons
 	// TODO: Way to integrate settings into visual engine and define settings for password strength
-	$('#' + passwordId).passStrengthener({
+	$('.passwordStrength').passStrengthener({
 		userid : "#" + userId
 		/*strengthCallback:function(score, strength) {
 		 ximpia.console.log('strength : ' + strength)
@@ -2153,7 +2196,7 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
 	// passwordStrength
 	// TODO: Provide better ways to render password strength
-	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	ximpia.common.PageAjax.doShowPasswordStrength('id_username');
 	//_attr.priv.doLocal();
 	// TODO: Include settings into general javascript settings class
 	$("#id_header_search").jsonSuggest({

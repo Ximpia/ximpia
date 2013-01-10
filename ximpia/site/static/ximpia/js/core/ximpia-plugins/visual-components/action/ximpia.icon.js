@@ -24,6 +24,9 @@
 		if (obj.view == 'home') {
 			path = '/';
 		}
+		if (obj.zone == 'main') {
+			obj.title = '';
+		}
 		ximpia.console.log('classPlus: ' + classPlus);
 		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock" + classPlus + "\" title=\"" + obj.description + "\" >";
 		htmlContent += "<a href=\"" + path + "\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
@@ -77,6 +80,7 @@
 			// TODO: Icon with personalized images, dropdown ?????
 			ximpia.console.log('Parse main...');
 			ximpia.console.log(menus['main']);
+			$('#id_mainIcons').empty();
 			for (i in menus['main']) {
 				var menuObj = menus['main'][i]
 				menuObj.align = 'left';
@@ -90,7 +94,7 @@
 					ximpia.console.log(menuObj);
 					var htmlContent = buildIcon(menuObj);
 					ximpia.console.log(htmlContent);
-					$('#id_mainIcons').prepend(htmlContent);
+					$('#id_mainIcons').append(htmlContent);
 					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));
 				}
 			}			
