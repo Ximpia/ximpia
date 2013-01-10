@@ -20,6 +20,8 @@
 	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
+	padding-bottom: 2px;
+	padding-top: 2px;
 }
 
 .contextMenu a {
@@ -71,10 +73,10 @@
 
 
 .contextMenu li.iconHomeSmall a { 
-	background-image: url(../images/home_48.png);
+	background-image: url(../images/home_32.png);
 	background-size: 18px; 
 }
 .contextMenu li.iconLogoutSmall a { 
-	background-image: url(../images/logout_48.png);
+	background-image: url(../images/logout_32.png);
 	background-size: 18px; 
 }

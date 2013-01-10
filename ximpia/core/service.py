@@ -27,6 +27,7 @@ from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO
 from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
 from ximpia.util import resources
 from choices import Choices
+import messages
 
 from ximpia.util import ut_email
 from models import JsResultDict, ContextDecorator
@@ -523,7 +524,11 @@ class ServiceDecorator(object):
 						logger.debug( 'ServiceDecorator :: winType: %s' % (str(view.winType)) )
 						obj._ctx.jsData['response']['winType'] = view.winType
 						obj._ctx.jsData['response']['viewSlug'] = view.slug
+						# Authenticate view (if requires login and user is not logged in, raise error)
+						if not obj._ctx.user.is_authenticated() and view.hasAuth:
+							raise XpMsgException(None, messages.ERR_NOT_LOGGED_IN % (view.slug))
 					# User authenticate and session
+					logger.debug('ServiceDecorator :: User: %s' % (obj._ctx.user) )
 					if obj._ctx.user.is_authenticated():
 						# login: context variable isLogin = True
 						obj._ctx.jsData.addAttr('isLogin', True)
@@ -577,8 +582,8 @@ class ServiceDecorator(object):
 						obj._ctx.jsData['response']['settings'] = {}
 					# Get settings with mustAutoLoad=true for global and for this app
 					dbSetting = SettingDAO(obj._ctx, relatedDepth=1)
-					settings = dbSetting.searchSettings(obj._ctx.app)
-					for setting in settings: 
+					settingsApp = dbSetting.searchSettings(obj._ctx.app)
+					for setting in settingsApp: 
 						try:
 							value = eval(setting.value)
 						except NameError:
@@ -856,7 +861,7 @@ class MenuActionDecorator(object):
 			dbView = ViewDAO(obj._ctx)
 			view = dbView.get(name=self.__viewName)
 			logger.debug( 'MenuAction :: %s' % (view.name) )
-			obj._ctx['viewNameSource'] = view.name
+			obj._ctx.viewNameSource = view.name
 			impl = view.implementation
 			implFields = impl.split('.')
 			method = implFields[len(implFields)-1]

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load i18n %}
+
+{% block title %}Error{% endblock %}
+
+{% block id_view %}
+<!-- View Definition -->
+<div id="id_view" 
+		data-xp="{viewName: 'mainXpError'}" 
+		data-xp-cond-rules="{}" >
+</div>
+<!-- View Definition -->
+{% endblock %}
+
+{% block sectionTitle %}
+<div style="float: left"><b>Oops, something did not work right</b></div>
+{% endblock %}
+
+{% block sectionContent %}
+
+<div id="id_home" class="sectionComp" >
+
+Holaaaaa
+
+<br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+
+</div>
+
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}

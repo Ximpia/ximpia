@@ -81,7 +81,7 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				$("input[name='firstName']").attr('value', responseProfile.first_name);
 				$("input[name='lastName']").attr('value', responseProfile.last_name);
 				$("input[name='email']").attr('value', responseProfile.email);
-				// Disable controls
+				// Disable controls when available
 				$("input[name='firstName']").attr('readonly', 'readonly');
 				$("input[name='lastName']").attr('readonly', 'readonly');
 				$("input[name='email']").attr('readonly', 'readonly');
@@ -111,9 +111,6 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			eval('new callable(attrs)');
 		}
 	});
-	/*var oGoogleMaps = ximpia.common.GoogleMaps();
-	oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
-	eval('new callable(attrs)');*/
 });
 /*
  * Facebook login
@@ -1005,7 +1002,7 @@ ximpia.common.Form = function() {
 						$(form).ajaxSubmit({
 							dataType : 'json',
 							success : function(response, status) {
-								ximpia.console.log('suscess');
+								ximpia.console.log('bindAction :: suscess');
 								ximpia.console.log(response);
 								// Set action into session
 								ximpia.common.Browser.setSessionAction(response);
@@ -1014,9 +1011,9 @@ ximpia.common.Form = function() {
 								if (statusCode.indexOf('.') != -1) {
 									statusCode = statusCode.split('.')[0]
 								}
-								ximpia.console.log('form :: statusCode : ' + statusCode);
+								ximpia.console.log('bindAction :: form :: statusCode : ' + statusCode);
 								if (statusCode == 'OK') {
-									ximpia.console.log('isMsg: ' + obj.isMsg);
+									ximpia.console.log('bindAction :: isMsg: ' + obj.isMsg);
 									if (obj.isMsg == true) {
 										$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('ok');
 										var okMessagesStr = responseMap['response'][obj.attrs.form]['okMessages'].value;
@@ -1035,12 +1032,12 @@ ximpia.common.Form = function() {
 												}
 											}
 										}
-										ximpia.console.log('okMsg: ' + msg);
+										ximpia.console.log('bindAction :: okMsg: ' + msg);
 										$("#" + obj.idMsg + "_text").text(msg);
 									} else {
 										if (responseMap['response']['winType'] == 'popup') {
 											// popup : Must show in same popup
-											ximpia.console.log('popup!!!!!!!!!!');
+											ximpia.console.log('bindAction :: popup!!!!!!!!!!');
 											$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
 											ximpia.console.log(obj.attrs);
 											var tmplPath = ximpia.common.PageAjax.getTemplatePath({
@@ -1048,22 +1045,22 @@ ximpia.common.Form = function() {
 												name : responseMap['response']['view'],
 												viewType : obj.attrs.viewType
 											});
-											ximpia.console.log('tmplPath: ' + tmplPath)
+											ximpia.console.log('bindAction :: tmplPath: ' + tmplPath)
 											$.get(tmplPath, function(data) {
 												var tmplData = data;
 												var viewName = responseMap['response']['view'];
-												ximpia.console.log('viewName: ' + viewName);
-												ximpia.console.log('Got template');
+												ximpia.console.log('bindAction :: viewName: ' + viewName);
+												ximpia.console.log('bindAction :: Got template');
 												//ximpia.console.log(tmplData);
 												ximpia.common.Browser.setObject('xpData-popup-tmpl', tmplData);
 												var elemContent = $(tmplData).find('#id_' + viewName);
-												ximpia.console.log('elemContent...');
+												ximpia.console.log('bindAction :: elemContent...');
 												ximpia.console.log(elemContent);
 												var popupData = $(tmplData).filter('#id_conf').metadata();
 												var elementButtons = $(tmplData).filter('#id_sectionButton');
-												ximpia.console.log('elementButtons...');
+												ximpia.console.log('bindAction :: elementButtons...');
 												ximpia.console.log(elementButtons);
-												ximpia.console.log('popupData...');
+												ximpia.console.log('bindAction :: popupData...');
 												ximpia.console.log(popupData);
 												var height = null;
 												var width = null;
@@ -1071,10 +1068,10 @@ ximpia.common.Form = function() {
 													height = popupData.height;
 												if (popupData.width)
 													width = popupData.width;
-												ximpia.console.log('height: ' + height);
-												ximpia.console.log('width: ' + width);
+												ximpia.console.log('bindAction :: height: ' + height);
+												ximpia.console.log('bindAction :: width: ' + width);
 												var form = $(elemContent).find('form')[0];
-												ximpia.console.log('form...');
+												ximpia.console.log('bindAction :: form...');
 												ximpia.console.log(form);
 												// Set title => popupData.title
 												$("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + popupData.title + '</div>');
@@ -1090,7 +1087,7 @@ ximpia.common.Form = function() {
 													height = 400;
 												$("div.MsgText").css('height', height + 'px');
 												var xpForm = 'xpData-view-' + viewName + '.' + form.id;
-												ximpia.console.log('xpForm: ' + xpForm);
+												ximpia.console.log('bindAction :: xpForm: ' + xpForm);
 												ximpia.common.PageAjax.doRender(xpForm);
 												ximpia.common.timeOutCounter(function() {
 													$('.btBar').css('visibility', 'visible');
@@ -1099,11 +1096,11 @@ ximpia.common.Form = function() {
 													oForm.doBindBubbles();
 												});
 											}).error(function(jqXHR, textStatus, errorThrown) {
-												ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
+												ximpia.console.log('bindAction :: get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
 											});
 										} else {
 											// window
-											ximpia.console.log('window!!!!!!!!!!!');
+											ximpia.console.log('bindAction :: window!!!!!!!!!!!');
 											$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
 											// Get template
 											ximpia.console.log(obj.attrs);
@@ -1114,16 +1111,10 @@ ximpia.common.Form = function() {
 											});
 											ximpia.console.log('tmplPath: ' + tmplPath)
 											$.get(tmplPath, function(data) {
-												// Insert title
-												$('#id_sectionTitle').html($(data).filter('#id_sectionTitle').html());
-												// Insert section content into DOM
-												//$('#id_content').html($(data).filter('#id_data').find('#id_content').html());
-												$('#id_content').html($(data).filter('#id_content').html());
-												// Insert button section into DOM
-												$('#id_sectionButton').html($(data).filter('#id_sectionButton').html());
+												ximpia.common.PageAjax.doTmplInject(data);
 												// Do menus
 												ximpia.common.PageAjax.processMenus(responseMap);
-												ximpia.console.log('menus...');
+												ximpia.console.log('bindAction :: menus...');
 												// Update session data into SessionStorage
 												// Render template
 												ximpia.common.PageAjax.doFormsRender({
@@ -1135,13 +1126,13 @@ ximpia.common.Form = function() {
 												// Process login and logout layout changes
 												ximpia.common.PageAjax.processLogin(responseMap);
 											}).error(function(jqXHR, textStatus, errorThrown) {
-												ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
+												ximpia.console.log('bindAction :: get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
 											});
 										}
 									}
 									// Put all fields inside form valid that are now errors
 									$(".error").addClass('valid').removeClass("error");
-									ximpia.console.log('clickStatus: ' + obj.attrs.clickStatus);
+									ximpia.console.log('bindAction :: clickStatus: ' + obj.attrs.clickStatus);
 									if ( typeof obj.attrs.clickStatus != 'undefined' && obj.attrs.clickStatus == 'disable') {
 										//ximpia.console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
 										$("#" + obj.idActionComp).xpObjButton('disable');
@@ -1161,8 +1152,8 @@ ximpia.common.Form = function() {
 									if (list.length > 0) {
 										doMsgError = list[0][2]
 									}
-									ximpia.console.log('doMsgError: ' + doMsgError);
-									ximpia.console.log('isMsg: ' + obj.isMsg);
+									ximpia.console.log('bindAction :: doMsgError: ' + doMsgError);
+									ximpia.console.log('bindAction :: isMsg: ' + obj.isMsg);
 									if (doMsgError == true) {
 										$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
 										$("#" + obj.idMsg + "_text").text(list[0][1]);
@@ -1174,7 +1165,7 @@ ximpia.common.Form = function() {
 										 $("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
 										 }*/
 									} else {
-										ximpia.console.log('form :: errors: ' + list);
+										ximpia.console.log('bindAction :: form :: errors: ' + list);
 										obj.showPopUp = true;
 										if (obj.showPopUp == true) {
 											message = '<ul>'
@@ -1183,7 +1174,7 @@ ximpia.common.Form = function() {
 											for (var i = 0; i < list.length; i++) {
 												errorId = list[i][0];
 												errorName = $("label[for='" + errorId + "']").text();
-												ximpia.console.log('errorName : ' + errorName + ' errorId: ' + errorId);
+												ximpia.console.log('bindAction :: errorName : ' + errorName + ' errorId: ' + errorId);
 												var errorMessage = list[i][1];
 												$("#" + errorId).removeClass("valid");
 												$("#" + errorId).addClass("error");
@@ -1212,7 +1203,7 @@ ximpia.common.Form = function() {
 								}
 							},
 							error : function(data, status, e) {
-								ximpia.console.log(data + ' ' + status + ' ' + e);
+								ximpia.console.log('bindAction :: ' + data + ' ' + status + ' ' + e);
 								var errorMsg = 'I cannot process your request due to an unexpected error. Sorry for the inconvenience, please retry later. Thanks';
 								if (obj.showPopUp == true) {
 									// All have a waiting message
@@ -1234,10 +1225,10 @@ ximpia.common.Form = function() {
 						});
 					},
 					errorPlacement : function(error, element) {
-						ximpia.console.log('error placement...');
+						ximpia.console.log('bindAction :: error placement...');
 						ximpia.console.log(error);
 						ximpia.console.log(element);
-						ximpia.console.log('error placement...');
+						ximpia.console.log('bindAction :: error placement...');
 						element.next("img table").after(error);
 					}
 				});
@@ -1961,7 +1952,7 @@ ximpia.common.PageAjax = function() {
 				/**
 				 * Process forms for view request
 				 */
-				ximpia.console.log('doForm...');
+				ximpia.console.log('PageAjax.doForm...');
 				ximpia.console.log(obj);
 				if (typeof(state) == 'undefined') {
 					state = true;
@@ -1972,8 +1963,8 @@ ximpia.common.PageAjax = function() {
 					var viewName = responseMap['response']['view'];
 					var app = responseMap['response']['app'];
 					var tmplName = responseMap['response']['tmpl'][viewName];
-					ximpia.console.log('tmpl: ' + tmplName);
-					ximpia.console.log('view: ' + obj.view + ' viewNew: ' + responseMap['response']['view']);
+					ximpia.console.log('PageAjax.doForm :: tmpl: ' + tmplName);
+					ximpia.console.log('PageAjax.doForm :: view: ' + obj.view + ' viewNew: ' + responseMap['response']['view']);
 					//if (responseMap['response']['view'] != _attr.priv.viewName) {
 					// Get new view template, insert into DOM
 					var tmplPath = ximpia.common.PageAjax.getTemplatePath({
@@ -1984,18 +1975,7 @@ ximpia.common.PageAjax = function() {
 					ximpia.console.log('tmplPath: ' + tmplPath);
 					ximpia.console.log('viewName: ' + viewName);
 					$.get(tmplPath, function(dataTmpl) {
-						ximpia.console.log('Got template...');
-						ximpia.console.log(dataTmpl);
-						ximpia.console.log($(dataTmpl));
-						var contentHtml = $(dataTmpl).filter('div#id_view_zone').find('#id_content').html();
-						$('#id_sectionTitle').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionTitle').html());
-						$('#id_content').html(contentHtml);
-						$('#id_sectionButton').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionButton').html());
-						var viewAttrs = $(dataTmpl).filter('div#id_view_zone').find('#id_view')[0].attributes;
-						ximpia.console.log(viewAttrs);
-						for (var a=0; a<viewAttrs.length; a++) {
-							$('#id_view').attr(viewAttrs[a].name, viewAttrs[a].value);
-						}
+						ximpia.common.PageAjax.doTmplInject(dataTmpl);
 						//$('#id_content').wrap('<form id="form_' + viewName + '" method="post" action="" />');
 						// Do menus
 						ximpia.common.PageAjax.processMenus(responseMap);
@@ -2009,7 +1989,7 @@ ximpia.common.PageAjax = function() {
 						ximpia.common.PageAjax.processLogin(responseMap);
 						$(".ui-tooltip").remove();
 						// TODO: Place state logic in method
-						ximpia.console.log('window state info: ' + state);
+						ximpia.console.log('PageAjax.doForm :: window state info: ' + state);
 						if (state == true) {
 							var title = $(dataTmpl).filter('title').text();
 							var appSlug = responseMap['response']['appSlug'];
@@ -2038,13 +2018,12 @@ ximpia.common.PageAjax = function() {
 				});
 			},
 			getView : function(obj, state) {
-				//_attr.priv.path = _attr.priv.path + '?view=' + obj.view
 				try {
 					$('div.loadError').remove();
-					ximpia.console.log('Path: ' + _attr.priv.path);
-					ximpia.console.log('winType: ' + obj.winType);
+					ximpia.console.log('PageAjax.getView :: Path: ' + _attr.priv.path);
+					ximpia.console.log('PageAjax.getView :: winType: ' + obj.winType);
 					if (obj.winType == 'popup') {
-						ximpia.console.log('getView() :: Will open popup...');
+						ximpia.console.log('PageAjax.getView :: getView() :: Will open popup...');
 						var obj = {
 							isPopupReqView : true,
 							view : obj.view,
@@ -2060,7 +2039,7 @@ ximpia.common.PageAjax = function() {
 						}, state);
 					}
 				} catch (err) {
-					ximpia.console.log('getView :: Exception catched in getting view');
+					ximpia.console.log('PageAjax.getView :: Exception catched in getting view');
 					ximpia.console.log(err);
 					$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
@@ -2068,7 +2047,7 @@ ximpia.common.PageAjax = function() {
 				}
 			},
 			doAction : function(obj) {
-				ximpia.console.log('path: ' + _attr.priv.path);
+				ximpia.console.log('PageAjax.doAction :: path: ' + _attr.priv.path);
 				_attr.pub.doForm({
 					app : obj.app,
 					action : obj.action
@@ -2099,6 +2078,28 @@ ximpia.common.PageAjax.doFadeIn = function() {
 	$(".sectionComp").css('visibility', 'hidden');
 	$("#id_titleBar").empty();
 }
+/**
+ * Inject template into DOM
+ * 
+ * ** Attributes **
+ * 
+ * * ``dataTmpl``:String : Template from server
+ * 
+ */
+ximpia.common.PageAjax.doTmplInject = (function(dataTmpl) {
+	ximpia.console.log('PageAjax.doForm :: Got template...');
+	ximpia.console.log(dataTmpl);
+	ximpia.console.log($(dataTmpl));
+	var contentHtml = $(dataTmpl).filter('div#id_view_zone').find('#id_content').html();
+	$('#id_sectionTitle').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionTitle').html());
+	$('#id_content').html(contentHtml);
+	$('#id_sectionButton').html($(dataTmpl).filter('div#id_view_zone').find('#id_sectionButton').html());
+	var viewAttrs = $(dataTmpl).filter('div#id_view_zone').find('#id_view')[0].attributes;
+	ximpia.console.log(viewAttrs);
+	for (var a=0; a<viewAttrs.length; a++) {
+		$('#id_view').attr(viewAttrs[a].name, viewAttrs[a].value);
+	}
+})
 /**
  * Get template path
  */
@@ -2367,9 +2368,9 @@ ximpia.common.PageAjax.processMenus = (function(responseMap) {
 		menuSessObj['service'] = menuObj['service']
 	}
 	menuSessObj['view'] = menuObj['view']
-	if (responseMap['response']['isLogin'] == false && menuSessObj.hasOwnProperty('sys')) {
+	/*if (responseMap['response']['isLogin'] == false && menuSessObj.hasOwnProperty('sys')) {
 		delete menuSessObj['sys']
-	}
+	}*/
 	ximpia.common.Browser.setObject('menus', menuSessObj);
 	$("[data-xp-type='icon']").xpObjIcon('renderMenu');
 });
@@ -2382,26 +2383,27 @@ ximpia.common.PageAjax.processLogin = (function(responseMap) {
 	}
 	// Process login and logout layout changes
 	// id_header_extra is allways displayed. Temporaly, the search field is hidden in public site
-	if (responseMap['response']['view'] == 'homeLogin') {
+	// 01/10/2013 - jalegre - search box (id_header_search) is allways displayed. In future release, ability to configure by settings
+	/*if (responseMap['response']['view'] == 'homeLogin') {
 		$('#id_header_search').css('display', 'block');
 	} else if (responseMap['response']['view'] == 'logout') {
 		$('#id_header_search').css('display', 'none');
-	}
+	}*/
 });
 
 ximpia.common.Search = {};
 /**
- * Click on the search result box
+ * Click on the search result box ??? Should go to plugin???
  */
 ximpia.common.Search.doClick = (function(item) {
-	ximpia.console.log('I clicked on the search result...');
+	ximpia.console.log('Search.doClick :: I clicked on the search result...');
 	ximpia.console.log(item);
 	attrs = item.extra;
-	ximpia.console.log('attrs...');
+	ximpia.console.log('Search.doClick :: attrs...');
 	ximpia.console.log(attrs);
 	if (attrs.action != '') {
 		// do action
-		ximpia.console.log('action!!!!');
+		ximpia.console.log('Search.doClick :: action!!!!');
 		var pageJx = ximpia.common.PageAjax();
 		pageJx.doAction({
 			action : attrs.action
@@ -2411,8 +2413,8 @@ ximpia.common.Search.doClick = (function(item) {
 		// popupNoView
 		// popupView
 		// view
-		ximpia.console.log('view!!!!');
-		ximpia.console.log('view: ' + attrs.view);
+		ximpia.console.log('Search.doClick :: view!!!!');
+		ximpia.console.log('Search.doClick :: view: ' + attrs.view);
 		ximpia.common.PageAjax.doFadeIn();
 		var pageJx = ximpia.common.PageAjax();
 		pageJx.getView({

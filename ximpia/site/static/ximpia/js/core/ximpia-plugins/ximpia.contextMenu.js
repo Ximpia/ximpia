@@ -20,8 +20,8 @@ if(jQuery)( function() {
 			if (o.doAllways == undefined) o.doAllways = true;
 			if (o.align == undefined) o.align = 'left';
 			if( o.menu == undefined ) return false;
-			if( o.inSpeed == undefined ) o.inSpeed = 150;
-			if( o.outSpeed == undefined ) o.outSpeed = 75;
+			if( o.inSpeed == undefined ) o.inSpeed = 200;
+			if( o.outSpeed == undefined ) o.outSpeed = 200;
 			// 0 needs to be -1 for expected results (no fade)
 			if( o.inSpeed == 0 ) o.inSpeed = -1;
 			if( o.outSpeed == 0 ) o.outSpeed = -1;
@@ -33,14 +33,16 @@ if(jQuery)( function() {
 				// Add contextMenu class
 				$('#' + o.menu).addClass('contextMenu');
 				// Simulate a true right click
-				$(this).mousedown( function(e) {
+				$(this).click( function(e) {
 					var evt = e;
 					//var doAllways = true;
+					//ximpia.console.log('contextMenu :: event: ');
+					//ximpia.console.log(evt);
 					evt.stopPropagation();
-					$(this).mouseup( function(e) {
+					//$(this).mouseup( function(e) {
 						e.stopPropagation();
 						var srcElement = $(this);
-						$(this).unbind('mouseup');
+						//$(this).unbind('mouseup');
 						if ( o.doAllways == true) {
 							showMenu = true;
 						} else {
@@ -48,11 +50,19 @@ if(jQuery)( function() {
 								showMenu = true;
 							}
 						}
+						// Get this context menu
+						var menu = $('#' + o.menu);
+						if ($(menu).css('display') == 'block') {
+							showMenu = false;
+						}						
+						
+						//ximpia.console.log('contextMenu :: showMenu: ' + showMenu);
+						
 						if( showMenu == true ) {
 							// Hide context menus that may be showing
 							$(".contextMenu").hide();
-							// Get this context menu
-							var menu = $('#' + o.menu);
+							//$(menu).find('li.hover').removeClass('hover');
+							//$(menu).find('li a').unbind('click');
 							
 							if( $(el).hasClass('disabled') ) return false;
 							
@@ -83,11 +93,24 @@ if(jQuery)( function() {
 									x = offset.left;
 								}
 							}
-							y = offset.top + parseInt(srcElement.css('height').split('px')[0]);
+							if (o.isCombo == true) {
+								// Menu is positioned aligned from previous element when isCombo is true
+								//ximpia.console.log('contextMenu :: isCombo: ' + o.isCombo);
+								// Get width of previous element
+								var offsetPrev = $(this).prev().offset();
+								//ximpia.console.log($(this).prev().offset());
+								x = offsetPrev.left;
+							}
+							y = offset.top + parseInt(srcElement.css('height').split('px')[0]) + 3;
+							if (o.paddingTop != undefined) {
+								y = y + o.paddingTop;
+							}
 							
 							// Show the menu
 							$(document).unbind('click');
-							$(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
+							//ximpia.console.log('contextMenu :: menu displayed?: ' + $(menu).css('display'));
+							$(menu).css({ top: y, left: x }).slideDown(o.inSpeed);
+							
 							// Hover events
 							$(menu).find('a').mouseover( function() {
 								$(menu).find('li.hover').removeClass('hover');
@@ -97,7 +120,8 @@ if(jQuery)( function() {
 							});
 							
 							// Keyboard
-							$(document).keypress( function(e) {
+							$(document).keydown( function(e) {
+								//ximpia.console.log('contextMenu :: key: ' + e.keyCode);
 								switch( e.keyCode ) {
 									case 38: // up
 										if( $(menu).find('li.hover').size() == 0 ) {
@@ -116,7 +140,9 @@ if(jQuery)( function() {
 										}
 									break;
 									case 13: // enter
-										$(menu).find('li.hover a').trigger('click');
+										//$(menu).find('li.hover a').trigger('click');
+										//alert('click!!!');
+										//ximpia.console.log('Will try to click on hover items...');
 									break;
 									case 27: // esc
 										$(document).trigger('click');
@@ -138,12 +164,16 @@ if(jQuery)( function() {
 							setTimeout( function() { // Delay for Mozilla
 								$(document).click( function() {
 									$(document).unbind('click').unbind('keypress');
-									$(menu).fadeOut(o.outSpeed);
+									$(menu).slideUp(o.outSpeed);
 									return false;
 								});
 							}, 0);
+						} else {
+							// show menu is false
+							$(menu).find('li.hover').removeClass('hover');
+							$(menu).slideUp(o.outSpeed);
 						}
-					});
+					//});
 				});
 				
 				// Disable text selection

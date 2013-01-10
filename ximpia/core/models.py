@@ -4,6 +4,7 @@ import json
 import os
 
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.models import User
@@ -1319,18 +1320,52 @@ class Setting ( BaseModel ):
 
 
 class XpMsgException( Exception ):
-	Msg = ''
-	myException = None
-	ArgsDict = {}
+
 	def __init__(self, exception, msg, **argsDict):
 		"""Doc.
 		@param exception: 
 		@param msg: 
 		@param **argsDict: """
-		self.Msg = msg
-		self.myException = exception
-		self.ArgsDict = argsDict
+		self.__msg = msg
+		self.__myException = exception
+		self.__argsDict = argsDict
 		logger.debug( exception )
+
+	def get_msg(self):
+		return self.__msg
+
+
+	def get_my_exception(self):
+		return self.__myException
+
+
+	def get_args_dict(self):
+		return self.__argsDict
+
+
+	def set_msg(self, value):
+		self.__msg = value
+
+
+	def set_my_exception(self, value):
+		self.__myException = value
+
+
+	def set_args_dict(self, value):
+		self.__argsDict = value
+
+
+	def del_msg(self):
+		del self.__msg
+
+
+	def del_my_exception(self):
+		del self.__myException
+
+
+	def del_args_dict(self):
+		del self.__argsDict
+
 	def _log(self, exception, msg, argsDict):
 		"""Will use log facility of django 1.3"""
 		"""txt = repr(self.Exception)
@@ -1342,7 +1377,10 @@ class XpMsgException( Exception ):
 	def __str__(self):
 		#self._log()
 		#return repr(self.Msg)
-		return self.Msg
+		return self.msg
+	msg = property(get_msg, set_msg, del_msg, "msg's docstring")
+	myException = property(get_my_exception, set_my_exception, del_my_exception, "myException's docstring")
+	argsDict = property(get_args_dict, set_args_dict, del_args_dict, "argsDict's docstring")
 
 class XpRegisterException( Exception ):
 	Msg = ''
@@ -2070,11 +2108,27 @@ class ContextViewDecorator(object):
 				resp = f(request, **args)
 				return resp
 			except Exception as e: #@UnusedVariable
-				logger.debug( 'Context :: Exception...' )
+				logger.debug( 'Context :: Exception... type: %s' % (type(e)) )
 				if settings.DEBUG == True:
 					traceback.print_exc()
 					#logger.debug( e.myException )
-				raise
+					if type(e) == XpMsgException:
+						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
+						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
+						# Build json response with error message
+						resultDict = getResultERROR([('id_pageError', e.msg, True)])
+						sResult = json.dumps(resultDict)
+						# We must mix with template the error, send error data in django context, only need error message
+						result = render_to_response( 'mainXpError.html', RequestContext(request, 
+													{	'error_msg': e.msg,
+														'settings': settings,
+														'result': sResult,
+													}))
+						#result = HttpResponse(sResult)
+						return result
+					else:
+						pass
+						#raise
 		return wrapped_f
 
 class XpTemplateDeprec(object):

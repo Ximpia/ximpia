@@ -15,6 +15,7 @@
 <link href="{% static "ximpia/css/ximpia.jscrollpane.css" %}" rel="stylesheet" type="text/css" />
 <link href="{% static "ximpia/css/ximpia.selectBox.css" %}" rel="stylesheet" type="text/css" />
 <link href="{% static "ximpia/css/ximpia.flexbox.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "ximpia/css/ximpia.contextMenu.css" %}" rel="stylesheet" type="text/css" />
 <link href="{% static "ximpia/css/main.css" %}" rel="stylesheet" type="text/css" />
 </head>
 
@@ -33,6 +34,14 @@
 <a href="/" ><img id="LogoImg" src="{% static "images/logo.png" %}" alt=" " style="height: 35px; " /> </a>
 <!-- Make this link with javascript when user logs in: href="#" onclick="return false" -->
 <!-- <a href="/" onclick="return false"><img id="LogoImg" src="{% static "images/logo.png" %}" alt=" " style="height: 35px;margin: 1px 10px;" /> </a> -->
+</div>
+
+<!--<div id="id_sys_selector" class="sys-selector" >
+<div class="arrow-down" > </div>
+</div>-->
+
+<div id="id_sys_selector" class="sys-selector"  >
+<a href="#" ><img src="{% static "images/blank.png" %}" alt=" " /></a>
 </div>
 
 <div id="id_header_extra">
@@ -156,33 +165,15 @@
 
 
 <script>
-
 jQuery(document).ready(function($){
-
-	//alert('Holaaa');
 	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
 	$("#id_sect_loading").css('display', 'block');
 	ximpia.common.Page.init();
-	//var viewData = ximpia.common.Window.getViewAttrs();
-	//ximpia.console.log('viewData...');
-	//ximpia.console.log(viewData);
 	var pageJx = ximpia.common.PageAjax();
 	var data = $('[name="result"]').val();
 	ximpia.console.log('data...');
-	ximpia.console.log(data);
-	
+	ximpia.console.log(data);	
 	pageJx.renderCtx(data);
-	/*ximpia.common.Page.init();
-	var viewData = ximpia.common.Window.getViewAttrs();
-	var pageJx = ximpia.common.PageAjax();
-	var callback = eval(viewData.callback);
-	var data = $('[name="ctx"]').val();
-	pageJx.init({	path: ximpia.common.Path.getBusiness(),
-			viewName: viewData.viewName,
-			callback: callback,
-			verbose: true});
-	pageJx.renderCtx(data)*/
-
 	// Menu navigation
 	$(window).bind('popstate', function(event) {
 		var state = event.originalEvent.state;
@@ -191,15 +182,13 @@ jQuery(document).ready(function($){
 			pageJx.getView({ view: state.view, params: JSON.stringify({}), app: state.app}, state=false);
 		}
 	});
-
 	var stateData = {
 			appSlug: "{{appSlug}}",
 			viewSlug: "{{viewSlug}}",
 			app: "{{app}}",
 			view: "{{view}}"
 	};
-	window.history.pushState(stateData, "{{title}}", "{{request.path}}");
-	
+	window.history.pushState(stateData, "{{title}}", "{{request.path}}");	
 });
 
 </script>

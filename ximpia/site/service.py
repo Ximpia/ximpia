@@ -123,7 +123,7 @@ class SiteService ( CommonService ):
 	def _validateReminder(self, username, reminderId):
 		days = self._dbParam.get(mode=K.PARAM_LOGIN, name=K.PARAM_REMINDER_DAYS).valueId
 		newDate = date.today() + timedelta(days=days)
-		logger.debug( 'New Password Data : ', username, newDate, reminderId )
+		logger.debug( 'New Password Data : username: %s newDate: %s reminderId: %s' % (username, newDate, reminderId) )
 		# Show actual password, new password and confirm new password
 		self._validateExists([
 					[self._dbUserSys, {'username': username}, 'username', _m.ERR_changePassword],
@@ -168,16 +168,13 @@ class SiteService ( CommonService ):
 		if not self._ctx.user.is_authenticated():
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
-			self._addAttr('isLogin', False)
 			# Popup - Password reminder
 			self._addForm(forms.PasswordReminderForm())
 	
 	@ViewDecorator(DefaultForm)
 	def viewLogout(self):
 		"""Show logout view"""
-		# TODO: Add service method to add to response dictionary: self._addAttr('isLogin', False)
-		#self._ctx.jsData.addAttr('isLogin', False)
-		self._addAttr('isLogin', False)
+		pass
 	
 	@ViewDecorator(DefaultForm)
 	def viewHomeLogin(self):
@@ -297,9 +294,9 @@ class SiteService ( CommonService ):
 		"""Logout user"""
 		logger.debug( 'doLogout...' )
 		self._logout()
-		logger.debug( 'doLogout :: WF Data: ', self._getWFUser() )
+		logger.debug( 'doLogout :: WF Data: %s' % (self._getWFUser()) )
 		self._wf.removeData(self._getWFUser(), 'login')
-		logger.debug( 'did logout...' )
+		logger.debug( 'doLogout :: did logout...' )
 		
 	@ViewDecorator(forms.UserChangePasswordForm)
 	def viewChangePassword(self):
@@ -331,7 +328,7 @@ class SiteService ( CommonService ):
 		userDetail = self._dbUserDetail.get(user=user) 
 		days = self._dbParam.get(mode=K.PARAM_LOGIN, name=K.PARAM_REMINDER_DAYS).valueId
 		newDate = date.today() + timedelta(days=days)
-		#logger.debug( 'newDate: ', newDate, type(newDate) )
+		#logger.debug( 'newDate: %s %s' % (newDate, type(newDate)) )
 		#userDetail.resetPasswordDate = datetime.date(newDate)
 		userDetail.resetPasswordDate = newDate
 		# Set reminderId

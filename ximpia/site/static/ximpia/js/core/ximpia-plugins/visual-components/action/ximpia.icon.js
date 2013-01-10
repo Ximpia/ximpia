@@ -27,7 +27,7 @@
 		if (obj.zone == 'main') {
 			obj.title = '';
 		}
-		ximpia.console.log('classPlus: ' + classPlus);
+		ximpia.console.log('xpObjIcon :: classPlus: ' + classPlus);
 		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock" + classPlus + "\" title=\"" + obj.description + "\" >";
 		htmlContent += "<a href=\"" + path + "\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
 		if (obj.title != '' && obj.icon != '') {
@@ -61,46 +61,46 @@
 			/**
 			 * Render icon
 			 */
-			ximpia.console.log('icon :: render: ');
-			var menus = ximpia.common.Browser.getObject('menus');
-			
+			ximpia.console.log('xpObjIcon :: icon :: render: ');
+			var menus = ximpia.common.Browser.getObject('menus');			
 			// Parse sys => Create context menus for logo
-			ximpia.console.log('Parse sys...');
+			ximpia.console.log('xpObjIcon :: Parse sys...');
 			ximpia.console.log(menus['sys']);
 			if (menus.hasOwnProperty('sys')) {
 				if (menus['sys'].length > 0) {
 					var menuObj = menus['sys'][0];
-					ximpia.console.log('menuObj: ' + menuObj);
+					ximpia.console.log('xpObjIcon :: menuObj: ' + menuObj);
 					var items = menuObj['items'];
-					$('#LogoImg').xpObjCtxMenu('render', 'id_ctx_menu_sys', items);					
+					$("#id_sys_selector").css('display', 'block');
+					$('#id_sys_selector').xpObjCtxMenu('render', 'id_ctx_menu_sys', items);
+				} else {
+					$("#id_sys_selector").css('display', 'none');
 				}
-			}			
-			
+			}
 			// Parse main
-			// TODO: Icon with personalized images, dropdown ?????
-			ximpia.console.log('Parse main...');
+			// TODO: Icons with personalized images, dropdown ?????
+			ximpia.console.log('xpObjIcon :: Parse main...');
 			ximpia.console.log(menus['main']);
 			$('#id_mainIcons').empty();
 			for (i in menus['main']) {
 				var menuObj = menus['main'][i]
 				menuObj.align = 'left';
 				var elemId = 'id_icon_' + menuObj.name;
-				ximpia.console.log('elemId: ' + elemId + ' ' + !$('#' + elemId).length);
+				ximpia.console.log('xpObjIcon :: elemId: ' + elemId + ' ' + !$('#' + elemId).length);
 				// Check if #id_mainIcons already has this icon. If not, add to #id_mainIcons
-				ximpia.console.log('exsists: ' + $('#id_mainIcons:has(#' + elemId + ')').length);
+				ximpia.console.log('xpObjIcon :: exsists: ' + $('#id_mainIcons:has(#' + elemId + ')').length);
 				ximpia.console.log($('#id_mainIcons:has(#' + elemId + ')').length);
 				if ($('#id_mainIcons:has(#' + elemId + ')').length == 0) {
-					ximpia.console.log('menuObj');
+					ximpia.console.log('xpObjIcon :: menuObj');
 					ximpia.console.log(menuObj);
 					var htmlContent = buildIcon(menuObj);
 					ximpia.console.log(htmlContent);
 					$('#id_mainIcons').append(htmlContent);
 					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));
 				}
-			}			
-			
+			}
 			//Parse service
-			ximpia.console.log('Parse service...');
+			ximpia.console.log('xpObjIcon :: Parse service...');
 			ximpia.console.log(menus);
 			ximpia.console.log(menus['service']);
 			$('#id_serviceIcons').empty();
@@ -116,7 +116,6 @@
 					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));					
 				}
 			}
-			
 			// Parse view
 			$('#id_viewIcons').empty();
 			for (i in menus['view']) {
@@ -131,7 +130,6 @@
 					$('#' + elemId).attr('data-xp-render', JSON.stringify(true));					
 				}
 			}
-			
 			// Tooltip
 			$("[data-xp-type='icon']").qtip({
 				content: {
@@ -153,12 +151,10 @@
 					style: 'margin-top: 2px'
 				}
 			});
-			
 			// Click event
 			$("[data-xp-type='icon']").click(function() {
 				$(this).xpObjIcon('clickMenu');	
 			});
-			
 			/*for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log('i: ' + i);
 				var element = $(this)[i];
@@ -213,15 +209,13 @@
 			}
 		}
         };
-		
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjIcon' );
-        }    
-		
+        }
 	};
 
 })(jQuery);

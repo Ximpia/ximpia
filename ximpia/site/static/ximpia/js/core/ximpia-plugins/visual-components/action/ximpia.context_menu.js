@@ -1,6 +1,15 @@
 /*
- * Ximpia Visual Component 
  * Context Menu
+ * 
+ * 
+ * ** Attributes**
+ * 
+ * ** Methods **
+ * 
+ * * ``render(idMenu:String, items:List)``
+ * * ``clickItem(name:String)``
+ * 
+ * ** Returns **
  *
  */
 
@@ -30,7 +39,7 @@
 			contextMenu += "<ul id=\"" + idMenu + "\" class=\"contextMenu\">";
 			for (ctxI in items) {
 				var ctx = items[ctxI];
-				ximpia.console.log('***************** ctx ******************');
+				ximpia.console.log('xpObjCtxMenu :: ***************** ctx ******************');
 				ximpia.console.log(ctx);
         			var paramStr = '{';
         			for (param in ctx.params) {
@@ -52,9 +61,13 @@
 			$('body').append(contextMenu);
 			// Call context menu plugin
 			ximpia.console.log($(this));
-			$(this).contextMenu({ menu: idMenu, alignElement: true},
+			// Disable link href
+		    $(this).click(function(e) {
+		    	e.preventDefault();
+		    });
+			$(this).contextMenu({ menu: idMenu, alignElement: true, isCombo:true, paddingTop: 5},
 				function(action, el, pos) {
-					ximpia.console.log('itemAction: ' + action);
+					ximpia.console.log('xpObjCtxMenu :: itemAction: ' + action);
 					$(this).xpObjCtxMenu('clickItem', action);
 			});
 		},

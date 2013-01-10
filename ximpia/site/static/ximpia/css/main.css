@@ -817,6 +817,7 @@ div.loadError div {
 	margin-top: auto;
 	margin-bottom: auto;
 	float: left;
+	width: 600px;
 }
 
 span.AjaxButton {
@@ -1741,4 +1742,34 @@ legend {
 	background-size: 18px;
 }
 
+/* .sys-selector */
+.sys-selector {
+	border: 1px solid #ccc; 
+	width: 10px; 
+	height: 22px; 
+	float: left; 
+	margin-top: 10px; 
+	background-color: #333;
+	border: 1px solid #444;
+	display: none;
+}
+.sys-selector:hover, .sys-selector.sfhover {
+	cursor: pointer;
+	background-color: #555;
+}
+.sys-selector img {
+	background: url(../images/selector-arrow.png) no-repeat;
+	width: 9px;
+	height: 9px; 
+}
 
+/* Arrows */
+.arrow-down {
+	width: 0; 
+	height: 0; 
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;	
+	border-top: 9px solid #009CE8;
+	margin: auto; 
+	margin-top: 8px;
+}
