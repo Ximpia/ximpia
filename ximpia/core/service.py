@@ -4,6 +4,7 @@ import simplejson as json
 import types
 import datetime
 import os
+import re
 
 from django.http import HttpResponse
 from django.core.mail import send_mail
@@ -495,7 +496,7 @@ class ServiceDecorator(object):
 				if not obj._ctx.doneResult:
 					# Instances
 					dbApp = ApplicationDAO(obj._ctx)
-					# Menu
+					# View
 					logger.debug( 'ServiceDecorator :: viewNameTarget: %s' % (str(obj._ctx.viewNameTarget)) )
 					logger.debug( 'ServiceDecorator :: viewNameSource: %s' % (str(obj._ctx.viewNameSource)) )
 					if len(obj._ctx.viewNameTarget) > 1:
@@ -503,10 +504,6 @@ class ServiceDecorator(object):
 					else:
 						viewName = obj._ctx.viewNameSource
 					logger.debug( 'ServiceDecorator :: viewName: %s' % (viewName) )
-					menu = MenuService(obj._ctx)
-					menuDict = menu.getMenus(viewName)
-					#menuDict = menu.getMenus('home')
-					obj._ctx.jsData['response']['menus'] = menuDict
 					# Views
 					"""if obj._ctx['viewNameTarget'] != '':
 						obj._ctx.jsData['response']['view'] = obj._ctx.viewNameTarget
@@ -589,6 +586,10 @@ class ServiceDecorator(object):
 						except NameError:
 							value = setting.value
 						obj._ctx.jsData['response']['settings'][setting.name.name] = value
+					# Menu
+					menu = MenuService(obj._ctx)
+					menuDict = menu.getMenus(viewName)
+					obj._ctx.jsData['response']['menus'] = menuDict
 					if self._isServerTmpl == False:
 						result = obj._buildJSONResult(obj._ctx.jsData)
 						#logger.debug( obj._ctx.jsData )
@@ -1156,10 +1157,32 @@ class MenuService( object ):
 	def __init__(self, ctx):
 		"""Menu building and operations"""
 		self._ctx = ctx
-		"""self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
-		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
-		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)"""
-		#self._dbAppAccess = ApplicationAccessDAO(self._ctx)
+	
+	def __checkCondition(self, menuItem):
+		"""
+		Check menu condition
+		
+		** Attributes **
+		
+		* ``viewMenu``:Object : View menu model instance
+		
+		** Returns **
+		
+		* ``checkCondition``:Boolean 
+		"""
+		condition = menuItem.condition
+		checkCondition = True
+		if condition != None and condition != '':
+			condition = condition.replace('&&', 'and')\
+						.replace('||','or')\
+						.replace('!','not')\
+						.replace('true','True')\
+						.replace('false','False')
+			resp = self._ctx.jsData.response
+			condition = re.sub('([a-zA-Z0-9._]+ ==)', r'resp.\1', condition)
+			logger.debug('MenuService :: condition: %s' % (condition) )		
+			checkCondition = eval(condition)
+		return checkCondition
 	
 	def __getList(self, menuDict, menuList):
 		"""
@@ -1175,60 +1198,64 @@ class MenuService( object ):
 		None
 		"""
 		container = {}
-		for viewMenu in menuList:
-			#logger.debug( 'getMenus :: viewMenu: %s' % (viewMenu) )
-			#logger.debug( 'getMenus :: action: %s' % (viewMenu.menu.action) )
-			#logger.debug( 'getMenus :: view: %s' % (viewMenu.menu.view) )
+		for menuItem in menuList:
+			#logger.debug( 'getMenus :: menuItem: %s' % (menuItem) )
+			#logger.debug( 'getMenus :: action: %s' % (menuItem.menu.action) )
+			#logger.debug( 'getMenus :: view: %s' % (menuItem.menu.view) )
+			# TODO: Check condition
+			checkCondition = self.__checkCondition(menuItem)
+			if not checkCondition:
+				continue
 			menuObj = {}
-			if viewMenu.menu.view != None:
-				menuObj['service'] = viewMenu.menu.view.service.name
-			if viewMenu.menu.action != None:
-				menuObj['service'] = viewMenu.menu.action.service.name
-			menuObj['action'] = viewMenu.menu.action.name if viewMenu.menu.action != None else ''
-			menuObj['view'] = viewMenu.menu.view.name if viewMenu.menu.view != None else ''
-			menuObj['viewSlug'] = viewMenu.menu.view.slug if viewMenu.menu.view != None else ''
-			if viewMenu.menu.view != None and viewMenu.menu.view.image != None:
-				menuObj['image'] = viewMenu.menu.view.image
+			if menuItem.menu.view != None:
+				menuObj['service'] = menuItem.menu.view.service.name
+			if menuItem.menu.action != None:
+				menuObj['service'] = menuItem.menu.action.service.name
+			menuObj['action'] = menuItem.menu.action.name if menuItem.menu.action != None else ''
+			menuObj['view'] = menuItem.menu.view.name if menuItem.menu.view != None else ''
+			menuObj['viewSlug'] = menuItem.menu.view.slug if menuItem.menu.view != None else ''
+			if menuItem.menu.view != None and menuItem.menu.view.image != None:
+				menuObj['image'] = menuItem.menu.view.image
 			else:
 				menuObj['image'] = ''
-			menuObj['winType'] = viewMenu.menu.view.winType if viewMenu.menu.view != None else ''
-			menuObj['sep'] = viewMenu.hasSeparator
-			menuObj['name'] = viewMenu.menu.name
-			menuObj['title'] = viewMenu.menu.title
-			menuObj['description'] = viewMenu.menu.description
-			menuObj['icon'] = viewMenu.menu.icon.value if viewMenu.menu.icon != None else ''
-			menuObj['zone'] = viewMenu.zone
-			if viewMenu.menu.view != None:
-				menuObj['app'] = viewMenu.menu.view.application.name
-				menuObj['appSlug'] = viewMenu.menu.view.application.slug
-			elif viewMenu.menu.action != None:
-				menuObj['app'] = viewMenu.menu.action.application.name
-				menuObj['appSlug'] = viewMenu.menu.action.application.slug
+			menuObj['winType'] = menuItem.menu.view.winType if menuItem.menu.view != None else ''
+			menuObj['sep'] = menuItem.hasSeparator
+			menuObj['name'] = menuItem.menu.name
+			menuObj['title'] = menuItem.menu.title
+			menuObj['description'] = menuItem.menu.description
+			menuObj['icon'] = menuItem.menu.icon.value if menuItem.menu.icon != None else ''
+			menuObj['zone'] = menuItem.zone
+			if menuItem.menu.view != None:
+				menuObj['app'] = menuItem.menu.view.application.name
+				menuObj['appSlug'] = menuItem.menu.view.application.slug
+			elif menuItem.menu.action != None:
+				menuObj['app'] = menuItem.menu.action.application.name
+				menuObj['appSlug'] = menuItem.menu.action.application.slug
 			# params
-			params = self._dbMenuParam.search(menu=viewMenu.menu)
+			params = self._dbMenuParam.search(menu=menuItem.menu)
 			paramDict = {}
 			# name, operator, value
 			for param in params:
 				if param.operator == Choices.OP_EQ:
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
-			container[viewMenu.menu.name] = menuObj
-			if viewMenu.menu.view != None:
-				menuObj['isCurrent'] = True if viewMenu.menu.view.name == self.__viewName else False
+			container[menuItem.menu.name] = menuObj
+			if menuItem.menu.view != None:
+				menuObj['isCurrent'] = True if menuItem.menu.view.name == self.__viewName else False
 			#logger.debug( 'menuObj: %s' % (menuObj) )
-			if viewMenu.parent == None:
+			if menuItem.parent == None:
 				menuObj['items'] = []
-				menuDict[viewMenu.zone].append(menuObj)
-				"""if viewMenu.zone in ['sys','main']:
+				menuDict[menuItem.zone].append(menuObj)
+				"""if menuItem.zone in ['sys','main']:
 					if self._ctx.isLogin:
-						menuDict[viewMenu.zone].append(menuObj)
+						menuDict[menuItem.zone].append(menuObj)
 					else:
-						if viewMenu.menu.name == 'home':
-							menuDict[viewMenu.zone].append(menuObj) 
+						if menuItem.menu.name == 'home':
+							menuDict[menuItem.zone].append(menuObj) 
 				else:
-					menuDict[viewMenu.zone].append(menuObj)"""
+					menuDict[menuItem.zone].append(menuObj)"""
 			else:
-				parentMenuObj = container[viewMenu.parent.menu.name]
+				parentMenuObj = container[menuItem.parent.menu.name]
 				parentMenuObj['items'].append(menuObj)
 		logger.debug( 'getMenus :: menuDict: %s' % (menuDict) )
 	

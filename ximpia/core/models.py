@@ -16,6 +16,7 @@ from choices import Choices
 import constants as K
 
 from ximpia.util.js import Form as _jsf
+from util import AttrDict
 
 # Settings
 from ximpia.core.util import getClass
@@ -830,6 +831,7 @@ class ViewMenu( BaseModel ):
 	* ``order``:IntegerField
 	* ``hasSeparator``:BooleanField
 	* ``zone``:CharField(10)
+	* ``condition``:CharField(255)
 	
 	**Relationships**
 	
@@ -852,8 +854,10 @@ class ViewMenu( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
+	condition = models.CharField(max_length=255, null=True, blank=True, db_column='CONDITION',
+			verbose_name=_('Condition'), help_text=_('Condition'))
 	def __unicode__(self):
-		return '%s' % (self.menu)
+		return '%s [%s]' % (self.menu, self.zone)
 	class Meta:
 		unique_together = (('menu','view'),)
 		db_table = 'CORE_VIEW_MENU'
@@ -871,6 +875,7 @@ class ServiceMenu ( BaseModel ):
 	* ``order``
 	* ``hasSeparator``
 	* ``zone``
+	* ``condition``:CharField(255)
 	
 	**Relationships**
 	
@@ -892,8 +897,10 @@ class ServiceMenu ( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
+	condition = models.CharField(max_length=255, null=True, blank=True, db_column='CONDITION',
+			verbose_name=_('Condition'), help_text=_('Condition'))
 	def __unicode__(self):
-		return '%s' % (self.menu)
+		return '%s [%s]' % (self.menu, self.zone)
 	class Meta:
 		#unique_together = (('menu','application','view'),)
 		db_table = 'CORE_SERVICE_MENU'
@@ -2228,9 +2235,11 @@ class JsResultDict(dict):
 	STATUS = 'status'
 	RESPONSE = 'response'
 	ERRORS = 'errors'
+	__getattr__ = dict.__getitem__
+	__setattr__ = dict.__setitem__
 	def __init__(self):
 		#logger.debug( 'dict : ' + statusIn + ' ' + responseIn + ' ' + errorsIn )
-		dict.__init__(self, status=self.OK, response={}, errors=[])
+		dict.__init__(self, status=self.OK, response=AttrDict(), errors=[])
 	def setStatus(self, status):
 		"""Set status"""
 		dict.__setitem__(self, self.STATUS, status)
@@ -2253,7 +2262,7 @@ class JsResultDict(dict):
 		"""build error response"""
 		dict.__setitem__(self, self.STATUS, self.ERROR)
 		dict.__setitem__(self, self.ERRORS, errorList)
-		dict.__setitem__(self, self.RESPONSE, {})
+		dict.__setitem__(self, self.RESPONSE, AttrDict())
 
 def getResultOK(dataDict, status='OK'):
 	"""Build result dict for OK status. resultList is a list of objects or content to show in client"""

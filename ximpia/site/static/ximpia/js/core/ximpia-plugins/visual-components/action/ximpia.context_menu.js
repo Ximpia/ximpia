@@ -49,8 +49,9 @@
 				// data-xp : viewName, actionName, windowType
 				var dataXp = "{winType: '" + ctx.winType + "', view: '" + ctx.view + "', action: '" + 
 					ctx.action + "', params: " + paramStr + ", app: '" + ctx.app + "'}";
-				var liAttr = (ctx.icon != '') ? "class=\"" + ctx.icon + "Small\"" : '';
+				var liAttr = (ctx.icon != '') ? "class=\"" + ctx.icon + "Small" : '';
 				liAttr += (ctx.sep == true) ? ' separator' : '';
+				liAttr += "\"";
 				//var action = (ctx.view != '') ? 'openView' : 'openAction';
 				var action = 'menu-' + ctx.name;
 				contextMenu += "<li " + liAttr + "><a href=\"#" + action + "\" data-xp-type=\"ctxMenuItem\" data-xp=\"" + dataXp + "\" >" + ctx.title + "</a></li>";
