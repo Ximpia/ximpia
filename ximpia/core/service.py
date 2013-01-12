@@ -25,7 +25,7 @@ from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
 from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO
-from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO
+from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO, ViewMenuConditionDAO, ServiceMenuConditionDAO
 from ximpia.util import resources
 from choices import Choices
 import messages
@@ -37,6 +37,7 @@ import constants as K
 # Settings
 from ximpia.core.util import getClass
 from ximpia.site.data import SettingDAO
+from ximpia.core.models import ViewMenuCondition
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -1158,9 +1159,9 @@ class MenuService( object ):
 		"""Menu building and operations"""
 		self._ctx = ctx
 	
-	def __checkCondition(self, menuItem):
+	def __checkRender(self, menuItem, conditions):
 		"""
-		Check menu condition
+		Check menu condition for render
 		
 		** Attributes **
 		
@@ -1168,23 +1169,29 @@ class MenuService( object ):
 		
 		** Returns **
 		
-		* ``checkCondition``:Boolean 
+		* ``checkRender``:Boolean 
 		"""
-		condition = menuItem.condition
-		checkCondition = True
-		if condition != None and condition != '':
-			condition = condition.replace('&&', 'and')\
+		checkRender = True
+		for conditionItem in conditions:
+			conditionRule = conditionItem.condition.rule
+			logger.debug('MenuService.__checkRule :: conditionItem: %s menuItem: %s' % (conditionItem.serviceMenu, menuItem) )
+			if conditionRule != None and conditionRule != '' and conditionItem.serviceMenu.menu.name == menuItem.menu.name:
+				conditionRule = conditionRule.replace('&&', 'and')\
 						.replace('||','or')\
 						.replace('!','not')\
 						.replace('true','True')\
 						.replace('false','False')
-			resp = self._ctx.jsData.response
-			condition = re.sub('([a-zA-Z0-9._]+ ==)', r'resp.\1', condition)
-			logger.debug('MenuService :: condition: %s' % (condition) )		
-			checkCondition = eval(condition)
-		return checkCondition
+				resp = self._ctx.jsData.response
+				conditionRule = re.sub('([a-zA-Z0-9._]+ ==)', r'resp.\1', conditionRule)
+				logger.debug('MenuService :: conditionRule: %s' % (conditionRule) )
+				checkCondition = eval(conditionRule)
+				logger.debug('MenuService :: checkCondition: %s %s' % (checkCondition, conditionItem.action) )
+				if conditionItem.action == 'render' and checkCondition == False:
+					checkRender = False
+					break
+		return checkRender
 	
-	def __getList(self, menuDict, menuList):
+	def __getList(self, menuDict, menuList, conditionList):
 		"""
 		Append menu dictionary to list of menu items
 		
@@ -1203,8 +1210,8 @@ class MenuService( object ):
 			#logger.debug( 'getMenus :: action: %s' % (menuItem.menu.action) )
 			#logger.debug( 'getMenus :: view: %s' % (menuItem.menu.view) )
 			# TODO: Check condition
-			checkCondition = self.__checkCondition(menuItem)
-			if not checkCondition:
+			checkRender = self.__checkRender(menuItem, conditionList)
+			if not checkRender:
 				continue
 			menuObj = {}
 			if menuItem.menu.view != None:
@@ -1305,6 +1312,8 @@ class MenuService( object ):
 		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
 		self._dbServiceMenu = ServiceMenuDAO(self._ctx, relatedDepth=3)
 		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
+		self._dbViewMenuCondition = ViewMenuConditionDAO(self._ctx, relatedDepth=2)
+		self._dbServiceMenuCondition = ServiceMenuConditionDAO(self._ctx, relatedDepth=2)
 		# logic		
 		logger.debug( 'getMenus...' )
 		logger.debug( 'getMenus :: appName: %s' % (self._ctx.app) )
@@ -1333,7 +1342,10 @@ class MenuService( object ):
 												Q(menu__application__isSubscription=True) &
 												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												service=view.service ).order_by('order')
-		self.__getList(menuDict, menuList)
+		conditionList = self._dbServiceMenuCondition.search(serviceMenu__in=menuList)
+		logger.debug('menuList: %s' % (menuList) )
+		logger.debug('conditionList: %s' % (conditionList) )
+		self.__getList(menuDict, menuList, conditionList)
 		# linked to view
 		if self._ctx.user.is_anonymous():
 			menuList = self._dbViewMenu.search( 	menu__application__isSubscription=False,
@@ -1344,8 +1356,10 @@ class MenuService( object ):
 												Q(menu__application__isSubscription=True) &
 												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												view=view ).order_by('order')
+		conditionList = self._dbViewMenuCondition.search(viewMenu__in=menuList)
 		logger.debug('menuList: %s' % (menuList) )
-		self.__getList(menuDict, menuList)
+		logger.debug('conditionList: %s' % (conditionList) )
+		self.__getList(menuDict, menuList, conditionList)
 		return menuDict
 
 class SearchService ( object ):

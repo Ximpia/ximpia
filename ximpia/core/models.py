@@ -118,6 +118,31 @@ class Param( BaseModel ):
 		unique_together = ('application','name')
 
 
+class Condition( BaseModel ):
+	"""
+	Conditions
+	
+	** Attributes **
+	
+	* ``id``:AutoField : Primary key
+	* ``name``:CharField(30) : Condition name
+	* ``condition``:CharField(255)
+	
+	** Relationships **		
+		
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_CONDITION')
+	name = models.CharField(max_length=30, db_column='NAME',
+			verbose_name=_('Condition Name'), help_text=_('Condition Name'))
+	rule = models.CharField(max_length=255, db_column='RULE',
+			verbose_name=_('Condition Rule'), help_text=_('Condition Rule'))
+	def __unicode__(self):
+		return self.name
+	class Meta:
+		db_table = 'CORE_CONDITION'
+		verbose_name = 'Condition'
+		verbose_name_plural = "Conditions"
+
 class CoreParam( BaseModel ):
 	"""
 	
@@ -854,15 +879,50 @@ class ViewMenu( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
-	condition = models.CharField(max_length=255, null=True, blank=True, db_column='CONDITION',
-			verbose_name=_('Condition'), help_text=_('Condition'))
+	conditions = models.ManyToManyField(Condition, through='core.ViewMenuCondition', null=True, blank=True, related_name='viewmenu_conditions',
+				verbose_name = _('Conditions'), help_text = _('Conditions'))
 	def __unicode__(self):
 		return '%s [%s]' % (self.menu, self.zone)
 	class Meta:
 		unique_together = (('menu','view'),)
 		db_table = 'CORE_VIEW_MENU'
 		verbose_name = 'View Menu'
-		verbose_name_plural = "Views for Menus"
+		verbose_name_plural = "Views Menus"
+
+class ViewMenuCondition ( BaseModel ):
+	"""
+	Conditions for service menus
+	
+	** Attributes **
+	
+	* ``id``:AutoField
+	* ``order``:IntegerField
+	* ``action``:CharField(20)
+	* ``value``:BooleanField
+	
+	** Relationships **
+	
+	* ``condition`` -> Condition
+	* ``serviceMenu`` -> ServiceMenu
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_MENU_CONDITION')
+	condition = models.ForeignKey(Condition, null=True, blank=True, db_column='ID_CORE_CONDITION',
+			verbose_name=_('Condition'), help_text=_('Condition'))
+	viewMenu = models.ForeignKey(ViewMenu, db_column='ID_CORE_VIEW_MENU',
+			verbose_name=_('View Menu'), help_text=_('View Menu'))
+	action = models.CharField(max_length=20, choices=Choices.CONDITION_RENDER, default=Choices.CONDITION_ACTION_RENDER, db_column='ACTION',
+			verbose_name=_('Action'), help_text=_('Action'))
+	value = models.BooleanField(default=True, db_column='VALUE',
+			verbose_name=_('Value'), help_text=_('Value'))
+	order = models.IntegerField(default=10, db_column='ORDER',
+			verbose_name=_('Order'), help_text=_('Order'))
+	def __unicode__(self):
+		return '%s %s %s' % (self.condition.name, self.action, self.value)
+	class Meta:
+		db_table = 'CORE_VIEW_MENU_CONDITION'
+		verbose_name = 'View Menu Condition'
+		verbose_name_plural = "View Menu Conditions"
 
 class ServiceMenu ( BaseModel ):
 	"""
@@ -897,15 +957,50 @@ class ServiceMenu ( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
-	condition = models.CharField(max_length=255, null=True, blank=True, db_column='CONDITION',
-			verbose_name=_('Condition'), help_text=_('Condition'))
+	conditions = models.ManyToManyField(Condition, through='core.ServiceMenuCondition', null=True, blank=True, related_name='servicemenu_conditions',
+				verbose_name = _('Conditions'), help_text = _('Conditions'))
 	def __unicode__(self):
 		return '%s [%s]' % (self.menu, self.zone)
 	class Meta:
 		#unique_together = (('menu','application','view'),)
 		db_table = 'CORE_SERVICE_MENU'
 		verbose_name = 'Service Menu'
-		verbose_name_plural = "Service for Menus"
+		verbose_name_plural = "Service Menus"
+
+class ServiceMenuCondition ( BaseModel ):
+	"""
+	Conditions for service menus
+	
+	** Attributes **
+	
+	* ``id``:AutoField
+	* ``order``:IntegerField
+	* ``action``:CharField(20)
+	* ``value``:BooleanField
+	
+	** Relationships **
+	
+	* ``condition`` -> Condition
+	* ``serviceMenu`` -> ServiceMenu
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SERVICE_MENU_CONDITION')
+	condition = models.ForeignKey(Condition, null=True, blank=True, db_column='ID_CORE_CONDITION',
+			verbose_name=_('Condition'), help_text=_('Condition'))
+	serviceMenu = models.ForeignKey(ServiceMenu, db_column='ID_CORE_SERVICE_MENU',
+			verbose_name=_('Service Menu'), help_text=_('Service Menu'))
+	action = models.CharField(max_length=20, choices=Choices.CONDITION_RENDER, default=Choices.CONDITION_ACTION_RENDER, db_column='ACTION',
+			verbose_name=_('Action'), help_text=_('Action'))
+	value = models.BooleanField(default=True, db_column='VALUE',
+			verbose_name=_('Value'), help_text=_('Value'))
+	order = models.IntegerField(default=10, db_column='ORDER',
+			verbose_name=_('Order'), help_text=_('Order'))
+	def __unicode__(self):
+		return '%s %s %s' % (self.condition.name, self.action, self.value)
+	class Meta:
+		db_table = 'CORE_SERVICE_MENU_CONDITION'
+		verbose_name = 'Service Menu Condition'
+		verbose_name_plural = "Service Menu Conditions"
 
 class MenuParam( BaseModel ):
 	"""

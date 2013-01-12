@@ -125,3 +125,8 @@ class Choices(object):
 				(PARAM_TYPE_INTEGER, _('Integer')),
 				(PARAM_TYPE_DATE, _('Date')),
 				)
+	# CONDITION_ACTION
+	CONDITION_ACTION_RENDER = 'render'
+	CONDITION_RENDER = (
+				(CONDITION_ACTION_RENDER, _('Render')),
+				)

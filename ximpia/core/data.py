@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 
 from models import XpMsgException, CoreParam, Application, Action
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, ServiceMenu
-from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl
+from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl, ServiceMenuCondition
+from models import ViewMenuCondition
 from models import Context, JsResultDict
 
 # Settings
@@ -401,6 +402,15 @@ class ViewTmplDAO(CommonDAO):
 		super(ViewTmplDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
 		self._model = ViewTmpl
 
+class ServiceMenuConditionDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ServiceMenuConditionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = ServiceMenuCondition
+
+class ViewMenuConditionDAO(CommonDAO):
+	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
+		super(ViewMenuConditionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+		self._model = ViewMenuCondition
 
 
 

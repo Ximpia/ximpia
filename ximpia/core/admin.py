@@ -1,6 +1,6 @@
 from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Setting, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
-from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup
+from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup, ServiceMenuCondition, ViewMenuCondition, Condition
 from models import SearchIndex, SearchIndexWord, SearchIndexParam
 
 from django.contrib import admin
@@ -9,6 +9,12 @@ from django.contrib import admin
 
 class ApplicationMetaInline(admin.StackedInline):
 	model = ApplicationMeta
+
+class ServiceMenuConditionInline(admin.StackedInline):
+	model = ServiceMenuCondition
+
+class ViewMenuConditionInline(admin.StackedInline):
+	model = ViewMenuCondition
 
 class ViewMetaInline(admin.StackedInline):
 	model = ViewMeta
@@ -61,6 +67,15 @@ class IndexParamInline(admin.StackedInline):
 	model = SearchIndexParam
 
 # INLINES
+
+class ConditionAdmin(admin.ModelAdmin):
+	list_display = ('id','name','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+	list_display_links = ('name',)
+	def save_model(self, request, obj, form, change):
+		obj.userModifyId = request.user.id
+		if not obj.id:
+			obj.userCreateId = request.user.id
+		obj.save()
 
 class CoreParamAdmin(admin.ModelAdmin):
 	list_display = ('id','mode','name','paramType','value','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
@@ -119,6 +134,17 @@ class ServiceAdmin(admin.ModelAdmin):
 			obj.userCreateId = request.user.id
 		obj.save()
 
+class ServiceMenuAdmin(admin.ModelAdmin):
+	list_display = ('id','menu','service','zone','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+	list_display_links = ('menu',)
+	list_filter = ('service__name',)
+	inlines = [ ServiceMenuConditionInline ]
+	def save_model(self, request, obj, form, change):
+		obj.userModifyId = request.user.id
+		if not obj.id:
+			obj.userCreateId = request.user.id
+		obj.save()
+
 class MenuAdmin(admin.ModelAdmin):
 	list_display = ('id','name','title','description','view','application','action','icon','language',\
 		'userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
@@ -148,6 +174,17 @@ class ViewAdmin(admin.ModelAdmin):
 	    }
 	inlines = [ ViewMetaInline, ViewParamValueInline, ViewTemplateInline, ViewMenuInline, ViewTagsInline, ViewAccessGroupInline ]
 	exclude = ['implementation']
+	def save_model(self, request, obj, form, change):
+		obj.userModifyId = request.user.id
+		if not obj.id:
+			obj.userCreateId = request.user.id
+		obj.save()
+
+class ViewMenuAdmin(admin.ModelAdmin):
+	list_display = ('id','menu','view','zone','userCreateId', 'userModifyId', 'dateCreate', 'dateModify')
+	list_display_links = ('menu',)
+	list_filter = ('view__name',)
+	inlines = [ ViewMenuConditionInline ]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
@@ -273,3 +310,6 @@ admin.site.register(XpTemplate, XpTemplateAdmin)
 admin.site.register(MetaKey, MetaKeyAdmin)
 admin.site.register(Setting, SettingAdmin)
 admin.site.register(SearchIndex, SearchIndexAdmin)
+admin.site.register(Condition, ConditionAdmin)
+admin.site.register(ServiceMenu, ServiceMenuAdmin)
+admin.site.register(ViewMenu, ViewMenuAdmin)
