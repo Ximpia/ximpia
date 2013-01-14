@@ -9,6 +9,21 @@ can be found at http://www.mozilla.org/MPL/2.0/, with addition of Exhibit C to p
 Ximpia Public License
 Version 1.0
 
+<h2 id="definitions">1. Definitions</h2>
+<dl>
+<dt>1.1. “Contributor”</dt>
+<dd><p>means each individual or legal entity that creates, contributes to the creation of, or owns Covered Software.</p>
+</dd>
+<dt>1.2. “Contributor Version”</dt>
+<dd><p>means the combination of the Contributions of others (if any) used by a Contributor and that particular Contributor’s Contribution.</p>
+</dd>
+<dt>1.3. “Contribution”</dt>
+<dd><p>means Covered Software of a particular Contributor.</p>
+</dd>
+<dt>1.4. “Covered Software”</dt>
+<dd><p>means Source Code Form to which the initial Contributor has attached the notice in Exhibit A, the Executable Form of such Source Code Form, and Modifications of such Source Code Form, in each case including portions thereof.</p>
+</dd>
+
 1. Definitions
 
 1.1. “Contributor”
