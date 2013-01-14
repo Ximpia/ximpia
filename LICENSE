@@ -6,12 +6,12 @@ Ximpia Public License consists of the Mozilla Public License (MPL) version 2.0, 
 can be found at http://www.mozilla.org/MPL/2.0/, with addition of Exhibit C to provide a 
 "Powered By Ximpia" logo on applications based on Ximpia Framework.
 
-Ximpia Public License
-Version 1.0
+#Ximpia Public License
+#Version 1.0
 
-1. Definitions
+##1. Definitions
 
-1.1. “Contributor”
+###1.1. “Contributor”
 means each individual or legal entity that creates, contributes to the creation of, or owns Covered Software.
 
 1.2. “Contributor Version”
