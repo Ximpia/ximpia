@@ -3,7 +3,7 @@ License (XPPL), 1.0. If a copy of the XPPL was not distributed with this
 file, You can obtain one at https://github.com/Ximpia/ximpia/blob/master/LICENSE.
 
 Ximpia Public License consists of the Mozilla Public License (MPL) version 2.0, which
-can be found at http://www.mozilla.org/MPL/2.0/, with addition of Exhibit B to provide a 
+can be found at http://www.mozilla.org/MPL/2.0/, with addition of Exhibit C to provide a 
 "Powered By Ximpia" logo on applications based on Ximpia Framework.
 
 Ximpia Public License
@@ -186,5 +186,23 @@ You may add additional accurate notices of copyright ownership.
 Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 This Source Code Form is “Incompatible With Secondary Licenses”, as defined by the Mozilla Public License, v. 2.0.
+
+Exhibit C - Additional Terms applicable to the Openbravo Public License.
+
+I. Effect.
+
+These additional terms described in this Ximpia Public License – Additional Terms shall apply to the Covered Code under this License.
+
+II. Ximpia and logo.
+
+This License does not grant any rights to use the trademarks "Ximpia" and the "Ximpia" logos even if such marks are included in the 
+Original Code or Modifications.
+
+However, in addition to the other notice obligations, all copies of the Covered Code in Executable and Source Code form distributed 
+must, as a form of attribution of the original author, include on each user interface screen and on program start-up or login screen 
+the "Powered by Ximpia" logo, visible to all users. When users click on the "Powered by Ximpia" logo it must direct them 
+to http://ximpia.com.
+
+II.1 The official "Powered by Ximpia" logos
 
 Copyright (c) 2012 Ximpia Inc
