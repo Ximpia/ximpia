@@ -165,7 +165,8 @@
     "model": "site.Group",
     "pk": 1,
     "fields": {
-      "group": 1
+      "group": 1,
+      "category": 2
     }
   },
   {

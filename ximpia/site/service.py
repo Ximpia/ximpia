@@ -26,12 +26,10 @@ logger = logging.getLogger(__name__)
 
 import forms
 from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
-from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO
-from forms import UserSignupInvitationForm #@UnusedImport
+from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO, InvitationDAO
+from forms import UserSignupInvitationForm, UserSignupForm #@UnusedImport
 import messages as _m
 import constants as K
-
-# TODO: Resolve pageError=True attribute for decorators
 
 class SiteService ( CommonService ):
 	
@@ -40,7 +38,6 @@ class SiteService ( CommonService ):
 	
 	@ValidationDecorator()
 	def _authenUser(self):
-		# TODO: Integrate signup mode from settings
 		"""if self._f()['authSource'] == K.FACEBOOK:
 			ximpiaId = 'fb_'+ self._f()['facebookId']"""
 		self._ctx.user = self._authenticateUser(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrongPassword)
@@ -53,7 +50,6 @@ class SiteService ( CommonService ):
 	def _validateUserNotSignedUp(self):
 		"""Validate user and email in system in case sign up with user/password. In case signup with social
 		networks, only validate that username does not exist."""
-		# TODO: Integrate signup mode from settings
 		if self._f()['authSource'] == K.PASSWORD:
 			self._validateNotExists([
 						[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
@@ -64,6 +60,26 @@ class SiteService ( CommonService ):
 				[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
 				[self._dbSocialNetworkUser, {'socialId': self._f()['socialId']}, 'socialNet', _m.ERR_socialIdExists]
 				])
+	
+	@ValidationDecorator()
+	def _validateInvitationPending(self, invitationCode):
+		"""
+		Validates that invitation is pending
+		"""
+		self._validateExists([
+				[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.PENDING}, 
+						'invitationCode', _m.ERR_invitationNotValid]
+								])
+	
+	@ValidationDecorator()
+	def _validateInvitationNotUsed(self):
+		"""
+		Validates that invitation is valid: Checks that invitation has not been used
+		"""
+		self._validateNotExists([
+				[self._dbInvitation, {'invitationCode': self._f()['invitationCode'], 'status': K.USED}, 
+						'invitationCode', _m.ERR_invitationNotValid]
+								])
 	
 	def _createUser(self):
 		"""
@@ -113,6 +129,8 @@ class SiteService ( CommonService ):
 		user.groups.add(groupSys)
 		group = self._dbGroup.get(group__group=groupSys)
 		self._dbUserChannelGroup.create(userChannel=userChannel, group=group)
+		# Invitation
+		#self._dbInvitation
 	
 	@ValidationDecorator()
 	def _validateUser(self):
@@ -128,8 +146,8 @@ class SiteService ( CommonService ):
 		self._validateExists([
 					[self._dbUserSys, {'username': username}, 'username', _m.ERR_changePassword],
 					[self._dbUserDetail, {	'user__username': username, 
-								'reminderId': reminderId, 
-								'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
+											'reminderId': reminderId, 
+											'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
 					])
 	
 	@ValidationDecorator()
@@ -157,6 +175,7 @@ class SiteService ( CommonService ):
 		self._dbGroupSys = GroupSysDAO(self._ctx)
 		self._dbParam = ParamDAO(self._ctx)
 		self._dbCoreParam = CoreParameterDAO(self._ctx)
+		self._dbInvitation = InvitationDAO(self._ctx)
 	
 	@WorkflowViewDecorator('login', form=forms.LoginForm)
 	def viewLogin(self):
@@ -204,7 +223,6 @@ class SiteService ( CommonService ):
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		self._login()
 		
-		# TODO: Integrate settings for user-password and social, social login
 		# Checks if we have password
 		# If password, normal login
 		# If not password and socialId and token, authen with social id
@@ -234,6 +252,7 @@ class SiteService ( CommonService ):
 		self._doDbInstancesForUser()
 		# Business Validation
 		self._validateUserNotSignedUp()
+		self._validateInvitationNotUsed()
 		if self._f()['authSource'] != K.PASSWORD:
 			self._createUser()
 			# set ok message
@@ -285,9 +304,18 @@ class SiteService ( CommonService ):
 		self._showView(K.Views.ACTIVATION_USER) 
 	
 	@ViewDecorator(forms.UserSignupInvitationForm)
-	def viewSignup(self):
+	def viewSignup(self, invitationCode=None):
 		"""Show signup form. Get get invitation code."""
+		self._dbInvitation = InvitationDAO(self._ctx)
+		logger.debug('viewSignup :: invitationCode: %s' % (invitationCode) )
 		self._addAttr('isSocialLogged', False)
+		if invitationCode != None:
+			# Add invitation code to form form_signup
+			invitation = self._dbInvitation.get(invitationCode=invitationCode)
+			self._addFormValue('invitationCode', invitationCode)
+			self._addFormValue('email', invitation.email)
+			self._f().disableFields(['invitationCode', 'email'])
+			self._validateInvitationPending(invitationCode)
 	
 	@MenuActionDecorator('logout')
 	def logout(self):

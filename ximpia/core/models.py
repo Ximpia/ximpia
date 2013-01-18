@@ -4,7 +4,6 @@ import json
 import os
 
 from django.db import models
-from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.models import User
@@ -1727,41 +1726,22 @@ class Context ( object ):
 		self.application = None
 
 	def getApplication(self):
-	    return self.__application
-	
-	
+		return self.__application
 	def setApplication(self, value):
-	    self.__application = value
-	
-	
-	def delApplication(self):
-	    del self.__application
-
-
+		self.__application = value
+	def delApplication(self):del self.__application
 	def getPath(self):
-	    return self.__path
-	
-	
+		return self.__path
 	def setPath(self, value):
-	    self.__path = value
-	
-	
+		self.__path = value
 	def delPath(self):
-	    del self.__path
-
-
+		del self.__path
 	def get_db_name(self):
 		return self.__dbName
-
-
 	def set_db_name(self, value):
 		self.__dbName = value
-
-
 	def del_db_name(self):
 		del self.__dbName
-
-
 	def get_is_server_tmpl(self):
 		return self.__isServerTmpl
 	def set_is_server_tmpl(self, value):

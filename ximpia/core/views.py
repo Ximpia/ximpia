@@ -11,8 +11,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.http import Http404
 
-from yacaptcha.models import Captcha
-
 from ximpia.core.util import getClass
 from models import context, ContextViewDecorator, ContextDecorator
 from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService
@@ -125,25 +123,6 @@ def oauth(request, service):
 	template = 'social_network/tags/networks/iconResponse.html'
 	Result = render_to_response(template, ContextDict)
 	return Result
-
-def reloadCaptcha(request):
-	"""Reload captcha
-	@param request: """
-	Captcha(request).create()
-	Result = HttpResponse('OK')
-	return Result
-
-def checkCaptcha(request, value):
-	"""Checks that value is the same as stored in captcha for user session. Returns True/False in json
-	@param request: 
-	@param value: Text inputed by user
-	@return: json True/False"""
-	captcha = Captcha(request).get()
-	check = False
-	if captcha == value:
-		check = True
-	jsonCheck = json.dumps(check)
-	return jsonCheck
 
 @context
 def jxJSON(request, **ArgsDict):

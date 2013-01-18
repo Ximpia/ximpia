@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 
 from ximpia.util.js import Form as _jsf
 from ximpia.core.form_fields import XpUserField, XpPasswordField, XpEmailField, XpCharField, XpChoiceField, XpHiddenField
-from ximpia.core.form_fields import XpHiddenDataField
 from ximpia.core.form_widgets import XpHiddenWidget
 from ximpia.core.forms import XBaseForm
 
@@ -110,6 +109,58 @@ class UserChangePasswordForm( XBaseForm ):
 		self._xpClean()
 		return self.cleaned_data
 
+class UserSignupForm ( XBaseForm ):
+	_XP_FORM_ID = 'signup'
+	# Instances 
+	_dbUser = User()
+	_dbUserChannel = UserChannel()
+	_dbAddress = Address()
+	_dbInvitation = Invitation()
+	# Fields
+	username = XpUserField(_dbUser, '_dbUser.username', label='Username')
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsReq=False,  
+		help_text = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
+	passwordVerify = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsVal=["{equalTo: '#id_password'}"], jsReq=False,
+					label= _('Password Verify'))
+	email = XpEmailField(_dbInvitation, '_dbInvitation.email', label='Email')
+	firstName = XpCharField(_dbUser, '_dbUser.first_name')
+	lastName = XpCharField(_dbUser, '_dbUser.last_name', required=False)
+	city = XpCharField(_dbAddress, '_dbAddress.city', required=False)
+	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, initial='', choices=Choices.COUNTRY)
+	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.PASSWORD)
+	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
+	# Navigation and Message Fields
+	params = forms.CharField(widget=XpHiddenWidget, required=False, initial=_jsf.encodeDict({
+									'profiles': '', 
+									'userGroup': K.SIGNUP_USER_GROUP_ID,
+									'affiliateId': -1}))
+	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'country': Choices.COUNTRY}))
+	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m,
+										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
+	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))
+
+	"""def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
+		Build initial values for form
+		self.fields['invitationCode'].initial = invitation.invitationCode
+		self.putParam('affiliateId', affiliateId)
+		if len(snProfileDict) != 0:
+			self._dbUser.firstName = snProfileDict['first_name']
+			self._dbUser.lastName = snProfileDict['last_name']
+			locationName = snProfileDict['location']['name']
+			locationFields = locationName.split(',')
+			self._dbAddress.city = locationFields[0].strip()
+			locale = snProfileDict['locale']
+			self._dbAddress.country = locale.split('_')[1].lower()"""
+
+	def clean(self):
+		"""Clean form: validate same password and captcha when implemented"""
+		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._getFieldValue('authSource')) )
+		if self._getFieldValue('authSource') == K.PASSWORD:
+			self._validateSameFields([('password','passwordVerify')])
+		self._xpClean()
+		return self.cleaned_data
+
 class UserSignupInvitationForm ( XBaseForm ):
 	_XP_FORM_ID = 'signup'
 	# Instances 
@@ -128,8 +179,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 	lastName = XpCharField(_dbUser, '_dbUser.last_name', required=False)
 	city = XpCharField(_dbAddress, '_dbAddress.city', required=False)
 	country = XpChoiceField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, initial='', choices=Choices.COUNTRY)
-	#invitationCode = XpHiddenDataField(_dbInvitation, '_dbInvitation.invitationCode')
-	#facebookIcon_data = forms.CharField(widget=XpHiddenWidget, required=False, initial=SocialNetwork('facebook', 2).getS())
+	invitationCode = XpCharField(_dbInvitation, '_dbInvitation.invitationCode', required=False, jsReq=True)
 	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.PASSWORD)
 	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
@@ -143,8 +193,8 @@ class UserSignupInvitationForm ( XBaseForm ):
 										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))
 
-	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
-		"""Build initial values for form"""
+	"""def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
+		Build initial values for form
 		self.fields['invitationCode'].initial = invitation.invitationCode
 		self.putParam('affiliateId', affiliateId)
 		if len(snProfileDict) != 0:
@@ -154,7 +204,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 			locationFields = locationName.split(',')
 			self._dbAddress.city = locationFields[0].strip()
 			locale = snProfileDict['locale']
-			self._dbAddress.country = locale.split('_')[1].lower()
+			self._dbAddress.country = locale.split('_')[1].lower()"""
 
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""

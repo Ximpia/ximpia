@@ -241,6 +241,13 @@ class CommonService( object ):
 		self._ctx.form = formInstance
 		self._isFormOK = self._ctx.form.is_valid()
 	
+	def _getMainFormId(self):
+		""""
+		Get main form id, like ``form_xxxx`` where xxxx is the returned value
+		"""
+		logger.debug('main formId: %s' % (self._ctx.form._XP_FORM_ID) )
+		return self._ctx.form._XP_FORM_ID
+	
 	def _getPostDict(self):
 		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
 		return self._postDict
@@ -305,7 +312,7 @@ class CommonService( object ):
 			dbObj, qArgs, fieldName, errMsg = dbData
 			exists = dbObj.check(**qArgs)
 			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' % 
-						(qArgs, str(exists), str(fieldName) + str(errMsg)) )
+						(qArgs, str(exists), str(fieldName), str(errMsg)) )
 			if not exists:
 				self._addError(fieldName, errMsg)
 	
@@ -383,6 +390,28 @@ class CommonService( object ):
 		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
 		@param formInstance: Form instance"""
 		self._ctx.forms[formInstance.getFormId()] = formInstance
+	
+	def _addFormValue(self, fieldName, fieldValue, formId=None):
+		"""
+		Add form value to field already defined in the forms for the service
+		
+		** Required Attributes **
+		 
+		* ``fieldName`` : field name as appears in form definition
+		* ``fieldValue`` : Field value
+		
+		** Optional Attributes **
+		
+		* ``formId`` : Id for the form ro modify field, like ``signup``. Default value None. In case None, 
+		we get formId from self._getMainFormId()
+		
+		** Returns ** 
+		
+		None
+		"""
+		if formId == None:
+			formId = self._getMainFormId()
+		self._ctx.forms[formId].fields[fieldName].initial = fieldValue
 	
 	def _getUserChannelName(self):
 		"""Get user social name"""
@@ -1030,6 +1059,8 @@ class ViewTmplDecorator ( object ):
 			template = TemplateService(ctx)
 			templates = template.resolve(self.__viewName)
 			logger.debug( 'ViewTmplDecorator :: templates: %s' % templates )
+			if resultJs['status'] == 'ERROR':
+				raise XpMsgException(None, resultJs['errors'][0][1])
 			if templates.has_key(self.__viewName):
 				tmplName = templates[self.__viewName]
 				logger.debug( 'ViewTmplDecorator :: tmplName: %s' % tmplName )
@@ -1176,19 +1207,28 @@ class MenuService( object ):
 			conditionRule = conditionItem.condition.rule
 			logger.debug('MenuService.__checkRule :: conditionItem: %s menuItem: %s' % (conditionItem.serviceMenu, menuItem) )
 			if conditionRule != None and conditionRule != '' and conditionItem.serviceMenu.menu.name == menuItem.menu.name:
+				# Replace javascript condition-like operators to python-like
 				conditionRule = conditionRule.replace('&&', 'and')\
 						.replace('||','or')\
-						.replace('!','not')\
 						.replace('true','True')\
 						.replace('false','False')
 				resp = self._ctx.jsData.response
-				conditionRule = re.sub('([a-zA-Z0-9._]+ ==)', r'resp.\1', conditionRule)
+				patts = ['([a-zA-Z0-9._]+\ *==)','([a-zA-Z0-9._]+\ *!=)','([a-zA-Z0-9._]+\ *>)','([a-zA-Z0-9._]+\ *<)',\
+							'([a-zA-Z0-9._]+\ *>=)','([a-zA-Z0-9._]+\ *<=)']
+				for patt in patts:
+					index = re.search(patt, conditionRule)
+					if index != None:
+						conditionRule = re.sub(patt, r'resp.\1', conditionRule)
 				logger.debug('MenuService :: conditionRule: %s' % (conditionRule) )
 				checkCondition = eval(conditionRule)
 				logger.debug('MenuService :: checkCondition: %s %s' % (checkCondition, conditionItem.action) )
-				if conditionItem.action == 'render' and checkCondition == False:
-					checkRender = False
-					break
+				if conditionItem.action == 'render':
+					if checkCondition == False and conditionItem.value == True:
+						logger.debug('MenuService.__checkRule :: conditionRule False and condition render set to True, no render')
+						checkRender = False
+					if checkCondition == True and conditionItem.value == False:
+						logger.debug('MenuService.__checkRule :: conditionRule True and condition render set to False, no render')
+						checkRender = False
 		return checkRender
 	
 	def __getList(self, menuDict, menuList, conditionList):

@@ -1503,9 +1503,22 @@ ximpia.common.Condition = {};
  * condition like...
  * ``settings.SIGNUP_USER_PASSWORD == true``
  * 
+ * Strings...
+ * ``view == "signup" && settings.SIGNUP_USER_PASSWORD == true``
+ * 
+ * 
  * OR : ``||``
  * AND : ``&&``
- * NOT : `!```
+ * 
+ * ==
+ * !=
+ * >
+ * <
+ * >=
+ * <=
+ * 
+ * Paranthesis...
+ * ``(isLogin == true) || (isLogin == false && view == "signup")
  * 
  * **Attributes**
  * 
@@ -1518,16 +1531,23 @@ ximpia.common.Condition = {};
  */
 ximpia.common.Condition.eval = (function(condition) {
 	var resp = ximpia.common.Browser.getResponse();
-	var patt = /[a-zA-Z0-9._]+ ==/g;
-	conditionNew = condition.replace(patt,		
-		function( $0, $1, $2){
-			// $0 will be the variable, like $0 == 32
-			//ximpia.console.log('$0: ' + $0 + ' $1: ' + $1 + ' $2: ' + $2);
-			return( "resp." + $0 );
-		} 
-	);
+	var patts = [/([a-zA-Z0-9._]+\ *==)/g, /([a-zA-Z0-9._]+\ *!=)/g, /([a-zA-Z0-9._]+\ *>)/g, /([a-zA-Z0-9._]+\ *<)/g, 
+					/([a-zA-Z0-9._]+\ *>=)/g, /([a-zA-Z0-9._]+\ *<=)/g];
+	var index = -1;
+	var conditionNew = condition;
+	for (var i = 0; i<patts.length; i++) {
+		index = conditionNew.search(patts[i]);
+		if (index != -1) {
+			conditionNew = conditionNew.replace(patts[i],
+				function( $0, $1, $2){
+					return( "resp." + $0 );
+				}
+			);			
+		}
+	}
 	ximpia.console.log('common.Condition.eval :: conditionNew: ' + conditionNew);
-	return eval(conditionNew);
+	var check = eval(conditionNew);
+	return check;
 });
 /*
  * Processing evaluation condition rules. Returns evaluation object.
@@ -1551,6 +1571,8 @@ ximpia.common.Condition.processRules = (function() {
 	// Get condition rules and Eval conditions and built evals 
 	$.metadata.setType("attr", "data-xp-cond-rules");
 	var conditionRules = $("#id_view").metadata();
+	//ximpia.console.log('xpObjContainer :: conditionRules...');
+	//ximpia.console.log(conditionRules);
 	var evals = {};
 	for (conditionRule in conditionRules) {
 		var checkCondition = ximpia.common.Condition.eval(conditionRules[conditionRule]);
@@ -1571,7 +1593,7 @@ ximpia.common.Condition.processRules = (function() {
  * ** Returns **
  * 
  */
-ximpia.common.Condition.doElement = (function(evals, element) {
+ximpia.common.Condition.doElements = (function(evals, element) {
 	var conditions = $(element).metadata({type: 'attr', name: 'data-xp-cond'});
 	ximpia.console.log('xpObjContainer :: conditions...');
 	ximpia.console.log(conditions);
@@ -1587,7 +1609,7 @@ ximpia.common.Condition.doElement = (function(evals, element) {
 					$(element).children().attr('data-xp-render', 'true');
 					$(element).children().css('display', 'block');
 					// TODO: Call render api method of component
-				} else {
+				} else if(condition.value == false && conditionCheck == true) {
 					$(element).css('display', 'none');
 					$(element).children().attr('data-xp-render', 'false');
 					$(element).children().css('display', 'none');
@@ -2179,15 +2201,15 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	// function.render
 	$('#' + formId).find("[data-xp-type='function.render']").xpObjRenderExt('render', xpForm);
 	// basic.text
-	$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+	$('#' + formId).find("[data-xp-type='field']").xpObjInput('renderField', xpForm);
 	// #id_variables
 	$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
 	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
 	// basic.textarea
-	$('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
 	// list.field
 	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
 	// button
@@ -2217,13 +2239,13 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// container
 	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
 	// basic.text
-	$('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
+	$('#' + formId).find("[data-xp-type='field']").xpObjInput('renderField', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
 	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
 	// basic.textarea
-	$('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
 	// list.field
 	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
 	// button

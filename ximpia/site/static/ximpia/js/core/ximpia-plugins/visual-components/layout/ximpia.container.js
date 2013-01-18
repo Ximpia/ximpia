@@ -61,7 +61,7 @@
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true) {					
 					// do element conditions
-					ximpia.common.Condition.doElement(evals, element)
+					ximpia.common.Condition.doElements(evals, element)
 				}
 			}
 		}

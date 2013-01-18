@@ -35,13 +35,14 @@
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
-				//ximpia.console.log($(this)[i]);
+				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
 				var idInput = $(element).attr('id').split('_comp')[0];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
 					var nameInput = idInput.split('id_')[1];
+					ximpia.console.log('nameInput: ' + nameInput);
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 					//ximpia.console.log('input attrs: ' + idInput);
@@ -85,7 +86,11 @@
 					//ximpia.console.log('dataAttrs');
 					//ximpia.console.log(dataAttrs);
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label')) {
-						$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+						if (attrs.hasOwnProperty('label')) {
+							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
+						} else {
+							$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+						}
 						if (attrs.info == true) {
 							$("label[for=\"" + idInput + "\"]").addClass("info");
 							// help_text

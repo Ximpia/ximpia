@@ -814,7 +814,7 @@ div.infoMsg {
 div.loadError div {
 	/*border: 1px solid;*/
 	/*height: 55px;*/
-	margin-top: auto;
+	margin-top: 10px;
 	margin-bottom: auto;
 	float: left;
 	width: 600px;

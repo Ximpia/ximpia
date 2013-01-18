@@ -265,6 +265,21 @@ class XBaseForm( forms.Form ):
 			logger.debug( attrs )"""
 			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
 		jsData['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
+	
+	def disableFields(self, fields):
+		"""
+		Diable fields
+		
+		** Attributes **
+		
+		* ``fields``:List : fields to diable
+		
+		** Returns **
+		
+		None
+		"""
+		for field in fields:
+			self.fields[field].widget.attrs['readonly'] = 'readonly'
 
 class DefaultForm(XBaseForm):
 	_XP_FORM_ID = 'default'

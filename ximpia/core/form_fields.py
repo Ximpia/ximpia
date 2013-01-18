@@ -115,7 +115,7 @@ class XpBaseCharField( CharField ):
 
 class XpCharField( XpBaseCharField ):
 	"""CharField"""
-	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init='', jsReq=None, xpType='basic.text', **argsDict):
+	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init='', jsReq=None, xpType='field', **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = [validateTxtField]
@@ -123,6 +123,8 @@ class XpCharField( XpBaseCharField ):
 		argsDict['min_length'] = minValue if minValue != None else None
 		argsDict['required'], argsDict['jsReq'] = self._doRequired(required, jsReq) 
 		classStr = 'fieldMust' if required == True else 'field'
+		if required == False and jsReq == True:
+			classStr = 'fieldMust'
 		attrDict = self._doAttrs(argsDict, {	'class': classStr,
 							'maxlength': str(argsDict['max_length']),
 							'xpType': xpType})
@@ -161,7 +163,7 @@ XpCheckboxField => (pk, str)...
 
 class XpOptionChoiceField( XpBaseCharField ):
 	"""Option Group Field. Labels and values comes from the choices list."""
-	def __init__(self, instance, insField, xpType='input.option', choicesId='', **argsDict):
+	def __init__(self, instance, insField, xpType='option', choicesId='', **argsDict):
 		self._doInstanceInit(instance, insField)
 		attrDict = self._doAttrs(argsDict, {	'choicesId': choicesId,	
 							'xpType': xpType	})
@@ -171,7 +173,7 @@ class XpOptionChoiceField( XpBaseCharField ):
 
 class XpCheckboxChoiceField( XpBaseCharField ):
 	"""Checkbox Group Field. Labels and values comes from the choices list."""
-	def __init__(self, instance, insField, xpType='input.checkbox', choicesId='', **argsDict):
+	def __init__(self, instance, insField, xpType='checkbox', choicesId='', **argsDict):
 		self._doInstanceInit(instance, insField)
 		attrDict = self._doAttrs(argsDict, {	'choicesId': choicesId,	
 							'xpType': xpType	})
@@ -202,7 +204,7 @@ class XpHiddenField( XpBaseCharField ):
 
 class XpUserField( XpBaseCharField ):
 	"""UserField""" 
-	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='basic.text', **argsDict):
+	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='field', **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = [validateUserId]
@@ -220,7 +222,7 @@ class XpUserField( XpBaseCharField ):
 
 class XpEmailField( XpBaseCharField ):
 	"""EmailField"""
-	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='basic.text', **argsDict):
+	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='field', **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = [validateEmail]
@@ -270,7 +272,7 @@ class XpChoiceTextField( XpBaseCharField ):
 class XpTextChoiceField( XpBaseCharField  ):
 	"""Text Choice Field. Field with autocompletion"""
 	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, maxHeight=200, minCharacters=3, 
-			choicesId='', dbClass='', params={}, xpType='basic.text', **argsDict):
+			choicesId='', dbClass='', params={}, xpType='field', **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = []
@@ -294,7 +296,7 @@ class XpTextChoiceField( XpBaseCharField  ):
 
 class XpPasswordField( XpBaseCharField ):
 	"""PasswordField"""
-	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='basic.text', **argsDict):
+	def __init__(self, instance, insField, minValue=None, maxValue=None, required=True, init=None, jsReq=None, xpType='field', **argsDict):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		argsDict['validators'] = [validatePassword]
