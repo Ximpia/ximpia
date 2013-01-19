@@ -97,11 +97,13 @@ $.extend({
 				//console.log('attr!!!!!!!!!!!!!');
 				var attr = elem.getAttribute( settings.name );
 				//console.log('metadata :: attr: ' + attr);
-				attr = attr.replace(/\\'/g, '"');
-				var m = settings.cre.exec( attr );
-				//console.log(m);
-				if ( attr && m)
-					data = m[1];
+				if (attr != null){
+					attr = attr.replace(/\\'/g, '"');
+					var m = settings.cre.exec( attr );
+					//console.log(m);
+					if ( attr && m)
+						data = m[1];
+				}
 			}
 			
 			//ximpia.console.log('metadata :: name: ' + settings.name + ' type: ' + settings.type);
@@ -109,7 +111,9 @@ $.extend({
 			if ( data.indexOf( '{' ) <0 )
 			data = "{" + data + "}";
 			
-			data = data.replace(/\s+/g, '');			
+			if (data != null) {
+				data = data.replace(/\s+/g, '');
+			}
 			
 			//ximpia.console.log('metadata :: data: ' + data);
 			

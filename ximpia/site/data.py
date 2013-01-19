@@ -127,7 +127,7 @@ class SettingDAO(CommonDAO):
 		Queryset with settings
 		"""
 		settings = self._model.objects.filter( Q(application = None) | Q(application__name=appName), mustAutoload=True)
-		return settings
+		return settings 
 
 class UserAddressDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):

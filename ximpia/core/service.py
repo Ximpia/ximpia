@@ -30,6 +30,8 @@ from ximpia.util import resources
 from choices import Choices
 import messages
 
+from ximpia.site.data import SettingDAO
+
 from ximpia.util import ut_email
 from models import JsResultDict, ContextDecorator
 import constants as K
@@ -211,6 +213,22 @@ class CommonService( object ):
 					myList.append((key, message, True))
 		self._resultDict = getResultERROR(myList)
 		return self._resultDict
+	
+	def _getSetting(self, settingName):
+		"""
+		Get setting model instance.
+		
+		** Attributes ** 
+		
+		* ``settingName``:String : Setting name
+		
+		** Returns **
+		
+		models.site.Setting model instance
+		"""
+		self._dbSetting = SettingDAO(self._ctx, relatedDepth=2)
+		setting = self._dbSetting.get(name__name=settingName)
+		return setting
 
 	def _doValidations(self, validationDict):
 		"""Do all validations defined in validation dictionary"""

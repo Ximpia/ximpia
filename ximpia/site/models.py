@@ -407,6 +407,18 @@ class Setting ( BaseModel ):
 	        verbose_name = _('Must Autoload?'), help_text = _('Must Autoload?'), db_column='MUST_AUTOLOAD')
 	def __unicode__(self):
 		return str(self.name)
+	def isChecked(self):
+		"""
+		For check settings, resturns setting state, True/False. for rest, returns False.
+		
+		** Returns **
+		
+		Boolean
+		"""
+		check = False
+		if self.value == 'True':
+			check = True
+		return check
 	class Meta:
 		db_table = 'SITE_SETTING'
 		verbose_name = _('Setting')

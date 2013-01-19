@@ -12,7 +12,6 @@ from ximpia.core.service import ViewDecorator, ActionDecorator, ValidationDecora
 		WorkflowActionDecorator
 from ximpia.core.models import Context as CoreContext
 from ximpia.core.data import CoreParameterDAO
-import ximpia.core.constants as CoreK
 from ximpia.core.forms import DefaultForm
 
 # Settings
@@ -24,12 +23,15 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
+# Constants
+import ximpia.core.constants as CoreK
+import constants as K
+
 import forms
 from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
 from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO, InvitationDAO
 from forms import UserSignupInvitationForm, UserSignupForm #@UnusedImport
 import messages as _m
-import constants as K
 
 class SiteService ( CommonService ):
 	
@@ -66,20 +68,26 @@ class SiteService ( CommonService ):
 		"""
 		Validates that invitation is pending
 		"""
-		self._validateExists([
-				[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.PENDING}, 
-						'invitationCode', _m.ERR_invitationNotValid]
-								])
+		setting = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
+		logger.debug('_validateInvitationPending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
+		if setting.isChecked():
+			self._validateExists([
+					[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.PENDING}, 
+							'invitationCode', _m.ERR_invitationNotValid]
+									])
 	
 	@ValidationDecorator()
 	def _validateInvitationNotUsed(self):
 		"""
-		Validates that invitation is valid: Checks that invitation has not been used
+		Validates that invitation is valid: Checks that invitation has not been used in case invitations defined in settings
 		"""
-		self._validateNotExists([
-				[self._dbInvitation, {'invitationCode': self._f()['invitationCode'], 'status': K.USED}, 
-						'invitationCode', _m.ERR_invitationNotValid]
-								])
+		setting = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
+		logger.debug('_validateInvitationNotUsed :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
+		if setting.isChecked():
+			self._validateNotExists([
+					[self._dbInvitation, {'invitationCode': self._f()['invitationCode'], 'status': K.USED}, 
+							'invitationCode', _m.ERR_invitationNotValid]
+									])
 	
 	def _createUser(self):
 		"""
@@ -130,7 +138,11 @@ class SiteService ( CommonService ):
 		group = self._dbGroup.get(group__group=groupSys)
 		self._dbUserChannelGroup.create(userChannel=userChannel, group=group)
 		# Invitation
-		#self._dbInvitation
+		setInvitation = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
+		if setInvitation.isChecked() and self._f()['invitationCode'] != '':
+			invitation = self._dbInvitation.get(invitationCode=self._f()['invitationCode'])
+			invitation.status = K.USED
+			invitation.save()
 	
 	@ValidationDecorator()
 	def _validateUser(self):
@@ -309,13 +321,14 @@ class SiteService ( CommonService ):
 		self._dbInvitation = InvitationDAO(self._ctx)
 		logger.debug('viewSignup :: invitationCode: %s' % (invitationCode) )
 		self._addAttr('isSocialLogged', False)
-		if invitationCode != None:
+		setInvitation = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
+		self._validateInvitationPending(invitationCode)
+		if invitationCode != None and setInvitation.isChecked():
 			# Add invitation code to form form_signup
-			invitation = self._dbInvitation.get(invitationCode=invitationCode)
+			invitation = self._dbInvitation.get(invitationCode=invitationCode, status=K.PENDING)
 			self._addFormValue('invitationCode', invitationCode)
 			self._addFormValue('email', invitation.email)
 			self._f().disableFields(['invitationCode', 'email'])
-			self._validateInvitationPending(invitationCode)
 	
 	@MenuActionDecorator('logout')
 	def logout(self):
