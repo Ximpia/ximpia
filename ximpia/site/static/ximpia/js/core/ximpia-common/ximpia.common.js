@@ -1605,18 +1605,28 @@ ximpia.common.Condition.doElements = (function(evals, element) {
 				var conditionCheck =  evals[condition.condition];
 				ximpia.console.log('xpObjContainer :: conditionCheck: ' + conditionCheck + ' condition.value: ' + condition.value);
 				if (condition.value == true && conditionCheck == true) {
+					ximpia.console.log('xpObjContainer :: I render true elements in container...');
 					$(element).css('display', 'block');
 					$(element).children().attr('data-xp-render', 'true');
 					$(element).children().css('display', 'block');
 					// TODO: Call render api method of component
 				} else if(condition.value == false && conditionCheck == true) {
+					ximpia.console.log('xpObjContainer :: I render false elements in container...');
+					$(element).css('display', 'none');
+					$(element).children().attr('data-xp-render', 'false');
+					$(element).children().css('display', 'none');
+					$(element).children().children().remove();
+					// TODO: Call unrender api method of component
+				} else {
+					ximpia.console.log('xpObjContainer :: I render false elements in container...');
 					$(element).css('display', 'none');
 					$(element).children().attr('data-xp-render', 'false');
 					$(element).children().css('display', 'none');
 					$(element).children().children().remove();
 					// TODO: Call unrender api method of component
 				}
-			} else if (condition.action == 'disable') {				
+			} else if (condition.action == 'disable') {
+				// TODO: Implement disable action				
 			}
 		}
 	}
