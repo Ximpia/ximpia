@@ -877,6 +877,18 @@ ximpia.common.Browser.putAttr = (function(name, value) {
 	// Set new response
 	ximpia.common.Browser.setObject('xpData-view', viewObj);
 });
+/*
+ * Get application from response object
+ * 
+ * ** Returns **
+ * 
+ * Application name, like ximpia.site
+ * 
+ */
+ximpia.common.Browser.getApp = (function() {
+	var response = ximpia.common.Browser.getResponse();
+	return response.app
+});
 
 ximpia.common.Session = {};
 /**

@@ -94,15 +94,21 @@ $.extend({
 				if ( e.length )
 					data = $.trim(e[0].innerHTML);
 			} else if ( elem.getAttribute != undefined ) {
-				//console.log('attr!!!!!!!!!!!!!');
+				console.log('attr!!!!!!!!!!!!!');
 				var attr = elem.getAttribute( settings.name );
-				//console.log('metadata :: attr: ' + attr);
+				console.log('metadata :: attr: ' + attr);
 				if (attr != null){
 					attr = attr.replace(/\\'/g, '"');
 					var m = settings.cre.exec( attr );
-					//console.log(m);
-					if ( attr && m)
+					console.log(m);
+					if ( attr && m) {
 						data = m[1];
+						/*if (typeof(m[1]) == 'object') {
+							data = ximpia.common.Object.metadata(m[1]);
+						} else {
+							data = m[1];
+						}*/
+					}
 				}
 			}
 			
@@ -115,7 +121,7 @@ $.extend({
 				data = data.replace(/\s+/g, ' ');
 			}
 			
-			//ximpia.console.log('metadata :: data: ' + data);
+			ximpia.console.log('metadata :: data: ' + data);
 			
 			data = eval("(" + data + ")");
 			//console.log(data);

@@ -12,6 +12,30 @@
  * link.url
  * link.view
  * link.action
+ * 
+ * 
+ * <!--<div id="id_passwordReminderLinkUrl_comp" data-xp-type="link.url" style="margin-top: 20px; margin-left: 20px"  
+		data-xp="{	op: 'callUrl', 
+					url: '/',
+					target: '_blank',
+					width: 800,
+					height: 600,
+					title: 'go to home...', 
+					linkText: 'Take me to Home'}" ></div>
+
+<div id="id_lnkCode_comp" data-xp-type="link.view" style="margin-top: 20px; margin-left: 20px"  
+		data-xp="{	op: 'showView', 
+					app: 'ximpia_site.web',
+					title: 'go to home...', 
+					linkText: 'Show Code',
+					view: 'code'}" ></div>
+
+<div id="id_lnkSignout_comp" data-xp-type="link.action" style="margin-top: 20px; margin-left: 20px"  
+		data-xp="{	op: 'doAction', 
+					app: 'ximpia.site',
+					title: 'will logout...', 
+					linkText: 'Logout',
+					action: 'logout'}" ></div>-->
  *
  */
 
@@ -35,18 +59,39 @@
         	ximpia.console.log('xpObjLink.doOpenPopup :: obj.isPopupReqView: ' + obj.isPopupReqView);
         	$('body').xpObjPopUp(obj).xpObjPopUp('create');
         };
-        var launchView = function(obj) {
-        	// do same thing as menu icon        	
+        var showView = function(obj) {
+        	ximpia.console.log('xpObjLink.showview...');
+			ximpia.common.PageAjax.doFadeIn();
+			var pageJx = ximpia.common.PageAjax();
+			if (!obj.hasOwnProperty('app')) {
+				obj.app = ximpia.common.Browser.getApp();
+			}
+			ximpia.console.log('xpObjLink.showview :: view: ' + obj.view + ' app: ' + obj.app);
+			pageJx.getView({ view: obj.view, params: '{}', app: obj.app });
         };
         var doAction = function(obj) {
-        	// do same thing as menu icon
+			if (!obj.hasOwnProperty('app')) {
+				obj.app = ximpia.common.Browser.getApp();
+			}
+			var pageJx = ximpia.common.PageAjax();
+			pageJx.doAction( {action: obj.action, app: obj.app} );
         };
         var callUrl = function(obj) {
-        	// TODO: Use the window.open() function to open in target view????
-        	window.location = obj.url;
-        	/*obj.element.url = obj.url;
-        	alert(obj.element.url);
-        	alert('continue???');*/
+        	if (obj.hasOwnProperty('target') || obj.hasOwnProperty('width') || obj.hasOwnProperty('height')) {
+        		ximpia.console.log('xpObjLink.callUrl :: target');
+        		var specs = '';
+	        	if (obj.hasOwnProperty('height')) {
+	        		specs += 'height=' + obj.height;
+	        	}
+	        	if (obj.hasOwnProperty('width')) {
+	        		specs += ',width=' + obj.width;
+	        	}
+	        	ximpia.console.log('url: ' + obj.url + ' name: ' + obj.target + ' specs: ' + specs);
+        		window.open(obj.url, obj.target, specs);
+        	} else {
+        		ximpia.console.log('xpObjLink.callUrl :: no target');
+        		window.location = obj.url;
+        	}        	
         };
         var methods = {
 		init : function( options ) { 
@@ -74,9 +119,11 @@
 					ximpia.console.log('xpObjLink.render :: Link Attrs...');
 					ximpia.console.log(attrs);
 					// TODO: We should give these to open popup: tmplAlias
-					// TODO: Way to get application code ??? What about links to other app views / actions???
 					// tmplAlias should resolve into a tmpl using the result context
-					// TODO: Check if we have app. If not, get from session storage response
+					// In case no app, we get the default application from the response object in session storage
+					if (!attrs.hasOwnProperty('app')) {
+						attrs.app = ximpia.common.Browser.getApp();
+					}
 					var dataXp = ximpia.common.Object.metadata(attrs);
 					var htmlContent = "<a href=\"#\" id=\"" + idLink + "\" data-xp=\"" + dataXp + "\"";
 					if (attrs.hasOwnProperty('title')) {
@@ -120,8 +167,8 @@
 			ximpia.console.log(attrs);
 			if (operation == 'openPopup') {
 				doOpenPopup(attrs);
-			} else if (operation == 'launchView') {
-				launchview(attrs);
+			} else if (operation == 'showView') {
+				showView(attrs);
 			} else if (operation == 'doAction') {
 				doAction(attrs);
 			} else if (operation == 'callUrl') {
