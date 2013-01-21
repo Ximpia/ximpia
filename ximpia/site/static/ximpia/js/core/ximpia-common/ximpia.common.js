@@ -230,6 +230,37 @@ ximpia.common.Object.values = (function(obj) {
 	}
 	return valueList
 });
+/*
+ * Get metadata for object
+ * 
+ * ** Attributes **
+ * 
+ * * ``obj``:Object
+ * 
+ * ** Returns **
+ * 
+ * string for metadata object
+ * 
+ */
+ximpia.common.Object.metadata = (function(obj) {
+	var meta = '{';
+	var value = '';
+	var counter = 0;
+	for (key in obj) {
+		value = obj[key];
+		if (typeof(value) == 'string') {
+			value = "'" + value + "'";
+		}
+		if (counter == 0) {
+			meta += key + ': ' + value;
+		} else {
+			meta += ', ' + key + ': ' + value;
+		}
+		counter += 1;		
+	}
+	meta += '}';
+	return meta
+})
 
 /*
  * set timeout for 6 seconds in periods of 1 second
@@ -2225,7 +2256,10 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	// button
 	$("[data-xp-type='button']").xpObjButton('render');
 	// link
-	$("[data-xp-type='link']").xpObjLink('render');
+	$("[data-xp-type='link.popup']").xpObjLink('render');
+	$("[data-xp-type='link.url']").xpObjLink('render');
+	$("[data-xp-type='link.action']").xpObjLink('render');
+	$("[data-xp-type='link.view']").xpObjLink('render');
 	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
 	// passwordStrength
 	// TODO: Provide better ways to render password strength
@@ -2261,7 +2295,10 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// button
 	$("[data-xp-type='button']").xpObjButton('render');
 	// link
-	$("[data-xp-type='link']").xpObjLink('render');
+	$("[data-xp-type='link.popup']").xpObjLink('render');
+	$("[data-xp-type='link.url']").xpObjLink('render');
+	$("[data-xp-type='link.action']").xpObjLink('render');
+	$("[data-xp-type='link.view']").xpObjLink('render');
 	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
 	// passwordStrength
 	// TODO: Provide better ways to render password strength

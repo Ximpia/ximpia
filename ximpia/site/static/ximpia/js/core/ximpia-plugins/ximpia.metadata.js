@@ -62,7 +62,7 @@ $.extend({
 			type: 'class',
 			name: 'metadata',
 			//cre: /({.*})/,
-			cre: /({[a-z0-9A-Z:'!=#|&()"\{\}\[\],._ \t\r\n]*})/m,
+			cre: /({[a-z0-9A-Z:'!=#|&()"\{\}\[\]\/,._ \t\r\n]*})/m,
 			single: 'metadata'
 		},
 		setType: function( type, name ){
@@ -112,7 +112,7 @@ $.extend({
 			data = "{" + data + "}";
 			
 			if (data != null) {
-				data = data.replace(/\s+/g, '');
+				data = data.replace(/\s+/g, ' ');
 			}
 			
 			//ximpia.console.log('metadata :: data: ' + data);

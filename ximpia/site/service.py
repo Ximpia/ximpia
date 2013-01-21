@@ -192,7 +192,6 @@ class SiteService ( CommonService ):
 	@WorkflowViewDecorator('login', form=forms.LoginForm)
 	def viewLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
-		@param ctx: Context
 		@return: result"""
 		# Check if login:
 		logger.debug( 'login...' )

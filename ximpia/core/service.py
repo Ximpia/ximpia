@@ -393,10 +393,20 @@ class CommonService( object ):
 		logger.debug('ok message: %s' % (self._ctx.form.fields['msg_ok'].initial) )
 	
 	def _setCookie(self, key, value):
-		"""Add to context cookies data. Decorators that build response will set cookie into respose object
-		@param key: Key
-		@param value: Value"""
-		self._ctx.set_cookies.append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
+		"""
+		Add key and value to context cookies data. 
+		
+		** Attributes **
+		
+		* ``key``
+		* ``value``
+		
+		** Returns **
+		
+		None
+		"""
+		self._ctx.set_cookies.append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 
+										'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
 
 	def _setMainForm(self, formInstance):
 		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
