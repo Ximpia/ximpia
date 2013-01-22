@@ -6,7 +6,7 @@ import datetime
 import os
 import re
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 from django.db.models import Q
@@ -34,7 +34,10 @@ from ximpia.site.data import SettingDAO
 
 from ximpia.util import ut_email
 from models import JsResultDict, ContextDecorator
+
+# Constants
 import constants as K
+from ximpia.site import constants as KSite
 
 # Settings
 from ximpia.core.util import getClass
@@ -183,11 +186,11 @@ class CommonService( object ):
 	
 	def _getWFUser(self):
 		"""Get Workflow user."""
-		if self._ctx.cookies.has_key('wfUserId'):
-			self._ctx.wfUserId = self._ctx.cookies['wfUserId']
+		if self._ctx.cookies.has_key('XP_WFUID'):
+			self._ctx.wfUserId = self._ctx.cookies['XP_WFUID']
 		else:
 			self._ctx.wfUserId = self._wf.genUserId()
-			self._setCookie('wfUserId', self._ctx.wfUserId)
+			self._setCookie('XP_WFUID', self._ctx.wfUserId)
 		self._wfUserId = self._ctx.wfUserId
 		return self._wfUserId
 	
@@ -543,6 +546,8 @@ class ServiceDecorator(object):
 			obj = argsTuple[0]
 			logger.debug( 'ServiceDecorator :: data: %s %s' % (argsTuple, argsDict) )
 			try:
+				doRedirect = False
+				redirectUrl = ''
 				self._isServerTmpl = obj._ctx.isServerTmpl
 				logger.debug('ServiceDecorator :: isServerTmpl: %s' % (self._isServerTmpl) )
 				#logger.debug( 'ServiceDecorator :: ctx: %s' % (obj._ctx.keys()) ) 
@@ -578,10 +583,7 @@ class ServiceDecorator(object):
 						view = dbView.get(application__name=obj._ctx.app, name=obj._ctx.jsData['response']['view'])
 						logger.debug( 'ServiceDecorator :: winType: %s' % (str(view.winType)) )
 						obj._ctx.jsData['response']['winType'] = view.winType
-						obj._ctx.jsData['response']['viewSlug'] = view.slug
-						# Authenticate view (if requires login and user is not logged in, raise error)
-						if not obj._ctx.user.is_authenticated() and view.hasAuth:
-							raise XpMsgException(None, messages.ERR_NOT_LOGGED_IN % (view.slug))
+						obj._ctx.jsData['response']['viewSlug'] = view.slug							
 					# User authenticate and session
 					logger.debug('ServiceDecorator :: User: %s' % (obj._ctx.user) )
 					if obj._ctx.user.is_authenticated():
@@ -675,11 +677,6 @@ class ServiceDecorator(object):
 						################# Print response
 						logger.debug( 'ServiceDecorator :: #################### RESPONSE ##################' )
 						logger.debug( '' )
-						for cookie in obj._ctx.set_cookies:
-							maxAge = 5*12*30*24*60*60
-							result.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
-									expires = cookie['expires'], max_age=maxAge)
-							logger.debug( 'ServiceDecorator :: Did set cookie into result... %s' % (cookie) )
 					else:
 						result = obj._ctx.jsData
 						#logger.debug( result )
@@ -1067,7 +1064,11 @@ class ViewTmplDecorator ( object ):
 				self.__APP_SLUG = self.__APP_OBJ.slug
 				if args.has_key('viewSlug'):
 					logger.debug( 'ViewTmplDecorator :: set from args view name' )
-					view = dbView.get(slug=args['viewSlug'])
+					try:
+						view = dbView.get(slug=args['viewSlug'])
+						args['ctx'].viewAuth = view.hasAuth
+					except XpMsgException as e:
+						raise Http404
 					logger.debug('ViewTmplDecorator :: viewName: %s' % (view.name) )
 					self.__viewName = view.name
 				else:
@@ -1079,6 +1080,9 @@ class ViewTmplDecorator ( object ):
 			logger.debug('ViewTmplDecorator :: app: %s' % (self.__APP) )
 			ctx.viewNameSource = self.__viewName
 			resultJs = f(request, **args)
+			logger.debug('ViewTmplDecorator :: viewNameSource: %s viewNameTarget: %s' % (args['ctx'].viewNameSource, args['ctx'].viewNameTarget) )
+			if self.__viewName != args['ctx'].viewNameSource:
+				self.__viewName = args['ctx'].viewNameSource
 			if len(ctx.viewNameTarget) != 0:
 				self.__viewName = ctx.viewNameTarget
 			logger.debug( 'ViewTmplDecorator :: resultJs: %s' % resultJs )
@@ -1398,7 +1402,7 @@ class MenuService( object ):
 		menuDict[Choices.MENU_ZONE_SERVICE] = []
 		menuDict[Choices.MENU_ZONE_VIEW] = []		
 		
-		# TODO: Get main and sys without link, from settings
+		# TODO: Get main and sys without link, from settings ???
 		# linked to service
 		# TODO: Move this to data layer????
 		if self._ctx.user.is_anonymous():
@@ -1411,8 +1415,8 @@ class MenuService( object ):
 												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												service=view.service ).order_by('order')
 		conditionList = self._dbServiceMenuCondition.search(serviceMenu__in=menuList)
-		logger.debug('menuList: %s' % (menuList) )
-		logger.debug('conditionList: %s' % (conditionList) )
+		logger.debug('menuList Services: %s' % (menuList) )
+		logger.debug('conditionList Services: %s' % (conditionList) )
 		self.__getList(menuDict, menuList, conditionList)
 		# linked to view
 		if self._ctx.user.is_anonymous():
@@ -1425,8 +1429,8 @@ class MenuService( object ):
 												Q(menu__application__accessGroup__group__user=self._ctx.user) , 
 												view=view ).order_by('order')
 		conditionList = self._dbViewMenuCondition.search(viewMenu__in=menuList)
-		logger.debug('menuList: %s' % (menuList) )
-		logger.debug('conditionList: %s' % (conditionList) )
+		logger.debug('menuList Views: %s' % (menuList) )
+		logger.debug('conditionList Views: %s' % (conditionList) )
 		self.__getList(menuDict, menuList, conditionList)
 		return menuDict
 

@@ -140,7 +140,8 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			obj = dbObj.using(self._resolveDbName()).get(id=fieldId)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(fieldId) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get object by id ') + str(fieldId) + _(' in model ') + str(self._model), 
+								origin='data')
 		return obj
 	
 	def check(self, **qsArgs):
@@ -151,7 +152,8 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			exists = dbObj.using(self._resolveDbName()).filter(**qsArgs).exists()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in check object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in check object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 		return exists
 	
 	def get(self, **qsArgs):
@@ -163,7 +165,8 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			data = dbObj.using(self._resolveDbName()).get(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 		return data	
 
 	def save(self):
@@ -171,7 +174,8 @@ class CommonDAO(object):
 		try:
 			self._model.save(using=self._resolveDbName())
 		except Exception as e:
-			raise XpMsgException(e, _('Error in save model ') + str(self._model))
+			raise XpMsgException(e, _('Error in save model ') + str(self._model), 
+								origin='data')
 		return self._model
 	
 	def search(self, *qsTuple, **qsArgs):
@@ -180,7 +184,8 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			filterList = dbObj.using(self._resolveDbName()).filter(*qsTuple, **qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in search operation. qsTuple: ') + str(qsTuple) + ' . Args: ' + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in search operation. qsTuple: ') + str(qsTuple) + ' . Args: ' + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 		return filterList
 	
 	def create(self, **qsArgs):
@@ -191,7 +196,8 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			data = dbObj.using(self._resolveDbName()).create(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 		return data
 	
 	def getCreate(self, **qsArgs):
@@ -202,7 +208,8 @@ class CommonDAO(object):
 			dbObj = self._model.objects
 			xpTuple = dbObj.using(self._resolveDbName()).get_or_create(**qsArgs)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 		return xpTuple
 	
 	def deleteById(self, pk, real=False):
@@ -218,7 +225,8 @@ class CommonDAO(object):
 				xpObject = self._model.objects_del.using(self._resolveDbName()).get(id=pk)
 				xpObject.delete()
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object by id ') + str(pk))
+			raise XpMsgException(e, _('Error delete object by id ') + str(pk), 
+								origin='data')
 		return xpObject
 	
 	def deleteIfExists(self, real=False, **qsArgs):
@@ -237,7 +245,8 @@ class CommonDAO(object):
 			except self._model.DoesNotExist:
 				pass	
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 	
 	def delete(self, real=False, **qsArgs):
 		"""Delete row. In case does not exist, throws model.DoesNotExist
@@ -252,7 +261,8 @@ class CommonDAO(object):
 				dbObj.delete()
 			#dbObj.using(self._resolveDbName()).get(**qsArgs).delete()
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model))
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model), 
+								origin='data')
 	
 	def filterData(self, **argsDict):
 		"""Search a model table with ordering support and paging
@@ -278,7 +288,8 @@ class CommonDAO(object):
 			logger.debug( self._resolveDbName() )
 			xpList = dbObj.using(self._resolveDbName()).filter(**ArgsDict)[iStart:iEnd]
 		except Exception as e:
-			raise XpMsgException(e, _('Error in search table model ') + str(self._model))
+			raise XpMsgException(e, _('Error in search table model ') + str(self._model), 
+								origin='data')
 		return xpList
 		
 	def getAll(self):
@@ -289,7 +300,8 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			xpList = dbObj.using(self._resolveDbName()).all()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model))
+			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model), 
+								origin='data')
 		return xpList
 	
 	def searchFields(self, fields, iPage=1, numberResults=100, orderBy=[], **args):
@@ -303,7 +315,8 @@ class CommonDAO(object):
 			xpList = self.filterData(xpPage=iPage, xpNumberMatches=numberResults, xpOrderBy=orderBy, **args).values(*fields)
 			return xpList
 		except Exception as e:
-			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model))
+			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model), 
+								origin='data')
 
 	ctx = property(_getCtx, None)
 

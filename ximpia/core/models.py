@@ -9,10 +9,12 @@ from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.utils import translation
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from filebrowser.fields import FileBrowseField
 
 from choices import Choices
 import constants as K
+from ximpia.site import constants as KSite
 
 from ximpia.util.js import Form as _jsf
 from util import AttrDict
@@ -1421,6 +1423,10 @@ class Setting ( BaseModel ):
 
 
 class XpMsgException( Exception ):
+	
+	msg = ''
+	argsDict = {}
+	myException = None
 
 	def __init__(self, exception, msg, **argsDict):
 		"""Doc.
@@ -1434,51 +1440,30 @@ class XpMsgException( Exception ):
 
 	def get_msg(self):
 		return self.__msg
-
-
 	def get_my_exception(self):
 		return self.__myException
-
-
 	def get_args_dict(self):
 		return self.__argsDict
-
-
 	def set_msg(self, value):
 		self.__msg = value
-
-
 	def set_my_exception(self, value):
 		self.__myException = value
-
-
 	def set_args_dict(self, value):
 		self.__argsDict = value
-
-
 	def del_msg(self):
 		del self.__msg
-
-
 	def del_my_exception(self):
 		del self.__myException
-
-
 	def del_args_dict(self):
 		del self.__argsDict
-
+		
 	def _log(self, exception, msg, argsDict):
-		"""Will use log facility of django 1.3"""
-		"""txt = repr(self.Exception)
-		for name in self.ArgsDict.keys():
-			txt += name + ':' + self.ArgsDict[name]
-		txt += ' ' + self.Msg"""
 		# Log txt  in error log
 		traceback.print_exc()
 	def __str__(self):
-		#self._log()
-		#return repr(self.Msg)
+		logger.debug('XpMsgException :: argsDict: %s' % self.__argsDict)
 		return self.msg
+	
 	msg = property(get_msg, set_msg, del_msg, "msg's docstring")
 	myException = property(get_my_exception, set_my_exception, del_my_exception, "myException's docstring")
 	argsDict = property(get_args_dict, set_args_dict, del_args_dict, "argsDict's docstring")
@@ -1616,6 +1601,7 @@ class Context ( object ):
 	jsData = None
 	viewNameSource = None
 	viewNameTarget = None
+	viewAuth = False
 	action = None
 	isView = False
 	isAction = False
@@ -1724,6 +1710,19 @@ class Context ( object ):
 		self.dbName = None
 		self.path = None
 		self.application = None
+		self.viewAuth = False
+
+	def get_view_auth(self):
+		return self.__viewAuth
+
+
+	def set_view_auth(self, value):
+		self.__viewAuth = value
+
+
+	def del_view_auth(self):
+		del self.__viewAuth
+
 
 	def getApplication(self):
 		return self.__application
@@ -1991,6 +1990,7 @@ class Context ( object ):
 	dbName = property(get_db_name, set_db_name, del_db_name, "dbName's docstring")
 	path = property(getPath, setPath, delPath, "Path's Docstring")
 	application = property(getApplication, setApplication, delApplication, "Application's Docstring")
+	viewAuth = property(get_view_auth, set_view_auth, del_view_auth, "viewAuth's docstring")
 
 class ContextDecorator(object):
 	_app = ''
@@ -2067,6 +2067,12 @@ class ContextDecorator(object):
 				ctx.set_cookies = []
 				argsDict['ctx'] = ctx
 				resp = f(*argsTuple, **argsDict)
+				# Write cookies
+				for cookie in argsDict['ctx'].set_cookies:
+					maxAge = 5*12*30*24*60*60
+					resp.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
+							expires = cookie['expires'], max_age=maxAge)
+					logger.debug( 'ContextDecorator :: Did set cookie into resp... %s' % (cookie) )
 				return resp
 			except Exception as e: #@UnusedVariable
 				logger.debug( 'Context :: Exception...' )
@@ -2188,13 +2194,25 @@ class ContextViewDecorator(object):
 				ctx.set_cookies = []
 				args['ctx'] = ctx
 				resp = f(request, **args)
+				if not args['ctx'].user.is_authenticated() and args['ctx'].viewAuth == True\
+						 and args['ctx'].viewNameSource != KSite.Views.LOGIN:
+					logger.debug('ContextViewDecorator :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
+					url = 'http://' + request.META['SERVER_NAME'] + ':' + request.META['SERVER_PORT'] + '/apps/' + \
+							KSite.Slugs.SITE + '/' + KSite.Slugs.LOGIN
+					resp = HttpResponseRedirect(url)
+				# Write cookies
+				for cookie in args['ctx'].set_cookies:
+					maxAge = 5*12*30*24*60*60
+					resp.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
+							expires = cookie['expires'], max_age=maxAge)
+					logger.debug( 'ContextViewDecorator :: Did set cookie into resp... %s' % (cookie) )				
 				return resp
 			except Exception as e: #@UnusedVariable
 				logger.debug( 'Context :: Exception... type: %s' % (type(e)) )
 				if settings.DEBUG == True:
 					traceback.print_exc()
 					#logger.debug( e.myException )
-					if type(e) == XpMsgException:
+					if type(e) == XpMsgException and e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
 						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
 						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
 						# Build json response with error message
@@ -2209,8 +2227,8 @@ class ContextViewDecorator(object):
 						#result = HttpResponse(sResult)
 						return result
 					else:
-						pass
-						#raise
+						#pass
+						raise
 		return wrapped_f
 
 class XpTemplateDeprec(object):

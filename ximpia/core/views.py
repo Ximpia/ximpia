@@ -5,6 +5,7 @@ import simplejson as json
 import types
 import traceback
 import os
+import datetime
 
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
@@ -16,12 +17,43 @@ from models import context, ContextViewDecorator, ContextDecorator
 from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService
 from data import ViewDAO, ActionDAO, ApplicationDAO
 
+from ximpia.site import constants as KSite
+
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
+
+def __showView(view, viewAttrs, ctx):
+	"""Show view. Returns classPath for service class, method and service operation attributes
+	
+	** Attributes **
+	
+	* ``view``
+	* ``viewAttrs``
+	* ``ctx``
+	
+	** Returns **
+	
+	* ``(classPath, method, viewAttrTuple):Tuple
+	"""
+	ctx.viewNameSource = view.name
+	ctx.path = '/apps/' + view.application.slug + '/' + view.slug
+	impl = view.implementation
+	# Parse method and class path
+	implFields = impl.split('.')
+	method = implFields[len(implFields)-1]
+	classPath = ".".join(implFields[:-1])
+	if viewAttrs.find('-') != -1:
+		viewAttrTuple = viewAttrs.split('-')
+	else:
+		if len(viewAttrs) == 0:
+			viewAttrTuple = []
+		else:
+			viewAttrTuple = [viewAttrs]
+	return (classPath, method, viewAttrTuple)
 
 def oauth20(request, service):
 	"""Doc."""
@@ -244,6 +276,7 @@ def jxService(request, **args):
 			logger.debug( 'view: %s' % (view) )
 			dbView = ViewDAO(args['ctx'])
 			viewObj = dbView.get(application__name=app, name=view)
+			args['ctx'].viewAuth = viewObj.hasAuth
 			impl = viewObj.implementation
 			# view attributes 
 			viewAttrs = json.loads(request.REQUEST['params'])
@@ -301,25 +334,25 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
 	application = dbApplication.get(slug=appSlug)
 	db = ViewDAO(args['ctx'])
 	view = db.get(application=application, slug=viewSlug)
-	# Assign context viewNameSource to resolved view
-	args['ctx'].viewNameSource = view.name
-	args['ctx'].path = '/apps/' + application.slug + '/' + view.slug
-	logger.debug('core showView :: path: %s' % (args['ctx'].path) )
-	logger.debug('core showView :: view: %s' % (view) )
-	impl = view.implementation
-	# Parse method and class path
-	implFields = impl.split('.')
-	method = implFields[len(implFields)-1]
-	classPath = ".".join(implFields[:-1])
-	if viewAttrs.find('-') != -1:
-		viewAttrTuple = viewAttrs.split('-')
-	else:
-		if len(viewAttrs) == 0:
-			viewAttrTuple = []
-		else:
-			viewAttrTuple = [viewAttrs]
+	args['ctx'].viewAuth = view.hasAuth
+	classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])	
 	# Instance and call method for view, get result
+	logger.debug('showView :: cookies: %s' % (args['ctx'].cookies) ) 
+	if not args['ctx'].user.is_authenticated() and view.hasAuth and view.name != 'login':
+		"""# Write cookie with view name and show login view
+		args['ctx'].set_cookies.append({'key': KSite.COOKIE_LOGIN_REDIRECT, 'value': view.name, 
+					'domain': settings.SESSION_COOKIE_DOMAIN, 
+					'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
+		# Show Login View
+		logger.debug('showView :: set_cookies: %s' % (args['ctx'].set_cookies) )
+		logger.debug('showView :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
+		# get login view
+		view = db.get(application__name='ximpia.site', slug=KSite.Slugs.LOGIN)
+		classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])"""
+		"""logger.debug('showView :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
+		result = HttpResponseRedirect('http://localhost:8000/apps/site/login')"""
 	if method.find('_') == -1 or method.find('__') == -1:
+		logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
 		cls = getClass( classPath )
 		obj = cls(args['ctx']) #@UnusedVariable
 		if (len(viewAttrTuple) == 0):	
