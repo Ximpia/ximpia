@@ -189,17 +189,25 @@ class SiteService ( CommonService ):
 		self._dbCoreParam = CoreParameterDAO(self._ctx)
 		self._dbInvitation = InvitationDAO(self._ctx)
 	
-	@WorkflowViewDecorator('login', form=forms.LoginForm)
+	@ViewDecorator(forms.LoginForm)
 	def viewLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@return: result"""
 		# Check if login:
 		logger.debug( 'login...' )
 		if not self._ctx.user.is_authenticated():
+			logger.debug('viewLogin :: User not authenticated...')
 			# no login: login form
 			self._setMainForm(forms.LoginForm())
 			# Popup - Password reminder
 			self._addForm(forms.PasswordReminderForm())
+		else:
+			# We must redirect to homeLogin or other views
+			if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT]) != 0:
+				# We redirect to cookie value
+				self._showView(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
+			else:
+				self._showView(K.Views.HOME_LOGIN)
 	
 	@ViewDecorator(DefaultForm)
 	def viewLogout(self):
@@ -211,7 +219,7 @@ class SiteService ( CommonService ):
 		"""Show home after login"""
 		pass
 	
-	@WorkflowActionDecorator('login', forms.LoginForm)
+	@ActionDecorator(forms.LoginForm)
 	def login(self):
 		"""
 		Performs the login action. Puts workflow parameter username, write context variables userChannel and session.
@@ -249,6 +257,13 @@ class SiteService ( CommonService ):
 		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=userChannelName)
 		self._ctx.session['userChannel'] = self._ctx.userChannel
 		logger.debug( 'login :: userChannel: %s' % (self._ctx.userChannel) )
+		
+		# Redirect
+		if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx[K.COOKIE_LOGIN_REDIRECT]) != 0:
+			self._showView(self._ctx[K.COOKIE_LOGIN_REDIRECT])
+			self._setCookie(K.COOKIE_LOGIN_REDIRECT, '')
+		else:
+			self._showView(K.Views.HOME_LOGIN)
 	
 	@ActionDecorator(forms.UserSignupInvitationForm)
 	def signup(self):
