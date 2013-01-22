@@ -30,7 +30,7 @@ import constants as K
 import forms
 from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
 from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO, InvitationDAO
-from forms import UserSignupInvitationForm, UserSignupForm #@UnusedImport
+from forms import UserSignupInvitationForm
 import messages as _m
 
 class SiteService ( CommonService ):
@@ -40,13 +40,12 @@ class SiteService ( CommonService ):
 	
 	@ValidationDecorator()
 	def _authenUser(self):
-		"""if self._f()['authSource'] == K.FACEBOOK:
-			ximpiaId = 'fb_'+ self._f()['facebookId']"""
-		self._ctx.user = self._authenticateUser(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrongPassword)
+		if self._f()['authSource'] == K.FACEBOOK:
+			self._ctx.user = self._authenticateUserSocNet(self._f()['socialId'], self._f()['socialToken'], self._f()['authSource'], 
+														'facebook', _m.ERR_wrongPassword)
+		else:
+			self._ctx.user = self._authenticateUser(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrongPassword)
 		logger.debug('user: %s' % (self._ctx.user) )
-		"""self._ctx.user = self._authenticateUser(	ximpiaId = ximpiaId, 
-						token = self._f()['facebookToken'], 
-						errorTuple = _m.ERR_wrongPassword	)"""
 	
 	@ValidationDecorator()
 	def _validateUserNotSignedUp(self):
@@ -195,6 +194,7 @@ class SiteService ( CommonService ):
 		@return: result"""
 		# Check if login:
 		logger.debug( 'login...' )
+		self._addAttr('isSocialLogged', False)
 		if not self._ctx.user.is_authenticated():
 			logger.debug('viewLogin :: User not authenticated...')
 			# no login: login form
@@ -236,8 +236,8 @@ class SiteService ( CommonService ):
 		"""
 		logger.debug( '***************************************************' )
 		logger.debug( 'login...' )
-		logger.debug( '***************************************************' )
-		#logger.debug( 'form: %s' % (self._ctx.form) )
+		logger.debug( '***************************************************' )		
+		
 		self._authenUser()
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		self._login()
@@ -246,8 +246,7 @@ class SiteService ( CommonService ):
 		# If password, normal login
 		# If not password and socialId and token, authen with social id
 		# Put parameters for login
-		
-		#self._putFlowParams(username=self._ctx.user.username.encode(settings.DEFAULT_CHARSET))		
+				
 		logger.debug( 'login :: Session: %s' % (self._ctx.session) )
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		logger.debug( 'login :: cookies: %s' % (self._ctx.cookies) )
@@ -259,8 +258,8 @@ class SiteService ( CommonService ):
 		logger.debug( 'login :: userChannel: %s' % (self._ctx.userChannel) )
 		
 		# Redirect
-		if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx[K.COOKIE_LOGIN_REDIRECT]) != 0:
-			self._showView(self._ctx[K.COOKIE_LOGIN_REDIRECT])
+		if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT]) != 0:
+			self._showView(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
 			self._setCookie(K.COOKIE_LOGIN_REDIRECT, '')
 		else:
 			self._showView(K.Views.HOME_LOGIN)
@@ -349,8 +348,6 @@ class SiteService ( CommonService ):
 		"""Logout user"""
 		logger.debug( 'doLogout...' )
 		self._logout()
-		logger.debug( 'doLogout :: WF Data: %s' % (self._getWFUser()) )
-		self._wf.removeData(self._getWFUser(), 'login')
 		logger.debug( 'doLogout :: did logout...' )
 		
 	@ViewDecorator(forms.UserChangePasswordForm)

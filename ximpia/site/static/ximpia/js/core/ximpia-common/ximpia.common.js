@@ -45,6 +45,7 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 	ximpia.console.log('facebook API :: attrs...');
 	//ximpia.console.log('facebook API :: callable: ' + callable);
 	ximpia.console.log(attrs);
+	$('body').css('cursor', 'wait');
 	// Facebook button
 	FB.init({
 		appId : ximpia.settings.FACEBOOK_APP_ID,
@@ -62,7 +63,6 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			ximpia.console.log(response);
 			//$("#id_passwordAuth").css('display', 'none');
 			$("#id_passwordAuth").remove();
-			$("#id_socialNetText").css('display', 'none');
 			$("#id_socialAuth .caption").css('display', 'none');
 			$("input[name='authSource']").attr('value', 'facebook');
 			// A user has logged in, and a new cookie has been saved
@@ -81,7 +81,7 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				$("input[name='firstName']").attr('value', responseProfile.first_name);
 				$("input[name='lastName']").attr('value', responseProfile.last_name);
 				$("input[name='email']").attr('value', responseProfile.email);
-				// Disable controls when available
+				// Disable controls when available : In future use disable conditions for components
 				$("input[name='firstName']").attr('readonly', 'readonly');
 				$("input[name='lastName']").attr('readonly', 'readonly');
 				$("input[name='email']").attr('readonly', 'readonly');
@@ -98,6 +98,7 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				var oGoogleMaps = ximpia.common.GoogleMaps();
 				oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
 				eval('new callable(attrs)');
+				$('body').css('cursor', 'auto');
 			});
 			//callable();
 			//ximpia.common.PageAjax.positionBars();
@@ -109,7 +110,9 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			var oGoogleMaps = ximpia.common.GoogleMaps();
 			oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
 			eval('new callable(attrs)');
+			$('body').css('cursor', 'auto');
 		}
+		$('body').css('cursor', 'auto');
 	});
 });
 /*
@@ -119,6 +122,7 @@ ximpia.external.Facebook.renderLogin = (function(attrs, callable) {
 	ximpia.console.log('facebook API :: renderLogin :: ');
 	ximpia.console.log('facebook API :: attrs...');
 	ximpia.console.log(attrs);
+	$('body').css('cursor', 'wait');
 	// Facebook button
 	FB.init({
 		appId : ximpia.settings.FACEBOOK_APP_ID,
@@ -134,9 +138,10 @@ ximpia.external.Facebook.renderLogin = (function(attrs, callable) {
 			//TODO: Place waiting clock in case not displayed
 			ximpia.console.log('facebook API :: Have response...');
 			ximpia.console.log(response);
-			//$("#id_passwordAuth").css('display', 'none');
-			$("#id_passwordAuth").remove();
-			$("#id_socialAuth span").css('display', 'none');
+			ximpia.common.Browser.putAttr('isSocialLogged', true);
+			ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_login');
+			//$("#id_passwordAuth").remove();
+			$("#id_socialAuth .caption").css('display', 'none');
 			$("input[name='authSource']").attr('value', 'facebook');
 			// A user has logged in, and a new cookie has been saved
 			$("input[name='socialId']").attr('value', response.authResponse.userID);
@@ -144,15 +149,17 @@ ximpia.external.Facebook.renderLogin = (function(attrs, callable) {
 			ximpia.console.log('facebook API :: accessToken: ' + response.authResponse.accessToken);
 			ximpia.console.log('facebook API :: id: ' + response.authResponse.userID);
 			//ximpia.common.PageAjax.positionBars( {'skipVisibility': true} );
-			eval('new callable(attrs)');
+			eval('new callable(attrs)');			
 		} else {
 			ximpia.console.log('facebook API :: No response...');
 			eval('new callable(attrs)');
 			// The user has logged out, and the cookie has been cleared
 			//alert('Out....');
 		}
+		$('body').css('cursor', 'auto');
 	});
 	eval('new callable(attrs)');
+	$('body').css('cursor', 'auto');
 });
 
 ximpia.external.Captcha = {};

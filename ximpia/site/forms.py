@@ -47,8 +47,8 @@ class JoinUsForm(XBaseForm):
 class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
-	username = XpUserField(_dbUser, '_dbUser.username', label='Username')
-	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6)
+	username = XpUserField(_dbUser, '_dbUser.username', label='Username', required=False, jsReq=True, initial='')
+	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsReq=True, initial='')
 	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.FACEBOOK)
@@ -109,7 +109,7 @@ class UserChangePasswordForm( XBaseForm ):
 		self._xpClean()
 		return self.cleaned_data
 
-class UserSignupForm ( XBaseForm ):
+"""class UserSignupForm ( XBaseForm ):
 	_XP_FORM_ID = 'signup'
 	# Instances 
 	_dbUser = User()
@@ -140,7 +140,7 @@ class UserSignupForm ( XBaseForm ):
 										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))
 
-	"""def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
+	def buildInitial(self, invitation, snProfileDict, fbAccessToken, affiliateId):
 		Build initial values for form
 		self.fields['invitationCode'].initial = invitation.invitationCode
 		self.putParam('affiliateId', affiliateId)
@@ -151,15 +151,15 @@ class UserSignupForm ( XBaseForm ):
 			locationFields = locationName.split(',')
 			self._dbAddress.city = locationFields[0].strip()
 			locale = snProfileDict['locale']
-			self._dbAddress.country = locale.split('_')[1].lower()"""
+			self._dbAddress.country = locale.split('_')[1].lower()
 
 	def clean(self):
-		"""Clean form: validate same password and captcha when implemented"""
+		Clean form: validate same password and captcha when implemented
 		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._getFieldValue('authSource')) )
 		if self._getFieldValue('authSource') == K.PASSWORD:
 			self._validateSameFields([('password','passwordVerify')])
 		self._xpClean()
-		return self.cleaned_data
+		return self.cleaned_data"""
 
 class UserSignupInvitationForm ( XBaseForm ):
 	_XP_FORM_ID = 'signup'

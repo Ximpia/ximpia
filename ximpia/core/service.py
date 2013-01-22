@@ -6,7 +6,7 @@ import datetime
 import os
 import re
 
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, Http404
 from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 from django.db.models import Q
@@ -369,9 +369,10 @@ class CommonService( object ):
 			self._addError(fieldName, errorMsg)
 		return user
 	
-	def _authenticateUserSocNet(self, ximpiaId, token, authSource, fieldName, errorMsg):
+	def _authenticateUserSocNet(self, socialId, socialToken, authSource, fieldName, errorMsg):
 		"""Authenticates user and password"""
-		qArgs = {'username': ximpiaId, 'token': token}
+		qArgs = {'socialId': socialId, 'socialToken': socialToken}
+		logger.debug('_authenticateUsersocNet :: Arguments: %s' % (qArgs) )
 		user = authenticate(**qArgs)
 		if user:
 			pass
