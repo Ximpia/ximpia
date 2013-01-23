@@ -29,7 +29,7 @@
 		}
 		ximpia.console.log('xpObjIcon :: classPlus: ' + classPlus);
 		htmlContent += "<div id=\"id_icon_" + obj.name + "\" data-xp-type=\"icon\" style=\"float: " + obj.align + "\" class=\"iconMenuBlock" + classPlus + "\" title=\"" + obj.description + "\" >";
-		htmlContent += "<a href=\"" + path + "\" onclick=\"return false\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
+		htmlContent += "<a href=\"" + path + "\" data-xp=\"{action: '" + obj.action + "', view: '" + obj.view + "', params: " + paramStr + ", app: '" + obj.app + "'}\"  >";		
 		if (obj.title != '' && obj.icon != '') {
 			// Have text and icon
 			htmlContent += "<img src=\"" + ximpia.settings.STATIC_URL + "images/blank.png\" class=\"" + obj.icon + " iconMenu\" />";
@@ -152,8 +152,8 @@
 				}
 			});
 			// Click event
-			$("[data-xp-type='icon']").click(function() {
-				$(this).xpObjIcon('clickMenu');	
+			$("[data-xp-type='icon']").click(function(evt) {
+				$(this).xpObjIcon('clickMenu', evt);	
 			});
 			/*for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log('i: ' + i);
@@ -183,7 +183,8 @@
 				}
 			}*/
 		},
-		clickMenu: function() {
+		clickMenu: function(evt) {
+			evt.preventDefault();
 			ximpia.console.log('Icon Menu Click!!!');
 			ximpia.console.log($('#' + $(this).attr('id') + ' > a '));
 			var clickObj = $('#' + $(this).attr('id') + ' > a ');

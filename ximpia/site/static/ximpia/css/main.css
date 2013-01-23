@@ -1612,11 +1612,12 @@ legend {
 	max-width: 90px;*/
 	float: left; 
 	border: 0px solid; 
-	margin-top: 5px; 
-	margin-right: 8px; 
-	margin-left: 3px; 
+	margin-top: 6px; 
+	margin-right: 5px; 
+	margin-left: 0px; 
 	font-size: 9pt; 
 	color: #ddd;
+	/*color: #CBF4FA;*/
 }
 
 .iconMenuBlock a {
@@ -1659,11 +1660,12 @@ legend {
 	border-radius: 7px;
 	width: 48px;
 	height: 48px;*/
-	margin-top: 1px; 
+	margin-left: 2px !important;
+	margin-top: 6px; 
 	float: left; 
-	width: 32px; 
+	width: 28px; 
 	height: 32px; 
-	margin-left: 5px;
+	/*margin-left: 5px;*/
 }
 
 .iconMenuBlock:hover, .iconMenuBlock.sfhover {
@@ -1696,15 +1698,15 @@ legend {
 
 /* iconHome */
 .iconHome {
-	background: url(../images/home_32.png) no-repeat;
+	background: url(../images/home_24.png) no-repeat;
 }
 /* iconContactUs */
 .iconContactUs {
-	background: url(../images/contact-us-icon_32.png) no-repeat;
+	background: url(../images/contact-us-icon_24.png) no-repeat;
 }
 /* iconEngine */
 .iconEngine {
-	background: url(../images/process_32.png) no-repeat;
+	background: url(../images/process_24.png) no-repeat;
 }
 /* iconAdd */
 .iconAdd {
@@ -1716,15 +1718,15 @@ legend {
 }
 /* iconUsers */
 .iconUsers {
-	background: url(../images/users_two_32.png) no-repeat;
+	background: url(../images/users_two_24.png) no-repeat;
 }
 /* iconUser */
 .iconUser {
-	background: url(../images/user_32.png) no-repeat;
+	background: url(../images/user_24.png) no-repeat;
 }
 /* iconSignup */
 .iconSignup {
-	background: url(../images/signup_32.png) no-repeat;
+	background: url(../images/signup_24.png) no-repeat;
 }
  
 /* iconLogout */
@@ -1734,7 +1736,7 @@ legend {
 
 /* iconUnlock */
 .iconUnlock {
-	background: url(../images/unlock_32.png) no-repeat;
+	background: url(../images/unlock_24.png) no-repeat;
 }
 
 /* iconSmall */

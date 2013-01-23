@@ -17,11 +17,11 @@
 	list-style: none;
 	padding: 0px;
 	margin: 0px;
-	width: 98%;
+	width: 99%;
 	margin-left: auto;
 	margin-right: auto;
-	padding-bottom: 2px;
-	padding-top: 2px;
+	padding-bottom: 1px;
+	padding-top: 1px;
 }
 
 .contextMenu a {
@@ -34,7 +34,8 @@
 	background-repeat: no-repeat;
 	outline: none;
 	padding: 1px 5px;
-	padding-left: 28px;
+	/*padding-left: 28px;*/
+	padding-left: 8px;
 	font-size: 10pt;
 }
 
@@ -72,11 +73,11 @@
 .contextMenu li.quit a { background-image: url(images/door.png); }*/
 
 
-.contextMenu li.iconHomeSmall a { 
+/*.contextMenu li.iconHomeSmall a { 
 	background-image: url(../images/home_32.png);
 	background-size: 18px; 
 }
 .contextMenu li.iconLogoutSmall a { 
-	background-image: url(../images/logout_32.png);
-	background-size: 18px; 
-}
+	background-image: url(../images/logout_24.png);
+	background-size: 20px; 
+}*/

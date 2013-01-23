@@ -51,7 +51,7 @@ class LoginForm(XBaseForm):
 	password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, required=False, jsReq=True, initial='')
 	socialId = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
 	socialToken = forms.CharField(widget=XpHiddenWidget, required=False, initial='')
-	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.FACEBOOK)
+	authSource = forms.CharField(widget=XpHiddenWidget, initial=K.PASSWORD)
 	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'authSources': Choices.SOCIAL_NETS}))
 	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))

@@ -40,7 +40,7 @@ class SiteService ( CommonService ):
 	
 	@ValidationDecorator()
 	def _authenUser(self):
-		if self._f()['authSource'] == K.FACEBOOK:
+		if self._f()['authSource'] == K.FACEBOOK and self._f()['socialId'] != '':
 			self._ctx.user = self._authenticateUserSocNet(self._f()['socialId'], self._f()['socialToken'], self._f()['authSource'], 
 														'facebook', _m.ERR_wrongPassword)
 		else:
@@ -236,7 +236,9 @@ class SiteService ( CommonService ):
 		"""
 		logger.debug( '***************************************************' )
 		logger.debug( 'login...' )
-		logger.debug( '***************************************************' )		
+		logger.debug( '***************************************************' )
+		
+		logger.debug('login :: authSource: %s' % (self._f()['authSource']) )		
 		
 		self._authenUser()
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
