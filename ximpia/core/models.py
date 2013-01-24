@@ -2208,11 +2208,13 @@ class ContextViewDecorator(object):
 					logger.debug( 'ContextViewDecorator :: Did set cookie into resp... %s' % (cookie) )				
 				return resp
 			except Exception as e: #@UnusedVariable
-				logger.debug( 'Context :: Exception... type: %s' % (type(e)) )
+				logger.debug( 'ContextViewDecorator :: Exception... type: %s' % (type(e)) )
 				if settings.DEBUG == True:
 					traceback.print_exc()
-					#logger.debug( e.myException )
-					if type(e) == XpMsgException and e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
+					showError = True
+					if e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
+						showError = False
+					if type(e) == XpMsgException and showError == True:
 						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
 						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
 						# Build json response with error message

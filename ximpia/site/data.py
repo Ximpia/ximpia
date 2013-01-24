@@ -1,4 +1,4 @@
-from ximpia.core.data import CommonDAO
+from ximpia.core.data import CommonDAO, XpMsgException
 
 from django.contrib.auth.models import User, Group as GroupSys
 from django.db.models import Q
@@ -55,6 +55,29 @@ class InvitationMetaDAO( CommonDAO ):
 		super(InvitationMetaDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = InvitationMeta
 
+class UserMetaDAO( CommonDAO ):
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(UserMetaDAO, self).__init__(ctx, *argsTuple, **argsDict)
+		self._model = UserMeta
+	def saveMeta(self, user, metas, keys):
+		"""
+		Save user meta keys
+		
+		** Attributes **
+		
+		* ``user``:Model : User model instance
+		* ``metas``:Dict : Meta keys
+		* ``metaDict``:Dict : Dictionary with key->value
+		"""
+		for key in keys:
+			meta = metas[key]
+			try:
+				metaReminderId = self.get(user=user, meta=meta)
+				metaReminderId.value = keys[key]
+				metaReminderId.save()
+			except XpMsgException:
+				self.create(user=user, meta=meta, value=keys[key])
+
 class AddressDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(AddressDAO, self).__init__(ctx, *argsTuple, **argsDict)
@@ -79,6 +102,22 @@ class MetaKeyDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(MetaKeyDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = MetaKey
+	def metas(self, keys):
+		"""
+		Get meta keys as a dictionary
+		
+		** Attributes **
+		
+		* ``keys``:List : Key names
+		
+		** Returns **
+		
+		Dict :: keyName -> MetaKey"""
+		metaList = self.search(name__in=keys)
+		metaDict = {}
+		for metaKey in metaList:
+			metaDict[metaKey.name] = metaKey
+		return metaDict
 
 class UserChannelDAO(CommonDAO):
 	def __init__(self, ctx, *argsTuple, **argsDict):
@@ -138,11 +177,6 @@ class UserChannelGroupDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):
 		super(UserChannelGroupDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = UserChannelGroup
-
-class UserMetaDAO( CommonDAO ):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(UserMetaDAO, self).__init__(ctx, *argsTuple, **argsDict)
-		self._model = UserMeta
 
 class UserProfileDAO( CommonDAO ):
 	def __init__(self, ctx, *argsTuple, **argsDict):

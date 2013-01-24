@@ -47,8 +47,8 @@ def __showView(view, viewAttrs, ctx):
 	implFields = impl.split('.')
 	method = implFields[len(implFields)-1]
 	classPath = ".".join(implFields[:-1])
-	if viewAttrs.find('-') != -1:
-		viewAttrTuple = viewAttrs.split('-')
+	if viewAttrs.find('/') != -1:
+		viewAttrTuple = viewAttrs.split('/')
 	else:
 		if len(viewAttrs) == 0:
 			viewAttrTuple = []
@@ -339,21 +339,6 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
 	view = db.get(application=application, slug=viewSlug)
 	args['ctx'].viewAuth = view.hasAuth
 	classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])	
-	# Instance and call method for view, get result
-	logger.debug('showView :: cookies: %s' % (args['ctx'].cookies) ) 
-	if not args['ctx'].user.is_authenticated() and view.hasAuth and view.name != 'login':
-		"""# Write cookie with view name and show login view
-		args['ctx'].set_cookies.append({'key': KSite.COOKIE_LOGIN_REDIRECT, 'value': view.name, 
-					'domain': settings.SESSION_COOKIE_DOMAIN, 
-					'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
-		# Show Login View
-		logger.debug('showView :: set_cookies: %s' % (args['ctx'].set_cookies) )
-		logger.debug('showView :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
-		# get login view
-		view = db.get(application__name='ximpia.site', slug=KSite.Slugs.LOGIN)
-		classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])"""
-		"""logger.debug('showView :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
-		result = HttpResponseRedirect('http://localhost:8000/apps/site/login')"""
 	if method.find('_') == -1 or method.find('__') == -1:
 		logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
 		cls = getClass( classPath )

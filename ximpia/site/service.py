@@ -10,7 +10,7 @@ from ximpia.core.models import JsResultDict
 from ximpia.core.service import EmailService, CommonService
 from ximpia.core.service import ViewDecorator, ActionDecorator, ValidationDecorator, MenuActionDecorator, WorkflowViewDecorator,\
 		WorkflowActionDecorator
-from ximpia.core.models import Context as CoreContext
+from ximpia.core.models import Context as CoreContext, XpMsgException
 from ximpia.core.data import CoreParameterDAO
 from ximpia.core.forms import DefaultForm
 
@@ -59,6 +59,7 @@ class SiteService ( CommonService ):
 		else:
 			self._validateNotExists([
 				[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
+				[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email],
 				[self._dbSocialNetworkUser, {'socialId': self._f()['socialId']}, 'socialNet', _m.ERR_socialIdExists]
 				])
 	
@@ -150,21 +151,33 @@ class SiteService ( CommonService ):
 	
 	@ValidationDecorator()
 	def _validateReminder(self, username, reminderId):
-		days = self._dbParam.get(mode=K.PARAM_LOGIN, name=K.PARAM_REMINDER_DAYS).valueId
-		newDate = date.today() + timedelta(days=days)
-		logger.debug( 'New Password Data : username: %s newDate: %s reminderId: %s' % (username, newDate, reminderId) )
+		newDate = date.today()
+		logger.debug( '_validateReminder :: New Password Data : username: %s newDate: %s reminderId: %s' % (username, newDate, reminderId) )
 		# Show actual password, new password and confirm new password
+		# 'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
 		self._validateExists([
-					[self._dbUserSys, {'username': username}, 'username', _m.ERR_changePassword],
-					[self._dbUserDetail, {	'user__username': username, 
-											'reminderId': reminderId, 
-											'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
+					[self._dbUser, {'username': username}, 'username', _m.ERR_changePassword],
+					[self._dbUserMeta, {	'user__username': username,
+											'meta__name': K.META_REMINDER_ID,
+											'value': str(reminderId)}, 'noField', _m.ERR_changePassword],
 					])
+		# Validate reset password date
+		logger.debug('_validateReminder :: validate reset date...')
+		resetDateStr = self._dbUserMeta.get(user__username=username, meta__name=K.META_RESET_PASSWORD_DATE).value
+		if resetDateStr != '':
+			resetDateFields = resetDateStr.split('-')
+			resetDate = date(year=int(resetDateFields[0]), month=int(resetDateFields[1]), day=int(resetDateFields[2]))
+			logger.debug('_validateReminder :: today: %s resetDate: %s' % (date.today(), resetDate) )
+			if date.today() > resetDate:
+				# show error
+				self._addError('noField', _m.ERR_changePassword)
+		else:
+			self._addError('noField', _m.ERR_changePassword)
 	
 	@ValidationDecorator()
 	def _validateEmailExist(self):
 		self._validateExists([
-					[self._dbUserSys, {'email': self._f()['email']}, 'email', _m.ERR_emailDoesNotExist]
+					[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_emailDoesNotExist]
 				])
 	
 	def _doDbInstancesForUser(self):
@@ -360,8 +373,9 @@ class SiteService ( CommonService ):
 	@ActionDecorator(forms.UserChangePasswordForm)
 	def changePassword(self):
 		"""Change password from user area"""
+		self._dbUser = UserDAO(self._ctx)
 		self._validateUser()
-		user = self._dbUserSys.get(username= self._ctx.user)
+		user = self._dbUser.get(username= self._ctx.user)
 		user.set_password(self._f()['newPassword'])
 		user.save()
 	
@@ -370,45 +384,52 @@ class SiteService ( CommonService ):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param username: username
 		@param reminderId: reminderId"""
+		self._dbUser = UserDAO(self._ctx)
+		self._dbUserMeta = UserMetaDAO(self._ctx)
 		self._validateReminder(username, reminderId)
+		self._addFormValue('username', username)
 		self._f().putParamList(username=username)
 	
 	@ActionDecorator(forms.PasswordReminderForm)
 	def requestReminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
 		logger.debug('requestReminder...')
+		self._dbUser = UserDAO(self._ctx)
+		self._dbSetting = SettingDAO(self._ctx)
+		self._dbUserMeta = UserMetaDAO(self._ctx)
+		self._dbMetaKey = MetaKeyDAO(self._ctx)
 		self._validateEmailExist()
 		# Update User
-		user = self._dbUserSys.get(email = self._f()['email'])
-		userDetail = self._dbUserDetail.get(user=user) 
-		days = self._dbParam.get(mode=K.PARAM_LOGIN, name=K.PARAM_REMINDER_DAYS).valueId
-		newDate = date.today() + timedelta(days=days)
-		#logger.debug( 'newDate: %s %s' % (newDate, type(newDate)) )
-		#userDetail.resetPasswordDate = datetime.date(newDate)
-		userDetail.resetPasswordDate = newDate
-		# Set reminderId
-		userDetail.reminderId = str(random.randint(1, 999999))
-		userDetail.save()
+		user = self._dbUser.get(email = self._f()['email'])
+		days = self._getSetting(K.SET_REMINDER_DAYS).value
+		newDate = date.today() + timedelta(days=int(days))
+		# Write reminderId and resetPasswordDate
+		reminderId = str(random.randint(1, 999999))
+		metas = self._dbMetaKey.metas([K.META_REMINDER_ID, K.META_RESET_PASSWORD_DATE])
+		self._dbUserMeta.saveMeta(user, metas, {	
+										K.META_REMINDER_ID: reminderId, 
+										K.META_RESET_PASSWORD_DATE: str(newDate)})		
 		# Send email with link to reset password. Link has time validation
-		xmlMessage = self._dbXmlMessage.get(name='Msg/SocialNetwork/Login/PasswordReminder/', lang='en').body
-		EmailService.send(xmlMessage, {'scheme': settings.XIMPIA_SCHEME, 
-						'host': settings.XIMPIA_BACKEND_HOST,
-						'firstName': user.first_name, 
-						'userAccount': user.username,
-						'reminderId': userDetail.reminderId}, [self._f()['email']])
+		xmlMessage = self._dbSetting.get(name__name='Msg/Site/Login/PasswordReminder/_en').value
+		EmailService.send(xmlMessage, {	'home': settings.XIMPIA_HOME, 
+										'appSlug': K.Slugs.SITE,
+										'viewSlug': K.Slugs.REMINDER_NEW_PASSWORD,
+										'firstName': user.first_name, 
+										'userAccount': user.username,
+										'reminderId': reminderId}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
+		logger.debug( 'requestReminder :: sent Email' )
 		self._setOkMsg('OK_PASSWORD_REMINDER')
 	
 	@ActionDecorator(forms.ChangePasswordForm)
 	def finalizeReminder(self):
 		"""Saves new password, it does authenticate and login user."""
-		user = self._dbUserSys.get(username= self._f().getParam('username'))
+		self._dbUser = UserDAO(self._ctx)
+		self._dbUserMeta = UserMetaDAO(self._ctx)
+		user = self._dbUser.get(username= self._f().getParam('username'))
 		user.set_password(self._f()['newPassword'])
 		user.save()
-		userDetail = self._dbUserDetail.get(user=user)
-		userDetail.reminderId = None
-		userDetail.resetPasswordDate = None
-		userDetail.save()
-		#login(self._ctx[Ctx.RAW_REQUEST], user)
+		# Remove reminder data so that it is not used again
+		self._dbUserMeta.search(meta__name__in=[K.META_REMINDER_ID, K.META_RESET_PASSWORD_DATE]).update(value='')
 
 class Context ( CoreContext ):
 	

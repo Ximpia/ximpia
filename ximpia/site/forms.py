@@ -83,6 +83,7 @@ class PasswordReminderForm(XBaseForm):
 class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
+	username = XpUserField(_dbUser, '_dbUser.username', label='Username')
 	newPassword = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Password', help_text = _('Your New Password'))
 	newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Confirm Password', 
 					help_text = _('Write again your password to make sure there are no errors'))
