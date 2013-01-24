@@ -376,6 +376,7 @@ class SiteService ( CommonService ):
 	@ActionDecorator(forms.PasswordReminderForm)
 	def requestReminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
+		logger.debug('requestReminder...')
 		self._validateEmailExist()
 		# Update User
 		user = self._dbUserSys.get(email = self._f()['email'])

@@ -17,35 +17,35 @@
         /**
          * Create popup with existing view
          */
-        var doCreateView = function(obj) {
-		ximpia.console.log('Popup View!!!!!!!!');
-		ximpia.console.log('viewName : ' + obj.viewName);
+        var doCreate = function(obj) {
+		ximpia.console.log('xpObjPopUp :: Popup with existing view!!!!!!!!');
+		ximpia.console.log('xpObjPopUp :: viewName : ' + obj.viewName);
 		// Get the html template for popup
 		var responseMap = ximpia.common.Browser.getObject('xpData-view');
-		ximpia.console.log('reponseMap...');
+		ximpia.console.log('xpObjPopUp :: reponseMap...');
 		ximpia.console.log(responseMap);
 		var tmplName = responseMap['response']['tmpl'][obj.tmplAlias];
-		ximpia.console.log('tmplName: ' + tmplName);
+		ximpia.console.log('xpObjPopUp :: tmplName: ' + tmplName);
 		// Get application code from somewhere else
 		var path = ximpia.common.Path.getTemplate(obj.app, tmplName, 'popup');
-		ximpia.console.log('path: ' + path);
-		ximpia.console.log('Will get it!!!');
-		ximpia.console.log('path: ' + path);
+		ximpia.console.log('xpObjPopUp :: path: ' + path);
+		ximpia.console.log('xpObjPopUp :: Will get it!!!');
+		ximpia.console.log('xpObjPopUp :: path: ' + path);
 		$.metadata.setType("attr", "data-xp");
 		$.get(path, function(data) {
-			ximpia.console.log('Got it...');
+			ximpia.console.log('xpObjPopUp :: Got it...');
 			// Save the template in xpData-popup-tmpl sessionStorage variable
 			// TODO: Verify need for this!!!!
 			ximpia.common.Browser.setObject('xpData-popup-tmpl', data);
 			//doCreateNoView({data: data, obj: obj});
 	        	//var viewData = ximpia.common.Window.getViewAttrs();
-	        	//ximpia.console.log('viewData...');
+	        	//ximpia.console.log('xpObjPopUp :: viewData...');
 	        	//ximpia.console.log(viewData);
 	        	ximpia.console.log(data);
 	        	var elemContent = $(data).find('#id_' + obj.name);
-	        	var popupData = $(data).filter('#id_conf').metadata();
+	        	var popupData = $(data).filter('#id_popup').metadata();
 	        	var elementButtons = $(data).filter('#id_sectionButton');        	
-	        	ximpia.console.log('popupData...');
+	        	ximpia.console.log('xpObjPopUp :: popupData...');
 	        	ximpia.console.log(popupData);
 	        	var height = null;
 	        	var width = null;
@@ -55,19 +55,19 @@
 	            		title: popupData.title,
 	            		message: '<div class="msgPopBody">' + elemContent.html() + '</div>',
 	            		buttons: elementButtons.html(),
-	            		effectIn: {style: 'fadeIn', time: 1000},
+	            		effectIn: {style: 'fadeIn', time: 500},
 	            		effectOut: {},
 	            		fadeBackground: true,
 	            		height: height,
 	            		width: width
 	        	});
-	            	$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
-	            	$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
-	            	ximpia.console.log('id_pops...');
+	            	$("#id_msgClose").click(function(evt) {ximpia.common.Window.clickMsgOk(evt, true)});
+	            	$("#id_btX").click(function(evt) {ximpia.common.Window.clickMsgOk(evt, true)});
+	            	ximpia.console.log('xpObjPopUp :: id_pops...');
 	            	ximpia.console.log($('#id_pops'));
-	            	ximpia.console.log('viewName: ' + obj.viewName);
+	            	ximpia.console.log('xpObjPopUp :: viewName: ' + obj.viewName);
 	            	// Render template
-			ximpia.console.log('doFormPopupNoView...');
+			ximpia.console.log('xpObjPopUp :: doFormPopupNoView...');
 			ximpia.console.log(document.forms);
 			//var data = JSON.parse(sessionStorage.getItem('xpData-view'));
 			for (var i = 0; i<document.forms.length; i++) {
@@ -81,10 +81,10 @@
 			// Post-Page : Page logic
 			var oForm = ximpia.common.Form();
 			oForm.doBindBubbles();
-			ximpia.console.log('end doFormPopupNoView()');	            	
-	            	ximpia.console.log('I am done!!!');								
+			ximpia.console.log('xpObjPopUp :: end doFormPopupNoView()');	            	
+	        ximpia.console.log('xpObjPopUp :: I am done!!!');								
 		}).error(function(jqXHR, textStatus, errorThrown) {
-			ximpia.console.log('get html template ERROR!!!!');
+			ximpia.console.log('xpObjPopUp :: get html template ERROR!!!!');
 			//$("#id_sect_loading").fadeOut('fast');
 			//var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 			//$("body").before(html);
@@ -138,7 +138,7 @@
 		        	var elemContent = $(tmplData).find('#id_' + obj.view);
 		        	ximpia.console.log('elemContent...');
 		        	ximpia.console.log(elemContent);
-		        	var popupData = $(tmplData).filter('#id_conf').metadata();
+		        	var popupData = $(tmplData).filter('#id_popup').metadata();
 		        	var elementButtons = $(tmplData).filter('#id_sectionButton');
 		        	ximpia.console.log('elementButtons...');
 		        	ximpia.console.log(elementButtons);
@@ -183,7 +183,7 @@
         	//ximpia.console.log(viewData);
         	/*ximpia.console.log(data);
         	var elemContent = $(data).find('#id_' + settings.name);
-        	var popupData = $(data).filter('#id_conf').metadata();
+        	var popupData = $(data).filter('#id_popup').metadata();
         	var elementButtons = $(data).filter('#id_sectionButton');
         	ximpia.console.log('popupData...');
         	ximpia.console.log(popupData);
@@ -241,11 +241,12 @@
 			ximpia.console.log('create popup!!!');
 			var obj = $(this).prop('settings');
 			ximpia.console.log(obj);
-			ximpia.console.log('isPopupReqView: ' + obj.isPopupReqView);
+			ximpia.console.log('isPopupReqView: ' + obj.isPopupReqView);			
+			
 			if (obj.isPopupReqView == false) {
 				// Popup No View
 				ximpia.console.log('Popup View ..');
-				doCreateView(obj);
+				doCreate(obj);
 			} else {
 				// Popup view
 				ximpia.console.log('Popup Request View...');
@@ -279,9 +280,10 @@
 		},
 		destroy: function() {
 			ximpia.console.log('Will destroy popup...');
-			$("div.PopMessage").fadeOut('fast');
-			$("#Wrapper").fadeTo("fast", 1.0);
-			$("#id_pops").remove()
+			//$("div.PopMessage").fadeOut('fast');
+			//$("#Wrapper").fadeTo("fast", 1.0);
+			//$("#id_pops").remove()
+			alert('Closing popup...');
 		}
         };
 		
