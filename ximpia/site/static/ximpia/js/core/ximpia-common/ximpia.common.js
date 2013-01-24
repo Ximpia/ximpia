@@ -114,6 +114,7 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 		}
 		$('body').css('cursor', 'auto');
 	});
+	$('body').css('cursor', 'auto');
 });
 /*
  * Facebook login
@@ -269,56 +270,65 @@ ximpia.common.Object.metadata = (function(obj) {
 	return meta
 })
 
+
 /*
- * set timeout for 6 seconds in periods of 1 second
+ * Start waiting clock for server response
+ * 
+ * ** Attributes** 
+ * 
+ * * ``op``:String: Method operation to show in log
+ * 
+ */
+ximpia.common.startBackendResponse = (function(op) {
+	// Waiting control to show loading bar if we wait more than 0.5 seconds
+	// TODO: Place into ximpia.settings time variables used for loading bar
+	var waitCounter = 1;
+	window.serverWait = setInterval(function() {
+		ximpia.console.log('startInterval :: ' + op + ' :: Waiting response from server(' + waitCounter + ') ... time: ' + 
+				waitCounter*.1 + ' seconds...' );
+		if (waitCounter > 2 && waitCounter < 100) {
+			$("#id_sect_loading").fadeIn(300);
+		} else if (waitCounter > 100) {
+			ximpia.console.log('PageAjax.doForm :: We got to limit of 10 seconds... exit...');
+			clearInterval(serverWait);
+			$("#id_sect_loading").fadeOut(200);
+		}
+		waitCounter += 1;
+	}, 100);
+});
+
+/*
+ * End backend server response
+ * 
+ * ** Attributes **
+ * 
+ * * ``op``:String : Operation to show in log
+ */
+ximpia.common.endBackendResponse = (function(op) {
+	// Fade out loading bar
+	ximpia.console.log(op + ' :: We got response, clear interval...');
+	clearInterval(window.serverWait);
+	// Remove loading bar
+	$("#id_sect_loading").fadeOut(200);
+});
+
+/*
+ * set timeout for 10 seconds in periods of 1 second
  */
 ximpia.common.timeOutCounter = (function(func) {
-	var counter = $.find("[data-xp-render='']").length;
-	ximpia.console.log('timeOutCounter :: counter: ' + counter);
-	ximpia.console.log($.find("[data-xp-render='']"));
-	if (counter != 0) {
-		setTimeout(function() {
-			counter = $.find("[data-xp-render='']").length;
-			ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | 2 sc');
-			if (counter != 0) {
-				setTimeout(function() {
-					counter = $.find("[data-xp-render='']").length;
-					ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | 4 sc');
-					if (counter != 0) {
-						setTimeout(function() {
-							counter = $.find("[data-xp-render='']").length;
-							ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | 6 sc');
-							if (counter != 0) {
-								setTimeout(function() {
-									counter = $.find("[data-xp-render='']").length;
-									ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | 8 sc');
-									if (counter != 0) {
-										setTimeout(function() {
-											counter = $.find("[data-xp-render='']").length;
-											ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | 10 sc');
-											if (counter == 0) {
-												eval('new func()');
-											}
-										}, 2000);
-									} else {
-										eval('new func()');
-									}
-								}, 2000);
-							} else {
-								eval('new func()');
-							}
-						}, 2000);
-					} else {
-						eval('new func()');
-					}
-				}, 2000);
-			} else {
-				eval('new func()');
-			}
-		}, 2000);
-	} else {
-		eval('new func()');
-	}
+	var waitCounter = 1;
+	var timeout = setInterval(function() {
+		var counter = $.find("[data-xp-render='']").length;
+		ximpia.console.log('timeOutCounter :: counter: ' + counter + ' | ' + waitCounter*0.1 + ' sc');
+		if (counter == 0) {
+			clearInterval(timeout);
+			eval('new func()');
+		}
+		if (waitCounter > 100) {
+			clearInterval(timeout);
+		}
+		waitCounter += 1;
+	}, 100);	
 });
 
 ximpia.console = {};
@@ -411,20 +421,16 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
 	ximpia.common.Window.createPopHtml();
 	var sTitle = '';
 	var sMessage = '';
-	//var sButtons = 'MsgCPClose:' + eval($("#id_buttonConstants").attr('value'))['close'];
 	var sButtons = '';
-	var sEffectIn = 'fadeIn,1000';
+	var sEffectIn = 'fadeIn,500';
 	var sEffectOut = '';
 	var bFadeBackground = true;
 	var iWidth = null;
 	var iHeight = null;
 	var isHidden = false;
 	functionShow = null;
-	ximpia.console.log('Will do...');
-	//var htmlPage = "<!-- START POPUP MESSAGE --><div class=\"Pops\"><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div><!-- END POPUP MESSAGE -->";
-	//ximpia.console.log(htmlPage);
-	//$("body").before(htmlPage);
-	ximpia.console.log('messageOptions...');
+	ximpia.console.log('showMessage :: Will do...');
+	ximpia.console.log('showMessage :: messageOptions...');
 	ximpia.console.log(messageOptions);
 	if (messageOptions.title)
 		sTitle = messageOptions.title;
@@ -472,85 +478,32 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
 	} else {
 		iTopOffset = document.documentElement.scrollTop;
 	}
-	//alert(sMessage.length);
-	/*if (!iHeight) {
-	 if (sMessage.length <= 100) {
-	 //var iTopPosition = 160;
-	 var iTopPosition = 130;
-	 $("div.MsgText").css('height', '40px');
-	 $("div.MsgText").css('overflow', 'hidden');
-	 }
-	 else if (sMessage.length <= 250 && sMessage.length > 100) {
-	 //var iTopPosition = 160;
-	 var iTopPosition = 130;
-	 $("div.MsgText").css('height', '150px');
-	 $("div.MsgText").css('overflow', 'hidden');
-	 }
-	 else {
-	 var iTopPosition = 80;
-	 $("div.MsgText").css('height', '200px');
-	 $("div.MsgText").css('overflow', 'auto');
-	 }
-	 }*/
-
 	if (!iHeight) {
 		$("div.MsgText").css('overflow', 'auto');
 		var iTopPosition = 110;
 	}
-
 	iTop = iTopPosition + iTopOffset;
 	$("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + sTitle + '</div>');
 	$("div.MsgText").html(sMessage);
-	//$("#PopMsgWrapper .MsgText").html(sMessage);
-	//ButtonList = sButtons.split(',');
-	//ximpia.console.log('sButtons: ' + sButtons);
-	//ximpia.console.log('ButtonList: ' + ButtonList);
-
-	ximpia.console.log('MsgText height...');
+	ximpia.console.log('showMessage :: MsgText height...');
 	ximpia.console.log($('div.MsgText').height());
-
-	ximpia.console.log('buttons: ' + buttons);
+	ximpia.console.log('showMessage :: buttons: ' + buttons);
 	$("div.MsgButtons").text('');
 	$("div.MsgButtons").append(buttons);
-	/*for (var i=0; i<ButtonList.length; i++) {
-	Fields = ButtonList[i].split(':');
-	sButtonId = Fields[0];
-	sButtonText = Fields[1];
-	buttonBefore = Fields[2];
-	//$("div.MsgButtons").append('<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>');
-	}*/
-	//EffectInList = sEffectIn.split(',');
-	//sEffectInTxt = EffectInList[0];
 	effectInTxt = effectIn.style;
 	iEffectInTime = parseInt(effectIn.time);
-	//iEffectInTime = parseInt(EffectInList[1]);
-	//EffectOutList = sEffectOut.split(',');
-	/*if (typeof effectOut.style != 'undefined') {
-	 effectOutTxt = effectOut.style;
-	 iEffectOutTime = parseInt(effectOut.time);
-	 }*/
-	$("div.PopMessage").fadeIn('fast');
-	/*if (sEffectInTxt == 'fadeIn') {
-	 $("div.PopMessage").fadeIn(iEffectInTime);
-	 }*/
 	$("div.Pops").css('left', iLeft + 'px');
 	$("div.Pops").css('top', iTop + 'px');
+	$("div.PopMessage").fadeIn(iEffectInTime);
 	if (isHidden == false) {
-		$("div.Pops").css('visibility', 'visible');
 		if (bFadeBackground) {
 			$("#Wrapper").fadeTo("fast", 0.50);
 		}
 	}
-	//$("div.PopMessage").fadeOut('slow');
-	/*if (sEffectOutTxt == 'fadeOut') {
-	$("div.PopMessage").fadeOut(iEffectOutTime);
-	}*/
-
 	// Position vertical align message area
-	ximpia.console.log('div.msgPopBody: ' + $('div.msgPopBody').html());
-	ximpia.console.log('div.msgPopBody: ' + $('div.msgPopBody').height());
-	ximpia.console.log('div.MsgText: ' + $('div.MsgText').height());
-
+	ximpia.console.log('showMessage :: div.msgPopBody: ' + $('div.msgPopBody').html());
+	ximpia.console.log('showMessage :: div.msgPopBody: ' + $('div.msgPopBody').height());
+	ximpia.console.log('showMessage :: div.MsgText: ' + $('div.MsgText').height());
 	if (functionShow) {
 		functionShow($(this));
 	}
@@ -558,27 +511,28 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
 /**
  * Click Ok Button
  */
-ximpia.common.Window.clickMsgOk = (function(bFadeBackground, functionName) {
+ximpia.common.Window.clickMsgOk = (function(evt, bFadeBackground, functionName) {
+	evt.preventDefault();
 	bFadeOut = ximpia.common.Window.checkFadeOut();
-	$("div.PopMessage").fadeOut('fast');
+	$("div.PopMessage").fadeOut(500, function() {
+		$("#id_pops").remove();
+	});
 	if (bFadeBackground) {
 		$("#Wrapper").fadeTo("fast", 1.0);
 	}
-	//$(".Pops").css('left','-2000px');
 	if (functionName) {
 		functionName();
 	}
 	if (!bFadeOut) {
 		bFadeBackground = false;
 	}
-	$("#id_pops").remove()
 });
 /**
  * Construct PopUp html
  */
 ximpia.common.Window.createPopHtml = (function() {
 	if (!$("#id_pops").length) {
-		var htmlPage = "<div id=\"id_pops\" class=\"Pops\" ><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px\"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" onclick=\"return false\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div>";
+		var htmlPage = "<div id=\"id_pops\" class=\"Pops\" ><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px\"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div>";
 		$("body").append(htmlPage);
 	}
 });
@@ -1883,7 +1837,7 @@ ximpia.common.PageAjax = function() {
 						}
 					}
 					//ximpia.console.log('id_variables : ' + $("#id_variables").html());
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					$("#" + _attr.priv.sectionId).css('visibility', 'visible');
 					// Just call a method for the bindings of the page
 					//var obj = ximpia.site.Signup();
@@ -1891,7 +1845,7 @@ ximpia.common.PageAjax = function() {
 					_attr.priv.callback();
 					//ximpia.console.log('invitationCode : ' + $("#id_invitationCode").attr('value'));
 				}).error(function(jqXHR, textStatus, errorThrown) {
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
@@ -1978,7 +1932,7 @@ ximpia.common.PageAjax = function() {
 					ximpia.console.log('verbose: ' + _attr.priv.verbose);
 					_attr.priv.callback(data);
 				}).error(function(jqXHR, textStatus, errorThrown) {
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
@@ -2014,10 +1968,9 @@ ximpia.common.PageAjax = function() {
 					ximpia.console.log('renderCtx :: xpForm: ' + xpForm);
 					// Do menus
 					responseMap = dataObj;
-					ximpia.common.PageAjax.processMenus(responseMap);					
-					
+					ximpia.common.PageAjax.processMenus(responseMap);
 					ximpia.common.timeOutCounter(function() {
-						ximpia.common.PageAjax.positionBars();
+						ximpia.common.PageAjax.positionBars();						
 						ximpia.common.PageAjax.doRender(xpForm);
 						ximpia.common.PageAjax.doFade();
 						var oForm = ximpia.common.Form();
@@ -2025,7 +1978,7 @@ ximpia.common.PageAjax = function() {
 					});
 				} else {
 					errorMsg = dataObj.errors[0][1];
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>" + errorMsg + "</div></div>";
 					$("body").before(html);
 				}
@@ -2039,7 +1992,10 @@ ximpia.common.PageAjax = function() {
 				if (typeof(state) == 'undefined') {
 					state = true;
 				}
+				ximpia.common.startBackendResponse('PageAjax.doForm');
 				$.post(_attr.priv.path, obj, function(data) {
+					ximpia.common.endBackendResponse('PageAjax.doForm');
+					
 					// Get responseMap
 					var responseMap = eval(data);
 					var viewName = responseMap['response']['view'];
@@ -2094,7 +2050,7 @@ ximpia.common.PageAjax = function() {
 						ximpia.console.log('get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
 					});
 				}, 'json').error(function(jqXHR, textStatus, errorThrown) {
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				});
@@ -2123,7 +2079,7 @@ ximpia.common.PageAjax = function() {
 				} catch (err) {
 					ximpia.console.log('PageAjax.getView :: Exception catched in getting view');
 					ximpia.console.log(err);
-					$("#id_sect_loading").fadeOut('fast');
+					//$("#id_sect_loading").fadeOut('fast');
 					var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 					$("body").before(html);
 				}
@@ -2143,22 +2099,16 @@ ximpia.common.PageAjax = function() {
  * Do fade out wait icon and show page
  */
 ximpia.common.PageAjax.doFade = function() {
-	//$('#' + formId).find("[data-xp-type='function']").xpObjRenderExt('render', xpForm);
 	ximpia.console.log('doFade :: ');
 	ximpia.console.log($.find("[data-xp-render='']"));
-	///*if (typeof $(element).attr('data-xp-render') == 'undefined') {
-	//alert('continue????');
-	$("#id_sect_loading").fadeOut('fast');
-	$(".sectionComp").css('visibility', 'visible');
+	$("#id_view_zone").fadeIn(250);
 }
 /**
  * Do fade out wait icon and show page
  */
 ximpia.common.PageAjax.doFadeIn = function() {
 	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
-	$("#id_sect_loading").fadeIn('fast');
-	$(".sectionComp").css('visibility', 'hidden');
-	$("#id_titleBar").empty();
+	$("#id_view_zone").fadeOut(250);
 }
 /**
  * Inject template into DOM
@@ -2371,11 +2321,12 @@ ximpia.common.PageAjax.positionBars = (function(obj) {
 	if ($('#id_titleBar').hasOwnProperty('length')) {
 		//
 		var height = $('#id_titleBar').height();
-		if ($('#id_titleBar').offset().top == $('#id_content').offset().top) {
+		/*if ($('#id_titleBar').offset().top == $('#id_content').offset().top) {
+			alert('offset top variable...');
 			$('#id_content').offset({
 				top : height + $('#id_content').offset().top + 4
 			});
-		}
+		}*/
 		//$('#id_content').css('border-top-left-radius', '0px');
 		//$('#id_content').css('border-top-right-radius', '0px');
 		//$('#id_content').css('border-top', '0px');
@@ -2386,7 +2337,7 @@ ximpia.common.PageAjax.positionBars = (function(obj) {
 		//$('.sectionComp').css('padding-top', parseInt($('.sectionComp').css('padding-top'))+ 25 + 'px');
 		//$('header').css('border-bottom-right-radius', '0px');
 		//$('header').css('border-bottom-left-radius', '0px');
-		$('#id_titleBar').css('width', parseInt($('.sectionComp').css('width')) - 5 + 'px');
+		$('#id_titleBar').css('width', parseInt($('#id_content').css('width')) - 5 + 'px');
 		$('#id_titleBar').css('visibility', 'visible');
 		$('#id_sectionTitle').css('visibility', 'visible');
 	}
@@ -2407,7 +2358,8 @@ ximpia.common.PageAjax.positionBars = (function(obj) {
 			ximpia.console.log('********************** buttons html:  ' + html);
 			$('.sectionComp').append(html);
 			$('#id_sectionButton').html('');
-			$('#id_pageButton').css('top', '15px');
+			//$('#id_pageButton').css('top', '15px');
+			$('#id_pageButton').css('top', '1px');
 			//margin-bottom: 0px; left: 0px
 		}
 		if (( typeof obj != 'undefined' && !obj.hasOwnProperty('skipVisibility')) || typeof obj == 'undefined') {
@@ -2431,7 +2383,7 @@ ximpia.common.PageAjax.getView = (function(obj, functionName) {
 		var responseMap = eval(data);
 		functionName(responseMap);
 	}, 'json').error(function(jqXHR, textStatus, errorThrown) {
-		$("#id_sect_loading").fadeOut('fast');
+		//$("#id_sect_loading").fadeOut('fast');
 		var html = "<div class=\"loadError\"><img src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
 		$("body").before(html);
 	});

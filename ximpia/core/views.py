@@ -6,6 +6,7 @@ import types
 import traceback
 import os
 import datetime
+import time
 
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
@@ -261,6 +262,8 @@ def jxService(request, **args):
 	@param request: Request
 	@param result: Result"""
 	logger.debug( 'jxService...' )
+	#raw_input('Continue???')
+	#time.sleep(1.5)
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
 	request.session.delete_test_cookie()
