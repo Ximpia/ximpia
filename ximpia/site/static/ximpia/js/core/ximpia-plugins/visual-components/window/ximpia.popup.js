@@ -87,92 +87,93 @@
 		});
         };
         /**
-         * 
+         * Show popup message associated with a view. First, a waiting icon is rendered, while request is sent to server. Then
+         * response from server is rendered into the visual components of popup template
          */
-        var doCreateReqView = function(obj) {
-        	ximpia.console.log('Popup Request View!!!!!!!!');
+		var doCreateReqView = function(obj) {
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: Popup Request View!!!!!!!!');
         	ximpia.console.log(obj);
         	// 1. Show Message, waiting icon
         	var waitingImgHtml = "<img id=\"id_btPageMsg_img\" src=\"/site_media/images/loading.gif\" alt=\" \" style=\"margin-top: -6px\" />";
-		waitingImgHtml += "&nbsp;&nbsp; <span id=\"id_btPageMsg_text\">Waiting...</span>";
+			waitingImgHtml += "&nbsp;&nbsp; <span id=\"id_btPageMsg_text\">Waiting...</span>";
         	var height= 160;
         	var width= 500;
         	ximpia.common.Window.showMessage({
             		title: '',
             		message: '<div class="msgPopBody">' + waitingImgHtml + '</div>',
             		buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
-            		effectIn: {style: 'fadeIn', time: 1000},
+            		effectIn: {style: 'fadeIn', time: 500},
             		effectOut: {},
             		fadeBackground: true,
             		height: height,
             		width: width
         	});
-            	$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
-            	$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
+        	$("#id_msgClose").click(function(evt) {ximpia.common.Window.clickMsgOk(evt, true)});
+        	$("#id_btX").click(function(evt) {ximpia.common.Window.clickMsgOk(evt, true)});
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: I displayed popup!!!');
 
-            	// 2. Get view and place on sessionStorage, get from view template name
-            	ximpia.common.PageAjax.getView( {	view: obj.view,
-							params: obj.params,
-							app: obj.app} , function(responseMap) {
-            		ximpia.console.log('responseMap...');
-            		ximpia.console.log(responseMap);
-            		ximpia.common.Browser.setXpDataView(obj.view, responseMap);
+        	// 2. Get view and place on sessionStorage, get from view template name
+        	ximpia.common.PageAjax.getView( {	view: obj.view,
+						params: obj.params,
+						app: obj.app} , function(responseMap) {
+        		ximpia.console.log('xpObjPopUp :: doCreateReqView :: responseMap...');
+        		ximpia.console.log(responseMap);
+        		ximpia.common.Browser.setXpDataView(obj.view, responseMap);
             		
 			var viewName = responseMap['response']['view'];
 			var tmplName = responseMap['response']['tmpl'][viewName];
 
-            		// 3. Get template
-            		ximpia.common.PageAjax.getTmpl( {	app: responseMap['response']['app'],
-                						name: tmplName,
-                						viewType: 'popup'} , function(tmplData) {
+    		// 3. Get template
+    		ximpia.common.PageAjax.getTmpl( {	app: responseMap['response']['app'],
+        						name: tmplName,
+        						viewType: 'popup'} , function(tmplData) {
 
-            			// 4. Render template and view
-            			//ximpia.console.log('template...');
-            			//ximpia.console.log(tmplData);
-            			ximpia.common.Browser.setObject('xpData-popup-tmpl', tmplData);
-		        	ximpia.console.log(tmplData);
-		        	var elemContent = $(tmplData).find('#id_' + obj.view);
-		        	ximpia.console.log('elemContent...');
-		        	ximpia.console.log(elemContent);
-		        	var popupData = $(tmplData).filter('#id_popup').metadata();
-		        	var elementButtons = $(tmplData).filter('#id_sectionButton');
-		        	ximpia.console.log('elementButtons...');
-		        	ximpia.console.log(elementButtons);
-		        	ximpia.console.log('popupData...');
-		        	ximpia.console.log(popupData);
-		        	var height = null;
-		        	var width = null;
-		        	if (popupData.height) height = popupData.height;
-		        	if (popupData.width) width = popupData.width;
-		        	ximpia.console.log('height: ' + height);
-		        	ximpia.console.log('width: ' + width);
-		        	var form = $(elemContent).find('form')[0];
-		        	// Insert data from template into message area
-		        	// Set title => popupData.title
-		        	$("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + popupData.title + '</div>');
-		        	// message: '<div class="msgPopBody">' + elemContent.html() + '</div>'
-		        	$("div.MsgText").html('<div class="msgPopBody">' + elemContent.html() + '</div>');
-		        	// Set buttons => elementButtons.html()
-		        	$("div.MsgButtons").text('');
-		        	$("div.MsgButtons").append(elementButtons.html());
-		        	// Set popup width and height
-		        	$("div.PopMessage").css('width', width + 'px');
-		        	$("div#PopMsgWrapper").css('width', width + 'px');
-		        	if (height > 400) height = 400;
-		        	$("div.MsgText").css('height', height + 'px');
-		        	// Render form from template
-		        	ximpia.console.log('form: ...');
-		        	ximpia.console.log(form);
-		        	var xpForm = 'xpData-view-' + obj.view + '.' + form.id;
-		        	ximpia.console.log('xpForm: ' + xpForm);
-		        	ximpia.common.PageAjax.doRender(xpForm);
-		        	$('.btBar').css('visibility', 'visible');
-		        	ximpia.common.PageAjax.doFade();
-		        	var oForm = ximpia.common.Form();
-		        	oForm.doBindBubbles();
-		        	
-            		});
-            	});
+			// 4. Render template and view
+			//ximpia.console.log('template...');
+			//ximpia.console.log(tmplData);
+			ximpia.common.Browser.setObject('xpData-popup-tmpl', tmplData);
+	       	ximpia.console.log(tmplData);
+        	var elemContent = $(tmplData).find('#id_' + obj.view);
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: elemContent...');
+        	ximpia.console.log(elemContent);
+        	var popupData = $(tmplData).filter('#id_popup').metadata();
+        	var elementButtons = $(tmplData).filter('#id_sectionButton');
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: elementButtons...');
+        	ximpia.console.log(elementButtons);
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: popupData...');
+        	ximpia.console.log(popupData);
+        	var height = null;
+        	var width = null;
+        	if (popupData.height) height = popupData.height;
+        	if (popupData.width) width = popupData.width;
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: height: ' + height);
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: width: ' + width);
+        	var form = $(elemContent).find('form')[0];
+        	// Insert data from template into message area
+        	// Set title => popupData.title
+        	$("div.MsgTitle").html('<div style="border: 0px solid; float: left; padding:7px 20px; width: 370px">' + popupData.title + '</div>');
+        	// message: '<div class="msgPopBody">' + elemContent.html() + '</div>'
+        	$("div.MsgText").html('<div class="msgPopBody">' + elemContent.html() + '</div>');
+        	// Set buttons => elementButtons.html()
+        	$("div.MsgButtons").text('');
+        	$("div.MsgButtons").append(elementButtons.html());
+        	// Set popup width and height
+        	$("div.PopMessage").css('width', width + 'px');
+        	$("div#PopMsgWrapper").css('width', width + 'px');
+        	if (height > 400) height = 400;
+        	$("div.MsgText").css('height', height + 'px');
+        	// Render form from template
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: form: ...');
+        	ximpia.console.log(form);
+        	var xpForm = 'xpData-view-' + obj.view + '.' + form.id;
+        	ximpia.console.log('xpObjPopUp :: doCreateReqView :: xpForm: ' + xpForm);
+        	ximpia.common.PageAjax.doRender(xpForm);
+        	$('.btBar').css('visibility', 'visible');
+        	ximpia.common.PageAjax.doFade();
+        	var oForm = ximpia.common.Form();
+        	oForm.doBindBubbles();
+			});
+		});
         	
         	//var viewData = ximpia.common.Window.getViewAttrs();
         	//ximpia.console.log('viewData...');

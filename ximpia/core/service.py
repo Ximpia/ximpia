@@ -423,7 +423,7 @@ class CommonService( object ):
 		@param formInstance: Form instance"""
 		self._ctx.forms[formInstance.getFormId()] = formInstance
 	
-	def _addFormValue(self, fieldName, fieldValue, formId=None):
+	def _putFormValue(self, fieldName, fieldValue, formId=None):
 		"""
 		Add form value to field already defined in the forms for the service
 		

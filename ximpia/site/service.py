@@ -354,8 +354,8 @@ class SiteService ( CommonService ):
 		if invitationCode != None and setInvitation.isChecked():
 			# Add invitation code to form form_signup
 			invitation = self._dbInvitation.get(invitationCode=invitationCode, status=K.PENDING)
-			self._addFormValue('invitationCode', invitationCode)
-			self._addFormValue('email', invitation.email)
+			self._putFormValue('invitationCode', invitationCode)
+			self._putFormValue('email', invitation.email)
 			self._f().disableFields(['invitationCode', 'email'])
 	
 	@MenuActionDecorator('logout')
@@ -368,7 +368,7 @@ class SiteService ( CommonService ):
 	@ViewDecorator(forms.UserChangePasswordForm)
 	def viewChangePassword(self):
 		"""Change password form with current password and new password"""
-		pass
+		self._putFormValue('username', self._ctx.user.username)
 	
 	@ActionDecorator(forms.UserChangePasswordForm)
 	def changePassword(self):
@@ -387,7 +387,7 @@ class SiteService ( CommonService ):
 		self._dbUser = UserDAO(self._ctx)
 		self._dbUserMeta = UserMetaDAO(self._ctx)
 		self._validateReminder(username, reminderId)
-		self._addFormValue('username', username)
+		self._putFormValue('username', username)
 		self._f().putParamList(username=username)
 	
 	@ActionDecorator(forms.PasswordReminderForm)
