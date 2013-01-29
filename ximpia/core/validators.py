@@ -1,7 +1,7 @@
 import re
 
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
+#from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
 from choices import Choices as Ch
@@ -64,9 +64,9 @@ def validateEmail(value):
 
 
 
-validationMap = {
+"""validationMap = {
 					Ch.FORMAT_TYPE_EMAIL: [validateEmail],
 					Ch.FORMAT_TYPE_PASSWORD: [validatePassword],
 					Ch.FORMAT_TYPE_USERID: [validateUserId],
 					Ch.FORMAT_TYPE_CHAR: [validateTxtField]
-				}
+				}"""

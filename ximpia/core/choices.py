@@ -2,16 +2,16 @@ from django.utils.translation import ugettext as _
 
 class Choices(object):
 
-	# FORM_CHAR_TYPE
-	FORMAT_TYPE_CHAR = 'char'
-	FORMAT_TYPE_EMAIL = 'email'
-	FORMAT_TYPE_USERID = 'userid'
-	FORMAT_TYPE_PASSWORD = 'password'
-	FORMAT_TYPE = (
-		(FORMAT_TYPE_CHAR, _('Char')),
-		(FORMAT_TYPE_EMAIL, _('Email')),
-		(FORMAT_TYPE_USERID, _('UserId')),
-		(FORMAT_TYPE_PASSWORD, _('Password'))
+	# FIELD_FORMAT
+	FIELD_FORMAT_CHAR = 'char'
+	FIELD_FORMAT_EMAIL = 'email'
+	FIELD_FORMAT_USERID = 'userid'
+	FIELD_FORMAT_PASSWORD = 'password'
+	FIELD_FORMAT = (
+		(FIELD_FORMAT_CHAR, _('Char')),
+		(FIELD_FORMAT_EMAIL, _('Email')),
+		(FIELD_FORMAT_USERID, _('UserId')),
+		(FIELD_FORMAT_PASSWORD, _('Password'))
 					)
 	# COUNTRY
 	COUNTRY = (

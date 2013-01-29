@@ -4,22 +4,20 @@ import datetime
 import copy
 from decimal import Decimal, DecimalException
 
-from django.forms import Field as DjField, ChoiceField, MultipleChoiceField
+from django.forms import ChoiceField, MultipleChoiceField
 
-from django.forms.widgets import Widget, CheckboxInput, DateInput, DateTimeInput, TimeInput
+from django.forms.widgets import Widget
 
 from django.forms.util import from_current_timezone, to_current_timezone
 from django.core.exceptions import ValidationError
 from django.utils import formats
-from django.utils.encoding import smart_str, force_unicode
+from django.utils.encoding import smart_str, force_unicode, smart_unicode
 from django.utils.ipv6 import clean_ipv6_address
 from django.utils.translation import ugettext_lazy as _
 import django.core.validators
 
 from ximpia.util.basic_types import DictUtil
-from validators import validationMap
-
-from choices import Choices as Ch
+from validators import validateTxtField, validatePassword, validateUserId
 
 # Settings
 from ximpia.core.util import getClass
@@ -35,54 +33,78 @@ class Field( object ):
 	initial = ''
 	instanceName = ''
 	instanceFieldName = ''
-	def __init__(self, maxLength=None, required=True, init=None, **args):
-		if not args.has_key('initial'):
-			self.initial = ''
-			args['initial'] = ''
-		initValue = init if init != None else ''
+	attrs = {}
+	creationCounter = 0
+	defaultValidators = []
+	defaultErrorMessages = {}
+	localize = False
+	def __init__(self, instance, insField, required=True, jsRequired=None, label=None, initial=None, helpText=None, 
+				errorMessages=None, validators=[]):
+		"""
+		Common field form class
+		
+		** Required Arguments **
+		
+		* ``instance``
+		* ``insField``
+		
+		** Optional Arguments **
+		
+		* ``required``:bool [True] : Field is required by back-end
+		* ``label``:str [None] : Field label
+		* ``initial``:str [None] : Field initial value
+		* ``helpText``:str [None] : Field tooltip
+		* ``errorMessages``:dict [None] : Error messages in dict format
+		* ``validators``:list [[]] : List of validators
+		
+		"""
+		self.attrs = {}
+		self._doInstanceInit(instance, insField)
+		self.required, self.jsRequired = self._doRequired(required, jsRequired)
+		classStr = 'fieldMust' if required == True else 'field'
+		if required == False and jsRequired == True:
+			classStr = 'fieldMust'
+		# attrs
+		self.attrs['class'] = classStr
+		if label is not None:
+			label = smart_unicode(label)
+		self.required, self.label, self.initial = required, label, initial
+		initValue = initial if initial != None else ''
+		# helpText		
+		if helpText is None:
+			self.helpText = u''
+		else:
+			self.helpText = smart_unicode(helpText)
+		if self.instance: 
+			self.initial = eval('self.instance' + '.' + self.instanceFieldName) if self.instance != None and initial == None else initValue
 		if self.instance:
-			args['initial'] = eval('self.instance' + '.' + self.instanceFieldName) if self.instance != None else initValue
-			self.initial = args['initial']
-		args['required'] = required
-		if self.instance:
-			if not args.has_key('label'):
-				args['label'] = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name.title()
-			if not args.has_key('help_text'):
-				args['help_text'] = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text.title()
-		# val
-		if args.has_key('val'):
-			for valField in args['val']:
-				args['validators'].append(valField)
-		# jsVal : data-xp-val
-		if args.has_key('jsVal'):
-			for jsValidation in args['jsVal']:
-				if jsValidation.strip() != 'required':
-					#args['widget'].attrs['data-xp-val'] += ' ' + jsValidation
-					self._updateAttrs(args['widget'].attrs, 'data-xp-val', jsValidation)
+			if not label:
+				self.label = smart_unicode(self.instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name.title())
+			if not helpText:
+				self.helpText = smart_unicode(self.instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text.title())
 		# jsRequired
-		if required == True and not args.has_key('jsRequired'):
-			args['jsRequired'] = True
-		if required == False and not args.has_key('jsRequired'):
-			args['jsRequired'] = False
-		if args.has_key('jsRequired'):
-			if args['jsRequired'] == True:
-				#args['widget'].attrs['data-xp-val'] += ' required'
-				self._updateAttrs(args['widget'].attrs, 'data-xp-val', 'required')
-		#logger.debug( 'attrs : ' + args['label'] + ' ' + args['widget'].attrs )
-		# tabindex
-		if args.has_key('tabindex'):
-			args['widget'].attrs['tabindex'] = str(args['tabindex'])
-		if args.has_key('val'):
-			del args['val']
-		if args.has_key('jsVal'):
-			del args['jsVal']
-		if args.has_key('jsRequired'):
-			del args['jsRequired']
-		if args.has_key('tabindex'):
-			del args['tabindex']
-		if args.has_key('attrs'):
-			del args['attrs']
-		super(Field, self).__init__(**args)
+		self.jsRequired = jsRequired
+		if required == True and not self.jsRequired:
+			self.jsRequired= True
+		if required == False and not self.jsRequired:
+			self.jsRequired = False
+		if self.jsRequired:
+			if self.jsRequired == True:
+				self._updateAttrs(self.attrs, 'data-xp-val', 'required')
+		logger.debug( 'attrs for %s: %s' % (self.label, str(self.attrs)) )
+		# Increase the creation counter, and save our local copy.
+		self.creationCounter = Field.creationCounter
+		Field.creationCounter += 1
+		messages = {}
+		for c in reversed(self.__class__.__mro__):
+			messages.update(getattr(c, 'defaultErrorMessages', {}))
+		messages.update(errorMessages or {})
+		self.error_messages = messages
+		self.validators = self.defaultValidators + validators
+		# maxLength from model
+		self.maxLength = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].max_length if self.instance else None
+		self.localize = False
+		
 	def _doInstanceInit(self, instance, insField):
 		"""Set instance and instanceName and instanceFieldName"""
 		if insField.find('.') != -1:
@@ -96,10 +118,6 @@ class Field( object ):
 			d[key] += ' ' + value
 		else:
 			d[key] = value
-	def _getMaxLength(self):
-		"""Get max length from model"""
-		fieldMaxLength = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].max_length if self.instance else 0
-		return fieldMaxLength
 	def _doRequired(self, required, jsRequired):
 		"""Process required and javascript required"""
 		# True | None => True		
@@ -108,11 +126,19 @@ class Field( object ):
 			jsRequired = required
 		t = (required, jsRequired)
 		return t
+	@DeprecationWarning
 	def _doAttrs(self, args, attrDict):
-		"""Process form attrs with field attribute dictionary for widget
-		@param args: 
-		@param attrDict: 
-		@return: dict"""
+		"""
+		Process form attrs with field attribute dictionary for widget
+		
+		** Arguments **
+		
+		* ``args``
+		* ``attrDict``
+		
+		** Returns **
+		Dict, attribute dictionary
+		"""
 		d = {}
 		if args.has_key('attrs'):
 			d = DictUtil.addDicts([args['attrs'], attrDict])
@@ -171,58 +197,69 @@ class Field( object ):
 		"""
 		return data
 
-	def widget_attrs(self, widget):
-		"""
-		Given a Widget instance (*not* a Widget class), returns a dictionary of
-		any HTML attributes that should be added to the Widget, based on this
-		Field.
-		"""
-		return {}
-
 	def __deepcopy__(self, memo):
 		result = copy.copy(self)
 		memo[id(self)] = result
-		result.widget = copy.deepcopy(self.widget, memo)
+		#result.widget = copy.deepcopy(self.widget, memo)
 		result.validators = self.validators[:]
 		return result
 
 class CharField( Field ):
 	"""
-	CharField
+	Char field.
 	
-	** Required Attributes **
+	Example:
+	
+	firstName = CharField(_dbUser, '_dbUser.first_name')
+	
+	where _dbUser is a form class attribute with the model instance, ``_dbUser = User()``
+	
+	** Required Arguments **
 	
 	* ``instance``:object : Model instance
-	* ``insField``:String : Model field
-	* ``fieldFormat``:String : Form field format, from Choices.FORM_CHAR_TYPE
+	* ``insField``:str : Model field
 	
-	** Optional Attributes **
+	** Optional Arguments **
 	
-	* ``minLength``:Integer : Minimum length
-	* ``maxLength``:Integer : Maximum length
-	* ``required``:Boolean : Required field by back-end form valdiation
-	* ``init``:String : Initial value
-	* ``jsRequired``:String	: Required field by javascript validation
+	* ``minLength``:int : Field minimum length
+	* ``maxLength``:int : Field maximum length
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
 	
-	Plus the attributes for Field form class
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``minLength``:str
+	* ``maxLength``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
 	
 	"""
-	def __init__(self, instance, insField, fieldFormat=Ch.FORMAT_TYPE_CHAR, minLength=None, maxLength=None, 
-				required=True, init='', jsRequired=None, **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		args['validators'] = validationMap[fieldFormat]
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired) 
-		classStr = 'fieldMust' if required == True else 'field'
-		if required == False and jsRequired == True:
-			classStr = 'fieldMust'
-		attrs = self._doAttrs(args, {	'class': classStr,
-										'maxlength': str(args['max_length'])
-									})
-		args['widget'] = Widget(attrs=attrs)
-		super(CharField, self).__init__(**args)
+	maxLength = None
+	minLength = None
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None):
+		self.minLength, self.maxLength = minLength, maxLength
+		super(CharField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		if len(self.defaultValidators) == 0:
+			self.defaultValidators = [validateTxtField]
+		if self.minLength is not None:
+			self.validators.append(django.core.validators.MinLengthValidator(self.minLength))
+		if self.maxLength is not None:
+			self.validators.append(django.core.validators.MaxLengthValidator(self.maxLength))
+		if self.maxLength != None:
+			self.attrs['maxlength'] = str(self.maxLength)
+		if self.minLength != None:
+			self.attrs['minlength'] = str(self.minLength)
 
 """
 Example: Months
@@ -253,8 +290,42 @@ model: Many to many field
 CheckboxField => (pk, str)...
 """
 
-class BooleanField ( Field ):
-	widget = CheckboxInput
+class BooleanField ( Field ):	
+	"""
+	Boolean field. This field can be rendered into any visual component: checkbox, selection box, etc... The most common use is to
+	render into a checkbox.
+	
+	Example:
+	
+	isOrdered = BooleanField(_dbUserOrder, '_dbUserOrder.isOrdered')
+	
+	where _dbUserOrder is a form class attribute with the model instance, ``_dbUserOrder = UserOrder()``
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
 
 	def to_python(self, value):
 		"""Returns a Python boolean object."""
@@ -271,22 +342,101 @@ class BooleanField ( Field ):
 			raise ValidationError(self.error_messages['required'])
 		return value
 
-class IPAddressField(CharField):
-	default_error_messages = {
+class IPAddressField(Field):
+	"""
+	Ip Address field, IPv4, like 255.255.255.0
+	
+	Example:
+	
+	isOrdered = IPAddressField(_dbModel, '_dbModel.ip')
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid IPv4 address.'),
 	}
-	default_validators = [django.core.validators.validate_ipv4_address]
+	defaultValidators = [django.core.validators.validate_ipv4_address]
 
 
 class GenericIPAddressField(CharField):
-	default_error_messages = {}
+	
+	"""
+	Generic IP Address field, IPv4 and IPv6
+	
+	Example:
+	
+	isOrdered = IPGenericAddressField(_dbModel, '_dbModel.ip')
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Required Arguments **
 
-	def __init__(self, protocol='both', unpackIpv4=False, *args, **kwargs):
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``protocol``:str ['both'] : Protocol, possible values: both|ipv4|ipv6
+	* ``unpackIpv4``:bool [False]
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {}
+
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None, protocol='both', unpackIpv4=False):
 		self.unpack_ipv4 = unpackIpv4
-		self.default_validators, invalid_error_message = \
-			django.core.validators.ip_address_validators(protocol, unpackIpv4)
-		self.default_error_messages['invalid'] = invalid_error_message
-		super(GenericIPAddressField, self).__init__(*args, **kwargs)
+		self.defaultValidators, invalidErrorMessage = django.core.validators.ip_address_validators(protocol, unpackIpv4)
+		self.defaultErrorMessages['invalid'] = invalidErrorMessage
+		self.required, self.jsRequired = self._doRequired(required, jsRequired)
+		super(GenericIPAddressField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		classStr = 'fieldMust' if required == True else 'field'
+		if required == False and jsRequired == True:
+			classStr = 'fieldMust'
+		# attrs
+		self.attrs['class'] = classStr
 
 	def to_python(self, value):
 		if value in django.core.validators.EMPTY_VALUES:
@@ -297,7 +447,47 @@ class GenericIPAddressField(CharField):
 		return value
 
 class DecimalField ( Field ):
-	default_error_messages = {
+	
+	"""
+	Decimal field with support for maxValue, minValue, maxDigits and decimalPlaces
+	
+	Example:
+	
+	amount = DecimalField(_dbModel, '_dbModel.field', maxValue=9800, minValue=100, maxDigits=4, decimalPlaces=2)
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``maxValue``:decimal.Decimal : Maximum value
+	* ``minValue``:decimal.Decimal : Minimum value
+	* ``maxDigits``:int : Maximum number of digits (before decimal point plus after decimal point)
+	* ``decimalPlaces``:int : Number of decimal places
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a number.'),
 		'max_value': _(u'Ensure this value is less than or equal to %(limit_value)s.'),
 		'min_value': _(u'Ensure this value is greater than or equal to %(limit_value)s.'),
@@ -306,11 +496,13 @@ class DecimalField ( Field ):
 		'max_whole_digits': _('Ensure that there are no more than %s digits before the decimal point.')
 	}
 
-	def __init__(self, maxValue=None, minValue=None, maxDigits=None, decimalPlaces=None, *args, **kwargs):
-		self.max_value, self.min_value = maxValue, minValue
-		self.max_digits, self.decimal_places = maxDigits, decimalPlaces
-		Field.__init__(self, *args, **kwargs)
-
+	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
+				maxValue=None, minValue=None, maxDigits=None, decimalPlaces=None):
+		self.maxValue, self.minValue = maxValue, minValue
+		self.maxDigits, self.decimalPlaces = maxDigits, decimalPlaces
+		#Field.__init__(self, *args, **kwargs)
+		super(DecimalField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
 		if maxValue is not None:
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
@@ -353,26 +545,66 @@ class DecimalField ( Field ):
 			# 0 before the decimal point as a digit since that would mean
 			# we would not allow max_digits = decimal_places.
 			digits = decimals
-		whole_digits = digits - decimals
+		wholeDigits = digits - decimals
 
-		if self.max_digits is not None and digits > self.max_digits:
-			raise ValidationError(self.error_messages['max_digits'] % self.max_digits)
-		if self.decimal_places is not None and decimals > self.decimal_places:
-			raise ValidationError(self.error_messages['max_decimal_places'] % self.decimal_places)
-		if self.max_digits is not None and self.decimal_places is not None and whole_digits > (self.max_digits - self.decimal_places):
-			raise ValidationError(self.error_messages['max_whole_digits'] % (self.max_digits - self.decimal_places))
+		if self.maxDigits is not None and digits > self.maxDigits:
+			raise ValidationError(self.error_messages['max_digits'] % self.maxDigits)
+		if self.decimalPlaces is not None and decimals > self.decimalPlaces:
+			raise ValidationError(self.error_messages['max_decimal_places'] % self.decimalPlaces)
+		if self.maxDigits is not None and self.decimalPlaces is not None and wholeDigits > (self.maxDigits - self.decimalPlaces):
+			raise ValidationError(self.error_messages['max_whole_digits'] % (self.maxDigits - self.decimalPlaces))
 		return value
 
 class IntegerField ( Field ):
-	default_error_messages = {
+	
+	"""
+	Integer field with maxValue and minValue
+	
+	Example:
+	
+	number = IntegerField(_dbModel, '_dbModel.field', maxValue=9800, minValue=100)
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``maxValue``:decimal.Decimal : Maximum value
+	* ``minValue``:decimal.Decimal : Minimum value
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a whole number.'),
 		'max_value': _(u'Ensure this value is less than or equal to %(limit_value)s.'),
 		'min_value': _(u'Ensure this value is greater than or equal to %(limit_value)s.'),
 	}
 
-	def __init__(self, maxValue=None, minValue=None, *args, **kwargs):
-		self.max_value, self.min_value = maxValue, minValue
-		super(IntegerField, self).__init__(*args, **kwargs)
+	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
+				maxValue=None, minValue=None):
+		self.maxValue, self.minValue = maxValue, minValue
+		super(IntegerField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
 		if maxValue is not None:
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
@@ -395,7 +627,45 @@ class IntegerField ( Field ):
 		return value
 
 class FloatField ( IntegerField ):
-	default_error_messages = {
+	
+	"""
+	Integer field with maxValue and minValue
+	
+	Example:
+	
+	number = FloatField(_dbModel, '_dbModel.field', maxValue=9800, minValue=100)
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``maxValue``:decimal.Decimal : Maximum value
+	* ``minValue``:decimal.Decimal : Minimum value
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a number.'),
 	}
 
@@ -416,11 +686,68 @@ class FloatField ( IntegerField ):
 		return value
 
 class _BaseTemporalField ( Field ):
+	
+	"""
+	
+	
+	Example:	
+	
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Input Formats **
+	
+	A list of formats used to attempt to convert a string to a valid datetime.date object.
 
-	def __init__(self, input_formats=None, *args, **kwargs):
-		super(_BaseTemporalField, self).__init__(*args, **kwargs)
-		if input_formats is not None:
-			self.input_formats = input_formats
+	If no input_formats argument is provided, the default input formats are:
+
+	'%Y-%m-%d',       # '2006-10-25'
+	'%m/%d/%Y',       # '10/25/2006'
+	'%m/%d/%y',       # '10/25/06'
+	
+	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
+
+	'%b %d %Y',       # 'Oct 25 2006'
+	'%b %d, %Y',      # 'Oct 25, 2006'
+	'%d %b %Y',       # '25 Oct 2006'
+	'%d %b, %Y',      # '25 Oct, 2006'
+	'%B %d %Y',       # 'October 25 2006'
+	'%B %d, %Y',      # 'October 25, 2006'
+	'%d %B %Y',       # '25 October 2006'
+	'%d %B, %Y',      # '25 October, 2006'
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``inputFormats``:list : Input formats
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+
+	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, inputFormats=None):
+		super(_BaseTemporalField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		if inputFormats is not None:
+			self.inputFormats = inputFormats
 
 	def to_python(self, value):
 		# Try to coerce the value to unicode.
@@ -429,7 +756,7 @@ class _BaseTemporalField ( Field ):
 			value = unicode_value.strip()
 		# If unicode, try to strptime against each input format.
 		if isinstance(value, unicode):
-			for timeFormat in self.input_formats:
+			for timeFormat in self.inputFormats:
 				try:
 					return self.strptime(value, timeFormat)
 				except ValueError:
@@ -451,9 +778,65 @@ class _BaseTemporalField ( Field ):
 		raise NotImplementedError('Subclasses must define this method.')
 
 class DateField ( _BaseTemporalField ):
-	widget = DateInput
-	input_formats = formats.get_format_lazy('DATE_INPUT_FORMATS')
-	default_error_messages = {
+	
+	"""
+	
+	
+	Example:	
+	
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Input Formats **
+	
+	A list of formats used to attempt to convert a string to a valid datetime.date object.
+
+	If no input_formats argument is provided, the default input formats are:
+
+	'%Y-%m-%d',       # '2006-10-25'
+	'%m/%d/%Y',       # '10/25/2006'
+	'%m/%d/%y',       # '10/25/06'
+	
+	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
+
+	'%b %d %Y',       # 'Oct 25 2006'
+	'%b %d, %Y',      # 'Oct 25, 2006'
+	'%d %b %Y',       # '25 Oct 2006'
+	'%d %b, %Y',      # '25 Oct, 2006'
+	'%B %d %Y',       # 'October 25 2006'
+	'%B %d, %Y',      # 'October 25, 2006'
+	'%d %B %Y',       # '25 October 2006'
+	'%d %B, %Y',      # '25 October, 2006'
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``inputFormats``:list : Input formats
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+
+	inputFormats = formats.get_format_lazy('DATE_INPUT_FORMATS')
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date.'),
 	}
 
@@ -474,9 +857,65 @@ class DateField ( _BaseTemporalField ):
 		return datetime.datetime.strptime(value, timeFormat).date()
 
 class DateTimeField ( _BaseTemporalField ):
-	widget = DateTimeInput
-	input_formats = formats.get_format_lazy('DATETIME_INPUT_FORMATS')
-	default_error_messages = {
+	
+	"""
+	
+	
+	Example:	
+	
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Input Formats **
+	
+	A list of formats used to attempt to convert a string to a valid datetime.date object.
+
+	If no input_formats argument is provided, the default input formats are:
+
+	'%Y-%m-%d',       # '2006-10-25'
+	'%m/%d/%Y',       # '10/25/2006'
+	'%m/%d/%y',       # '10/25/06'
+	
+	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
+
+	'%b %d %Y',       # 'Oct 25 2006'
+	'%b %d, %Y',      # 'Oct 25, 2006'
+	'%d %b %Y',       # '25 Oct 2006'
+	'%d %b, %Y',      # '25 Oct, 2006'
+	'%B %d %Y',       # 'October 25 2006'
+	'%B %d, %Y',      # 'October 25, 2006'
+	'%d %B %Y',       # '25 October 2006'
+	'%d %B, %Y',      # '25 October, 2006'
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``inputFormats``:list : Input formats
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+
+	inputFormats = formats.get_format_lazy('DATETIME_INPUT_FORMATS')
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date/time.'),
 	}
 
@@ -512,9 +951,65 @@ class DateTimeField ( _BaseTemporalField ):
 		return datetime.datetime.strptime(value, timeFormat)
 
 class TimeField ( _BaseTemporalField ):
-	widget = TimeInput
-	input_formats = formats.get_format_lazy('TIME_INPUT_FORMATS')
-	default_error_messages = {
+	
+	"""
+	
+	
+	Example:	
+	
+	
+	where _dbModel is a form class attribute with the model instance.
+	
+	** Input Formats **
+	
+	A list of formats used to attempt to convert a string to a valid datetime.date object.
+
+	If no input_formats argument is provided, the default input formats are:
+
+	'%Y-%m-%d',       # '2006-10-25'
+	'%m/%d/%Y',       # '10/25/2006'
+	'%m/%d/%y',       # '10/25/06'
+	
+	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
+
+	'%b %d %Y',       # 'Oct 25 2006'
+	'%b %d, %Y',      # 'Oct 25, 2006'
+	'%d %b %Y',       # '25 Oct 2006'
+	'%d %b, %Y',      # '25 Oct, 2006'
+	'%B %d %Y',       # 'October 25 2006'
+	'%B %d, %Y',      # 'October 25, 2006'
+	'%d %B %Y',       # '25 October 2006'
+	'%d %B, %Y',      # '25 October, 2006'
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``inputFormats``:list : Input formats
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	inputFormats = formats.get_format_lazy('TIME_INPUT_FORMATS')
+	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid time.')
 	}
 
@@ -558,76 +1053,159 @@ class CheckboxChoiceField( Field ):
 		args['widget'] = Widget(attrs=attrs)
 		super(CheckboxChoiceField, self).__init__(**args)
 
-class HiddenDataField( Field ):
-	"""Hidden Data Field
-	
-	Deprecated????
-	
-	"""
-	def __init__(self, instance, insField, required=True, init=None, jsRequired=None, xpType='', **args):
-		self._doInstanceInit(instance, insField)
-		args['validators'] = []
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		attrs = self._doAttrs(args, {	'xpType': xpType	})
-		"""if not args.has_key('widget'):
-			args['widget'] = HiddenWidget(attrs=attrDict)"""		
-		args['widget'] = Widget(attrs=attrs)
-		super(HiddenDataField, self).__init__(**args)
-
 class HiddenField( Field ):
 	"""
-	Hidden Field, name and value, no xpType. 
+	Hidden Field, name and value.
 	
-	Analyze the way we include hidden fields to determine if we need this field.
+	** Optional Arguments **
+	
+	* ``initial``:str : Initial value
+	
+	** Attributes **
+	
+	* ``initial``:str : Initial value
 	"""
-	def __init__(self, required=True, init=None, jsRequired=None, xpType='', **args):
-		args['validators'] = []
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired) 
-		attrs = self._doAttrs(args, {'xpType': xpType})
-		"""if not args.has_key('widget'):
-			args['widget'] = HiddenWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrs)
-		super(HiddenField, self).__init__(**args)
+	def __init__(self, initial=None):
+		super(HiddenField, self).__init__(initial=initial)
 
-@DeprecationWarning
 class UserField( Field ):
-	"""UserField""" 
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, xpType='field', **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		#args['validators'] = [validateUserId]
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		attrDict = self._doAttrs(args, {	'class': classStr,
-							'data-xp-val': 'ximpiaId',
-							'maxlength': str(args['max_length']),
-							'xpType': xpType})
-		"""if not args.has_key('widget'):
-			args['widget'] = TextInputWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrDict)
-		super(UserField, self).__init__(**args)
+	"""
+	User id field
+	
+	** Required Arguments **
+	
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``minLength``:int : Field minimum length
+	* ``maxLength``:int : Field maximum length
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``minLength``:str
+	* ``maxLength``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str	
+	
+	"""
+	
+	defaultErrorMessages = {
+		'invalid': _(u'Enter a valid user id.'),
+							}
+	defaultValidators = [validateUserId]
+	
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None):
+		super(UserField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		self.attrs['data-xp-val'] = 'userid'
 
-@DeprecationWarning
-class EmailField( Field ):
-	"""EmailField"""
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, xpType='field', **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		#args['validators'] = [validateEmail]
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		attrDict = self._doAttrs(args, {	'class': classStr,
-							'data-xp-val': 'email',
-							'maxlength': str(args['max_length']),
-							'xpType': xpType})
-		"""if not args.has_key('widget'):
-			args['widget'] = TextInputWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrDict)
-		super(EmailField, self).__init__(**args)
+class EmailField( CharField ):
+	"""
+	Email field. Validates email address	
+	
+	** Required Arguments **
+	
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``minLength``:int : Field minimum length
+	* ``maxLength``:int : Field maximum length
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``minLength``:str
+	* ``maxLength``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {
+		'invalid': _(u'Enter a valid e-mail address.'),
+	}
+	defaultValidators = [django.core.validators.validate_email]
+	
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None):
+		super(EmailField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		self._updateAttrs(self.attrs, 'data-xp-val', 'email')
+
+	def clean(self, value):
+		value = self.to_python(value).strip()
+		return super(EmailField, self).clean(value)	
+
+class PasswordField( CharField ):
+	"""
+	Password field. Checks valid password
+	
+	** Required Arguments **
+	
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field
+	
+	** Optional Arguments **
+	
+	* ``minLength``:int : Field minimum length
+	* ``maxLength``:int : Field maximum length
+	* ``required``:bool : Required field by back-end form valdiation
+	* ``initial``:str : Initial value
+	* ``jsRequired``:str	: Required field by javascript validation
+	* ``label``:str : Field label
+	* ``helpText``:str : Field tooptip
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``minLength``:str
+	* ``maxLength``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	
+	"""
+	
+	defaultErrorMessages = {
+		'invalid': _(u'Enter a valid password'),
+	}
+	defaultValidators = [validatePassword]
+	
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None):
+		super(PasswordField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		self.attrs['data-xp-val'] = 'password'
 
 class ChoiceTextField( Field ):
 	"""Choice field with autocompletion. Behaves like a select, with name and value
@@ -698,44 +1276,22 @@ class TextChoiceField( Field  ):
 		args['widget'] = Widget(attrs=attrs)
 		super(TextChoiceField, self).__init__(**args)
 
-
-@DeprecationWarning
-class PasswordField( Field ):
-	"""PasswordField"""
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, xpType='field', **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		#args['validators'] = [validatePassword]
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		attrDict = self._doAttrs(args, {	'class': classStr,
-							'autocomplete': 'no',
-							'data-xp-val': 'password',
-							'maxlength': str(args['max_length']),
-							'xpType': xpType})
-		"""if not args.has_key('widget'):
-			args['widget'] = PasswordWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrDict)
-		super(PasswordField, self).__init__(**args)
-
-class ListField( Field ):
+class ListOneField( Field ):
 	"""
 	Select field. Will render to combobox, option lists, autocomplete, etc... when form instance is rendered, values are
 	fetched from database to fill ``id_choices``hidden field with data for field values.
 	
-	** Required Attributes **
+	** Required Arguments **
 	
-	* ``instance``:Object : Model instance
-	* ``insField``:String : Model field, like '_myModel.fieldName'
-	* ``choicesId``:String: Choice id to save into id_choices hidden field, like {myChoiceId: [(name1,value1),(name2,value2),...] ... }
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field, like '_myModel.fieldName'
+	* ``choicesId``:str: Choice id to save into id_choices hidden field, like {myChoiceId: [(name1,value1),(name2,value2),...] ... }
 	
-	** Optional Attributes **
+	** Optional Arguments **
 	
-	* ``limitTo``:Dict : Dictionary with attributes sent to model filter method
-	* ``listName``:String : Model field to use for name in (name, value) pairs. By default, pk is used.
-	* ``listValue``:String : Model field to be used for value in (name, value) pairs. By default, string notation of model used.
+	* ``limitTo``:dict : Dictionary with attributes sent to model filter method
+	* ``listName``:str : Model field to use for name in (name, value) pairs. By default, pk is used.
+	* ``listValue``:str : Model field to be used for value in (name, value) pairs. By default, string notation of model used.
 	
 	**args accept other arguments to be passed to the django Field parent class
 	
@@ -774,7 +1330,7 @@ class ListField( Field ):
 			del args['jsRequired']
 		if args.has_key('tabindex'):
 			del args['tabindex']
-		super(ListField, self).__init__(**args)
+		super(ListOneField, self).__init__(**args)
 
 class ChoiceField( ChoiceField ):
 	"""ChoiceField"""
