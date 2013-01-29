@@ -1,6 +1,8 @@
 /*
  * Ximpia Visual Component 
  * Popup
+ * 
+ * TODO: Include the html for component
  *
  */
 

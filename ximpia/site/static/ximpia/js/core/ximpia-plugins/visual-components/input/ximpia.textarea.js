@@ -1,5 +1,7 @@
 /*
  * Ximpia Visual Component TextArea
+ * 
+ * TODO: Include the html for component
  *
  */
 

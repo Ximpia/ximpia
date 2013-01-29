@@ -1,5 +1,7 @@
 /*
  * Ximpia Visual Component Input: Text, Password, etc...
+ * 
+ * TODO: Include the html for component
  *
  */
 

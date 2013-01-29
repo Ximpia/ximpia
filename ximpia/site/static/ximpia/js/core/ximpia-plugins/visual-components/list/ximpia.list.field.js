@@ -1,5 +1,7 @@
 /*
  * List of fields. Fields can be added, deleted. Will represent the many-to-many relationships in models
+ * 
+ * TODO: Include the html for component
  *
  */
 

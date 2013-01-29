@@ -2211,17 +2211,19 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	// function.render
 	$('#' + formId).find("[data-xp-type='function.render']").xpObjRenderExt('render', xpForm);
 	// basic.text
-	$('#' + formId).find("[data-xp-type='field']").xpObjInput('renderField', xpForm);
+	$('#' + formId).find("[data-xp-type='field']").xpObjField('render', xpForm);
 	// #id_variables
-	$('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
+	$('#' + formId).find("#id_variables").xpObjHidden('addHidden', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
 	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjFieldComplete('render', xpForm);
 	// basic.textarea
 	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
 	// list.field
-	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
+	$('#' + formId).find("input[data-xp-related='list.field']")
+			.filter("input[data-xp-type='field']")
+			.xpObjListField('bindKeyPress', xpForm);
 	// button
 	$("[data-xp-type='button']").xpObjButton('render');
 	// link
@@ -2229,9 +2231,7 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	$("[data-xp-type='link.url']").xpObjLink('render');
 	$("[data-xp-type='link.action']").xpObjLink('render');
 	$("[data-xp-type='link.view']").xpObjLink('render');
-	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
-	// passwordStrength
-	// TODO: Provide better ways to render password strength
+	// username is needed to make validation with username >= password
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username');
 	//_attr.priv.doLocal();
 	// TODO: Include settings into general javascript settings class
@@ -2252,15 +2252,17 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// container
 	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
 	// basic.text
-	$('#' + formId).find("[data-xp-type='field']").xpObjInput('renderField', xpForm);
+	$('#' + formId).find("[data-xp-type='field']").xpObjField('render', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
 	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
+	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjFieldComplete('render', xpForm);
 	// basic.textarea
 	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
 	// list.field
-	$('#' + formId).find("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress', xpForm);
+	$('#' + formId).find("input[data-xp-related='list.field']")
+			.filter("input[data-xp-type='field']")
+			.xpObjListField('bindKeyPress', xpForm);
 	// button
 	$("[data-xp-type='button']").xpObjButton('render');
 	// link
@@ -2268,11 +2270,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.url']").xpObjLink('render');
 	$("[data-xp-type='link.action']").xpObjLink('render');
 	$("[data-xp-type='link.view']").xpObjLink('render');
-	//_attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
-	// passwordStrength
-	// TODO: Provide better ways to render password strength
 	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
-	//_attr.priv.doLocal();
 	// TODO: Include settings into general javascript settings class
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',

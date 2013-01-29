@@ -8,7 +8,7 @@ from django import forms
 from django.forms import ValidationError
 from django.utils.translation import ugettext as _
 
-from form_widgets import XpHiddenWidget
+from fields import HiddenField
 import messages as _m
 from ximpia.core.models import ContextDecorator as Ctx
 from ximpia.util.js import Form as _jsf
@@ -18,8 +18,6 @@ from ximpia.core.util import getClass
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import constants as K
-
-from form_fields import XpHiddenField
 
 from recaptcha.client import captcha
 
@@ -34,24 +32,24 @@ class XBaseForm( forms.Form ):
 	_ctx = None
 	_db = {}
 	#cleaned_data = None
-	entryFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	#copyEntryFields = XpHiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
-	params = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
-	choices = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	pkFields = XpHiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	errorMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
-	okMessages = XpHiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
-	ERR_GEN_VALIDATION = XpHiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
-	msg_ok = XpHiddenField(xpType='input.hidden', initial= _(' '))
-	siteMedia = XpHiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
-	buttonConstants = XpHiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
-	facebookAppId = XpHiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
-	action = XpHiddenField(xpType='input.hidden', required=False, initial='')
-	app = XpHiddenField(xpType='input.hidden', required=False, initial='')
-	viewNameSource = XpHiddenField(xpType='input.hidden', required=False, initial='')
-	viewNameTarget = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
-	result = XpHiddenField(xpType='input.hidden', required=False, initial=' ')
-	objects = XpHiddenField(xpType='input.hidden', initial='{}', required=False)
+	entryFields = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	#copyEntryFields = HiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
+	params = HiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
+	choices = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	pkFields = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
+	errorMessages = HiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
+	okMessages = HiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
+	ERR_GEN_VALIDATION = HiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
+	msg_ok = HiddenField(xpType='input.hidden', initial= _(' '))
+	siteMedia = HiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
+	buttonConstants = HiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
+	facebookAppId = HiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
+	action = HiddenField(xpType='input.hidden', required=False, initial='')
+	app = HiddenField(xpType='input.hidden', required=False, initial='')
+	viewNameSource = HiddenField(xpType='input.hidden', required=False, initial='')
+	viewNameTarget = HiddenField(xpType='input.hidden', required=False, initial=' ')
+	result = HiddenField(xpType='input.hidden', required=False, initial=' ')
+	objects = HiddenField(xpType='input.hidden', initial='{}', required=False)
 	#errors = {}
 	_argsDict = {}
 	def __init__(self, *argsTuple, **argsDict): 
@@ -241,29 +239,65 @@ class XBaseForm( forms.Form ):
 	def setApp(self, app):
 		"""Set application code to form."""
 		self.base_fields['app'].initial = app
+	def __buildFkChoices(self, jsData):
+		"""
+		Build foreign key choices
+		
+		** Attributes **
+		
+		* ``jsData`` : form data
+		
+		** Returns **
+		
+		From model foreign key, get all
+		
+		Model.field.get_query_set().filter(**filters) 
+		
+		MyModel.objects.filter(**filters)
+		
+		None
+		"""
+		"""choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']
+		choices = _jsf.decodeArray(choicesStr)
+		# Get fields from this form
+		# In case type XpSelectField, get model instance and field, get data using filters form attribute		
+		fields = self.base_fields.keys()
+		for fieldName in fields:
+			#field.instance
+			#field.instanceFieldName
+			pass
+		choiceId = ''
+		choices[choiceId] = []
+		# Update new choices
+		jsData['response']['form_' + self._XP_FORM_ID]['choices'].initial = _jsf.encodeDict(choices)"""
+		pass
 	def buildJsData(self, app, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
 		#logger.debug( 'self.initial : ' + self.initial )
 		fieldsDict = self.fields
 		#logger.debug( 'base_fields: ' + self.base_fields )
-		for field in fieldsDict:
-			oField = fieldsDict[field]
+		for fieldName in fieldsDict:
+			oField = fieldsDict[fieldName]
 			attrs = oField.widget.attrs
-			try:
+			"""try:
 				attrs['type'] = oField.widget.input_type
 			except AttributeError:
-				pass
-			attrs['element'] = oField.widget._element
-			if attrs['element'] == 'select':
+				pass"""
+			#attrs['element'] = oField.widget._element
+			try:
 				attrs['choices'] = oField.choices
-			attrs['name'] = field
+			except AttributeError:
+				pass
+			attrs['name'] = fieldName
 			attrs['label'] = oField.label
 			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
-			"""logger.debug( 'field: ' + field )
-			logger.debug( attrs )"""
-			jsData['response']['form_' + self._XP_FORM_ID][field] = attrs
+			logger.debug( 'field: %s' % (fieldName) )
+			logger.debug( attrs )
+			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs
+		# populate choices with foreign key fields: XpSelectField
+		self.__buildFkChoices(jsData)
 		jsData['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
 	
 	def disableFields(self, fields):
@@ -283,8 +317,8 @@ class XBaseForm( forms.Form ):
 
 class DefaultForm(XBaseForm):
 	_XP_FORM_ID = 'default'
-	errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
-	okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 
 class AppRegex(object):
 	"""Doc.

@@ -1,5 +1,7 @@
 /*
  * List of content elements
+ * 
+ * TODO: Include the html for component
  *
  */
 

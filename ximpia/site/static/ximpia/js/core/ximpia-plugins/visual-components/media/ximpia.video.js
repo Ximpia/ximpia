@@ -1,40 +1,34 @@
 /*
- * Ximpia Visual Component Option: Will show a checkbox. Will support many or just one. When click is performed,
- * could behave like an html option or as a html checkbox.
+ * List of videos and YouTube video display
+ * 
+ * TODO: Include the html for component
  *
  */
 
 (function($) {	
 
-	$.fn.xpObjOption = function( method ) {
-	
-	/**
-	 * Options
-	 * =======
-	 * align: left|block
-	 * multi: true|false
-	 *  
-	 */  
+	$.fn.xpObjVideo = function( method ) {  
 
         // Settings		
         var settings = {
         };
-		
+        
         var methods = {
 		init : function( options ) { 
-                	return this.each(function() {        
+                	return this.each(function() {
                     		// If options exist, lets merge them
                     		// with our default settings
-                    		if ( options ) { 
+                    		if ( options ) {
 	                        	$.extend( settings, options );
-                    		}					
+                    		}
                 	});
 		},
-		render: function() {
-			
+		render : function() {
+			/*
+			 * Displays the youTube frame
+			 */
 		},
-		click: function() {
-			
+		list : function() {
 		}
         };
 		
@@ -43,7 +37,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjOption' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjVideo' );
         }    
 		
 	};
