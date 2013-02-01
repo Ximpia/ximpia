@@ -1069,7 +1069,8 @@ class HiddenField( Field ):
 	def __init__(self, initial=None):
 		initial = initial or ''
 		super(HiddenField, self).__init__(None, '', initial=initial)
-		self.attrs['xpType'] = 'input.hidden'
+		self.attrs['data-xp-type'] = 'input.hidden'
+		self.attrs['type'] = 'hidden'
 
 class UserField( Field ):
 	"""

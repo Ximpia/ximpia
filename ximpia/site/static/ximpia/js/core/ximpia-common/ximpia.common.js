@@ -2235,6 +2235,7 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username');
 	//_attr.priv.doLocal();
 	// TODO: Include settings into general javascript settings class
+	// TODO: Include additional attributes, put in settings.js
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',
 		maxHeight : 200,
