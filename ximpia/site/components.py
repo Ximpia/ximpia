@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import os
 
 from ximpia.core.choices import Choices as _Ch

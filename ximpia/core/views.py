@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import httplib2
 import urlparse
 import oauth2

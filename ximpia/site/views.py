@@ -1,7 +1,13 @@
+# coding: utf-8
+
+import os
+
 from ximpia.core.models import ContextViewDecorator
 from ximpia.core.service import ViewDecorator
 
-from ximpia import settings
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config

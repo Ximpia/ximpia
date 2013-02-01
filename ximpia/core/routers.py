@@ -1,5 +1,11 @@
+# coding: utf-8
+
+import os
 import random
-from ximpia import settings
+
+# Settings
+from ximpia.core.util import getClass
+settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config

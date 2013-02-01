@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import constants as K
 from django.utils.translation import ugettext as _
 

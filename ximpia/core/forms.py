@@ -32,24 +32,23 @@ class XBaseForm( forms.Form ):
 	_ctx = None
 	_db = {}
 	#cleaned_data = None
-	entryFields = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	#copyEntryFields = HiddenField(xpType='input.hidden', required=False, initial=json.dumps(False))
-	params = HiddenField(xpType='input.hidden', required=False, initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
-	choices = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	pkFields = HiddenField(xpType='input.hidden', required=False, initial=_jsf.buildBlankArray([]))
-	errorMessages = HiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
-	okMessages = HiddenField(xpType='input.hidden', initial=_jsf.buildMsgArray([]))
-	ERR_GEN_VALIDATION = HiddenField(xpType='input.hidden', initial= _('Error validating your data. Check errors marked in red'))
-	msg_ok = HiddenField(xpType='input.hidden', initial= _(' '))
-	siteMedia = HiddenField(xpType='input.hidden', initial= settings.MEDIA_URL)
-	buttonConstants = HiddenField(xpType='input.hidden', initial= "[['close','" + _('Close') + "']]")
-	facebookAppId = HiddenField(xpType='input.hidden', initial= settings.FACEBOOK_APP_ID)
-	action = HiddenField(xpType='input.hidden', required=False, initial='')
-	app = HiddenField(xpType='input.hidden', required=False, initial='')
-	viewNameSource = HiddenField(xpType='input.hidden', required=False, initial='')
-	viewNameTarget = HiddenField(xpType='input.hidden', required=False, initial=' ')
-	result = HiddenField(xpType='input.hidden', required=False, initial=' ')
-	objects = HiddenField(xpType='input.hidden', initial='{}', required=False)
+	entryFields = HiddenField(initial=_jsf.buildBlankArray([]))
+	params = HiddenField(initial=_jsf.encodeDict({'viewMode': [K.UPDATE,K.DELETE]}))
+	choices = HiddenField(initial=_jsf.buildBlankArray([]))
+	pkFields = HiddenField(initial=_jsf.buildBlankArray([]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([]))
+	okMessages = HiddenField(initial=_jsf.buildMsgArray([]))
+	ERR_GEN_VALIDATION = HiddenField(initial= _('Error validating your data. Check errors marked in red'))
+	msg_ok = HiddenField(initial= _(' '))
+	siteMedia = HiddenField(initial= settings.MEDIA_URL)
+	buttonConstants = HiddenField(initial= "[['close','" + _('Close') + "']]")
+	facebookAppId = HiddenField(initial= settings.FACEBOOK_APP_ID)
+	action = HiddenField(initial='')
+	app = HiddenField(initial='')
+	viewNameSource = HiddenField(initial='')
+	viewNameTarget = HiddenField(initial=' ')
+	result = HiddenField(initial=' ')
+	objects = HiddenField(initial='{}')
 	#errors = {}
 	_argsDict = {}
 	def __init__(self, *argsTuple, **argsDict): 
@@ -239,7 +238,7 @@ class XBaseForm( forms.Form ):
 	def setApp(self, app):
 		"""Set application code to form."""
 		self.base_fields['app'].initial = app
-	def __buildFkChoices(self, jsData):
+	def __buildForeignKey(self, jsData):
 		"""
 		Build foreign key choices
 		
@@ -249,28 +248,42 @@ class XBaseForm( forms.Form ):
 		
 		** Returns **
 		
-		From model foreign key, get all
+		None
+		"""
+		# append choices into id_choices		
+		choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']['value']
+		choices = _jsf.decodeArray(choicesStr)
+		# Get fields from this form		
+		for fieldName in self.fields:
+			field = self.fields[fieldName]
+			if str(type(field)) == "<class 'ximpia.core.fields.OneListField'>":
+				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
+				choices[field.choicesId] = field.buildList()
+		# Update new choices
+		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
+	def __buildManyToMany(self, jsData):
+		"""
+		Build many to many choices
 		
-		Model.field.get_query_set().filter(**filters) 
+		** Attributes **
 		
-		MyModel.objects.filter(**filters)
+		* ``jsData`` : form data
+		
+		** Returns **
 		
 		None
 		"""
-		"""choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']
+		# append choices into id_choices		
+		choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']['value']
 		choices = _jsf.decodeArray(choicesStr)
-		# Get fields from this form
-		# In case type XpSelectField, get model instance and field, get data using filters form attribute		
-		fields = self.base_fields.keys()
-		for fieldName in fields:
-			#field.instance
-			#field.instanceFieldName
-			pass
-		choiceId = ''
-		choices[choiceId] = []
+		# Get fields from this form		
+		for fieldName in self.fields:
+			field = self.fields[fieldName]
+			if str(type(field)) == "<class 'ximpia.core.fields.ManyListField'>":
+				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
+				choices[field.choicesId] = field.buildList()
 		# Update new choices
-		jsData['response']['form_' + self._XP_FORM_ID]['choices'].initial = _jsf.encodeDict(choices)"""
-		pass
+		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
 	def buildJsData(self, app, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
@@ -279,7 +292,7 @@ class XBaseForm( forms.Form ):
 		#logger.debug( 'base_fields: ' + self.base_fields )
 		for fieldName in fieldsDict:
 			oField = fieldsDict[fieldName]
-			attrs = oField.widget.attrs
+			attrs = oField.attrs
 			"""try:
 				attrs['type'] = oField.widget.input_type
 			except AttributeError:
@@ -290,14 +303,13 @@ class XBaseForm( forms.Form ):
 			except AttributeError:
 				pass
 			attrs['name'] = fieldName
-			attrs['label'] = oField.label
-			attrs['help_text'] = oField.help_text
 			attrs['value'] = oField.initial
-			logger.debug( 'field: %s' % (fieldName) )
-			logger.debug( attrs )
+			#logger.debug( 'field: %s' % (fieldName) )
+			#logger.debug( attrs )
 			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs
 		# populate choices with foreign key fields: XpSelectField
-		self.__buildFkChoices(jsData)
+		self.__buildForeignKey(jsData)
+		self.__buildManyToMany(jsData)
 		jsData['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
 	
 	def disableFields(self, fields):

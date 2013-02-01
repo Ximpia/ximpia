@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from models import Tag, Invitation, Param, UserChannel, SocialNetworkUser, Setting, Address, Category, MetaKey,\
 	SignupData, TagMode, UserMeta, UserProfile, InvitationMeta, GroupTag, UserAddress, Group, UserChannelGroup
 

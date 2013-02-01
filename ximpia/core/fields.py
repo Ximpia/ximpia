@@ -1,12 +1,13 @@
+# coding: utf-8
+
 import json
 import os
 import datetime
 import copy
 from decimal import Decimal, DecimalException
 
-from django.forms import ChoiceField, MultipleChoiceField
-
 from django.forms.widgets import Widget
+from django.forms import Field as DjField
 
 from django.forms.util import from_current_timezone, to_current_timezone
 from django.core.exceptions import ValidationError
@@ -16,7 +17,7 @@ from django.utils.ipv6 import clean_ipv6_address
 from django.utils.translation import ugettext_lazy as _
 import django.core.validators
 
-from ximpia.util.basic_types import DictUtil
+from models import XpMsgException
 from validators import validateTxtField, validatePassword, validateUserId
 
 # Settings
@@ -28,7 +29,7 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-class Field( object ):
+class Field( DjField ):
 	instance = None
 	initial = ''
 	instanceName = ''
@@ -38,7 +39,7 @@ class Field( object ):
 	defaultValidators = []
 	defaultErrorMessages = {}
 	localize = False
-	def __init__(self, instance, insField, required=True, jsRequired=None, label=None, initial=None, helpText=None, 
+	def __init__(self, instance, insField, required=True, jsRequired=None, jsVal=None, label=None, initial=None, helpText=None, 
 				errorMessages=None, validators=[]):
 		"""
 		Common field form class
@@ -55,7 +56,7 @@ class Field( object ):
 		* ``initial``:str [None] : Field initial value
 		* ``helpText``:str [None] : Field tooltip
 		* ``errorMessages``:dict [None] : Error messages in dict format
-		* ``validators``:list [[]] : List of validators
+		* ``validators``:list [[]] : List of validators		
 		
 		"""
 		self.attrs = {}
@@ -75,8 +76,8 @@ class Field( object ):
 			self.helpText = u''
 		else:
 			self.helpText = smart_unicode(helpText)
-		if self.instance: 
-			self.initial = eval('self.instance' + '.' + self.instanceFieldName) if self.instance != None and initial == None else initValue
+		# Perform instance operations for basic fields, FK, and many to many relationships
+		self._doInstance(initial, initValue)
 		if self.instance:
 			if not label:
 				self.label = smart_unicode(self.instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name.title())
@@ -91,7 +92,12 @@ class Field( object ):
 		if self.jsRequired:
 			if self.jsRequired == True:
 				self._updateAttrs(self.attrs, 'data-xp-val', 'required')
-		logger.debug( 'attrs for %s: %s' % (self.label, str(self.attrs)) )
+		# jsval
+		self.jsVal = jsVal or []
+		if len(self.jsVal) != 0:
+			for item in jsVal:
+				self._updateAttrs(self.attrs, 'data-xp-val', item)
+		#logger.debug( 'attrs for %s: %s' % (self.label, str(self.attrs)) )
 		# Increase the creation counter, and save our local copy.
 		self.creationCounter = Field.creationCounter
 		Field.creationCounter += 1
@@ -104,6 +110,10 @@ class Field( object ):
 		# maxLength from model
 		self.maxLength = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].max_length if self.instance else None
 		self.localize = False
+		self.attrs['label'] = label or self.label
+		self.attrs['helpText'] = self.helpText
+		super(Field, self).__init__(required=required, widget=None, label=label, initial=initial,
+                 help_text=helpText, error_messages=None, show_hidden_initial=False, validators=[], localize=False)
 		
 	def _doInstanceInit(self, instance, insField):
 		"""Set instance and instanceName and instanceFieldName"""
@@ -112,6 +122,32 @@ class Field( object ):
 			self.instanceName = instanceName
 			self.instanceFieldName = instanceFieldName
 			self.instance = instance
+	def _doInstance(self, initial, initValue):
+		"""
+		Perform instance logic with basic fields, foreign key fields and many to many fields
+		"""
+		if self.instance:
+			if self._isForeignKey() == True:
+				# ForeignKey
+				try:
+					self.initial = eval('str(self.instance' + '.' + self.instanceFieldName + '.pk)')\
+							 if self.instance != None and not initial else initValue
+				except:
+					self.initial = initValue
+			elif self._isManyToMany() == True:
+				# ManyToMany
+				try:
+					values = eval('self.instance' + '.' + self.instanceFieldName + '.all().values(\'' + 'pk' + '\')')
+					initialList = []
+					for value in values:
+						initialList.append(str(value['pk']))
+					self.initial = '[' + ','.join(initialList) + ']' if self.instance != None and not initial else initValue
+				except ValueError:
+					self.initial = initValue
+			else:
+				# Any field...
+				self.initial = eval('self.instance' + '.' + self.instanceFieldName)\
+						 if self.instance != None and initial == None else initValue
 	def _updateAttrs(self, d, key, value):
 		"""Update attrs dictionary"""
 		if d.has_key(key):
@@ -126,25 +162,44 @@ class Field( object ):
 			jsRequired = required
 		t = (required, jsRequired)
 		return t
-	@DeprecationWarning
-	def _doAttrs(self, args, attrDict):
+	def _getFieldName(self, insField):
 		"""
-		Process form attrs with field attribute dictionary for widget
+		get model field name from instance field like '_dbAddress.country'
 		
-		** Arguments **
+		** Attributes **
 		
-		* ``args``
-		* ``attrDict``
+		* ``insfield``:str
 		
 		** Returns **
-		Dict, attribute dictionary
+		
+		Will return the field name, 'country' in the above example."""
+		return insField.split('.')[1]
+	def _isForeignKey(self):
 		"""
-		d = {}
-		if args.has_key('attrs'):
-			d = DictUtil.addDicts([args['attrs'], attrDict])
-		else:
-			d = attrDict
-		return d
+		Checks if field is related to a model ForeignKey
+		
+		** Returns**
+		
+		``isFK``:bool
+		"""
+		isFK = False
+		if eval('self.instance.__class__.__dict__.has_key(\'' + self.instanceFieldName + '\')') and\
+				 str(type(eval('self.instance.__class__.' + self.instanceFieldName))) == "<class 'django.db.models.fields.related.ReverseSingleRelatedObjectDescriptor'>":
+			isFK = True
+		return isFK
+	def _isManyToMany(self):
+		"""
+		Checks if form field is related to a ManyToMany relationship
+		
+		** Returns **
+		
+		``isManyToMany``:bool		
+		"""
+		isManyToMany = False
+		if eval('self.instance.__class__.__dict__.has_key(\'' + self.instanceFieldName + '\')') and\
+				 str(type(eval('self.instance.__class__.' + self.instanceFieldName))) == "<class 'django.db.models.fields.related.ReverseManyRelatedObjectsDescriptor'>":
+			isManyToMany = True
+		return isManyToMany
 	
 	def prepare_value(self, value):
 		return value
@@ -246,10 +301,10 @@ class CharField( Field ):
 	maxLength = None
 	minLength = None
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
-				label=None, helpText=None):
+				label=None, helpText=None, jsVal=None):
 		self.minLength, self.maxLength = minLength, maxLength
 		super(CharField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		if len(self.defaultValidators) == 0:
 			self.defaultValidators = [validateTxtField]
 		if self.minLength is not None:
@@ -260,35 +315,6 @@ class CharField( Field ):
 			self.attrs['maxlength'] = str(self.maxLength)
 		if self.minLength != None:
 			self.attrs['minlength'] = str(self.minLength)
-
-"""
-Example: Months
-
-option
-======
-form.month variable
-model: jan
-choices: ('jan','January')...
-<label><input type="radio" name="month" value="jan" selected /> January</label> (Comes from choices table)
-<label><input type="radio" name="month" value="feb"  /> February</label>
-OptionChoiceField
-
-checkbox
-========
-form.month variable
-model: ['jan','feb'] 255 bytes, separated by comma. '' => [] .. 'jan' => ['jan'] .. 'jan,feb' => ['jan','feb']
-<label><input type="checkbox" name="month" value="jan" checked /> January</label> (Comes from choices table)
-<label><input type="checkbox" name="month" value="feb" /> February</label>
-CheckboxChoiceField
-
-checkbox no choices
-===================
-form.client variable
-model: Many to many field
-<label><input type="checkbox" name="client" value="$id" checked /> Client A</label> (comes from string representation of model)
-<label><input type="checkbox" name="client" value="$id" checked /> Client B</label>
-CheckboxField => (pk, str)...
-"""
 
 class BooleanField ( Field ):	
 	"""
@@ -425,13 +451,13 @@ class GenericIPAddressField(CharField):
 	defaultErrorMessages = {}
 
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
-				label=None, helpText=None, protocol='both', unpackIpv4=False):
+				label=None, helpText=None, protocol='both', unpackIpv4=False, jsVal=None):
 		self.unpack_ipv4 = unpackIpv4
 		self.defaultValidators, invalidErrorMessage = django.core.validators.ip_address_validators(protocol, unpackIpv4)
 		self.defaultErrorMessages['invalid'] = invalidErrorMessage
 		self.required, self.jsRequired = self._doRequired(required, jsRequired)
 		super(GenericIPAddressField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		classStr = 'fieldMust' if required == True else 'field'
 		if required == False and jsRequired == True:
 			classStr = 'fieldMust'
@@ -497,12 +523,12 @@ class DecimalField ( Field ):
 	}
 
 	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
-				maxValue=None, minValue=None, maxDigits=None, decimalPlaces=None):
+				maxValue=None, minValue=None, maxDigits=None, decimalPlaces=None, jsVal=None):
 		self.maxValue, self.minValue = maxValue, minValue
 		self.maxDigits, self.decimalPlaces = maxDigits, decimalPlaces
 		#Field.__init__(self, *args, **kwargs)
 		super(DecimalField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		if maxValue is not None:
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
@@ -601,10 +627,10 @@ class IntegerField ( Field ):
 	}
 
 	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
-				maxValue=None, minValue=None):
+				maxValue=None, minValue=None, jsVal=None):
 		self.maxValue, self.minValue = maxValue, minValue
 		super(IntegerField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		if maxValue is not None:
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
@@ -743,9 +769,10 @@ class _BaseTemporalField ( Field ):
 	
 	"""
 
-	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, inputFormats=None):
+	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, inputFormats=None,
+				jsVal=None):
 		super(_BaseTemporalField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		if inputFormats is not None:
 			self.inputFormats = inputFormats
 
@@ -1027,32 +1054,6 @@ class TimeField ( _BaseTemporalField ):
 	def strptime(self, value, timeFormat):
 		return datetime.datetime.strptime(value, timeFormat).time()
 
-class OptionChoiceField( Field ):
-	"""Option Group Field. Labels and values comes from the choices list."""
-	def __init__(self, instance, insField, xpType='option', choicesId='', **args):
-		self._doInstanceInit(instance, insField)
-		attrs = self._doAttrs(args, {	'choicesId': choicesId,	
-							'xpType': xpType	})
-		#if not args.has_key('widget'):
-		#args['widget'] = OptionWidget(attrs=attrDict)
-		args['widget'] = Widget(attrs=attrs)
-		super(OptionChoiceField, self).__init__(**args)
-
-class CheckboxChoiceField( Field ):
-	"""Checkbox Group Field. Labels and values comes from the choices list.
-	
-	Checkbox group with values fetched from id_choices
-	
-	"""
-	def __init__(self, instance, insField, xpType='checkbox', choicesId='', **args):
-		self._doInstanceInit(instance, insField)
-		attrs = self._doAttrs(args, {	'choicesId': choicesId,	
-							'xpType': xpType	})
-		#if not args.has_key('widget'):
-		#args['widget'] = CheckboxWidget(attrs=attrDict)
-		args['widget'] = Widget(attrs=attrs)
-		super(CheckboxChoiceField, self).__init__(**args)
-
 class HiddenField( Field ):
 	"""
 	Hidden Field, name and value.
@@ -1066,7 +1067,9 @@ class HiddenField( Field ):
 	* ``initial``:str : Initial value
 	"""
 	def __init__(self, initial=None):
-		super(HiddenField, self).__init__(initial=initial)
+		initial = initial or ''
+		super(HiddenField, self).__init__(None, '', initial=initial)
+		self.attrs['xpType'] = 'input.hidden'
 
 class UserField( Field ):
 	"""
@@ -1108,9 +1111,9 @@ class UserField( Field ):
 	defaultValidators = [validateUserId]
 	
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
-				label=None, helpText=None):
+				label=None, helpText=None, jsVal=None):
 		super(UserField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		self.attrs['data-xp-val'] = 'userid'
 
 class EmailField( CharField ):
@@ -1153,9 +1156,9 @@ class EmailField( CharField ):
 	defaultValidators = [django.core.validators.validate_email]
 	
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
-				label=None, helpText=None):
+				label=None, helpText=None, jsVal=None):
 		super(EmailField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		self._updateAttrs(self.attrs, 'data-xp-val', 'email')
 
 	def clean(self, value):
@@ -1202,59 +1205,36 @@ class PasswordField( CharField ):
 	defaultValidators = [validatePassword]
 	
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
-				label=None, helpText=None):
+				label=None, helpText=None, jsVal=None):
 		super(PasswordField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
-									initial=initial, helpText=helpText)
+									initial=initial, helpText=helpText, jsVal=jsVal)
 		self.attrs['data-xp-val'] = 'password'
 
-class ChoiceTextField( Field ):
-	"""Choice field with autocompletion. Behaves like a select, with name and value
-	
-	Autocompletion
-	
-	Preferred Visual Type: list.select
-	
-	We could use CharField with minCharacters
-	
-	"""
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, maxHeight=200, 
-				minCharacters=3, choices=(), dbClass='', params={}, xpType='list.select', **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		args['validators'] = []
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		attrs = self._doAttrs(args, {	'class': classStr,
-							'maxlength': str(args['max_length']),
-							'xpType': xpType})
-		#data, maxHeight, minCharacters, url
-		#$('#id_jobTitle').jsonSuggest({data: $('#id_jobTitle_data').attr('value'), maxHeight: 200, minCharacters:3});
-		#d = {'id': tupleData[0], 'text': tupleData[1]}
-		"""suggestList = []
-		for tuple in choices:
-			suggestList.append({'id': tuple[0], 'text': tuple[1]})"""
-		attrs['data-xp'] = {	'maxHeight': maxHeight,
-								'minCharacters' : minCharacters
-					}
-		"""if len(choices) != 0:
-			attrDict['data-xp']['data'] = suggestList"""
-		"""if dbClass != '' and len(params) != 0:
-			attrDict['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params)""" 
-		"""if not args.has_key('widget'):
-			args['widget'] = TextInputWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrs)
-		super(ChoiceTextField, self).__init__(**args)
-
+@DeprecationWarning
 class TextChoiceField( Field  ):
 	"""Text Choice Field. Field with autocompletion
 	
 	This field is ximple CharField with autocompletion support. Autocompletion values fetched from id_choices or ajax jxSuggestList
 	
+	in autocomplete we have visual component attributes:
+	
+	- maxHeight:int
+	- mincharacters:int
+	- maxFields:int
+	- hasSearchMore:bool
+	
+	In case not defined, we get them from js settings. Fields with autocomplete field.*
+	
+	- arguments:
+	
+	- * dbClass (url) : completeDb
+	- * params (url) . completeParams 
+	
+	django settings??? model settings ???	
+	
 	"""
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, maxHeight=200, minCharacters=3, 
-			choicesId='', dbClass='', params={}, xpType='field', **args):
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, maxHeight=200, 
+				minCharacters=3, choicesId='', dbClass='', params={}, xpType='field', **args):
 		self._doInstanceInit(instance, insField)
 		fieldMaxLength = self._getMaxLength()
 		args['validators'] = []
@@ -1267,8 +1247,8 @@ class TextChoiceField( Field  ):
 							'choicesId': choicesId,
 							'xpType': xpType})
 		attrs['data-xp'] = {	'maxHeight': maxHeight,
-					'minCharacters' : minCharacters
-					}
+								'minCharacters' : minCharacters
+								}
 		if dbClass != '' and len(params) != 0:
 			attrs['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params) 
 		"""if not args.has_key('widget'):
@@ -1276,10 +1256,93 @@ class TextChoiceField( Field  ):
 		args['widget'] = Widget(attrs=attrs)
 		super(TextChoiceField, self).__init__(**args)
 
-class ListOneField( Field ):
+class FileBrowseField ( CharField ):
+	"""
+	File browser form field.
+	
+	We keep additional attributes for visual component into ``data-xp`` html attribute:
+	
+	* ``site`` : Site to search for files.
+	* ``directory`` : Directory to search for files.
+	* ``extensions`` : File extensions to search for files.
+	* ``fieldFormats : File formats to search for.
+	
+	These attributes are used to search for files when search icon in file browser field is clicked.
+	
+	In case these attributes are None, files will be searched in default media home with all extensions and file formats.
+	
+	** Required Arguments **
+
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field	
+
+	
+	** Optional Arguments **
+	
+	* ``site``:str : Site that keeps media files
+	* ``directory``:str : Directory that keeps media files
+	* ``extensions``:list : Extensions
+	* ``fieldFormat``:list : Field formats
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``minLength``:str
+	* ``maxLength``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	* ``site``:str : Site that keeps media files
+	* ``directory``:str : Directory that keeps media files
+	* ``extensions``:list : Extensions
+	* ``fieldFormat``:list : Field formats
+	
+	"""
+	
+	defaultErrorMessages = {
+        'extension': _(u'Extension %(ext)s is not allowed. Only %(allowed)s is allowed.'),
+    }
+	
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+				label=None, helpText=None, site=None, directory=None, extensions=None, fieldFormats=None, jsVal=None):
+		self.site = site
+		self.directory = directory
+		self.extensions = extensions
+		if fieldFormats:
+			self.fieldFormat = fieldFormats or ''
+			if settings.FILEBROWSER_EXTENSIONS:
+				self.extensions = settings.EXTENSIONS.get(fieldFormats)
+		super(FileBrowseField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText, jsVal=jsVal)
+		self.attrs['data-xp'] = "{	site:'" + self.site + "', directory: '" + self.directory +\
+									 "', extensions: '" + self.extensions +\
+									  "', fieldFormats: '" + self.fieldFormats + "'}"		
+
+class OneListField( Field ):
 	"""
 	Select field. Will render to combobox, option lists, autocomplete, etc... when form instance is rendered, values are
 	fetched from database to fill ``id_choices``hidden field with data for field values.
+	
+	In case choices is not null, we attempt to skip foreign key search for values and get values from choices object.
+	
+	From choices...
+	country = OneListField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, choices=Choices.COUNTRY)
+	
+	From fk...
+	country = OneListField(_dbAddress, '_dbAddress.country', choicesId='country', required=False)
+	
+	** From Choices **
+	
+	You need to include arguments ``choicesId``, ``choices``.
+	
+	** From Foreign Key **
+	
+	You need to include arguments: ``choicesId``. Optional ``limitTo``, ``orderBy`` and ``listValue``. In case these
+	optional attributes not defined, will search without filter and name will be FK and value string representation of model instance.
 	
 	** Required Arguments **
 	
@@ -1290,158 +1353,245 @@ class ListOneField( Field ):
 	** Optional Arguments **
 	
 	* ``limitTo``:dict : Dictionary with attributes sent to model filter method
-	* ``listName``:str : Model field to use for name in (name, value) pairs. By default, pk is used.
-	* ``listValue``:str : Model field to be used for value in (name, value) pairs. By default, string notation of model used.
+	* ``repr``:str : Model field to be used for value in (name, value) pairs. By default, string notation of model used.
+	* ``values``:list : List of values to append to 'id_choices'
+	* ``orderBy``:tuple : Order by tuples, like ('field', '-field2'). field ascending and field2 descending.
+	* ``choices``:list
 	
-	**args accept other arguments to be passed to the django Field parent class
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	* ``choicesId``:str
+	* ``limitTo``:dict
+	* ``orderBy``:tuple
+	* ``listValue``:str
+	* ``values``:tuple
+	
+	** Visual Component Attributes **
+	
+	Attributes in attrs field attribute:
+	
+	* ``choicesId``
+	* ``data-xp-val``
+	* ``help_text``
+	* ``class``
+	* ``label``
 	
 	** Methods **
 	
-	* ``build()`` : ???? on hold so far...
+	* ``buildList()``:list<(name:str, value:str, data:dict)> : Build list of tuples (name, value) and data associated to values argument
 	
 	"""
-	def __init__(self, instance, insField, choicesId=None, limitTo={}, listName=None, listValue=None, required=True, init='', **args):
-		if insField.find('.') != -1:
-			instanceName, instanceFieldName = insField.split('.')
-			self.instanceName = instanceName
-			self.instanceFieldName = instanceFieldName
-			self.instance = instance
-		classStr = 'fieldMust' if required == True else 'field'
-		xpVal = 'required' if required == True else ''
-		args['required'] = required
-		if instance != None:
-			if not args.has_key('label'):
-				args['label'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name if instance else args['label']
-			if not args.has_key('help_text'):
-				args['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text if instance else args['help_text']
-			args['initial'] = init if init != '' else eval('instance' + '.' + self.instanceFieldName)
-		attrs = self._doAttrs(args, {	'class': classStr,
-							'data-xp-val': xpVal,
-							'choicesId': choicesId})
-		args['widget'] = Widget(attrs=attrs)
-		# tabindex
-		if args.has_key('tabindex'):
-			args['widget'].attrs['tabindex'] = str(args['tabindex'])
-		if args.has_key('val'):
-			del args['val']
-		if args.has_key('jsVal'):
-			del args['jsVal']
-		if args.has_key('jsRequired'):
-			del args['jsRequired']
-		if args.has_key('tabindex'):
-			del args['tabindex']
-		super(ListOneField, self).__init__(**args)
+	def __init__(self, instance, insField, choicesId=None, limitTo=None, listValue=None, values=None, choices=None, orderBy=None,
+				required=True, initial='', jsRequired=None, label=None, helpText=None):
+		if choicesId == None:
+			raise XpMsgException(AttributeError, _('choicesId is required'))
+		#instanceFieldName = self._getFieldName(insField)
+		#logger.debug('OneListField :: instance: %s' % (instance) )
+		#logger.debug('OneListField :: instanceFieldName: %s' % (instanceFieldName) )
+		self.listValue = listValue or ''
+		self.values = values or ()
+		self.limitTo = limitTo or {}
+		self.choicesId = choicesId or ''
+		self.choices = choices or ()
+		self.orderBy = orderBy or ()
+		super(OneListField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		if choices == None and self._isForeignKey() == False:
+			raise XpMsgException(AttributeError, _('Either choices must be declared or field be a Foreign key'))
+		self.attrs['choicesId'] = self.choicesId
+		
+	def buildList(self):
+		"""
+		Build list of possible values for field. Depending on type of rendering, will be shown in a option element, 
+		select or checkbox, as well as any additional visual component with selection of one item from a list.
+		
+		** Returns **
+		
+		``valueList``:list<(name, value)>
+		
+		"""		
+		
+		if len(self.choices) != 0:
+			# choices
+			valueList = self.choices
+		else:
+			model = self.instance.__class__  #@UnusedVariableWarning
+			field = eval('model.' + self.instanceFieldName)
+			if self._isForeignKey() == False:
+				raise XpMsgException(AttributeError, _('Field must be ForeignKey if choices attribute  is not declared.'))
+			# foreign key
+			valueList = []
+			# in case we have limitTo, place filter query. Otherwise, run all() on queryset related to foreign key
+			if len(self.limitTo) == 0:
+				if len(self.orderBy) == 0:
+					rows = field.get_query_set().all()
+				else:
+					rows = field.get_query_set().all().order_by(self.orderBy)
+			else:
+				if len(self.orderBy) == 0:
+					rows = field.get_query_set().filter(**self.limitTo)
+				else:
+					rows = field.get_query_set().filter(**self.limitTo).order_by(self.orderBy)
+			# Get name and value, and add to valueList
+			for row in rows:
+				name = str(row.pk)
+				value = str(row)
+				if self.listValue != '':
+					value = eval('row.' + self.listValue)
+				# Additional data to name, value
+				valuesDict = {}				
+				for field in self.values:
+					try:
+						valuesDict[field] = eval('row.' + field)
+					except AttributeError:
+						# value from model not found
+						pass
+				valueList.append((name, value, valuesDict))
+		return valueList		
 
-class ChoiceField( ChoiceField ):
-	"""ChoiceField"""
-	def _doAttrs(self, args, attrDict):
-		"""Process form attrs with field attribute dictionary for widget
-		@param args: 
-		@param attrDict: 
-		@return: dict"""
-		d = {}
-		if args.has_key('attrs'):
-			d = DictUtil.addDicts([args['attrs'], attrDict])
+class ManyListField( Field ):
+	"""
+	Selection with many possible values. Will render: select with multiple attribute, list of items with checkbox, other
+	visual components with multiple values from a list.
+	
+	In case choices is not null, we attempt to skip many search for values and get values from choices object.
+	
+	From choices...
+	country = ManyListField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, choices=Choices.COUNTRY)
+	
+	From many relationship...
+	country = ManyListField(_dbAddress, '_dbAddress.country', choicesId='country', required=False)
+	
+	** From Choices **
+	
+	You need to include arguments ``choicesId``, ``choices``.
+	
+	** From Many to Many relationship **
+	
+	You need to include arguments: ``choicesId``. Optional ``limitTo``, ``listName``and ``listValue``. In case these
+	optional attributes not defined, will search without filter and name will be FK and value string representation of model instance.
+	
+	** Required Arguments **
+	
+	* ``instance``:object : Model instance
+	* ``insField``:str : Model field, like '_myModel.fieldName'
+	* ``choicesId``:str: Choice id to save into id_choices hidden field, like {myChoiceId: [(name1,value1),(name2,value2),...] ... }
+	
+	** Optional Arguments **
+	
+	* ``limitTo``:dict : Dictionary with attributes sent to model filter method
+	* ``listValue``:str : Model field to be used for value in (name, value) pairs. By default, string notation of model used.
+	* ``values``:tuple
+	* ``orderBy``:tuple : Order by tuples, like ('field', '-field2'). field ascending and field2 descending.
+	* ``choices``:list
+	
+	** Attributes **
+	
+	* ``instance``:object
+	* ``instanceName``:str
+	* ``instanceFieldName``:str
+	* ``required``:bool
+	* ``initial``:str
+	* ``jsRequired``:bool
+	* ``label``:str
+	* ``helpText``:str
+	* ``choicesId``:str
+	* ``limitTo``:dict
+	* ``orderBy``:tuple
+	* ``values``:tuple
+	* ``listValue``:str
+	
+	** Visual Component Attributes **
+	
+	Attributes inside attrs field attribute:
+	
+	* ``choicesId``
+	* ``data-xp-val``
+	* ``help_text``
+	* ``class``
+	* ``label``
+		
+	** Methods **
+	
+	* ``buildList()``:list<(name:str, value:str, data:dict)> : Build list of tuples (name, value) and data associated to values argument	
+	
+	"""
+	def __init__(self, instance, insField, choicesId=None, limitTo=None, listValue=None, values=None, choices=None, orderBy=None,
+				required=True, initial='', jsRequired=None, label=None, helpText=None):
+		if choicesId == None:
+			raise XpMsgException(AttributeError, _('choicesId is required'))
+		#instanceFieldName = self._getFieldName(insField)
+		#logger.debug('ManyListField :: instance: %s' % (instance) )
+		#logger.debug('ManyListField :: instanceFieldName: %s' % (instanceFieldName) )
+		self.listValue = listValue or ''
+		self.values = values or ()
+		self.limitTo = limitTo or {}
+		self.choicesId = choicesId or ''
+		self.choices = choices or ()
+		self.orderBy = orderBy or ()
+		super(ManyListField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
+									initial=initial, helpText=helpText)
+		if choices == None and self._isManyToMany() == False:
+			raise XpMsgException(AttributeError, _('Either choices must be declared or field be a ManyToMany relationship'))
+		self.attrs['choicesId'] = self.choicesId
+		
+	def buildList(self):
+		"""
+		Build list of possible values for field. Depending on type of rendering, will be shown in checkbox, multiple
+		select, and any other components that more than one item can be checked / selected.
+		
+		** Returns **
+		
+		``valueList``:list<(name, value)>
+		
+		"""		
+		
+		if len(self.choices) != 0:
+			# choices
+			valueList = self.choices
 		else:
-			d = attrDict
-		return d
-	def __init__(self, instance, insField, required=True, init='', choicesId='', xpType='list.select', **args):
-		if insField.find('.') != -1:
-			instanceName, instanceFieldName = insField.split('.')
-			self.instanceName = instanceName
-			self.instanceFieldName = instanceFieldName
-			self.instance = instance
-		classStr = 'fieldMust' if required == True else 'field'
-		xpVal = 'required' if required == True else ''
-		args['required'] = required
-		if instance != None:
-			if not args.has_key('label'):
-				args['label'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name if instance else args['label']
-			if not args.has_key('help_text'):
-				args['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text if instance else args['help_text']
-			args['initial'] = init if init != '' else eval('instance' + '.' + self.instanceFieldName)
-		#args['choices'] = choices if choices != None else None
-		#args['choicesId'] = choicesId if choicesId != '' else ''
-		#logger.debug( 'choicesId : ' + choicesId )
-		attrDict = self._doAttrs(args, {	'class': classStr,
-											'data-xp-val': xpVal,
-											'choicesId': choicesId,
-											'xpType': xpType})
-		"""if not args.has_key('widget'):
-			args['widget'] = SelectWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrDict)
-		# tabindex
-		if args.has_key('tabindex'):
-			args['widget'].attrs['tabindex'] = str(args['tabindex'])
-		if args.has_key('val'):
-			del args['val']
-		if args.has_key('jsVal'):
-			del args['jsVal']
-		if args.has_key('jsRequired'):
-			del args['jsRequired']
-		if args.has_key('tabindex'):
-			del args['tabindex']
-		super(ChoiceField, self).__init__(**args)
+			model = self.instance.__class__  #@UnusedVariableWarning
 
-class MultiField( MultipleChoiceField ):
-	"""
-	Ximpia Multiple Choice Field
-	
-	Used with "select" multiple fields. This field is doubt to be deprecated
-	
-	Deprecated???
-	"""
-	def _doAttrs(self, args, attrDict):
-		"""Process form attrs with field attribute dictionary for widget
-		@param args: 
-		@param attrDict: 
-		@return: dict"""
-		d = {}
-		if args.has_key('attrs'):
-			d = DictUtil.addDicts([args['attrs'], attrDict])
-		else:
-			d = attrDict
-		return d
-	def __init__(self, instance, insField, required=True, init=[], choices=None, multiple=False, **args):
-		if insField.find('.') != -1:
-			instanceName, instanceFieldName = insField.split('.')
-			self.instanceName = instanceName
-			self.instanceFieldName = instanceFieldName
-			self.instance = instance
-		classStr = 'fieldMust' if required == True else 'field'
-		xpVal = 'required' if required == True else ''
-		#classStr = 'SmallMust' if required == True else 'Small'
-		args['required'] = required
-		if instance:
-			if not args.has_key('label'):
-				args['label'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].verbose_name
-			if not args.has_key('help_text'):
-				args['help_text'] = instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text		
-		if len(init) == 0 and instance:
-			listRaw = eval('instance' + '.' + self.instanceFieldName + '.all()')
-			l = []
-			for obj in listRaw:
-				l.append(obj.pk)
-			args['initial'] = l
-		else:
-			args['initial'] = init
-		args['choices'] = choices if choices != None else None
-		attrDict = self._doAttrs(args, {'class': classStr, 'data-xp-val': xpVal})
-		if multiple == True:
-			attrDict['multiple'] = 'multiple'
-		"""if not args.has_key('widget'):
-			logger.debug( 'attrDict : ' + attrDict )
-			args['widget'] = MultipleWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrDict)
-		# jsVal
-		if args.has_key('jsVal'):
-			for jsValidation in args['jsVal']:
-				args['widget'].attrs['data-xp-val'] += ' ' + jsValidation
-		# tabindex
-		if args.has_key('tabindex'):
-			args['widget'].attrs['tabindex'] = str(args['tabindex'])
-		if args.has_key('val'):
-			del args['val']
-		if args.has_key('jsVal'):
-			del args['jsVal']
-		super(MultiField, self).__init__(**args)
+			if self._isManyToMany() == False:
+				raise XpMsgException(AttributeError, _('Field must be ManyToMany if choices attribute  is not declared.'))
+			# many to many			
+			valueList = []
+			# in case we have limitTo, place filter query. Otherwise, run all() on related parent model related to foreign key
+			if len(self.limitTo) == 0:
+				if len(self.orderBy) == 0:
+					rows = model._meta.get_field_by_name(self.instanceFieldName)[0].related.parent_model.\
+						objects.all()
+				else:
+					rows = model._meta.get_field_by_name(self.instanceFieldName)[0].related.parent_model\
+						.objects.all().order_by(self.orderBy)
+			else:
+				if len(self.orderBy) == 0:
+					rows = model._meta.get_field_by_name(self.instanceFieldName)[0].related.parent_model\
+						.objects.filter(**self.limitTo)
+				else:
+					rows = model._meta.get_field_by_name(self.instanceFieldName)[0].related.parent_model\
+						.objects.filter(**self.limitTo).order_by(self.orderBy)
+			# Get name and value, and add to valueList
+			for row in rows:
+				name = str(row.pk)
+				value = str(row)
+				if self.listValue != '':
+					value = eval('row.' + self.listValue)
+				# Additional data to name, value
+				valuesDict = {}				
+				for field in self.values:
+					try:
+						valuesDict[field] = eval('row.' + field)
+					except AttributeError:
+						# value from model not found
+						pass
+				valueList.append((name, value, valuesDict))
+		return valueList

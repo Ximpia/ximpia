@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import random
 import simplejson as json
 import base64

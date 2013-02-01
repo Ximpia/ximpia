@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Setting, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
 from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup, ServiceMenuCondition, ViewMenuCondition, Condition

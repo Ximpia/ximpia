@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import random
 import os
 from django.utils.translation import ugettext as _
