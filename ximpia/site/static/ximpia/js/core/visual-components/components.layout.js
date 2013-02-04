@@ -32,7 +32,7 @@
 
 (function($) {	
 
-	$.fn.xpObjContainer = function( method ) {  
+	$.fn.xpContainer = function( method ) {  
 
         // Settings		
         var settings = {
@@ -72,7 +72,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjContainer' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpContainer' );
         }
 	};
 

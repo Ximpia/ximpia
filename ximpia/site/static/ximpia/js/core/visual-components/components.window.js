@@ -7,7 +7,7 @@
  */
 
 (function($) {	
-	$.fn.xpObjPopUp = function( method ) {  
+	$.fn.xpPopUp = function( method ) {  
         // Settings		
         var settings = {
         };
@@ -274,7 +274,7 @@
             		//$("#id_doClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
             		$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
-            		$("[data-xp-type='button']").xpObjButton('render');
+            		$("[data-xp-type='button']").xpButton('render');
             		$('div#id_popupButton.btBar').css('visibility', 'visible');
 		},
 		destroy: function() {
@@ -291,7 +291,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjPopUp' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpPopUp' );
         }    
 		
 	};

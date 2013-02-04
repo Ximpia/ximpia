@@ -1042,7 +1042,7 @@ ximpia.common.Form = function() {
 										if (responseMap['response']['winType'] == 'popup') {
 											// popup : Must show in same popup
 											ximpia.console.log('bindAction :: popup!!!!!!!!!!');
-											$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+											$("#" + obj.idMsg).xpButton(obj.destroyMethod);
 											ximpia.console.log(obj.attrs);
 											var tmplPath = ximpia.common.PageAjax.getTemplatePath({
 												app : responseMap['response']['app'],
@@ -1105,7 +1105,7 @@ ximpia.common.Form = function() {
 										} else {
 											// window
 											ximpia.console.log('bindAction :: window!!!!!!!!!!!');
-											$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+											$("#" + obj.idMsg).xpButton(obj.destroyMethod);
 											// Get template
 											ximpia.console.log(obj.attrs);
 											var tmplPath = ximpia.common.PageAjax.getTemplatePath({
@@ -1139,7 +1139,7 @@ ximpia.common.Form = function() {
 									ximpia.console.log('bindAction :: clickStatus: ' + obj.attrs.clickStatus);
 									if ( typeof obj.attrs.clickStatus != 'undefined' && obj.attrs.clickStatus == 'disable') {
 										//ximpia.console.log('disable on click: ' + obj.attrs.disableOnClick + ' ' + obj.idActionComp);
-										$("#" + obj.idActionComp).xpObjButton('disable');
+										$("#" + obj.idActionComp).xpButton('disable');
 									}
 									// Callback
 									if ( typeof obj.callback != 'undefined') {
@@ -1166,7 +1166,7 @@ ximpia.common.Form = function() {
 										 $("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
 										 $("#" + obj.idMsg + "_text").text(list[0][1]);
 										 } else {
-										 $("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+										 $("#" + obj.idMsg).xpButton(obj.destroyMethod);
 										 }*/
 									} else {
 										ximpia.console.log('bindAction :: form :: errors: ' + list);
@@ -1192,13 +1192,13 @@ ximpia.common.Form = function() {
 											ximpia.console.log(message);
 											//$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
 											//$("#" + obj.idMsg + "_text").text('Error!!!');
-											$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+											$("#" + obj.idMsg).xpButton(obj.destroyMethod);
 											// Show error Message in pop up
-											$('body').xpObjPopUp({
+											$('body').xpPopUp({
 												title : 'Errors Found',
 												message : message,
 												height : 160
-											}).xpObjPopUp('createMsg');
+											}).xpPopUp('createMsg');
 										} else {
 											$("#" + obj.idMsg + "_img").xpLoadingSmallIcon('error');
 											$("#" + obj.idMsg + "_text").text('Error!!!');
@@ -1212,13 +1212,13 @@ ximpia.common.Form = function() {
 								if (obj.showPopUp == true) {
 									// All have a waiting message
 									/*if (doMsgError == false) {
-									 $("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
+									 $("#" + obj.idMsg).xpButton(obj.destroyMethod);
 									 }*/
-									$("#" + obj.idMsg).xpObjButton(obj.destroyMethod);
-									$('body').xpObjPopUp({
+									$("#" + obj.idMsg).xpButton(obj.destroyMethod);
+									$('body').xpPopUp({
 										title : 'Could not make it!',
 										message : errorMsg
-									}).xpObjPopUp('createMsg');
+									}).xpPopUp('createMsg');
 								} else {
 									//TODO: Place errors in ximpia.errors.NAME_ERROR, placed outside of ximpia.common.js
 									errorMsg = 'I received an unexpected error. Please retry later. Thanks';
@@ -1706,16 +1706,16 @@ ximpia.common.PageAjax = function() {
 			 ximpia.console.log('xpForm: ' + xpForm);
 			 var formId = xpForm.split('.')[1];
 			 //ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
-			 $('#' + formId).find("[data-xp-type='basic.text']").xpObjInput('renderField', xpForm);
-			 $('#' + formId).find("#id_variables").xpObjInput('addHidden', xpForm);
-			 $('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
-			 $('#' + formId).find("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete', xpForm);
-			 $('#' + formId).find("[data-xp-type='basic.textarea']").xpObjTextArea('render', xpForm);
+			 $('#' + formId).find("[data-xp-type='basic.text']").xpInput('renderField', xpForm);
+			 $('#' + formId).find("#id_variables").xpInput('addHidden', xpForm);
+			 $('#' + formId).find("[data-xp-type='list.select']").xpListSelect('render', xpForm);
+			 $('#' + formId).find("[data-xp-type='text.autocomplete']").xpInput('renderFieldAutoComplete', xpForm);
+			 $('#' + formId).find("[data-xp-type='basic.textarea']").xpTextArea('render', xpForm);
 			 $('#' + formId).find("input[data-xp-related='list.field']")
 			 .filter("input[data-xp-type='basic.text']")
-			 .xpObjListField('bindKeyPress', xpForm);
-			 $("[data-xp-type='button']").xpObjButton('render');
-			 $("[data-xp-type='link']").xpObjLink('render');
+			 .xpListField('bindKeyPress', xpForm);
+			 $("[data-xp-type='button']").xpButton('render');
+			 $("[data-xp-type='link']").xpLink('render');
 			 _attr.priv.doShowPasswordStrength('id_ximpiaId', 'id_password');
 			 //_attr.priv.doLocal();
 			 }),*/
@@ -2068,7 +2068,7 @@ ximpia.common.PageAjax = function() {
 							params : obj.params,
 							app : obj.app
 						};
-						$('body').xpObjPopUp(obj).xpObjPopUp('create');
+						$('body').xpPopUp(obj).xpPopUp('create');
 					} else {
 						_attr.pub.doForm({
 							view : obj.view,
@@ -2203,45 +2203,10 @@ ximpia.common.PageAjax.doShowPasswordStrength = (function(userId) {
  * Render content
  */
 ximpia.common.PageAjax.doRender = function(xpForm) {
-	ximpia.console.log('xpForm: ' + xpForm);
+	ximpia.common.PageAjax.doRenderExceptFunctions(xpForm);
 	var formId = xpForm.split('.')[1];
-	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
-	// container
-	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
 	// function.render
-	$('#' + formId).find("[data-xp-type='function.render']").xpObjRenderExt('render', xpForm);
-	// basic.text
-	$('#' + formId).find("[data-xp-type='field']").xpObjField('render', xpForm);
-	// #id_variables
-	$('#' + formId).find("#id_variables").xpObjHidden('addHidden', xpForm);
-	// list.select
-	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
-	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjFieldComplete('render', xpForm);
-	// basic.textarea
-	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
-	// list.field
-	$('#' + formId).find("input[data-xp-related='list.field']")
-			.filter("input[data-xp-type='field']")
-			.xpObjListField('bindKeyPress', xpForm);
-	// button
-	$("[data-xp-type='button']").xpObjButton('render');
-	// link
-	$("[data-xp-type='link.popup']").xpObjLink('render');
-	$("[data-xp-type='link.url']").xpObjLink('render');
-	$("[data-xp-type='link.action']").xpObjLink('render');
-	$("[data-xp-type='link.view']").xpObjLink('render');
-	// username is needed to make validation with username >= password
-	ximpia.common.PageAjax.doShowPasswordStrength('id_username');
-	//_attr.priv.doLocal();
-	// TODO: Include settings into general javascript settings class
-	// TODO: Include additional attributes, put in settings.js
-	$("#id_header_search").jsonSuggest({
-		url : '/jxSearchHeader',
-		maxHeight : 200,
-		minCharacters : 3,
-		onSelect : ximpia.common.Search.doClick
-	});
+	$('#' + formId).find("[data-xp-type='function.render']").xpRenderExt('render', xpForm);
 }
 /*
  * 
@@ -2251,26 +2216,26 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	var formId = xpForm.split('.')[1];
 	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
 	// container
-	$('#' + formId).find("[data-xp-type='container']").xpObjContainer('render', xpForm);
+	$('#' + formId).find("[data-xp-type='container']").xpContainer('render', xpForm);
 	// basic.text
-	$('#' + formId).find("[data-xp-type='field']").xpObjField('render', xpForm);
+	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
 	// list.select
-	$('#' + formId).find("[data-xp-type='list.select']").xpObjListSelect('render', xpForm);
+	$('#' + formId).find("[data-xp-type='list.select']").xpListSelect('render', xpForm);
 	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpObjFieldComplete('render', xpForm);
+	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpFieldComplete('render', xpForm);
 	// basic.textarea
-	$('#' + formId).find("[data-xp-type='textarea']").xpObjTextArea('render', xpForm);
+	$('#' + formId).find("[data-xp-type='textarea']").xpTextArea('render', xpForm);
 	// list.field
 	$('#' + formId).find("input[data-xp-related='list.field']")
 			.filter("input[data-xp-type='field']")
-			.xpObjListField('bindKeyPress', xpForm);
+			.xpListField('bindKeyPress', xpForm);
 	// button
-	$("[data-xp-type='button']").xpObjButton('render');
+	$("[data-xp-type='button']").xpButton('render');
 	// link
-	$("[data-xp-type='link.popup']").xpObjLink('render');
-	$("[data-xp-type='link.url']").xpObjLink('render');
-	$("[data-xp-type='link.action']").xpObjLink('render');
-	$("[data-xp-type='link.view']").xpObjLink('render');
+	$("[data-xp-type='link.popup']").xpLink('render');
+	$("[data-xp-type='link.url']").xpLink('render');
+	$("[data-xp-type='link.action']").xpLink('render');
+	$("[data-xp-type='link.view']").xpLink('render');
 	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
 	// TODO: Include settings into general javascript settings class
 	$("#id_header_search").jsonSuggest({
@@ -2411,7 +2376,7 @@ ximpia.common.PageAjax.processMenus = (function(responseMap) {
 		delete menuSessObj['sys']
 	}*/
 	ximpia.common.Browser.setObject('menus', menuSessObj);
-	$("[data-xp-type='icon']").xpObjIcon('renderMenu');
+	$("[data-xp-type='icon']").xpIcon('renderMenu');
 });
 /**
  * Process login and session information
@@ -2503,7 +2468,7 @@ ximpia.common.GoogleMaps = function() {
 										countryCode = list[i].short_name.toLowerCase();
 										ximpia.console.log('country: ' + countryCode);
 										for (var k = 0; k < idCountryList.length; k++) {
-											$("#id_country_comp").xpObjListSelect('setValue', xpForm, countryCode);
+											$("#id_country_comp").xpListSelect('setValue', xpForm, countryCode);
 										}
 									}
 								}
@@ -2744,13 +2709,13 @@ ximpia.site.Signup = function() {
 				var formData = data.response["form_signup"];
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
 				sessionStorage.setItem('form_signup', JSON.stringify(formData));
-				$("[data-xp-type='list.field']").xpObjListField('render');
-				$("[data-xp-type='basic.text']").xpObjInput('renderField');
-				$("#id_variables").xpObjInput('addHidden');
-				$("[data-xp-type='list.select']").xpObjListSelect('render');
-				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
-				$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
-				$("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress');
+				$("[data-xp-type='list.field']").xpListField('render');
+				$("[data-xp-type='basic.text']").xpInput('renderField');
+				$("#id_variables").xpInput('addHidden');
+				$("[data-xp-type='list.select']").xpListSelect('render');
+				$("[data-xp-type='text.autocomplete']").xpInput('renderFieldAutoComplete');
+				$("[data-xp-type='basic.textarea']").xpTextArea('render');
+				$("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpListField('bindKeyPress');
 				$(".scroll").jScrollPane({
 					showArrows : true,
 					verticalArrowPositions : 'after',
@@ -2873,15 +2838,15 @@ ximpia.site.Signup = function() {
 				var formData = data.response["form_signupOrg"];
 				sessionStorage.setItem('xpForm', JSON.stringify(formData));
 				sessionStorage.setItem('form_signupOrg', JSON.stringify(formData));
-				$("[data-xp-type='list.field']").xpObjListField('render');
-				$("[data-xp-type='basic.text']").xpObjInput('renderField');
-				$("#id_variables").xpObjInput('addHidden');
-				$("[data-xp-type='list.select']").xpObjListSelect('render');
-				$("[data-xp-type='text.autocomplete']").xpObjInput('renderFieldAutoComplete');
+				$("[data-xp-type='list.field']").xpListField('render');
+				$("[data-xp-type='basic.text']").xpInput('renderField');
+				$("#id_variables").xpInput('addHidden');
+				$("[data-xp-type='list.select']").xpListSelect('render');
+				$("[data-xp-type='text.autocomplete']").xpInput('renderFieldAutoComplete');
 				// Binds related objects: Simple objects events binded to compound objects
 				// We do not bind enter event in autocomplete becaouse not compatible with enter event of complete list
-				$("[data-xp-type='basic.textarea']").xpObjTextArea('render');
-				$("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpObjListField('bindKeyPress');
+				$("[data-xp-type='basic.textarea']").xpTextArea('render');
+				$("input[data-xp-related='list.field']").filter("input[data-xp-type='basic.text']").xpListField('bindKeyPress');
 				$(".scroll").jScrollPane({
 					showArrows : true,
 					verticalArrowPositions : 'after',

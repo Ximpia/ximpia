@@ -7,7 +7,7 @@
 
 (function($) {	
 
-	$.fn.xpObjListContent = function( method ) {  
+	$.fn.xpListContent = function( method ) {  
 
         // Settings		
         var settings = {
@@ -33,7 +33,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpObjListContent' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpListContent' );
         }    
 		
 	};
