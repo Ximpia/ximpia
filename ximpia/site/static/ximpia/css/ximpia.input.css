@@ -31,7 +31,53 @@ div[data-xp-type="option"] div.ui-option-label-left {
 
 div[data-xp-type="option"] ul.ui-option-label {
 	border: 0px solid; 
-	/*margin-top: 3px; 
-	margin-bottom: 3px;*/
 	padding-top: 1px;
+}
+
+/* ****** */
+/* check */
+/* ****** */
+
+div[data-xp-type="check"] {
+}
+
+div[data-xp-type="check"] ul {
+	list-style-type: none; 
+	border: 0px solid; 
+	padding-left: 0px; 
+	margin-top: 7px; 
+	margin-bottom: 7px;
+}
+
+div[data-xp-type="check"] ul.ui-check-horizontal li {
+	float: left;
+}
+
+div[data-xp-type="check"] div.ui-check-label-top {
+	border: 0px solid; 
+	margin-top: 3px;
+}
+
+div[data-xp-type="check"] div.ui-check-label-left {
+	float:left;
+	border: 0px solid; 
+	margin-top: 0px;
+}
+
+div[data-xp-type="check"] ul.ui-check-label {
+	border: 0px solid; 
+	padding-top: 1px;
+}
+
+/* ****** */
+/* field.check */
+/* ****** */
+
+input[data-xp-type="field.check"] {
+	margin-top: 6px;
+}
+
+div[data-xp-type='field.check'] label {
+	position: relative;
+	top: -2px;
 }

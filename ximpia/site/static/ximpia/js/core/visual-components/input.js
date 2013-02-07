@@ -131,9 +131,31 @@
 
 
 /*
- * Ximpia Visual Component Input: Text, Password, etc...
+ * Ximpia Field Check
+ * 
+ * Renders fields that are BooleanField, with values true / false or 1 for true and 0 for false
+ * 
+ * Support labels. Check control can be before label or after.
+ * 
+ * <div id="id_hasUrl_comp" data-xp-type="field.check" data-xp="{}" > </div>
  *
- * TODO: Include the html for component
+ * ** Attributes (data-xp) **
+ * 
+ * * ``label`` [optional] : Field label
+ * * ``controlPosition`` [optional] : 'before'|'after'. Default: 'before'. Position for the radio control, after or before text. 
+ * 
+ * ** Interfaces **
+ * 
+ * This components implements these interfaces:
+ * 
+ * * ``IInputField``
+ * 
+ * ** Methods **
+ * 
+ * * ``render``
+ * * ``disable``
+ * * ``enable``
+ * 
  * 
  */
 
@@ -145,6 +167,8 @@
 
         // Settings		
         var settings = {
+        	controlPosition: 'after',
+        	isRender: false
         };
 		
         var methods = {
@@ -156,6 +180,98 @@
 	                        	$.extend( settings, options );
                     		}					
                 	});
+		},
+		render: function(xpForm) {
+			/**
+			 * Render for radio buttons
+			 */
+			// id_month_comp : choiceId:'months'
+			ximpia.console.log('xpOption :: option ... render...');
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			ximpia.console.log(data);
+			for (var i=0; i<$(this).length; i++) {
+				var element = $(this)[i];
+				ximpia.console.log('xpOption :: element : ' + element); 
+				var idBase = $(element).attr('id').split('_comp')[0];
+				var name = idBase.split('id_')[1];
+				ximpia.console.log('xpOption :: idBase : ' + idBase);
+				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
+				if (hasToRender == true && data.hasOwnProperty(name)) {					
+					var value = "";
+					var choicesId = "";
+					value = data[name]['value'];
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					ximpia.console.log('xpFieldCheck.render :: attrs...');
+					ximpia.console.log(attrs);
+	        		var htmlContent = "";
+	        		if (!attrs.hasOwnProperty('controlPosition')) {
+	        			attrs['controlPosition'] = settings.controlPosition;
+	        		}
+	        		// Label:
+	        		var label = data[name]['label'];
+	        		if (attrs.hasOwnProperty('label')) {
+	        			label = attrs['label'];
+	        		}
+					var controlHtml = "";
+					var ctlId = "id_" + name;
+					if (value == true || value == '1') {
+						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
+							"\" value=\"1\" data-xp=\"{}\" checked=\"checked\"";
+					} else {
+						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
+							"\" value=\"0\" data-xp=\"{}\"";
+					}
+					controlHtml += "/>";
+        			var helpText = "";
+        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText') && 
+        						attrs['controlPosition'] == 'after') {
+        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+        			}
+        			var attrClass = "";
+        			if (attrs.hasOwnProperty('info') && attrs.info == true) {
+        				attrClass = "class=\"info\"";
+        			}
+					if (attrs['controlPosition'] == 'before') {
+						htmlContent += controlHtml + "<label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + 
+							label + "</label>";
+					} else {
+						htmlContent += "<label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + label + ": </label>" + 
+							controlHtml;
+					}
+					// Assign html visual component div element
+					$(element).html(htmlContent);
+					// Help text...
+					// Set render, since we have rendered visual component
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					// Trace
+					ximpia.console.log(htmlContent);
+				} else if (!data.hasOwnProperty(name)) {
+					ximpia.console.log('xpOption.render :: server data has no variable');
+				}
+			}
+		},
+		disable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field.check']").each(function() {
+					$(this).attr('disabled', true);
+				})				
+			}
+		},
+		enable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field.check']").each(function() {
+					$(this).attr('disabled', false);
+				})				
+			}
+		},
+		unrender: function() {
+			for (var i=0; i<$(this).length; i++) {
+				$(this).empty();
+				$(this).removeAttr('data-xp-render');
+			}
 		}
         };
 		
@@ -164,7 +280,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpField' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpFieldCheck' );
         }    
 		
 	};
@@ -436,104 +552,54 @@
 /*
  * 
  *
- * Ximpia Visual Component Option: Radio button with fields coming from choices
- * 
- * Foreign Keys???? How????
- * 
- * You can define in the form model instance and field. If no model instance defined, then it is a choice option field
- * if model and field defined, check that field is type foreign key, if no foreign key, then source is choices. Also check
- * form attributes choicesId, this is much easier!!!!
- * 
- * We need list of (name,value) pairs. Default: name is the id for the pk, value is string representation of foreign table
- * We can customize this, by attributes "listName" and "listValue" with model fields
- * 
- * we build id_choices_fk with list of (name, value) from form fields that require fk lookup tables: select boxes, option lists, etc...
- * when we instance form
- * 
- * choices is list of (name,value), choices_fk could be same, with choiceId -> [(name,value),()...]
- * 
- * definition:
- * 
- * choices_fk = XpHiddenField(xpType='input.hidden', required=False initial="[['$choiceId', '$model','$filter','$nameField',
- * 			'$valueField'],[]]") ????
- * 
- * ServiceDecorator will call queries with get list of fields in forms that require foreign key choices
- * 
- * Required information: choiceid, filter [opt], listName[opt], listValue[opt]
- * 
- * country = XpSelectField(_model, '_model.field', choiceId='countries', filter={}, listName='code', 
- * 			listValue='value') 
- * This field will allways link to foreign key for model
- * 
- * This select field will include in id_choices the (name, value) pairs, initial should be the model field value. 
- * 
- * Have a class Countries(FkChoice) ???
- * 
- * model.filter(**args)
- * 
- * 
- * 
- * Source: Should know source ????
- * 
+ * Ximpia Visual Component Check: Checkbox button with fields coming from choices (choices class or foreign key)
+ *  
  * ** HTML **
  * 
- * <div id="id_myoption_comp" data-xp-type="list.option" data-xp="{type: 'radio', alignment: 'vertical'}" > </div>
+ * <div id="id_mycheck_comp" data-xp-type="check" data-xp="{alignment: 'vertical'}" > </div>
  * 
- * <div id="id_myoption_comp" data-xp-type="list.option" data-xp="{type: 'checkbox', alignment: 'vertical'}" > </div>
  * 
- * Your form should have ``myoption``field
+ * Your form should have ``mycheck``field
  * 
  * ** Attributes (data-xp) **
  * 
- * * ``class`` [optional] : 'optVertical', 'optHorizontal'
- * * ``type`` : 'radio', 'checkbox'
  * * ``alignment`` [optional] : 'vertical', 'horizontal'
- * * ``source`` : 'choices' or 'fk' : Should know source????
- * * ``values`` : List of (name, value) pairs ... [['es','Spain'],['us','USA'], ... ]
+ * * ``hasLabel`` [optional] : "true"|"false". Weather to show or not a label, at left or top of radio controls.
+ * * ``label`` [optional] : Field label
+ * * ``labelPosition`` [optional] : 'top'|'left'. Label position, left of radio buttons, or top for label at one line and radio
+ * 									controls on a new line.
+ * * ``controlPosition`` [optional] : 'before'|'after'. Default: 'before'. Position for the radio control, after or before text.
+ * * ``info``[optional] : Displays tooltip with helpText field data.
  * 
+ * Having alignment vertical will show ``ui-option-vertical`` class. Alignment horizontal has class ``ui-option-horizontal``
  * 
- * ** Constraints ** 
- * 
- * ``class`` or ``alinment`` must be defined
- * 
- * You can include alignment or class for <ul> element which holds the input elements. If you include horizontal or vertical alignment
- * you don't need the class attribute. When horizontal is defined, we use css class ``optHorizontal``. When vertical is defined, we
- * use ``optVerical`` css class.
  * 
  * ** Interfaces **
  * 
  * This components implements these interfaces:
  * 
- * * ``IList``
+ * * ``IInputList``
  *  
  * 
  * ** Methods **
  * 
  * * ``render``
- * * ``click``
  * * ``disable``
  * * ``enable``
- * * ``disableItem``
- * * ``enableItem``
  * 
- * Types
- * radio: radio option box
- * checkbox: check box. Behaved like option, when user clicks on one, it gets selected. Ability to have no option cheched.
- * 
- * We need here support for choices and foreign keys in tables
- * 
- * Conditions??? Conditions could trigger clicks, disable / enable items, render / disble entire list
- * Triggers??? Any?? Clicks
  * 
  *
  */
 
 (function($) {	
 
-	$.fn.xpCheckList = function( method ) {  
+	$.fn.xpCheck = function( method ) {  
 
         // Settings		
         var settings = {
+        	labelPosition: 'left',
+        	controlPosition: 'before',
+        	reRender: false
         };
 		
         var methods = {
@@ -545,6 +611,128 @@
 	                        	$.extend( settings, options );
                     		}
                 	});
+		},
+		render: function(xpForm) {
+			/**
+			 * Render for radio buttons
+			 */
+			// id_month_comp : choiceId:'months'
+			ximpia.console.log('xpOption :: option ... render...');
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			ximpia.console.log(data);
+			for (var i=0; i<$(this).length; i++) {
+				var element = $(this)[i];
+				ximpia.console.log('xpOption :: element : ' + element); 
+				var idBase = $(element).attr('id').split('_comp')[0];
+				var name = idBase.split('id_')[1];
+				ximpia.console.log('xpOption :: idBase : ' + idBase);
+				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
+				if (hasToRender == true && data.hasOwnProperty(name)) {					
+					var value = "";
+					var choicesId = "";
+					value = data[name]['value'];
+					choicesId = data[name]['choicesId']
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+	        		// Choices
+	        		ximpia.console.log('xpOption :: choicesId: ' + choicesId);
+	        		var choiceList = JSON.parse(data['choices']['value'])[choicesId];
+	        		ximpia.console.log('xpOption :: choicesList: ' + choiceList);
+	        		var htmlContent = "";
+	        		if (!attrs.hasOwnProperty('labelPosition') && attrs.hasOwnProperty('hasLabel')) {
+	        			attrs['labelPosition'] = settings.labelPosition;
+	        		}
+	        		if (!attrs.hasOwnProperty('controlPosition')) {
+	        			attrs['controlPosition'] = settings.controlPosition;
+	        		}
+	        		if (attrs['alignment'] == 'vertical' && attrs.hasOwnProperty('hasLabel') && attrs['hasLabel'] == true) {	        			
+	        			attrs['labelPosition'] = 'top';
+	        		}
+	        		// Label:
+	        		var label = data[name]['label'];
+	        		if (attrs.hasOwnProperty('label')) {
+	        			label = attrs['label'];
+	        		}
+	        		var classLabel = 'ui-check-label-left';
+	        		if (attrs.hasOwnProperty('hasLabel') && attrs.hasOwnProperty('labelPosition') && attrs['labelPosition'] == 'top') {
+	        			classLabel = 'ui-check-label-top';
+	        		}
+	        		if (attrs.hasOwnProperty('hasLabel') && attrs['hasLabel']) {
+	        			htmlContent += "<div class=\"" + classLabel + "\" >";
+	        			var helpText = "";
+	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
+	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+	        			}
+	        			var attrClass = "";
+	        			if (attrs.hasOwnProperty('info') && attrs.info == true) {
+	        				attrClass = "class=\"info\"";
+	        			}
+	        			htmlContent += "<label for=\"id_" + name + "_" + choiceList[0][0] + "\" " + attrClass+ " " + helpText + 
+	        					" style=\"margin-right: 5px\">" + label + "</label>";
+	        			if (attrs.labelPosition == 'left') {
+	        				htmlContent += ': ';
+	        			}
+	        			htmlContent += "</div>";	        			
+	        		}
+	        		// Option items
+	        		if (attrs.alignment == 'horizontal') {
+	        			htmlContent += "<ul class=\"ui-check-horizontal\">";
+	        		} else  {
+	        			htmlContent += "<ul class=\"ui-check-vertical\">";
+	        		}
+					for (var j=0 ; j<choiceList.length; j++) {
+						htmlContent += "<li>";
+						var controlHtml = "";
+						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						if (choiceList[j][0] == value) {
+							controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"check\" name=\"" + name + 
+								"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\" checked=\"checked\"";
+						} else {
+							controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"check\" name=\"" + name + 
+								"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\"";
+						}
+						controlHtml += "/>";
+						if (attrs['controlPosition'] == 'before') {
+							htmlContent += controlHtml + "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>";
+						} else {
+							htmlContent += "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>" + controlHtml;
+						}
+						htmlContent += "</li>";
+					}
+					htmlContent += "</ul>";
+					// Assign html visual component div element
+					$(element).html(htmlContent);
+					// Help text...
+					// Set render, since we have rendered visual component
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					// Trace
+					ximpia.console.log(htmlContent);
+				} else if (!data.hasOwnProperty(name)) {
+					ximpia.console.log('xpOption.render :: server data has no variable');
+				}
+			}
+		},
+		disable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='check']").each(function() {
+					$(this).attr('disabled', true);
+				})				
+			}
+		},
+		enable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='check']").each(function() {
+					$(this).attr('disabled', false);
+				})				
+			}
+		},
+		unrender: function() {
+			for (var i=0; i<$(this).length; i++) {
+				$(this).empty();
+				$(this).removeAttr('data-xp-render');
+			}
 		}
         };		
         if ( methods[method] ) {
@@ -552,7 +740,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpListOption' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpCheck' );
         }
 	};
 
@@ -787,7 +975,8 @@
  * * ``label`` [optional] : Field label
  * * ``labelPosition`` [optional] : 'top'|'left'. Label position, left of radio buttons, or top for label at one line and radio
  * 									controls on a new line.
- * * ``radioPosition`` [optional] : 'before'|'after'. Default: 'before'. Position for the radio control, after or before text.
+ * * ``controlPosition`` [optional] : 'before'|'after'. Default: 'before'. Position for the radio control, after or before text.
+ * * ``info``[optional] : Displays tooltip with helpText field data.
  * 
  * Having alignment vertical will show ``ui-option-vertical`` class. Alignment horizontal has class ``ui-option-horizontal``
  * 
@@ -802,18 +991,12 @@
  * ** Methods **
  * 
  * * ``render``
- * * ``click``
  * * ``disable``
  * * ``enable``
  * 
  * ** Types **
  * * ``radio``: radio option box
  * * ``checkbox``: check box. Behaved like option, when user clicks on one, it gets selected. Ability to have no option cheched.
- * 
- * 
- * Conditions??? Conditions could trigger clicks, disable / enable items, render / disble entire list
- * Triggers??? Any?? Clicks
- * 
  * 
  *
  */
@@ -826,7 +1009,7 @@
         // Settings		
         var settings = {
         	labelPosition: 'left',
-        	radioPosition: 'before',
+        	controlPosition: 'before',
         	reRender: false
         };		
         var methods = {
@@ -869,8 +1052,8 @@
 	        		if (!attrs.hasOwnProperty('labelPosition') && attrs.hasOwnProperty('hasLabel')) {
 	        			attrs['labelPosition'] = settings.labelPosition;
 	        		}
-	        		if (!attrs.hasOwnProperty('radioPosition')) {
-	        			attrs['radioPosition'] = settings.radioPosition;
+	        		if (!attrs.hasOwnProperty('controlPosition')) {
+	        			attrs['controlPosition'] = settings.controlPosition;
 	        		}
 	        		if (attrs['alignment'] == 'vertical' && attrs.hasOwnProperty('hasLabel') && attrs['hasLabel'] == true) {	        			
 	        			attrs['labelPosition'] = 'top';
@@ -880,14 +1063,25 @@
 	        		if (attrs.hasOwnProperty('label')) {
 	        			label = attrs['label'];
 	        		}
-	        		// TODO: Help text???? as input???
 	        		var classLabel = 'ui-option-label-left';
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs.hasOwnProperty('labelPosition') && attrs['labelPosition'] == 'top') {
 	        			classLabel = 'ui-option-label-top';
 	        		}
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs['hasLabel']) {
 	        			htmlContent += "<div class=\"" + classLabel + "\" >";
-	        			htmlContent += "<label for=\"id_" + name + "_" + choiceList[0][0] + "\" style=\"margin-right: 5px\">" + label + "</label>";
+	        			var helpText = "";
+	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
+	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+	        			}
+	        			var attrClass = "";
+	        			if (attrs.hasOwnProperty('info') && attrs.info == true) {
+	        				attrClass = "class=\"info\"";
+	        			}
+	        			htmlContent += "<label for=\"id_" + name + "_" + choiceList[0][0] + "\" " + attrClass+ " " + helpText + 
+	        					" style=\"margin-right: 5px\">" + label + "</label>";
+	        			if (attrs.labelPosition == 'left') {
+	        				htmlContent += ': ';
+	        			}
 	        			htmlContent += "</div>";	        			
 	        		}
 	        		// Option items
@@ -921,7 +1115,7 @@
 							}
 						}
 						controlHtml += "/>";
-						if (attrs['radioPosition'] == 'before') {
+						if (attrs['controlPosition'] == 'before') {
 							htmlContent += controlHtml + "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>";
 						} else {
 							htmlContent += "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>" + controlHtml;
@@ -935,7 +1129,7 @@
 					// Set render, since we have rendered visual component
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					// Trace
-					ximpia.console.log(htmlContent);					
+					ximpia.console.log(htmlContent);
 				} else if (!data.hasOwnProperty(name)) {
 					ximpia.console.log('xpOption.render :: server data has no variable');
 				}

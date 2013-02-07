@@ -2224,7 +2224,9 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// option
 	$('#' + formId).find("[data-xp-type='option']").xpOption('render', xpForm);
 	// check
-	// check field
+	$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
+	// field check
+	$('#' + formId).find("[data-xp-type='field.check']").xpFieldCheck('render', xpForm);
 	// text.autocomplete
 	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpFieldComplete('render', xpForm);
 	// basic.textarea
