@@ -530,7 +530,7 @@
 
 (function($) {	
 
-	$.fn.xpListCheck = function( method ) {  
+	$.fn.xpCheckList = function( method ) {  
 
         // Settings		
         var settings = {
@@ -567,7 +567,7 @@
 
 (function($) {	
 
-	$.fn.xpListField = function( method ) {  
+	$.fn.xpFieldList = function( method ) {  
 
         // Settings		
         var settings = {
@@ -773,33 +773,30 @@
  *  
  * ** HTML **
  * 
- * <div id="id_myoption_comp" data-xp-type="list.option" data-xp="{type: 'radio', alignment: 'vertical'}" > </div>
+ * <div id="id_myoption_comp" data-xp-type="option" data-xp="{type: 'radio', alignment: 'vertical'}" > </div>
  * 
- * <div id="id_myoption_comp" data-xp-type="list.option" data-xp="{type: 'check', alignment: 'vertical'}" > </div>
+ * <div id="id_myoption_comp" data-xp-type="option" data-xp="{type: 'check', alignment: 'vertical'}" > </div>
  * 
  * Your form should have ``myoption``field
  * 
  * ** Attributes (data-xp) **
  * 
- * * ``class`` [optional] : 'optVertical', 'optHorizontal'
  * * ``type`` : 'radio', 'check'
  * * ``alignment`` [optional] : 'vertical', 'horizontal'
+ * * ``hasLabel`` [optional] : "true"|"false". Weather to show or not a label, at left or top of radio controls.
+ * * ``label`` [optional] : Field label
+ * * ``labelPosition`` [optional] : 'top'|'left'. Label position, left of radio buttons, or top for label at one line and radio
+ * 									controls on a new line.
+ * * ``radioPosition`` [optional] : 'before'|'after'. Default: 'before'. Position for the radio control, after or before text.
  * 
- * Having alignment vertical will show ``optVertical`` class. Alignment horizontal has class ``optHorizontal``
+ * Having alignment vertical will show ``ui-option-vertical`` class. Alignment horizontal has class ``ui-option-horizontal``
  * 
- * ** Constraints ** 
- * 
- * ``class`` or ``alinment`` must be defined
- * 
- * You can include alignment or class for <ul> element which holds the input elements. If you include horizontal or vertical alignment
- * you don't need the class attribute. When horizontal is defined, we use css class ``optHorizontal``. When vertical is defined, we
- * use ``optVerical`` css class.
  * 
  * ** Interfaces **
  * 
  * This components implements these interfaces:
  * 
- * * ``IList``
+ * * ``IInputList``
  *  
  * 
  * ** Methods **
@@ -808,8 +805,6 @@
  * * ``click``
  * * ``disable``
  * * ``enable``
- * * ``disableItem``
- * * ``enableItem``
  * 
  * ** Types **
  * * ``radio``: radio option box
@@ -819,22 +814,20 @@
  * Conditions??? Conditions could trigger clicks, disable / enable items, render / disble entire list
  * Triggers??? Any?? Clicks
  * 
+ * 
  *
  */
 
 
 (function($) {	
 
-	$.fn.xpListOption = function( method ) {  
+	$.fn.xpOption = function( method ) {  
 
         // Settings		
         var settings = {
-        	/*excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
-        	excludeListLabel: ['type','id','element'],
-        	excludeList: ['info','type','left'],
-        	htmlAttrs: ['tabindex','value','name'],
-        	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype','choices'],
-        	formData: {}*/
+        	labelPosition: 'left',
+        	radioPosition: 'before',
+        	reRender: false
         };		
         var methods = {
 		init : function( options ) { 
@@ -846,90 +839,149 @@
                     		}
                 	});
 		},
-		render: function() {
+		render: function(xpForm) {
 			/**
 			 * Render for radio buttons
 			 */
 			// id_month_comp : choiceId:'months'
-			ximpia.console.log('option ... render...');
-			var data = JSON.parse(sessionStorage.getItem("xpForm"));
+			ximpia.console.log('xpOption :: option ... render...');
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
-				ximpia.console.log('element : ' + element); 
+				ximpia.console.log('xpOption :: element : ' + element); 
 				var idBase = $(element).attr('id').split('_comp')[0];
-				console.log('idBase : ' + idBase);
-				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				if (doRender == true) {
-					var name = idBase.split('id_')[1];
+				var name = idBase.split('id_')[1];
+				ximpia.console.log('xpOption :: idBase : ' + idBase);
+				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
+				if (hasToRender == true && data.hasOwnProperty(name)) {					
 					var value = "";
 					var choicesId = "";
-					if (data.hasOwnProperty(name)) {
-						value = data[name]['value'];
-						choicesId = data[name]['choicesId']
-					}					
+					value = data[name]['value'];
+					choicesId = data[name]['choicesId']
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 	        		// Choices
-	        		//ximpia.console.log('choiceId: ' + attrs['choiceId']); ????
-	        		var choiceList = JSON.parse($('#id_choices').attr('value'))[choicesId];
+	        		ximpia.console.log('xpOption :: choicesId: ' + choicesId);
+	        		var choiceList = JSON.parse(data['choices']['value'])[choicesId];
+	        		ximpia.console.log('xpOption :: choicesList: ' + choiceList);
 	        		var htmlContent = "";
-	        		if (attrs.hasOwnProperty('alignment')) {
-		        		if (attrs.alignment == 'horizontal') {
-		        			htmlContent += "<ul class=\"optHorizontal\"";
-		        		} else  {
-		        			htmlContent += "<ul class=\"optVertical\"";
-		        		}
-	        		} else {
-	        			htmlContent += "<ul class=\"" + attrs['class'] + "\"";
-	        		}	        		
-	        		// Use class for ul, attrs.class, check for 'optVertical', 'optHorizontal'
-					for (var j=0 ; i<choiceList.length; j++) {
+	        		if (!attrs.hasOwnProperty('labelPosition') && attrs.hasOwnProperty('hasLabel')) {
+	        			attrs['labelPosition'] = settings.labelPosition;
+	        		}
+	        		if (!attrs.hasOwnProperty('radioPosition')) {
+	        			attrs['radioPosition'] = settings.radioPosition;
+	        		}
+	        		if (attrs['alignment'] == 'vertical' && attrs.hasOwnProperty('hasLabel') && attrs['hasLabel'] == true) {	        			
+	        			attrs['labelPosition'] = 'top';
+	        		}
+	        		// Label:
+	        		var label = data[name]['label'];
+	        		if (attrs.hasOwnProperty('label')) {
+	        			label = attrs['label'];
+	        		}
+	        		// TODO: Help text???? as input???
+	        		var classLabel = 'ui-option-label-left';
+	        		if (attrs.hasOwnProperty('hasLabel') && attrs.hasOwnProperty('labelPosition') && attrs['labelPosition'] == 'top') {
+	        			classLabel = 'ui-option-label-top';
+	        		}
+	        		if (attrs.hasOwnProperty('hasLabel') && attrs['hasLabel']) {
+	        			htmlContent += "<div class=\"" + classLabel + "\" >";
+	        			htmlContent += "<label for=\"id_" + name + "_" + choiceList[0][0] + "\" style=\"margin-right: 5px\">" + label + "</label>";
+	        			htmlContent += "</div>";	        			
+	        		}
+	        		// Option items
+	        		if (attrs.alignment == 'horizontal') {
+	        			htmlContent += "<ul class=\"ui-option-horizontal\">";
+	        		} else  {
+	        			htmlContent += "<ul class=\"ui-option-vertical\">";
+	        		}
+					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
-						if (choiceList[j][0] == value || j == 0) {
+						var controlHtml = "";
+						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						if (choiceList[j][0] == value) {
 							if (attrs.type == 'radio') {
-								htmlContent += "<input type=\"radio\" data-xp-type=\"list.option\" name=\"" + name + 
-									"\" value=\"" + choiceList[j][0] + "\" selected />" + choiceList[j][1];
+								controlHtml += "<input id=\"" + ctlId + "\" type=\"radio\" data-xp-type=\"option\" name=\"" + name + 
+									"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\" checked=\"checked\"";
 							} else {
-								htmlContent += "<input type=\"checkbox\" data-xp-type=\"list.option\" name=\"" + name + 
-									"\" value=\"" + choiceList[j][0] + "\" checked />" + choiceList[j][1];
+								controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"option\" name=\"" + name + 
+									"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\" checked=\"checked\"";
 							}
+						} else if (attrs.type == 'radio' && j == 0 && choiceList[j][0] != value) {
+							controlHtml += "<input id=\"" + ctlId + "\" type=\"radio\" data-xp-type=\"option\" name=\"" + name + 
+									"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\" checked=\"checked\"";
 						} else {
 							if (attrs.type == 'radio') {
-								htmlContent += "<input type=\"radio\" data-xp-type=\"list.option\" name=\"" + name + 
-									"\" value=\"" + choiceList[j][0] + "\" />" + choiceList[j][1];
+								controlHtml += "<input id=\"" + ctlId + "\" type=\"radio\" data-xp-type=\"option\" name=\"" + name + 
+									"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\"";
 							} else {
-								htmlContent += "<input type=\"checkbox\" data-xp-type=\"list.option\" name=\"" + name + 
-									"\" value=\"" + choiceList[j][0] + "\" />" + choiceList[j][1];
+								controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"option\" name=\"" + name + 
+									"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\"";
 							}
+						}
+						controlHtml += "/>";
+						if (attrs['radioPosition'] == 'before') {
+							htmlContent += controlHtml + "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>";
+						} else {
+							htmlContent += "<label for=\"" + ctlId + "\">" + choiceList[j][1] + "</label>" + controlHtml;
 						}
 						htmlContent += "</li>";
 					}
 					htmlContent += "</ul>";
 					// Assign html visual component div element
 					$(element).html(htmlContent);
+					// Help text...
 					// Set render, since we have rendered visual component
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					// Trace
 					ximpia.console.log(htmlContent);					
+				} else if (!data.hasOwnProperty(name)) {
+					ximpia.console.log('xpOption.render :: server data has no variable');
 				}
 			}
-			/*$("input[type='checkbox'][data-xp-type='list.option']").click() {
-				//$(this).xpListOption("click", {type: 'check'});
-			}*/
+			// Click option items
+			$("input[type='checkbox'][data-xp-type='option']").click(function(evt, unchecked) {
+				if ($(this)[0].checked == true && typeof(unchecked) == 'undefined') {
+					// New click from user
+					//ximpia.console.log('xpOption.render :: checked: ' + $(this)[0].checked);
+					var name = $(this).attr('name');
+					var checkedItems = $("input[name='" + name + "']:checked");
+					//ximpia.console.log(checkedItems);
+					// Uncheck item
+					if (checkedItems.length > 0) {
+						for (var i=0; i<checkedItems.length; i++) {
+							if (checkedItems[i].id != $(this).attr('id')) {
+								//ximpia.console.log('xpOption.render :: Will click on ' + checkedItems[i].id);
+								// We set uncheck to true, so that will not try to check values
+								$("#" + checkedItems[i].id).trigger('click', [true]);
+							}							
+						}
+					}				
+				}
+			})
 		},
-		click: function(obj) {
-			if (obj.type == 'check') {
-				/*
-				 * When user clicks on the option checkbox, current clicked element is unchecked and new element checked
-				 */
-				// TODO: Complete the checkbox click feature 				
+		disable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='option']").each(function() {
+					$(this).attr('disabled', true);
+				})				
 			}
 		},
-		disable: function() {			
-		},
-		enable: function() {			
+		enable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='option']").each(function() {
+					$(this).attr('disabled', false);
+				})				
+			}
 		},
 		unrender: function() {
+			for (var i=0; i<$(this).length; i++) {
+				$(this).empty();
+				$(this).removeAttr('data-xp-render');
+			}
 		}
         };		
         if ( methods[method] ) {
@@ -937,7 +989,7 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpListOption' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpOption' );
         }
 	};
 

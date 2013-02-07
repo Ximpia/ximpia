@@ -2221,6 +2221,10 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpListSelect('render', xpForm);
+	// option
+	$('#' + formId).find("[data-xp-type='option']").xpOption('render', xpForm);
+	// check
+	// check field
 	// text.autocomplete
 	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpFieldComplete('render', xpForm);
 	// basic.textarea
@@ -2228,7 +2232,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// list.field
 	$('#' + formId).find("input[data-xp-related='list.field']")
 			.filter("input[data-xp-type='field']")
-			.xpListField('bindKeyPress', xpForm);
+			.xpFieldList('bindKeyPress', xpForm);
 	// button
 	$("[data-xp-type='button']").xpButton('render');
 	// link
