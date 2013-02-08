@@ -303,7 +303,7 @@ class XBaseForm( forms.Form ):
 			except AttributeError:
 				pass
 			attrs['name'] = fieldName
-			attrs['value'] = oField.initial
+			attrs['value'] = oField.initial or ''
 			#logger.debug( 'field: %s' % (fieldName) )
 			#logger.debug( attrs )
 			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs

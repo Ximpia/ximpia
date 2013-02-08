@@ -6,13 +6,12 @@ body {
 	font-size: 62.5%;
 	/*font-family: sans-serif, Arial, Helvetica;*/
 	/*font-size: 16px;*/
-	/*font-size: 0.8em;*/
+	font-size: 0.7em;
 	background-color: #FFFFFF;
 	margin: 0;
 	padding: 0;
-	color: #000;
-	
-	line-height: 24px;
+	color: #000;	
+	/*line-height: 20px;*/
 	/*overflow: hidden;*/
 }
 
@@ -24,6 +23,7 @@ body {
 a {
 	/*color: #D50A09;*/
 	color: #0000CC;
+	font-size: 1.2em;
 }
 
 *:focus {
@@ -48,7 +48,7 @@ section:focus {
 }
 
 input[type='text'] {
-	width: 180px;
+	/*width: 180px;*/
 	border: 1px solid #ccc;
 }
 
@@ -204,7 +204,11 @@ div#Wrapper {
 	/*top: 43px;*/
 	/*top: 68px;*/
 	width: 1002px;
+}
+
+.sectionContent p {
 	font-size: 1.2em;
+	line-height: 16px;
 }
 
 #id_sect_loading {
@@ -388,6 +392,8 @@ div.PopMessage div.MsgTitle {
 	height: 40px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
+	line-height: 24px;
+	font-size: 1.2em;
 }
 
 div.PopMessage div.MsgText {
@@ -568,6 +574,10 @@ div.jqDockLabelNew {
 	z-index: 50;
 }
 
+.labelSep:after {
+	content:": ";
+}
+
 .ImgInfo:hover, .ImgInfo.sfhover {
 	cursor: pointer;
 }
@@ -583,7 +593,7 @@ div.jqDockLabelNew {
 /*   RESULT STYLE  */
 .jquery_passStrengthener {
     display: inline-block;
-    height:28px;
+    height:20px;
     width:150px !important;
     margin: 0 10px;
 }
@@ -594,7 +604,8 @@ div.jqDockLabelNew {
     white-space: nowrap;
     border:black 1px solid;
     width:100% !important;
-	font-size: 80%;
+	/*font-size: 80%;*/
+	font-size: 1.1em;
 }
 
 .jquery_passStrengthener span.score span {
@@ -754,6 +765,10 @@ img.Refresh {
 	background-color: #eeeeee;
 	width: 30px;
 	height: 30px;
+}
+
+label {
+	font-size: 1.2em;
 }
 
 img.Refresh:hover, img.Refresh.sfhover {
@@ -1079,6 +1094,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
     -moz-background-size: 3px 3px;
     -webkit-background-size: 3px 3px;
     background-size: 3px 3px;
+    font-size: 1.2em;
 }
 
 .button-hover
@@ -1146,6 +1162,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	-webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
 	/*box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);*/
 	box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 2px 2px 0 rgba(0,0,0,.3);
+	font-size: 1.1em !important;
 }
 
 .buttonIconSmall {
@@ -1160,7 +1177,8 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	font: bold 1.0em/1.3em Arial, Helvetica;
 	padding: 4px;
 	margin: 0;
-	border-top-right-radius: 10px; 
+	border-top-right-radius: 10px;
+	font-size: 1.1em; 
 }
 
 /* .buttonIcon-hover, .buttonIcon:hover */
@@ -1414,7 +1432,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	margin-left: auto; 
 	margin-right: auto;
 	visibility: hidden;
-	font-size: 1.5em; 
+	/*font-size: 1.5em;*/ 
 }
 
 .titleBar {
@@ -1437,6 +1455,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	visibility: hidden;
 	margin-left: auto;
 	margin-right: auto;
+	font-size: 1.2em;
 }
 
 /* Button Message Result */
@@ -1608,6 +1627,8 @@ legend {
 	font-weight: bold; 
 	/*box-shadow: #ccc 3px 3px 3px;*/
 	font-size: 80%;
+	line-height: 24px;
+	font-size: 1.2em;
 }
 
 .iconMenuBlock div {
@@ -1650,6 +1671,7 @@ legend {
 	margin-left: 5px;  
 	background-color: #333; 
 	border: 2px solid #444;
+	line-height: 24px;
 }
 
 .iconMenuCurrent {

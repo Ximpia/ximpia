@@ -1419,8 +1419,10 @@ ximpia.common.Form.appendAttrs = (function(idElement, attr, valueNew) {
 	value = valueNew;
 	if ( typeof valueOld != 'undefined') {
 		if (!exclude.hasOwnProperty(attr)) {
-			if (valueOld != valueNew) {
+			if (valueOld != valueNew && valueOld != '') {
 				value = valueOld + ' ' + valueNew;
+			} else if (valueOld != valueNew && valueOld == '') {
+				value = valueNew;
 			}
 		}
 	}
@@ -2215,6 +2217,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	ximpia.console.log('xpForm: ' + xpForm);
 	var formId = xpForm.split('.')[1];
 	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
+	$('body').xpHidden('addHidden', xpForm);
 	// container
 	$('#' + formId).find("[data-xp-type='container']").xpContainer('render', xpForm);
 	// basic.text
@@ -2229,11 +2232,9 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
 	// field check
 	$('#' + formId).find("[data-xp-type='field.check']").xpFieldCheck('render', xpForm);
-	// text.autocomplete
-	$('#' + formId).find("[data-xp-type='field.autocomplete']").xpFieldComplete('render', xpForm);
 	// basic.textarea
 	$('#' + formId).find("[data-xp-type='textarea']").xpTextArea('render', xpForm);
-	// list.field
+	// list.field ?????
 	$('#' + formId).find("input[data-xp-related='list.field']")
 			.filter("input[data-xp-type='field']")
 			.xpFieldList('bindKeyPress', xpForm);
@@ -2244,7 +2245,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.url']").xpLink('render');
 	$("[data-xp-type='link.action']").xpLink('render');
 	$("[data-xp-type='link.view']").xpLink('render');
-	ximpia.common.PageAjax.doShowPasswordStrength('id_ximpiaId', 'id_password');
+	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
 	// TODO: Include settings into general javascript settings class
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',
