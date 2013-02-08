@@ -724,23 +724,6 @@ class _BaseTemporalField ( Field ):
 	** Input Formats **
 	
 	A list of formats used to attempt to convert a string to a valid datetime.date object.
-
-	If no input_formats argument is provided, the default input formats are:
-
-	'%Y-%m-%d',       # '2006-10-25'
-	'%m/%d/%Y',       # '10/25/2006'
-	'%m/%d/%y',       # '10/25/06'
-	
-	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
-
-	'%b %d %Y',       # 'Oct 25 2006'
-	'%b %d, %Y',      # 'Oct 25, 2006'
-	'%d %b %Y',       # '25 Oct 2006'
-	'%d %b, %Y',      # '25 Oct, 2006'
-	'%B %d %Y',       # 'October 25 2006'
-	'%B %d, %Y',      # 'October 25, 2006'
-	'%d %B %Y',       # '25 October 2006'
-	'%d %B, %Y',      # '25 October, 2006'
 	
 	** Required Arguments **
 
@@ -775,6 +758,7 @@ class _BaseTemporalField ( Field ):
 									initial=initial, helpText=helpText, jsVal=jsVal)
 		if inputFormats is not None:
 			self.inputFormats = inputFormats
+		self.attrs['dateTimeFormat'] = self.dateTimeFormat
 
 	def to_python(self, value):
 		# Try to coerce the value to unicode.
@@ -807,10 +791,7 @@ class _BaseTemporalField ( Field ):
 class DateField ( _BaseTemporalField ):
 	
 	"""
-	
-	
-	Example:	
-	
+	Example:		
 	
 	where _dbModel is a form class attribute with the model instance.
 	
@@ -863,6 +844,7 @@ class DateField ( _BaseTemporalField ):
 	"""
 
 	inputFormats = formats.get_format_lazy('DATE_INPUT_FORMATS')
+	dateTimeFormat = 'date'
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date.'),
 	}
@@ -886,10 +868,7 @@ class DateField ( _BaseTemporalField ):
 class DateTimeField ( _BaseTemporalField ):
 	
 	"""
-	
-	
 	Example:	
-	
 	
 	where _dbModel is a form class attribute with the model instance.
 	
@@ -899,21 +878,16 @@ class DateTimeField ( _BaseTemporalField ):
 
 	If no input_formats argument is provided, the default input formats are:
 
-	'%Y-%m-%d',       # '2006-10-25'
-	'%m/%d/%Y',       # '10/25/2006'
-	'%m/%d/%y',       # '10/25/06'
-	
-	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
-
-	'%b %d %Y',       # 'Oct 25 2006'
-	'%b %d, %Y',      # 'Oct 25, 2006'
-	'%d %b %Y',       # '25 Oct 2006'
-	'%d %b, %Y',      # '25 Oct, 2006'
-	'%B %d %Y',       # 'October 25 2006'
-	'%B %d, %Y',      # 'October 25, 2006'
-	'%d %B %Y',       # '25 October 2006'
-	'%d %B, %Y',      # '25 October, 2006'
-	
+	'%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
+	'%Y-%m-%d %H:%M',        # '2006-10-25 14:30'
+	'%Y-%m-%d',              # '2006-10-25'
+	'%m/%d/%Y %H:%M:%S',     # '10/25/2006 14:30:59'
+	'%m/%d/%Y %H:%M',        # '10/25/2006 14:30'
+	'%m/%d/%Y',              # '10/25/2006'
+	'%m/%d/%y %H:%M:%S',     # '10/25/06 14:30:59'
+	'%m/%d/%y %H:%M',        # '10/25/06 14:30'
+	'%m/%d/%y',              # '10/25/06'
+		
 	** Required Arguments **
 
 	* ``instance``:object : Model instance
@@ -945,6 +919,7 @@ class DateTimeField ( _BaseTemporalField ):
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date/time.'),
 	}
+	dateTimeFormat = 'datetime'
 
 	def prepare_value(self, value):
 		if isinstance(value, datetime.datetime):
@@ -980,33 +955,18 @@ class DateTimeField ( _BaseTemporalField ):
 class TimeField ( _BaseTemporalField ):
 	
 	"""
-	
-	
-	Example:	
-	
+	Example:
 	
 	where _dbModel is a form class attribute with the model instance.
 	
 	** Input Formats **
 	
 	A list of formats used to attempt to convert a string to a valid datetime.date object.
-
+	
 	If no input_formats argument is provided, the default input formats are:
 
-	'%Y-%m-%d',       # '2006-10-25'
-	'%m/%d/%Y',       # '10/25/2006'
-	'%m/%d/%y',       # '10/25/06'
-	
-	Additionally, if you specify USE_L10N=False in your settings, the following will also be included in the default input formats:
-
-	'%b %d %Y',       # 'Oct 25 2006'
-	'%b %d, %Y',      # 'Oct 25, 2006'
-	'%d %b %Y',       # '25 Oct 2006'
-	'%d %b, %Y',      # '25 Oct, 2006'
-	'%B %d %Y',       # 'October 25 2006'
-	'%B %d, %Y',      # 'October 25, 2006'
-	'%d %B %Y',       # '25 October 2006'
-	'%d %B, %Y',      # '25 October, 2006'
+	'%H:%M:%S',     # '14:30:59'
+	'%H:%M',        # '14:30'
 	
 	** Required Arguments **
 
@@ -1036,6 +996,7 @@ class TimeField ( _BaseTemporalField ):
 	"""
 	
 	inputFormats = formats.get_format_lazy('TIME_INPUT_FORMATS')
+	dateTimeFormat = 'time'
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid time.')
 	}

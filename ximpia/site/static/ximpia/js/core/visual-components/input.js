@@ -100,8 +100,8 @@
 						if (attrs.info == true) {
 							$("label[for=\"" + idInput + "\"]").addClass("info");
 							// help_text
-							if (dataAttrs.hasOwnProperty('help_text')) {
-								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['help_text']);
+							if (dataAttrs.hasOwnProperty('helpText')) {
+								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
 							}
 						}
 					}
@@ -434,20 +434,39 @@
 })(jQuery);
 
 /*
- * Ximpia Visual Component Input: Text, Password, etc...
+ * Date and Time field representation. This component renders form fields Date, DateTime and Time.
+ * 
+ * When field type is Date, a date tooltip will popup to select date.
+ * 
+ * When field type is Time, a time tooltip will popup to select time with two selection bars for hour and minute.
+ * 
+ * When field type is DateTime, a date with time tooltip will show up with calendar and time bars.
  *
- * TODO: Include the html for component
+ * <div id="id_updateDate_comp" data-xp-type="field.datetime" data-xp="{}"> </div>
+ * 
+ * We need to render the input field like Field, then apply the correct plugin depending on format: date, time or datetime
+ * 
+ * ** Attributes **
+ * 
+ * * ``info``
+ * 
+ * ** Methods **
  * 
  */
 
 (function($) {	
 
-	$.fn.xpFieldDate = function( method ) {
-		
-	// Include documentation from wiki here  
+	$.fn.xpFieldDateTime = function( method ) {
 
         // Settings		
         var settings = {
+        	excudeListInput: ['type','id','element','help_text','label','left'],
+        	excudeListInputSug: ['type','id','element','help_text','label','left'],
+        	excludeListLabel: ['type','id','element'],
+        	excludeList: ['info','type','left'],
+        	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete'],
+        	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype'],
+        	reRender: false
         };
 		
         var methods = {
@@ -459,6 +478,88 @@
 	                        	$.extend( settings, options );
                     		}					
                 	});
+		},
+		render : function(xpForm) {
+			ximpia.console.log('xpFieldDateTime.render ...');
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			ximpia.console.log(data);
+			for (var i=0; i<$(this).length; i++) {
+				ximpia.console.log($(this)[i]);
+				var element = $(this)[i]; 
+				var idInput = $(element).attr('id').split('_comp')[0];
+				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
+				if (doRender == true) {
+					ximpia.console.log('xpFieldDateTime.render :: id: ' + $(element).attr('id'));
+					var nameInput = idInput.split('id_')[1];
+					ximpia.console.log('xpFieldDateTime.render :: nameInput: ' + nameInput);
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					var relatedId = $(element).attr('data-xp-related');
+					var elementType = $(element).attr('data-xp-type');
+					var dataAttrs = data[nameInput];
+					var type = 'text';
+					if (attrs.hasOwnProperty('type')) {
+						type = attrs.type;
+					}
+					// id, name, type
+					var htmlContent = "";
+					ximpia.console.log(dataAttrs);
+					var myValue = dataAttrs.value;
+					if (attrs.hasOwnProperty('left')) {
+						htmlContent = "<div style=\"width: " + attrs['left'] + "px; float: left\"><label for=\"" + idInput + "\"></label>:</div> <input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";
+					} else {
+						htmlContent = "<label for=\"" + idInput + "\"></label><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";
+					}
+					$(element).html(htmlContent);					
+					// Input
+					// Insert attributes to form element from server and metadata of visual component
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: settings.djangoAttrs,
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: settings.excludeList,
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idInput
+					});
+					if (typeof relatedId != 'undefined') {
+						$("#" + idInput).attr('data-xp-related', relatedId);
+					}
+					$("#" + idInput).attr('data-xp-type', 'field.datetime');
+					// Label
+					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label')) {
+						if (attrs.hasOwnProperty('label')) {
+							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
+						} else {
+							$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+						}
+						if (attrs.info == true) {
+							$("label[for=\"" + idInput + "\"]").addClass("info");
+							// help_text
+							if (dataAttrs.hasOwnProperty('helpText')) {
+								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+							}
+						}
+					}
+					dateTimeFormat = dataAttrs['dateTimeFormat'];
+					if (dateTimeFormat == 'date') {			
+						$('#' + idInput).datepicker();
+					} else if (dateTimeFormat == 'datetime') {
+						$('#' + idInput).datetimepicker();
+					} else if (dateTimeFormat == 'time') {
+						$('#' + idInput).timepicker();
+					}
+					$(element).attr('data-xp-render', JSON.stringify(true));
+				}
+			}
+		},
+		disable : function() {
+			
+		},
+		enable : function() {
+			
+		},
+		unrender : function () {
+			
 		}
         };		
         if ( methods[method] ) {
@@ -466,9 +567,8 @@
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpField' );
-        }    
-		
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpFieldDateTime' );
+        }
 	};
 
 })(jQuery);
