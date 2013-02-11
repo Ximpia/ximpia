@@ -4,14 +4,280 @@
  * 
  * ** Attributes **
  * 
- * ** Attributes for Autocompletion **
+ * ** Attributes for Autocompletion Choices (data-xp-complete) **
  *
- * * ``hasAutocompletion``
  * * ``choicesId``
- * * ``app``
+ * * ``choiceDisplay`` [optional] default:value : name|value. Display either name or value from choices.
+ * * ``maxHeight`` [optional]
+ * * ``minCharacters`` [optional]
+ * 
+ * ** Attributes for Autocompletion Server (data-xp-complete) **
+ *
+ * * ``app`` [optional]
  * * ``dbClass``
- * * ``maxHeight``
- * * ``minCharacters`` 
+ * * ``searchField`` :String : Search field to match for text from input field.
+ * * ``maxHeight`` [optional]
+ * * ``minCharacters`` [optional]
+ * * ``params`` [optional] :Object : Parameters to filter completion list.
+ * * ``fieldValue`` [optional] :String : Field to show results. In case not defined, will use the model string representation.
+ * * ``extraFields`` [optional] :List : Fields to show in extra Object
+ * 
+ * ** Methods **
+ * 
+ * * ``render``
+ * * ``complete``
+ * * ``enable``
+ * * ``disable``
+ * * ``unrender``
+ * 
+ * ** Interfaces **
+ * 
+ * IComplete, IInputField
+ * 
+ */
+
+(function($) {	
+
+	$.fn.xpField = function( method ) {
+		
+	// Include documentation from wiki here  
+
+        // Settings		
+        var settings = {
+        	excudeListInput: ['type','id','element','help_text','label','left'],
+        	excudeListInputSug: ['type','id','element','help_text','label','left'],
+        	excludeListLabel: ['type','id','element'],
+        	excludeList: ['info','type','left'],
+        	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete','size'],
+        	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype'],
+        	reRender: false,
+        	labelPosition: 'left',
+        	choiceDisplay: 'value'
+        };
+		
+        var methods = {
+		init : function( options ) { 
+                	return this.each(function() {        
+                    		// If options exist, lets merge them
+                    		// with our default settings
+                    		if ( options ) { 
+	                        	$.extend( settings, options );
+                    		}					
+                	});
+		},
+		render: function(xpForm) {
+			ximpia.console.log('input :: renderField...');
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			ximpia.console.log(data);
+			for (var i=0; i<$(this).length; i++) {
+				ximpia.console.log($(this)[i]);
+				var element = $(this)[i]; 
+				var idInput = $(element).attr('id').split('_comp')[0];
+				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
+				if (doRender == true) {
+					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
+					var nameInput = idInput.split('id_')[1];
+					ximpia.console.log('nameInput: ' + nameInput);
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					//ximpia.console.log('input attrs: ' + idInput);
+					//ximpia.console.log(attrs);
+					var relatedId = $(element).attr('data-xp-related');
+					var elementType = $(element).attr('data-xp-type');
+					var dataAttrs = data[nameInput];
+					var type = 'text';
+					if (attrs.hasOwnProperty('type')) {
+						type = attrs.type;
+					}
+					if (!attrs.hasOwnProperty('labelPosition')) {
+						attrs['labelPosition'] = settings.labelPosition;
+					}
+					// id, name, type
+					var htmlContent = "";
+					ximpia.console.log(dataAttrs);
+					var myValue = dataAttrs.value;
+					if (attrs['labelPosition'] == 'top') {
+						htmlContent = "<label for=\"" + idInput + "\"></label><br/><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
+							nameInput + "\" value=\"" + myValue + "\" />";						
+					} else {
+						htmlContent = "<label for=\"" + idInput + "\"></label><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
+							nameInput + "\" value=\"" + myValue + "\" />";					
+					}
+					$(element).html(htmlContent);
+					$(element).attr('data-xp-render', JSON.stringify(true));
+					// Input
+					// Insert attributes to form element from server and metadata of visual component
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: settings.djangoAttrs,
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: settings.excludeList,
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idInput
+					});
+					if (typeof relatedId != 'undefined') {
+						$("#" + idInput).attr('data-xp-related', relatedId);
+					}
+					if (typeof elementType != 'undefined') {
+						$("#" + idInput).attr('data-xp-type', elementType);
+					}
+					//ximpia.console.log($("#" + idInput));
+					// Label
+					//ximpia.console.log('dataAttrs');
+					//ximpia.console.log(dataAttrs);
+					if (!attrs.hasOwnProperty('hasLabel')) {
+						attrs['hasLabel'] = true;
+					}
+					if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
+						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
+					}
+					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
+						if (attrs.hasOwnProperty('label')) {
+							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
+						} else {
+							$("label[for=\"" + idInput + "\"]").text(dataAttrs['label']);
+						}
+						if (attrs.info == true) {
+							$("label[for=\"" + idInput + "\"]").addClass("info");
+							// help_text
+							if (dataAttrs.hasOwnProperty('helpText')) {
+								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+							}
+						}
+					}
+					// Autocompletion
+					$(element).xpField('complete', xpForm);
+				}
+			}
+		},
+		complete: function() {
+        	// Autocompletion
+			for (var i=0; i<$(this).length; i++) {
+				ximpia.console.log($(this)[i]);
+				var element = $(this)[i];         	
+				$.metadata.setType("attr", "data-xp-complete");
+				var attrs = $(element).metadata();
+				ximpia.console.log('xpField.complete ::  attrs...');
+				ximpia.console.log(attrs);
+				var hasComplete = true;
+				var idInput = $(element).attr('id').split('_comp')[0];
+				ximpia.console.log('xpField.complete :: idInput: ' + idInput);
+				if (typeof(attrs) == 'undefined') {
+					hasComplete = false;
+				}
+				if (hasComplete == true) {
+					ximpia.console.log('xpField.complete ::  Autocomplete...');
+					// maxHeight
+					var maxHeight = ximpia.settings.COMPLETE_MAX_HEIGHT;
+					if (attrs.hasOwnProperty('maxHeight')) {
+						maxHeight = attrs['maxHeight'];
+					}
+					// minCharacters
+					var minCharacters = ximpia.settings.COMPLETE_MIN_CHARACTERS;
+					if (attrs.hasOwnProperty('minCharacters')) {
+						minCharacters = attrs['minCharacters'];
+					}
+					if (attrs.hasOwnProperty('choicesId')) {
+						// From choices...
+						ximpia.console.log('xpField.complete :: Autocomplete from choices...');
+						var choicesId = attrs['choicesId'];
+						var choices = JSON.parse($("input[name='choices']").attr('value'))[choicesId];
+						var sugData = {};
+						if (typeof(choices) != 'undefined') {
+							sugData = []
+						}
+						if (!attrs.hasOwnProperty('choiceDisplay')) {
+							attrs['choiceDisplay'] = settings.choiceDisplay;
+						}
+						for (choiceIndex in choices) {
+							sugData[choiceIndex] = {}
+							sugData[choiceIndex]['id'] = choices[choiceIndex][0];
+							if (attrs['choiceDisplay'] == 'value') {
+								sugData[choiceIndex]['text'] = choices[choiceIndex][1];
+							} else {
+								sugData[choiceIndex]['text'] = choices[choiceIndex][0];
+							}
+						}
+						ximpia.console.log('xpField.complete :: Autocomplete :: sugData...');
+						ximpia.console.log(sugData);
+						$("#" + idInput).jsonSuggest({	data: sugData, 
+														maxHeight: maxHeight, 
+														minCharacters: minCharacters
+														});
+					} else if(attrs.hasOwnProperty('dbClass')) {
+						// From server...
+						ximpia.console.log('xpField.complete :: Autocomplete from server...');
+						var app = ximpia.common.Browser.getApp();
+						if (attrs.hasOwnProperty('app')) {
+							app = attrs['app']
+						}
+						var params = {};
+						if (attrs.hasOwnProperty('params')) {
+							params = eval("(" + attrs['params'] + ")");
+						}
+						var dbClass = attrs['dbClass'];
+						url = '/jxSuggestList?app=' + app + '&dbClass=' + dbClass + '&searchField=' + attrs['searchField'];
+						if (Object.keys(params).length != 0) {
+							url += "&params=" + JSON.stringify(params);
+						}
+						if (attrs.hasOwnProperty('fieldValue')) {
+							url += "&fieldValue=" + attrs['fieldValue'];
+						}
+						if (attrs.hasOwnProperty('extraFields')) {
+							url += "&extraFields=" + JSON.stringify(attrs['extraFields'])
+						}
+						$("#" + idInput).jsonSuggest({	url: url, 
+														maxHeight: maxHeight, 
+														minCharacters: minCharacters
+													});
+					}						
+				}
+			}
+		},
+		disable: function() {
+			/*var idInput = $(this).attr('id').split('_comp')[0];
+			$("#" + idInput).attr('disable', 'disable');*/
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field']").each(function() {
+					$(this).attr('disabled', true);
+				})				
+			}
+		},
+		enable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field']").each(function() {
+					$(this).attr('disabled', false);
+				})				
+			}
+		},
+		unrender: function() {
+			for (var i=0; i<$(this).length; i++) {
+				$(this).empty();
+				$(this).removeAttr('data-xp-render');
+			}
+		}
+		};		
+        if ( methods[method] ) {
+            return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+        } else if ( typeof method === 'object' || ! method ) {
+            return methods.init.apply( this, arguments );
+        } else {
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpField' );
+        }    
+		
+	};
+
+})(jQuery);
+
+
+/*
+ * Ximpia Visual Component Input: Text, Password, Decimal, etc... with autocompletion support
+ *
+ * 
+ * ** Attributes **
+ * 
  * 
  * ** Methods **
  * 
@@ -19,7 +285,7 @@
 
 (function($) {	
 
-	$.fn.xpField = function( method ) {
+	$.fn.xpFieldNumber = function( method ) {
 		
 	// Include documentation from wiki here  
 
@@ -126,89 +392,66 @@
 							}
 						}
 					}
-					// Autocompletion
-					//TODO: Place in a private method
-					if (!attrs.hasOwnProperty('hasAutocompletion')) {
-						attrs['hasAutocompletion'] = settings.hasAutocompletion;
+					// spinner for numbers
+					var spinObj = {};
+					if (dataAttrs.hasOwnProperty('maxValue')) {
+						spinObj['max'] = dataAttrs['maxValue'];
 					}
-					if (attrs['hasAutocompletion'] == true) {
-						ximpia.console.log('xpField.render :: Autocomplete...');
-						// hasAutocompletion: true
-						// choicesId: 'country' [optional]						
-						
-						// hasAutocompletion: true
-						// app: 'ximpia.site' or 'ximpia.core' (By default we get this from session storage)
-						// dbClass: 'CategoryDAO'
-						
-						// maxHeight
-						var maxHeight = ximpia.settings.COMPLETE_MAX_HEIGHT;
-						if (attrs.hasOwnProperty('maxHeight')) {
-							maxHeight = attrs['maxHeight'];
-						}
-						// minCharacters
-						var minCharacters = ximpia.settings.COMPLETE_MIN_CHARACTERS;
-						if (attrs.hasOwnProperty('minCharacters')) {
-							minCharacters = attrs['minCharacters'];
-						}
-						if (attrs.hasOwnProperty('choicesId')) {
-							// From choices...
-							ximpia.console.log('xpField.render :: Autocomplete from choices...');
-							var choicesId = attrs['choicesId'];
-							ximpia.console.log('xpField.render :: Autocomplete :: id_choices: ' + $("#id_choices").attr('value'));
-							var choices = JSON.parse($("input[name='choices']").attr('value'))[choicesId];
-							var sugData = {};
-							if (typeof(choices) != 'undefined') {
-								sugData = []
-							}
-							for (choiceIndex in choices) {
-								sugData[choiceIndex] = {}
-								sugData[choiceIndex]['id'] = choices[choiceIndex][0];
-								sugData[choiceIndex]['text'] = choices[choiceIndex][1];
-							}
-							ximpia.console.log('xpField.render :: Autocomplete :: sugData...');
-							ximpia.console.log(sugData);
-							minCharacters = 1;
-							$("#" + idInput).jsonSuggest({	data: sugData, 
-															maxHeight: maxHeight, 
-															minCharacters: minCharacters
-															});
-						} else if(attrs.hasOwnProperty('dbClass')) {
-							// From server...
-							ximpia.console.log('xpField.render :: Autocomplete from server...');
-							var app = ximpia.common.Browser.getApp();
-							if (attrs.hasOwnProperty('app')) {
-								app = attrs['app']
-							}
-							var dbClass = attrs['dbClass'];
-							$("#" + idInput).jsonSuggest({	url: '/jxSuggestList?app=' + app + '&dbClass=' + dbClass, 
-															maxHeight: sugAttrs.maxHeight, 
-															minCharacters: sugAttrs.minCharacters
-														});
-						}						
+					if (dataAttrs.hasOwnProperty('minValue')) {
+						spinObj['min'] = dataAttrs['minValue'];
+					}
+					if (dataAttrs['fieldType'] == 'IntegerField') {
+						spinObj.step = 1;
+						spinObj.numberFormat = 'n';
+						$('#' + idInput).spinner(spinObj);
+					} else if (dataAttrs['fieldType'] == 'FloatField') {
+						spinObj.step = 1;
+						spinObj.numberFormat = 'n';
+						$('#' + idInput).spinner(spinObj);
+					} else if (dataAttrs['fieldType'] == 'DecimalField' && dataAttrs.hasOwnProperty('decimalPlaces')) {
+						spinObj.numberFormat = 'n';
+						spinObj.step = 1/(dataAttrs['decimalPlaces']*10);
+						$('#' + idInput).spinner(spinObj);
 					}
 				}
 			}
 		},
 		disable: function() {
-			var idInput = $(this).attr('id').split('_comp')[0];
-			$("#" + idInput).attr('disable', 'disable');
+			/*var idInput = $(this).attr('id').split('_comp')[0];
+			$("#" + idInput).attr('disable', 'disable');*/
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field']").each(function() {
+					$(this).attr('disabled', true);
+				})				
+			}
 		},
 		enable: function() {
+			for (var i=0; i<$(this).length; i++) {
+				// Get all option items and disable them
+				$(this).find("input[data-xp-type='field']").each(function() {
+					$(this).attr('disabled', false);
+				})				
+			}
+		},
+		unrender: function() {
+			for (var i=0; i<$(this).length; i++) {
+				$(this).empty();
+				$(this).removeAttr('data-xp-render');
+			}
 		}
-        };
-		
+		};		
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {
             return methods.init.apply( this, arguments );
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpField' );
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpFieldNumber' );
         }    
 		
 	};
 
 })(jQuery);
-
 
 
 /*
@@ -521,12 +764,11 @@
 							}
 						}
 					}
-					dateTimeFormat = dataAttrs['dateTimeFormat'];
-					if (dateTimeFormat == 'date') {			
+					if (dataAttrs['fieldType'] == 'DateField') {			
 						$('#' + idInput).datepicker();
-					} else if (dateTimeFormat == 'datetime') {
+					} else if (dataAttrs['fieldType'] == 'DateTimeField') {
 						$('#' + idInput).datetimepicker();
-					} else if (dateTimeFormat == 'time') {
+					} else if (dataAttrs['fieldType'] == 'TimeField') {
 						$('#' + idInput).timepicker();
 					}
 					$(element).attr('data-xp-render', JSON.stringify(true));
@@ -536,7 +778,7 @@
 		disable: function() {
 			for (var i=0; i<$(this).length; i++) {
 				// Get all option items and disable them
-				$(this).find("input[data-xp-type='field.dte']").each(function() {
+				$(this).find("input[data-xp-type='field.date']").each(function() {
 					$(this).attr('disabled', true);
 				})				
 			}
@@ -554,7 +796,8 @@
 				$(this).empty();
 				$(this).removeAttr('data-xp-render');
 			}
-		}        };		
+		}
+		};		
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
         } else if ( typeof method === 'object' || ! method ) {

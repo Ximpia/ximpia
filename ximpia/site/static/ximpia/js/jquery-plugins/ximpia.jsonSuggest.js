@@ -90,7 +90,7 @@
 				maxHeight: 350,
 				highlightMatches: true,
 				onSelect: undefined,
-				width: undefined
+				width: 'auto'
 			},
 			getJSONTimeout;
 		settings = $.extend(defaults, settings);  
@@ -111,7 +111,6 @@
 				var escapePatt = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
 				return txt.replace(escapePatt, '\\$1');
 			}
-			
 			var obj = $(this),
 				wildCardPatt = new RegExp(regexEscape(settings.wildCard || ''),'g'),
 				results = $('<ul />'),
@@ -179,7 +178,7 @@
 					
 					$(item).addClass('ui-menu-item').
 						addClass((bOddRow) ? 'odd' : 'even').
-						attr('role', 'menuitem').
+						attr('data-suggest-role', 'menuitem').
 						click((function(n) { return function() {
 							selectResultItem(resultObjects[n]);						
 						};})(i)).
@@ -312,7 +311,7 @@
 			// that will initiate the search and placing the element on the page
 			// that will show the results.
 			$(results).addClass('jsonSuggest ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all').
-				attr('role', 'listbox').
+				attr('data-suggest-role', 'listbox').
 				css({
 					'top': (obj.position().top + obj.outerHeight()) + 'px',
 					'left': obj.position().left + 'px',

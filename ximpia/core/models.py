@@ -1571,7 +1571,8 @@ def context(f):
 		# lang
 		#ArgsDict['lang'] = lang
 		# Context
-		ctx = ContextObj(request.user, lang, contextDict, request.session, request.COOKIES, request.META)
+		#ctx = ContextObj(request.user, lang, contextDict, request.session, request.COOKIES, request.META)
+		ctx = Context()
 		# userSocial and socialChannel
 		if request.REQUEST.has_key('userChannel') and request.user.is_authenticated():
 			ctx.userChannel = request.REQUEST['userChannel']			

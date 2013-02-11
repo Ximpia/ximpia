@@ -532,7 +532,7 @@ ximpia.common.Window.clickMsgOk = (function(evt, bFadeBackground, functionName) 
  */
 ximpia.common.Window.createPopHtml = (function() {
 	if (!$("#id_pops").length) {
-		var htmlPage = "<div id=\"id_pops\" class=\"Pops\" ><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -40px\"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div>";
+		var htmlPage = "<div id=\"id_pops\" class=\"Pops\" ><div id=\"PopMessage\" class=\"PopMessage\"><div id=\"PopMsgWrapper\"><div class=\"MsgTitle\"></div><div style=\"float: right ; width: 21px; margin-top: -41px; margin-right: -3px\"><a id=\"id_btX\" href=\"#\" class=\"buttonIcon btX\" >X</a></div><div class=\"MsgText\" style=\"clear: both\"></div><div class=\"MsgButtons\"></div></div><br class=\"clearfloat\" /></div><!--[if lte IE 6.5]><iframe></iframe><![endif]--></div>";
 		$("body").append(htmlPage);
 	}
 });
@@ -2246,11 +2246,11 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.action']").xpLink('render');
 	$("[data-xp-type='link.view']").xpLink('render');
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
-	// TODO: Include settings into general javascript settings class
+	// TODO: analyse the onSelect function
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',
-		maxHeight : 200,
-		minCharacters : 3,
+		maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
+		minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
 		onSelect : ximpia.common.Search.doClick
 	});
 }

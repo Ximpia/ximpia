@@ -117,7 +117,7 @@ class CommonDAO(object):
 				dbName = random.choice(dbListMaster)
 		else:
 			dbName = self._ctx.dbName
-		logger.debug('CommonDAO :: dbName: ' + dbName + ' view: ' + self._ctx.viewNameSource )
+		logger.debug('CommonDAO :: dbName: %s view: %s' % (dbName, self._ctx.viewNameSource) )
 		return dbName
 	
 	def getMap(self, idList):
@@ -182,12 +182,12 @@ class CommonDAO(object):
 	
 	def search(self, *qsTuple, **qsArgs):
 		"""Search model using filter. Support for related objects as FK to model"""
-		try:
-			dbObj = self._processRelated()
-			filterList = dbObj.using(self._resolveDbName()).filter(*qsTuple, **qsArgs)
-		except Exception as e:
+		#try:
+		dbObj = self._processRelated()
+		filterList = dbObj.using(self._resolveDbName()).filter(*qsTuple, **qsArgs)
+		"""except Exception as e:
 			raise XpMsgException(e, _('Error in search operation. qsTuple: ') + str(qsTuple) + ' . Args: ' + str(qsArgs) + _(' in model ') + str(self._model), 
-								origin='data')
+								origin='data')"""
 		return filterList
 	
 	def create(self, **qsArgs):

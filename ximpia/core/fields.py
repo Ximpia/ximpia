@@ -403,6 +403,7 @@ class IPAddressField(Field):
 	* ``helpText``:str
 	
 	"""
+	
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid IPv4 address.'),
 	}
@@ -533,6 +534,14 @@ class DecimalField ( Field ):
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
 			self.validators.append(django.core.validators.MinValueValidator(minValue))
+		if maxValue is not None:
+			self.attrs['maxValue'] = maxValue
+		if minValue is not None:
+			self.attrs['minValue'] = minValue
+		if maxDigits is not None:
+			self.attrs['maxDigits'] = maxDigits
+		if decimalPlaces is not None:
+			self.attrs['decimalPlaces'] = decimalPlaces
 
 	def to_python(self, value):
 		"""
@@ -635,6 +644,10 @@ class IntegerField ( Field ):
 			self.validators.append(django.core.validators.MaxValueValidator(maxValue))
 		if minValue is not None:
 			self.validators.append(django.core.validators.MinValueValidator(minValue))
+		if maxValue is not None:
+			self.attrs['maxValue'] = maxValue
+		if minValue is not None:
+			self.attrs['minValue'] = minValue
 
 	def to_python(self, value):
 		"""
@@ -758,7 +771,6 @@ class _BaseTemporalField ( Field ):
 									initial=initial, helpText=helpText, jsVal=jsVal)
 		if inputFormats is not None:
 			self.inputFormats = inputFormats
-		self.attrs['dateTimeFormat'] = self.dateTimeFormat
 
 	def to_python(self, value):
 		# Try to coerce the value to unicode.
@@ -844,7 +856,6 @@ class DateField ( _BaseTemporalField ):
 	"""
 
 	inputFormats = formats.get_format_lazy('DATE_INPUT_FORMATS')
-	dateTimeFormat = 'date'
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date.'),
 	}
@@ -915,11 +926,11 @@ class DateTimeField ( _BaseTemporalField ):
 	
 	"""
 
+	fieldType = 'DateTimeField'
 	inputFormats = formats.get_format_lazy('DATETIME_INPUT_FORMATS')
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date/time.'),
 	}
-	dateTimeFormat = 'datetime'
 
 	def prepare_value(self, value):
 		if isinstance(value, datetime.datetime):
@@ -1027,6 +1038,7 @@ class HiddenField( Field ):
 	
 	* ``initial``:str : Initial value
 	"""
+	
 	def __init__(self, initial=None):
 		initial = initial or ''
 		super(HiddenField, self).__init__(None, '', initial=initial)

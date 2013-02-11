@@ -293,6 +293,8 @@ class XBaseForm( forms.Form ):
 		for fieldName in fieldsDict:
 			oField = fieldsDict[fieldName]
 			attrs = oField.attrs
+			fieldTypeFields = str(type(oField)).split('.')
+			attrs['fieldType'] = fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
 			"""try:
 				attrs['type'] = oField.widget.input_type
 			except AttributeError:

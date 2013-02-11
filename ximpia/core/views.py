@@ -190,24 +190,48 @@ def jxJSON(request, **ArgsDict):
 	return HttpResponse(response)
 
 @context
-def jxSuggestList(request, **ArgsDict):
+def jxSuggestList(request, **args):
 	"""Suggest search list"""
 	# init
-	ctx = ArgsDict['ctx']
+	ctx = args['ctx']
 	# Do
 	resultList = []
 	if request.REQUEST.has_key('dbClass'):
 		dbClass = request.REQUEST['dbClass'];
-		params = json.loads(request.REQUEST['params']);
-		params[params['text']] = request.REQUEST['search'];
-		del params['text']
-		obj = eval(dbClass)(ctx) #@UnusedVariable
-		fields = eval('obj.filter')(*[], **params)
+		app = request.REQUEST['app']
+		logger.debug('jxSuggestList :: search: %s' % (request.REQUEST['search']) )
+		logger.debug('jxSuggestList :: path dbClass: %s' % (app + '.data.' + dbClass) )
+		cls = getClass( app + '.data.' + dbClass)
+		obj = cls(args['ctx']) #@UnusedVariable
+		params = {}
+		if request.REQUEST.has_key('params'):
+			params = json.loads(request.REQUEST['params']);
+		searchField = request.REQUEST['searchField']
+		params[searchField + '__istartswith'] = request.REQUEST['search']
+		logger.debug('jxSuggestList :: params: %s' % (params) )
+		fields = eval('obj.search')(**params)
+		logger.debug('jxSuggestList :: fields: %s' % (fields) )
+		fieldValue = None
+		if request.REQUEST.has_key('fieldValue'):
+			fieldValue = request.REQUEST['fieldValue']
+		extraFields = None
+		if request.REQUEST.has_key('extraFields'):
+			extraFields = json.loads(request.REQUEST['extraFields'])
+			logger.debug('jxSuggestList :: extrafields: %s' % (extraFields) )
 		for entity in fields:
 			dd = {}
 			dd['id'] = entity.id
-			dd['text'] = entity.getText()
+			if fieldValue is None:
+				dd['text'] = str(entity)
+			else:
+				dd['text'] = eval('entity.' + fieldValue)
+			if extraFields is not None:
+				extraDict = {}
+				for extraField in extraFields:
+					extraDict[extraField] = eval('entity.' + extraField)
+				dd['extra'] = extraDict
 			resultList.append(dd) 
+	logger.debug('jxSuggestList :: resultList: %s' % (resultList) )
 	return HttpResponse(json.dumps(resultList))
 
 @context
