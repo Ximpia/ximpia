@@ -122,6 +122,19 @@ class Field( DjField ):
 			self.instanceName = instanceName
 			self.instanceFieldName = instanceFieldName
 			self.instance = instance
+	def _getModelField(self):
+		"""
+		Get field from model instance
+		"""
+		modelField = eval("self.instance.__class__._meta.get_field_by_name('" + self.instanceFieldName + "')[0]")
+		return modelField
+	def _getModelFieldType(self):
+		"""
+		Get field model type
+		"""
+		modelField = self._getModelField()
+		fieldTypeFields = str(type(modelField)).split('.')
+		return fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
 	def _doInstance(self, initial, initValue):
 		"""
 		Perform instance logic with basic fields, foreign key fields and many to many fields
@@ -536,12 +549,28 @@ class DecimalField ( Field ):
 			self.validators.append(django.core.validators.MinValueValidator(minValue))
 		if maxValue is not None:
 			self.attrs['maxValue'] = maxValue
+			self.maxValue = maxValue
 		if minValue is not None:
 			self.attrs['minValue'] = minValue
+			self.minValue = minValue
 		if maxDigits is not None:
 			self.attrs['maxDigits'] = maxDigits
+			self.maxDigits = maxDigits
 		if decimalPlaces is not None:
 			self.attrs['decimalPlaces'] = decimalPlaces
+			self.decimalPlaces = decimalPlaces
+		
+		# Get max digits and decimal places from model field in case no values defined in the form field
+		modelFieldType = self._getModelFieldType()
+		modelField = self._getModelField()
+		if modelFieldType == 'DecimalField' and maxDigits is None and decimalPlaces is None:
+			self.attrs['maxDigits'] = modelField.max_digits
+			self.attrs['decimalPlaces'] = modelField.decimal_places
+			self.decimalPlaces = modelField.decimal_places
+			self.maxDigits = modelField.max_digits
+		# For fields PossitiveIntegerField and PossitiveSmallIntegerField if no minValue defined, set minValue to 0
+		if (modelFieldType == 'PossitiveIntegerField' or modelFieldType == 'PossitiveSmallIntegerField') and minValue is None:
+			self.attrs['minValue'] = modelField.minValue
 
 	def to_python(self, value):
 		"""
@@ -648,6 +677,12 @@ class IntegerField ( Field ):
 			self.attrs['maxValue'] = maxValue
 		if minValue is not None:
 			self.attrs['minValue'] = minValue
+		
+		# For fields PossitiveIntegerField and PossitiveSmallIntegerField if no minValue defined, set minValue to 0
+		modelFieldType = self._getModelFieldType()
+		modelField = self._getModelField()
+		if (modelFieldType == 'PossitiveIntegerField' or modelFieldType == 'PossitiveSmallIntegerField') and minValue is None:
+			self.attrs['minValue'] = modelField.minValue
 
 	def to_python(self, value):
 		"""

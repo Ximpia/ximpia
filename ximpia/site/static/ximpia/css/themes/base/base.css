@@ -10,6 +10,15 @@ input[type='password'] {
 	border: 1px solid #ccc;
 }
 
+div.input-label-left {
+	float:left;
+	padding-top: 5px;
+}
+
+div.label-fix-width div.input-label-left {
+	width: 100px;
+}
+
 input.fieldBig {
 	width: 300px;
 }
@@ -392,19 +401,9 @@ div.jqDockLabelNew {
 	z-index: 50;
 }
 
-.labelSep:after {
-	content:": ";
-}
-
 .ImgInfo:hover, .ImgInfo.sfhover {
 	cursor: pointer;
 }
-
-
-
-
-
-
 
 /* Password Strength */
 

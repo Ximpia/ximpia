@@ -2224,6 +2224,8 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
 	// field.datetime
 	$('#' + formId).find("[data-xp-type='field.datetime']").xpFieldDateTime('render', xpForm);
+	// field.number
+	$('#' + formId).find("[data-xp-type='field.number']").xpFieldNumber('render', xpForm);
 	// list.select
 	$('#' + formId).find("[data-xp-type='list.select']").xpListSelect('render', xpForm);
 	// option

@@ -1,5 +1,10 @@
 /*
  * Ximpia Visual Component Input: Text, Password, Decimal, etc... with autocompletion support
+ * 
+ * <div id="id_countryTxt_comp" data-xp-type="field" 	data-xp="{	label: 'Country Code', size: 2}" 
+														data-xp-complete="{		choicesId: 'country', 
+																				choiceDisplay: 'name',
+																				minCharacters: 1	}"> </div>
  *
  * 
  * ** Attributes **
@@ -97,11 +102,13 @@
 					ximpia.console.log(dataAttrs);
 					var myValue = dataAttrs.value;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<label for=\"" + idInput + "\"></label><br/><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
-							nameInput + "\" value=\"" + myValue + "\" />";						
+						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/>";
+						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
+							nameInput + "\" value=\"" + myValue + "\" />"
 					} else {
-						htmlContent = "<label for=\"" + idInput + "\"></label><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
-							nameInput + "\" value=\"" + myValue + "\" />";					
+						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div>";
+						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
+							nameInput + "\" value=\"" + myValue + "\" /><div style=\"clear:both\"> <div>";
 					}
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
@@ -128,9 +135,9 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
+					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
 						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}
+					}*/
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
@@ -273,13 +280,26 @@
 
 
 /*
- * Ximpia Visual Component Input: Text, Password, Decimal, etc... with autocompletion support
+ * Field for number fields with spinner control. Attributes for decimal formatting.
+ * 
+ * <div id="id_amount_comp" data-xp-type="field" data-xp="{}" > </div>
  *
  * 
  * ** Attributes **
  * 
+ * * ``hideSpinner`` :Boolean : Hides spinner control
+ * 
  * 
  * ** Methods **
+ * 
+ * * ``render``
+ * * ``unrender``
+ * * ``enable``
+ * * ``disable``
+ * 
+ * ** Interfaces **
+ * 
+ * * IInputField
  * 
  */
 
@@ -299,7 +319,7 @@
         	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype'],
         	reRender: false,
         	labelPosition: 'left',
-        	hasAutocompletion: false
+        	hideSpinner: false
         };
 		
         var methods = {
@@ -344,11 +364,12 @@
 					ximpia.console.log(dataAttrs);
 					var myValue = dataAttrs.value;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<label for=\"" + idInput + "\"></label><br/><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
-							nameInput + "\" value=\"" + myValue + "\" />";						
+						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
+							idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";						
 					} else {
-						htmlContent = "<label for=\"" + idInput + "\"></label><input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
-							nameInput + "\" value=\"" + myValue + "\" />";					
+						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
+							idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + 
+							myValue + "\" /><div style=\"clear:both\"> </div>";					
 					}
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
@@ -375,9 +396,9 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
+					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
 						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}
+					}*/
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
@@ -393,25 +414,32 @@
 						}
 					}
 					// spinner for numbers
-					var spinObj = {};
-					if (dataAttrs.hasOwnProperty('maxValue')) {
-						spinObj['max'] = dataAttrs['maxValue'];
+					var hideSpinner = settings.hideSpinner;
+					if (attrs.hasOwnProperty('hideSpinner')) {
+						hideSpinner = attrs['hideSpinner'];
 					}
-					if (dataAttrs.hasOwnProperty('minValue')) {
-						spinObj['min'] = dataAttrs['minValue'];
-					}
-					if (dataAttrs['fieldType'] == 'IntegerField') {
-						spinObj.step = 1;
-						spinObj.numberFormat = 'n';
-						$('#' + idInput).spinner(spinObj);
-					} else if (dataAttrs['fieldType'] == 'FloatField') {
-						spinObj.step = 1;
-						spinObj.numberFormat = 'n';
-						$('#' + idInput).spinner(spinObj);
-					} else if (dataAttrs['fieldType'] == 'DecimalField' && dataAttrs.hasOwnProperty('decimalPlaces')) {
-						spinObj.numberFormat = 'n';
-						spinObj.step = 1/(dataAttrs['decimalPlaces']*10);
-						$('#' + idInput).spinner(spinObj);
+					if (hideSpinner == false) {
+						var spinObj = {};
+						if (dataAttrs.hasOwnProperty('maxValue')) {
+							spinObj['max'] = dataAttrs['maxValue'];
+						}
+						if (dataAttrs.hasOwnProperty('minValue')) {
+							spinObj['min'] = dataAttrs['minValue'];
+						}
+						if (dataAttrs['fieldType'] == 'IntegerField') {
+							spinObj.step = 1;
+							spinObj.numberFormat = 'n';
+							$('#' + idInput).spinner(spinObj);
+						} else if (dataAttrs['fieldType'] == 'FloatField') {
+							spinObj.step = 1;
+							spinObj.numberFormat = 'n';
+							$('#' + idInput).spinner(spinObj);
+						} else if (dataAttrs['fieldType'] == 'DecimalField' && dataAttrs.hasOwnProperty('decimalPlaces')
+								&& parseInt(dataAttrs['decimalPlaces']) <= 6) {
+							spinObj.numberFormat = 'n';
+							spinObj.step = eval('1/(1e' + dataAttrs['decimalPlaces'] + ')');
+							$('#' + idInput).spinner(spinObj);
+						}
 					}
 				}
 			}
@@ -720,12 +748,14 @@
 					ximpia.console.log(dataAttrs);
 					var myValue = dataAttrs.value;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<label for=\"" + idInput + "\"></label><br/><input id=\"" + idInput + "\" type=\"" + type + 
-									"\" name=\"" + nameInput + "\" value=\"" + myValue + "\" readonly=\"readonly\" />";
+						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
+								idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + 
+								"\" readonly=\"readonly\" />";
 						
 					} else {
-						htmlContent = "<label for=\"" + idInput + "\"></label><input id=\"" + idInput + "\" type=\"" + type + 
-									"\" name=\"" + nameInput + "\" value=\"" + myValue + "\" readonly=\"readonly\" />";
+						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
+								idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + 
+								"\" readonly=\"readonly\" /><div style=\"clear:both\"> </div>";
 						
 					}
 					$(element).html(htmlContent);					
@@ -747,9 +777,9 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
+					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
 						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}
+					}*/
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
