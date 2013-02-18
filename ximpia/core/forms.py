@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class XBaseForm( forms.Form ):
 	
 	"""
-	Doc
+	Core Form
 	"""
 	
 	ERROR_INVALID = 'invalid'
@@ -87,10 +87,32 @@ class XBaseForm( forms.Form ):
 					# resolve instance in form related to instance in field by type
 					if field.instance:
 						dbResolved = self._resolveDbInstance(field) #@UnusedVariable
-						field.initial = eval('dbResolved.' + instanceFieldName)
-						field.instance = None
+						#print 'instance: ', dbResolved
+						logger.debug('XBaseForm :: resolved instance: %s' % (dbResolved) )
+						# check if foreign key, should place pk as initial instead of model instance
+						isFK = self._isForeignKey(dbResolved, instanceFieldName)
+						isManyToMany = self._isManyToMany(dbResolved, instanceFieldName)
+						logger.debug('XBaseForm :: field: %s isForeignKey: %s' % (instanceFieldName, isFK) )
+						logger.debug('XBaseForm :: field: %s isManyToMany: %s' % (instanceFieldName, isManyToMany) )
+						if isFK:
+							field.initial = eval('dbResolved.' + instanceFieldName + '.pk')
+							field.instance = dbResolved
+						elif isManyToMany:
+							logger.debug('XBaseForm :: Many data: %s' % (eval('dbResolved.' + instanceFieldName + '.all()')) )
+							data = eval('dbResolved.' + instanceFieldName + '.all()')
+							manyOut = []
+							for dataItem in data:
+								if type(dataItem) == types.StringType or type(dataItem) == types.UnicodeType:
+									manyOut.append("'" + json.dumps(dataItem.pk) + "'")
+								else:
+									manyOut.append(json.dumps(dataItem.pk))
+							field.initial = str(manyOut)
+							field.instance = dbResolved
+						else:
+							field.initial = eval('dbResolved.' + instanceFieldName)
+							field.instance = dbResolved
 				except AttributeError:
-					pass
+					raise
 			# Set instance too
 		self._buildObjects()
 		#self.app = argsDict['app'] if argsDict.has_key('app') else ''
@@ -134,6 +156,33 @@ class XBaseForm( forms.Form ):
 				dbResolved = instance
 				break
 		return dbResolved
+	def _isForeignKey(self, instance, instanceFieldName):
+		"""
+		Checks if field is foreign key
+		
+		** Attributes **
+		
+		* ``instance``
+		* ``instanceFieldName``
+		
+		** Returns**
+		
+		isFK:bool
+		"""
+		isFK = False
+		if eval('instance.__class__.__dict__.has_key(\'' + instanceFieldName + '\')') and\
+				 str(type(eval('instance.__class__.' + instanceFieldName))) == "<class 'django.db.models.fields.related.ReverseSingleRelatedObjectDescriptor'>":
+			isFK = True
+		return isFK
+	def _isManyToMany(self, instance, instanceFieldName):
+		"""
+		Checks if we have many to many relationship in form field
+		"""
+		isManyToMany = False
+		if eval('instance.__class__.__dict__.has_key(\'' + instanceFieldName + '\')') and\
+				 str(type(eval('instance.__class__.' + instanceFieldName))) == "<class 'django.db.models.fields.related.ReverseManyRelatedObjectsDescriptor'>":
+			isManyToMany = True
+		return isManyToMany
 	def setViewMode(self, viewList):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
@@ -341,7 +390,12 @@ class XBaseForm( forms.Form ):
 			except AttributeError:
 				pass
 			attrs['name'] = fieldName
+			
 			attrs['value'] = oField.initial or ''
+			if attrs['label'] is not None:
+				attrs['label'] = attrs['label'].replace('"', '')
+			if attrs['helpText'] is not None:
+				attrs['helpText'] = attrs['helpText'].replace('"', '')
 			#logger.debug( 'field: %s' % (fieldName) )
 			#logger.debug( attrs )
 			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs

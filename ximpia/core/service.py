@@ -556,15 +556,7 @@ class ServiceDecorator(object):
 				#logger.debug( 'ServiceDecorator :: ctx: %s' % (obj._ctx.keys()) ) 
 				obj._ctx.jsData = JsResultDict()
 				if self._form != None:
-					#obj._ctx.form = self._form()
 					obj._setMainForm(self._form())
-					print 'self._form: ', self._form
-					print 'obj._ctx.form :: invitationCode: ', obj._ctx.form.fields['invitationCode'].initial
-					print 'instances: ', obj._ctx.form._instances
-					"""if len(obj._ctx.form._instances) == 0:
-						obj._setMainForm(self._form())
-					else:
-						pass"""
 				f(*argsTuple, **argsDict)
 				if not obj._ctx.doneResult:
 					# Instances
@@ -578,10 +570,6 @@ class ServiceDecorator(object):
 						viewName = obj._ctx.viewNameSource
 					logger.debug( 'ServiceDecorator :: viewName: %s' % (viewName) )
 					# Views
-					"""if obj._ctx['viewNameTarget'] != '':
-						obj._ctx.jsData['response']['view'] = obj._ctx.viewNameTarget
-					else:
-						obj._ctx.jsData['response']['view'] = obj._ctx.viewNameSource"""
 					obj._ctx.jsData['response']['view'] = viewName
 					logger.debug( 'ServiceDecorator :: view: %s' % ('*' + str(obj._ctx.jsData['response']['view']) + '*') )
 					# App

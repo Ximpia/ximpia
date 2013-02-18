@@ -108,12 +108,13 @@
 					if (dataAttrs.hasOwnProperty('value')) {
 						myValue = dataAttrs.value;
 					}
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/>";
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/>";
 						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
 							nameInput + "\" value=\"" + myValue + "\" />"
 					} else {
-						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div>";
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
 							nameInput + "\" value=\"" + myValue + "\" /><div style=\"clear:both\"> <div>";
 					}
@@ -145,10 +146,7 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
-						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}*/
-					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
+					if (attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
 						} else {
@@ -157,13 +155,13 @@
 						if (attrs.info == true) {
 							$("label[for=\"" + idInput + "\"]").addClass("info");
 							// help_text
-							if (dataAttrs.hasOwnProperty('helpText')) {
-								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+							if (attrs.hasOwnProperty('helpText')) {
+								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', attrs['helpText']);
+							} else {
+								if (dataAttrs && dataAttrs.hasOwnProperty('helpText')) {
+									$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+								}								
 							}
-						}
-					} else {
-						if (attrs['hasLabel'] == true) {
-							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
 						}
 					}
 					// Autocompletion
@@ -377,11 +375,12 @@
 					var htmlContent = "";
 					ximpia.console.log(dataAttrs);
 					var myValue = dataAttrs.value;
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
 							idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + "\" />";						
 					} else {
-						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
 							idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + 
 							myValue + "\" /><div style=\"clear:both\"> </div>";					
 					}
@@ -453,6 +452,9 @@
 							spinObj.numberFormat = 'n';
 							spinObj.step = eval('1/(1e' + dataAttrs['decimalPlaces'] + ')');
 							$('#' + idInput).spinner(spinObj);
+						}
+						if (attrs.labelPosition == 'left') {
+							$('#' + idInput).parent().css('margin-left', '3px');
 						}
 					}
 				}
@@ -563,10 +565,10 @@
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
-				ximpia.console.log('xpOption :: element : ' + element); 
+				ximpia.console.log('xpFieldCheck :: element : ' + element); 
 				var idBase = $(element).attr('id').split('_comp')[0];
 				var name = idBase.split('id_')[1];
-				ximpia.console.log('xpOption :: idBase : ' + idBase);
+				ximpia.console.log('xpFieldCheck :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
 					var value = "";
@@ -604,11 +606,12 @@
         			if (attrs.hasOwnProperty('info') && attrs.info == true) {
         				attrClass = "class=\"info\"";
         			}
+        			var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['controlPosition'] == 'before') {
-						htmlContent += controlHtml + "<label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + 
-							label + "</label>";
+						htmlContent += controlHtml + "<div style=\"width: " + labelWidth + "\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + 
+							label + "</label></div>";
 					} else {
-						htmlContent += "<label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + label + ": </label>" + 
+						htmlContent += "<div style=\"width: " + labelWidth + "\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + label + ": </label></div>" + 
 							controlHtml;
 					}
 					// Assign html visual component div element
@@ -761,13 +764,14 @@
 					var htmlContent = "";
 					ximpia.console.log(dataAttrs);
 					var myValue = dataAttrs.value;
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/><input id=\"" + 
 								idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + 
 								"\" readonly=\"readonly\" />";
 						
 					} else {
-						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div><input id=\"" + 
 								idInput + "\" type=\"" + type + "\" name=\"" + nameInput + "\" value=\"" + myValue + 
 								"\" readonly=\"readonly\" /><div style=\"clear:both\"> </div>";
 						
@@ -1037,8 +1041,9 @@
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs.hasOwnProperty('labelPosition') && attrs['labelPosition'] == 'top') {
 	        			classLabel = 'ui-check-label-top';
 	        		}
+	        		var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs['hasLabel']) {
-	        			htmlContent += "<div class=\"" + classLabel + "\" >";
+	        			htmlContent += "<div class=\"" + classLabel + "\" style=\"width: " + labelWidth + "\" >";
 	        			var helpText = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
 	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
@@ -1131,23 +1136,12 @@
  * 
  * They can be rendered as tags horizontally
  * 
- * 	<div id="OrgYouInfo" class="FormBlock">
-		 <label for="id_jobTitle">{% trans "Job Title" %}: {{form.jobTitle}}<br />
-		 <label for="id_organizationGroup">{% trans "Group You Manage" %}: {{form.organizationGroup}}<br />		 
-		 <table border="0">
-		 	<tr>
-		 		<td>
-		 			<label for="id_organizationGroupTags">{% trans "Group Tags" %}: {{form.organizationGroupTags}}
-				</td><td>		 
-		 <input id="BtAddTag" type="button" value="Add" />
-		 </td><td valign="bottom" >
-		 <div id="id_groupTags" class="tagContainer">
-		 </div>		 
-		 </td></tr></table>
-	</div>
- * 
  * 
  * ** Attributes **
+ * 
+ * * ``type``:string [default: field]. Type of control for adding values: ``field`` and ``select.plus`` possible values.
+ * * ``labelWidth``:number
+ * * ``selectObjId``:string
  * 
  * ** Methods **
  * 
@@ -1172,20 +1166,79 @@
         	excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
         	excludeListLabel: ['type','id','element'],
         	excludeList: ['info','type'],
-        	limit: 10
-        };        
+        	limit: 10,
+        	type: 'field'
+        };
         /**
+         * Build Item html code
          * 
+         * ** Attributes **
+         * 
+         * * ``obj``
+         * 		* ``dataId``
+         * 		* ``idBase``
+         * 		* ``inputDataId``
+         * 		* ``data``
+         */
+        var buildItemHtml = function(obj) {
+			var sHtml = '<div class="listField" style=\"float:left\"><div class="listFieldText"' +  
+				' style=\"float:left\">' + 
+				obj.data + '</div><!--<div class="listFieldSep" style=\"float:left\">&nbsp;</div>-->' + 
+				'<div class="listFieldDel" style=\"float:left\" data-xp-field-id=\"' + obj.dataId + 
+				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"' + obj.idBase + '\">X</div></div>';
+			return sHtml;
+        };
+        /**
+         * Delete the item.
+         * 
+         * ** Arguments **
+         * 
+         * * ``element``: Delete control
+         * * ``idBase``: id for component
+         * * ``inputDataId``: input id (field, select, etc...)
+         */
+        var deleteItem = function(element, idBase, inputDataId) {
+			var fieldId = $(element).attr('data-xp-field-id');
+			var idElementHid = $(element).attr('data-xp-field-hidden-id');
+    		$(element).parent().remove();
+    		var baseValue = $("#" + idElementHid).attr('value');
+			var valueList = eval(baseValue);
+			var valueListNew = [];
+			for (var i=0; i<valueList.length; i++) {
+				if (valueList[i] != fieldId) {
+					valueListNew.push(valueList[i])
+				}
+			}
+			var valueListStr = "[";
+			for (var i=0; i<valueListNew.length; i++) {
+				if (i == 0) {
+					valueListStr += "'" + valueListNew[i] + "'";
+				} else {
+					valueListStr += ",'" + valueListNew[i] + "'";
+				}							
+			}
+			valueListStr += "]";
+			$('#' + idBase).val(valueListStr);
+			$('#' + inputDataId).focus();
+        };
+        /**
+         * Add field
+         * 
+         * ** Arguments +*
+         * 
+         * * ``inputField``
+         * * ``feedType``
+         * * ``choicesId``
          */
 		var addField = function(inputField, feedType, choicesId) {
         	ximpia.console.log('xpFieldList.addField...');
         	ximpia.console.log('xpFieldList.addField :: inputField: ' + inputField + ' feedType: ' + feedType);
         	var inputDataId = inputField.split('_comp')[0];
-        	if (feedType == 'input') {
+        	if (feedType == 'field') {
         		var idBase = inputField.split('Input_comp')[0];
 				var data = $("#" + inputDataId).prop('value');
 				var dataId = data;
-        	} else if (feedType == 'select') {
+        	} else if (feedType == 'select.plus') {
         		var idBase = $('#' + inputField).parent().attr('id').split('_comp')[0];
         		var dataId = $("#" + inputDataId).prop('value');
         		// Get from choices data
@@ -1229,11 +1282,7 @@
 			}
 			ximpia.console.log('xpFieldList.addField :: validate: ' + validate);
 			if (validate == true) {
-				var sHtml = '<div class="listField" style=\"float:left\"><div class="listFieldText"' +  
-					' style=\"float:left\">' + 
-					data + '</div><!--<div class="listFieldSep" style=\"float:left\">&nbsp;</div>-->' + 
-					'<div class="listFieldDel" style=\"float:left\" data-xp-field-id=\"' + dataId + 
-					'\" data-xp-field-input-id=\"' + inputDataId + '\" data-xp-field-hidden-id=\"' + idBase + '\">X</div></div>';
+				var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data:data});
 				ximpia.console.log(sHtml);
 				$('#' + idBase + 'Show').append(sHtml);
 				if (baseValue == '') {
@@ -1271,28 +1320,7 @@
 				}
 				// Remove Field Bind
 				$('.listFieldDel').click(function() {
-					var fieldId = $(this).attr('data-xp-field-id');
-					var idElementHid = $(this).attr('data-xp-field-hidden-id');
-	        		$(this).parent().remove();
-	        		var baseValue = $("#" + idElementHid).attr('value');
-					var valueList = eval(baseValue);
-					var valueListNew = [];
-					for (var i=0; i<valueList.length; i++) {
-						if (valueList[i] != fieldId) {
-							valueListNew.push(valueList[i])
-						}
-					}
-					var valueListStr = "[";
-					for (var i=0; i<valueListNew.length; i++) {
-						if (i == 0) {
-							valueListStr += "'" + valueListNew[i] + "'";
-						} else {
-							valueListStr += ",'" + valueListNew[i] + "'";
-						}							
-					}
-					valueListStr += "]";
-					$('#' + idBase).val(valueListStr);
-					$('#' + inputDataId).focus();
+					deleteItem($(this), idBase, inputDataId);
 				});
 			} else if (size >= limit) {
 				// TODO: Show a fancy messahe window
@@ -1332,16 +1360,17 @@
 					if (data.hasOwnProperty(name)) {
 						dataAttrs = data[name];
 					}
-					var dataSelectAttrs = {}
+					// ????????????????????????????????????????????????
+					/*var dataSelectAttrs = {}
 					if (attrs.hasOwnProperty('selectObjId')) {
 						var nameSelect = attrs['selectObjId'].split('_comp')[0].split('id_')[1];
 						if (data.hasOwnProperty(nameSelect)) {
 							dataSelectAttrs = data[nameSelect];
-						} 						
-					}
+						}
+					}*/
 					ximpia.console.log('xpFieldList.render :: attrs....');
 					ximpia.console.log(attrs); 
-					var type = attrs.type || 'input';
+					var type = attrs.type || settings.type;
 					var label = '';
 					if (dataAttrs.hasOwnProperty('label')) {
 						label = dataAttrs['label'];
@@ -1354,40 +1383,76 @@
 					if (dataAttrs.hasOwnProperty('value')) {
 						myValue = dataAttrs.value;
 					}
-					if (type == "input") {
+					// TODO: Generate complex components from any basic field.
+					var labelWidth = attrs.labelWidth || "auto";
+					var info = attrs.info || false;
+					var helpText = attrs.helpText || dataAttrs.helpText;
+					var choicesId = attrs.choicesId || '';
+					var inputField = '';
+					if (type == "field") {
 						var htmlContent = "";
+						inputField = idBase + 'Input_comp';
 						htmlContent += "<div id=\"" + idBase + 'Input_comp' + "\" data-xp-type=\"field\"";
-						htmlContent += " data-xp=\"{label: '" + label + "'}\" style=\"float: left; margin-top: 0px\" data-xp-related=\"field.list\" ></div>";
+						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + "}\" style=\"float: left; margin-top: 0px\" data-xp-related=\"field.list\" ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
 						htmlContent += " data-xp-type=\"button.field\"";
-						htmlContent += " data-xp=\"{input: " + idBase + "Input_comp, type: 'input'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
+						htmlContent += " data-xp=\"{input: " + idBase + "Input_comp, type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\"";
 						htmlContent += " style=\"width: 300px; margin-left: 15px; \" ></div><div style='clear:both'></div>";
 						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + myValue + "\" />";
-					} else if (type == "select") {
+					} else if (type == "select.plus") {
 						var htmlContent = "";
+						inputField = attrs['selectObjId'];
 						htmlContent += "<div id=\"" + attrs['selectObjId'] + "\" data-xp-type=\"select.plus\"";
-						htmlContent += " data-xp=\"{info: true}\" style=\"float: left; margin-top: 2px\" data-xp-related=\"field.list\" ></div>";
+						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + ", helpText:'" + helpText + "', choicesId: '" + choicesId + "'}\" style=\"float: left; margin-top: 2px\" data-xp-related=\"field.list\"  ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
-						htmlContent += " onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: " + attrs['selectObjId'];
-						htmlContent += ", type: 'select', choicesId: '" + dataSelectAttrs.choicesId + "'}\" style=\"margin-top:4px\" >Add</a></div>";
+						htmlContent += " onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: '" + attrs['selectObjId'];
+						htmlContent += "', type: 'select.plus', choicesId: '" + choicesId + "'}\" style=\"margin-top:4px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px;";
 						htmlContent += " margin-left: 15px; margin-top: 2px\" ></div><div style='clear:both'></div>";
-						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + myValue + "\" />";
+						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + 
+											myValue + "\" />";
 					}
+					// TODO: Integrate html like this...
+					/*var htmlContent2 = '\
+					<div id="{{}}" >\
+					';*/
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
-					$(element).css('clear', 'both');
+					$(element).css('clear', 'both');					
+					// Render item values
+					if (myValue != '[]') {
+		        		var dataObj = {};
+		        		var choiceList = JSON.parse($("[name='choices']").attr('value'))[choicesId];
+		        		for (j in choiceList) {
+		        			dataObj[choiceList[j][0]] = choiceList[j][1];
+		        		}
+		        		ximpia.console.log(dataObj);
+						var itemList = eval(myValue);
+						var inputDataId = inputField.split('_comp')[0];
+						for (var i=0; i<itemList.length; i++) {
+							var dataId = itemList[i];
+							var data = dataObj[dataId] || '';
+							if (data != '') {
+								var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data: data});
+								$('#' + idBase + 'Show').append(sHtml);
+							}
+						}
+						// Remove Field Bind
+						$('.listFieldDel').click(function() {
+							deleteItem($(this), idBase, inputDataId);
+						});
+					}
 					ximpia.console.log('xpFieldList.render :: field list html...');
 					ximpia.console.log(htmlContent);
-					// TODO: Render fields included in value attribute
 				}				
 			}			
 			// Bind click event to add button
 			$("[data-xp-type='button.field']").click(function(evt) {
 				evt.preventDefault();
 				var attrsButton = $(this).metadata();
-				var inputField = attrsButton['input'].id;
+				ximpia.console.log(attrsButton);
+				var inputField = attrsButton['input'];
 				ximpia.console.log('xpFieldList.render :: click button :: inputField: ' + inputField);
 				var feedType = attrsButton['type'];
 				ximpia.console.log('xpFieldList.render :: click button :: feedType: ' + feedType);
@@ -1440,7 +1505,7 @@
  * ** Attributes (data-xp) **
  * 
  * * ``type`` : 'radio', 'check'
- * * ``alignment`` [optional] : 'vertical', 'horizontal'
+ * * ``alignment`` [optional] : 'vertical', 'horizontal'. Default. horizontal.
  * * ``hasLabel`` [optional] : "true"|"false". Weather to show or not a label, at left or top of radio controls.
  * * ``label`` [optional] : Field label
  * * ``labelPosition`` [optional] : 'top'|'left'. Label position, left of radio buttons, or top for label at one line and radio
@@ -1480,6 +1545,7 @@
         var settings = {
         	labelPosition: 'left',
         	controlPosition: 'before',
+        	alignment: 'horizontal',
         	type: 'radio',
         	reRender: false
         };		
@@ -1538,8 +1604,9 @@
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs.hasOwnProperty('labelPosition') && attrs['labelPosition'] == 'top') {
 	        			classLabel = 'ui-option-label-top';
 	        		}
+	        		var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 	        		if (attrs.hasOwnProperty('hasLabel') && attrs['hasLabel']) {
-	        			htmlContent += "<div class=\"" + classLabel + "\" >";
+	        			htmlContent += "<div class=\"" + classLabel + "\" style=\"width: " + labelWidth + "\" >";
 	        			var helpText = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
 	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
@@ -1549,20 +1616,23 @@
 	        				attrClass = "class=\"info\"";
 	        			}
 	        			htmlContent += "<label for=\"id_" + name + "_" + choiceList[0][0] + "\" " + attrClass+ " " + helpText + 
-	        					" style=\"margin-right: 5px\">" + label + "</label>";
+	        					" style=\"\">" + label + "</label>";
 	        			if (attrs.labelPosition == 'left') {
 	        				htmlContent += ': ';
 	        			}
 	        			htmlContent += "</div>";	        			
 	        		}
 	        		// Option items
+	        		if (!attrs.hasOwnProperty('alignment')) {
+	        			attrs.alignment = settings.alignment;
+	        		}
 	        		if (attrs.alignment == 'horizontal') {
 	        			htmlContent += "<ul class=\"ui-option-horizontal\">";
 	        		} else  {
 	        			htmlContent += "<ul class=\"ui-option-vertical\">";
 	        		}
-	        		if (attrs.hasOwnProperty('type')) {
-	        			
+	        		if (!attrs.hasOwnProperty('type')) {
+	        			attrs['type'] = settings.type;
 	        		}
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
@@ -1596,12 +1666,15 @@
 						}
 						htmlContent += "</li>";
 					}
-					htmlContent += "</ul>";
+					htmlContent += "</ul><div style=\"clear: both\"></div>";
 					// Assign html visual component div element
 					$(element).html(htmlContent);
 					// Help text...
 					// Set render, since we have rendered visual component
 					$(element).attr('data-xp-render', JSON.stringify(true));
+					$(element).css('line-height','20px');
+					$(element).css('margin-top','-5px');
+					$(element).css('margin-bottom','2px');
 					// Trace
 					ximpia.console.log(htmlContent);
 				} else if (!data.hasOwnProperty(name)) {
@@ -1721,7 +1794,10 @@
 					var idField = $(element).attr('id').split('_comp')[0] + '_field';
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					var dataAttrs = data[nameInput];
+					var dataAttrs = {};
+					if (data.hasOwnProperty(nameInput)) {
+						dataAttrs = data[nameInput];
+					} 
 					console.log('XpObjListSelect...');
 					console.log(dataAttrs);
 					console.log(attrs);
@@ -1731,28 +1807,40 @@
 					if (dataAttrs.hasOwnProperty('choicesId')) {
 						choicesId = dataAttrs['choicesId'];
 					}
+					if (attrs.hasOwnProperty('choicesId')) {
+						choicesId = attrs['choicesId'];
+					}
+					//alert(choicesId);
 					if (attrs.hasOwnProperty('type')) {
 						type = attrs.type;
 					}
 					// id, name, type
 					var htmlContent = "";
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/>";
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/>";
 						htmlContent += "<div id=\"" + idField + "\"  > </div><div style=\"clear: both\" > </div>";
 					} else {
-						htmlContent = "<div class=\"input-label-left\" ><label for=\"" + idInput + "\"></label>: </div>";
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\" ><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += "<div id=\"" + idField + "\" style=\"float: left; margin-top: 3px; /*margin-left: 3px*/\" ></div>";
 						htmlContent += "<div style=\"clear: both\" > </div>";
 					}
 					console.log(htmlContent);
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
+					$(element).css('line-height', '22px');
 					// Plugin
-					//var countryList = JSON.parse(JSON.parse($('#id_' + myForm + '_choices').attr('value')))[choicesId];
-					var countryList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
+					var values = ['',''];
+					if (dataAttrs.hasOwnProperty('value')) {
+						values[0] = dataAttrs.value;
+					}
+					var controlList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
 					var results = {'results': []};
-					for (j in countryList) {
-						results['results'][j] = {'id': countryList[j][0], 'name': countryList[j][1]}
+					for (j in controlList) {
+						results['results'][j] = {'id': controlList[j][0], 'name': controlList[j][1]}
+						if (values[0] != '' && controlList[j][0] == values[0]) {
+							values[1] = controlList[j][1];
+						}
 					}
 					console.log('idField : ' + idField);
 					// *************
@@ -1764,8 +1852,13 @@
 						paging: false,
 						maxVisibleRows: 10
 					});
-					//fb.setValue('es', 'Spain');
+					if (dataAttrs.hasOwnProperty('value')) {
+						fb.setValue(values[0], values[1]);
+					}
 					// Input
+					if (!dataAttrs.hasOwnProperty('class')) {
+						dataAttrs['class'] = 'field';
+					}
 					ximpia.common.Form.doAttributes({
 						djangoAttrs: settings.djangoAttrs,
 						htmlAttrs: settings.htmlAttrs,
@@ -1779,7 +1872,7 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
+					if (attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
 						} else {
@@ -1788,8 +1881,12 @@
 						if (attrs.info == true) {
 							$("label[for=\"" + idInput + "\"]").addClass("info");
 							// help_text
-							if (dataAttrs.hasOwnProperty('helpText')) {
-								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+							if (attrs.hasOwnProperty('helpText')) {
+								$("label[for=\"" + idInput + "\"]").attr('data-xp-title', attrs['helpText']);
+							}else {
+								if (dataAttrs && dataAttrs.hasOwnProperty('helpText')) {
+									$("label[for=\"" + idInput + "\"]").attr('data-xp-title', dataAttrs['helpText']);
+								}								
 							}
 						}
 					} else {
@@ -1821,25 +1918,25 @@
 				$(this).empty();
 				$(this).removeAttr('data-xp-render');
 			}
-		},		
+		},
 		setValue: function(xpForm, code) {
 			var formId = ximpia.common.Browser.getForm(xpForm);
 			ximpia.console.log('setValue :: formId: ' + formId);
 			ximpia.console.log('setValue :: xpForm: ' + xpForm);
-			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);			
+			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			var idField = $(this).attr('id').split('_comp')[0] + '_field';
-        		var id = '#' + idField.split('_field')[0];
-        		var nameField = idField.split('_field')[0].split('id_')[1];
-        		ximpia.console.log('setValue :: nameField: ' + nameField);
-        		ximpia.console.log(data);
-        		var field = data[nameField];
-        		var choicesId = field['choicesId'];
-        		ximpia.console.log('setValue :: choicesId: ' + choicesId);
-        		var countryList = ximpia.common.Choices.get(formId, choicesId);
-        		ximpia.console.log('setValue :: countryList: ' + countryList);
-			var value = ximpia.common.List.getValueFromList(code, countryList);
-        		$(id).val(code).removeClass('watermark');
-        		$(id + '_input').val(value).removeClass('watermark');			
+    		var id = '#' + idField.split('_field')[0];
+    		var nameField = idField.split('_field')[0].split('id_')[1];
+    		ximpia.console.log('setValue :: nameField: ' + nameField);
+    		ximpia.console.log(data);
+    		var field = data[nameField];
+    		var choicesId = field['choicesId'];
+    		ximpia.console.log('setValue :: choicesId: ' + choicesId);
+    		var controlList = ximpia.common.Choices.get(formId, choicesId);
+    		ximpia.console.log('setValue :: controlList: ' + controlList);
+			var value = ximpia.common.List.getValueFromList(code, controlList);
+    		$(id).val(code).removeClass('watermark');
+    		$(id + '_input').val(value).removeClass('watermark');
 		}	
         };		
         if ( methods[method] ) {
@@ -1921,11 +2018,12 @@
 					var value = "";
 					// id, name, type
 					var htmlContent = "";
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div><br/>";
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/>";
 						htmlContent += " <select id=\"" + idInput + "\" name=\"" + nameInput + "\"  ></select></div>";
 					} else {
-						htmlContent = "<div class=\"input-label-left\" ><label for=\"" + idInput + "\"></label>: </div>";
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\" ><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += " <select id=\"" + idInput + "\" name=\"" + nameInput + "\"  ></select></div>";
 					}
 					$(element).html(htmlContent);
@@ -2115,11 +2213,12 @@
 						areaAttrs += " rows=" + attrs['rows']
 					}
 					var htmlContent = "";
+					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
-						htmlContent = "<div class=\"input-label-top\"><label for=\"" + idInput + "\"></label></div>";
+						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div>";
 						htmlContent += "<textarea id=\"" + idInput + "\" " + areaAttrs + " name=\"" + nameInput + "\"/>";
 					} else {
-						htmlContent = "<div class=\"input-label-left\"><label for=\"" + idInput + "\"></label>: </div>";
+						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += "<textarea id=\"" + idInput + "\" " + areaAttrs + " name=\"" + nameInput + "\"";
 						htmlContent += " style=\"margin-top: 5px\" /> <div style=\"clear:both\"> </div>";
 					}

@@ -20,3 +20,4 @@ ximpia.settings.DEBUG = true;
  */
 ximpia.settings.COMPLETE_MAX_HEIGHT = 200
 ximpia.settings.COMPLETE_MIN_CHARACTERS = 3
+ximpia.settings.LABEL_WIDTH = 'auto'

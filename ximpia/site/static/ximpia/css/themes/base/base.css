@@ -19,10 +19,6 @@ div.input-label-top {
 	padding-top: 3px;
 }
 
-div.label-fix-width div.input-label-left {
-	width: 100px;
-}
-
 input.fieldBig {
 	width: 300px;
 }
@@ -104,7 +100,8 @@ input.field, input.fieldMust {
 
 select {
 	padding-left: 5px;
-	margin-left: 5px;
+	/*margin-left: 5px;*/
+	margin-bottom: 4px;
 	border-radius: 6px;
 	box-shadow: #ddd 5px 5px 5px;
 	border: 1px solid #bbb;
