@@ -2220,26 +2220,30 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('body').xpHidden('addHidden', xpForm);
 	// container
 	$('#' + formId).find("[data-xp-type='container']").xpContainer('render', xpForm);
+	// field.list
+	$('#' + formId).find("[data-xp-type='field.list']").xpFieldList('render', xpForm);
 	// basic.text
 	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
 	// field.datetime
 	$('#' + formId).find("[data-xp-type='field.datetime']").xpFieldDateTime('render', xpForm);
 	// field.number
 	$('#' + formId).find("[data-xp-type='field.number']").xpFieldNumber('render', xpForm);
-	// list.select
-	$('#' + formId).find("[data-xp-type='list.select']").xpListSelect('render', xpForm);
+	// select.plus
+	$('#' + formId).find("[data-xp-type='select.plus']").xpSelectPlus('render', xpForm);
+	// select
+	$('#' + formId).find("[data-xp-type='select']").xpSelect('render', xpForm);
 	// option
 	$('#' + formId).find("[data-xp-type='option']").xpOption('render', xpForm);
 	// check
 	$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
 	// field check
 	$('#' + formId).find("[data-xp-type='field.check']").xpFieldCheck('render', xpForm);
-	// basic.textarea
+	// textarea
 	$('#' + formId).find("[data-xp-type='textarea']").xpTextArea('render', xpForm);
-	// list.field ?????
-	$('#' + formId).find("input[data-xp-related='list.field']")
+	// field.list
+	$('#' + formId).find("input[data-xp-related='field.list']")
 			.filter("input[data-xp-type='field']")
-			.xpFieldList('bindKeyPress', xpForm);
+			.xpFieldList('keyPress', xpForm);
 	// button
 	$("[data-xp-type='button']").xpButton('render');
 	// link
@@ -2249,6 +2253,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.view']").xpLink('render');
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
 	// TODO: analyse the onSelect function
+	// TODO: Integrate header search with jxSuggestList
 	$("#id_header_search").jsonSuggest({
 		url : '/jxSearchHeader',
 		maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
@@ -2557,6 +2562,25 @@ ximpia.visual.SocialNetworkIconData = function() {
 	return _attr.pub;
 }
 
+/*
+ * Generic component data object
+ * 
+ * Deals with containers adding fields and utility methods to check on items, add items, etc...
+ * 
+ * ** Methods **
+ * 
+ * * ``getDataDictList``
+ * * ``getDataList``
+ * * ``setDataList``
+ * * ``addDataEnd``
+ * * ``writeData``
+ * * ``getSize``
+ * * ``hasElement``
+ * * ``hasElementByName``
+ * * ``deleteData``
+ * * ``getConfigDict``
+ * 
+ */
 ximpia.visual.GenericComponentData = function() {
 	var _attr = {
 		priv : {

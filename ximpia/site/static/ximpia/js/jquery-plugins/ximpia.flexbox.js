@@ -146,12 +146,14 @@
             inputWidth += inputPad;
             top += inputPad;
         }
+        
+        top += 6;
 		
         var $ctr = $('<div></div>')
             .attr('id', $div.attr('id') + '_ctr')
-            .css('width', inputWidth + arrowWidth)
+            .css('width', inputWidth + arrowWidth + 10)
             .css('top', top)
-            .css('left', 0)
+            .css('left', 3)
             .addClass(o.containerClass)
             .appendTo($div)
 			.mousedown(function(e) {

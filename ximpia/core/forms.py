@@ -27,6 +27,11 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 class XBaseForm( forms.Form ):
+	
+	"""
+	Doc
+	"""
+	
 	ERROR_INVALID = 'invalid'
 	_request = None
 	_ctx = None
@@ -51,8 +56,18 @@ class XBaseForm( forms.Form ):
 	objects = HiddenField(initial='{}')
 	#errors = {}
 	_argsDict = {}
+	_instances = {}
 	def __init__(self, *argsTuple, **argsDict): 
-		"""Constructor for base form container"""
+		"""
+		Constructor for base form container
+		
+		** Arguments **
+		
+		** Methods ** 
+		
+		** Returns **
+		
+		"""
 		self._argsDict = argsDict
 		self._errors = {}
 		#logger.debug ( 'XBaseForm :: argsDict: ' + argsDict )
@@ -63,20 +78,17 @@ class XBaseForm( forms.Form ):
 		#logger.debug( 'argsDict : ' + argsDict )
 		if argsDict.has_key('instances'):
 			d = argsDict['instances']
-			keys = d.keys()
-			# Set instances
-			for key in keys:
-				setattr(self, '_' + key, d[key])
+			self._instances = d
 			fields = self.base_fields.keys()
 			for sField in fields:
 				field = self.base_fields[sField]
 				try:
 					instanceFieldName = field.instanceFieldName
-					instanceName = field.instanceName
-					if type(field.initial) == types.StringType and field.instance:
-						field.initial = eval('self.' + instanceName + '.' + instanceFieldName)
-						field.instance = eval('self.' + instanceName)
-						#logger.debug( instanceFieldName + ' => ' + field.initial )
+					# resolve instance in form related to instance in field by type
+					if field.instance:
+						dbResolved = self._resolveDbInstance(field) #@UnusedVariable
+						field.initial = eval('dbResolved.' + instanceFieldName)
+						field.instance = None
 				except AttributeError:
 					pass
 			# Set instance too
@@ -101,6 +113,27 @@ class XBaseForm( forms.Form ):
 				#logger.debug( key + ' ' + obj )
 				d[key] = obj['fields']
 				self.base_fields['objects'].initial = json.dumps(d)
+	def _resolveDbInstance(self, field):
+		"""
+		Resolves the instance for field from the instances dictionary sent to constructor instances argument:
+		
+		form = MyForm(instances={'dbInstance': myModelInstance}
+		
+		** Attributes **
+		
+		* ``field ``:field : Form field
+		
+		** Returns **
+		
+		The reseolved model instance
+		"""
+		dbResolved = None
+		for instanceKey in self._instances:
+			instance = self._instances[instanceKey]
+			if type(instance) == type(field.instance):
+				dbResolved = instance
+				break
+		return dbResolved
 	def setViewMode(self, viewList):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
@@ -217,8 +250,11 @@ class XBaseForm( forms.Form ):
 	def d(self, name):
 		"""Get cleaned data, after form has been validated"""
 		value = ''
-		if self.cleaned_data.has_key(name):
-			value = self.cleaned_data[name]
+		try:
+			if self.cleaned_data.has_key(name):
+				value = self.cleaned_data[name]
+		except AttributeError:
+			pass
 		return value
 	def clean(self):
 		"""Common clean data."""

@@ -77,7 +77,7 @@ a.fieldMust:hover {
 	right: 0;
 	width: 23px;
 	height: 100%;
-	background: url(../images/jquery.selectBox-arrow.gif) 50% center no-repeat;
+	background: url(images/jquery.selectBox-arrow.gif) 50% center no-repeat;
 	border-left: solid 1px #BBB;
 }
 
@@ -893,8 +893,8 @@ a.fieldMust:hover {
 	border-top-right-radius: 8px;
 	height: 18px;
 	width: 17px;	
-	/*background-image:url(../images/sel_win7.gif);*/
-	background: url(../images/jquery.selectBox-arrow.gif) 50% center no-repeat;
+	/*background-image:url(images/sel_win7.gif);*/
+	background: url(images/jquery.selectBox-arrow.gif) 50% center no-repeat;
 	border: 1px solid #bbb;
 }
 
@@ -1054,11 +1054,11 @@ a.fieldMust:hover {
 
 
 /*.contextMenu li.iconHomeSmall a { 
-	background-image: url(../images/home_32.png);
+	background-image: url(images/home_32.png);
 	background-size: 18px; 
 }
 .contextMenu li.iconLogoutSmall a { 
-	background-image: url(../images/logout_24.png);
+	background-image: url(images/logout_24.png);
 	background-size: 20px; 
 }*/
 
@@ -1092,7 +1092,7 @@ a.fieldMust:hover {
 .genHeader
 {
 	border:1px solid #ccc;
-	background:url(../images/down.gif) no-repeat;
+	background:url(images/down.gif) no-repeat;
 	background-position: 130px;
 	font-weight:bold;
 	text-indent:10px;

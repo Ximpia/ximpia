@@ -49,8 +49,8 @@ class JoinUsForm(XBaseForm):
 class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
-	username = UserField(_dbUser, '_dbUser.username', label='Username', required=False, jsRequired=True, initial='')
-	password = PasswordField(_dbUser, '_dbUser.password', minLength=6, required=False, jsRequired=True, initial='')
+	username = UserField(_dbUser, 'username', label='Username', required=False, jsRequired=True, initial='')
+	password = PasswordField(_dbUser, 'password', minLength=6, required=False, jsRequired=True, initial='')
 	socialId = HiddenField()
 	socialToken = HiddenField()
 	authSource = HiddenField(initial=K.PASSWORD)
@@ -74,7 +74,7 @@ class HeaderForm(XBaseForm):
 class PasswordReminderForm(XBaseForm):
 	_XP_FORM_ID = 'passwordReminder'
 	_dbUser = User()
-	email = EmailField(_dbUser, '_dbUser.email', label='Email', helpText= _('Email address you signed up with'))
+	email = EmailField(_dbUser, 'email', label='Email', helpText= _('Email address you signed up with'))
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword','ERR_emailDoesNotExist']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_REMINDER']]))
 	def clean(self):
@@ -85,9 +85,9 @@ class PasswordReminderForm(XBaseForm):
 class ChangePasswordForm(XBaseForm):
 	_XP_FORM_ID = 'changePassword'
 	_dbUser = User()
-	username = UserField(_dbUser, '_dbUser.username', label='Username')
-	newPassword = PasswordField(_dbUser, '_dbUser.password', minLength=6, label='Password', helpText = _('Your New Password'))
-	newPasswordConfirm = PasswordField(_dbUser, '_dbUser.password', minLength=6, label='Confirm Password', 
+	username = UserField(_dbUser, 'username', label='Username')
+	newPassword = PasswordField(_dbUser, 'password', minLength=6, label='Password', helpText = _('Your New Password'))
+	newPasswordConfirm = PasswordField(_dbUser, 'password', minLength=6, label='Confirm Password', 
 					helpText = _('Write again your password to make sure there are no errors'))
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
@@ -100,11 +100,11 @@ class ChangePasswordForm(XBaseForm):
 class UserChangePasswordForm( XBaseForm ):
 	_XP_FORM_ID = 'userChangePassword'
 	_dbUser = User()
-	username = UserField(_dbUser, '_dbUser.username', label='Username')
-	newPassword = PasswordField(_dbUser, '_dbUser.password', minLength=6, label='New Password', helpText = _('Your New Password'))
-	newPasswordConfirm = PasswordField(_dbUser, '_dbUser.password', minLength=6, label='Confirm Password', 
+	username = UserField(_dbUser, 'username', label='Username')
+	newPassword = PasswordField(_dbUser, 'password', minLength=6, label='New Password', helpText = _('Your New Password'))
+	newPasswordConfirm = PasswordField(_dbUser, 'password', minLength=6, label='Confirm Password', 
 					helpText = _('Write again your password'))
-	password = PasswordField(_dbUser, '_dbUser.password', minLength=6, label='Password', helpText = _('Current password'))
+	password = PasswordField(_dbUser, 'password', minLength=6, label='Password', helpText = _('Current password'))
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
@@ -121,17 +121,17 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbAddress = Address()
 	_dbInvitation = Invitation()
 	# Fields
-	username = UserField(_dbUser, '_dbUser.username', label='Username')
-	password = PasswordField(_dbUser, '_dbUser.password', minLength=6, required=False, jsRequired=False,  
+	username = UserField(_dbUser, 'username', label='Username')
+	password = PasswordField(_dbUser, 'password', minLength=6, required=False, jsRequired=False,  
 		helpText = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
-	passwordVerify = PasswordField(_dbUser, '_dbUser.password', minLength=6, required=False, jsVal=["{equalTo: '#id_password'}"], 
+	passwordVerify = PasswordField(_dbUser, 'password', minLength=6, required=False, jsVal=["{equalTo: '#id_password'}"], 
 								jsRequired=False, label= _('Password Verify'))
-	email = EmailField(_dbInvitation, '_dbInvitation.email', label='Email')
-	firstName = CharField(_dbUser, '_dbUser.first_name')
-	lastName = CharField(_dbUser, '_dbUser.last_name', required=False)
-	city = CharField(_dbAddress, '_dbAddress.city', required=False)
-	country = OneListField(_dbAddress, '_dbAddress.country', choicesId='country', required=False, choices=Choices.COUNTRY)
-	invitationCode = CharField(_dbInvitation, '_dbInvitation.invitationCode', required=False, jsRequired=True)
+	email = EmailField(_dbInvitation, 'email', label='Email')
+	firstName = CharField(_dbUser, 'first_name')
+	lastName = CharField(_dbUser, 'last_name', required=False)
+	city = CharField(_dbAddress, 'city', required=False)
+	country = OneListField(_dbAddress, 'country', choicesId='country', required=False, choices=Choices.COUNTRY)
+	invitationCode = CharField(_dbInvitation, 'invitationCode', required=False, jsRequired=True)
 	authSource = HiddenField(initial=K.PASSWORD)
 	socialId = HiddenField()
 	socialToken = HiddenField()
@@ -161,7 +161,7 @@ class ActivateUserForm ( XBaseForm ):
 class FieldTestForm ( XBaseForm ):
 	_XP_FORM_ID = 'fieldTest'
 	_dbView = View()
-	application = OneListField(_dbView, '_dbView.application', choicesId='application', values=('slug',))
-	templates = ManyListField(_dbView, '_dbView.templates', choicesId='templates')
+	application = OneListField(_dbView, 'application', choicesId='application', values=('slug',))
+	templates = ManyListField(_dbView, 'templates', choicesId='templates')
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))

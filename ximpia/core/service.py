@@ -558,6 +558,13 @@ class ServiceDecorator(object):
 				if self._form != None:
 					#obj._ctx.form = self._form()
 					obj._setMainForm(self._form())
+					print 'self._form: ', self._form
+					print 'obj._ctx.form :: invitationCode: ', obj._ctx.form.fields['invitationCode'].initial
+					print 'instances: ', obj._ctx.form._instances
+					"""if len(obj._ctx.form._instances) == 0:
+						obj._setMainForm(self._form())
+					else:
+						pass"""
 				f(*argsTuple, **argsDict)
 				if not obj._ctx.doneResult:
 					# Instances

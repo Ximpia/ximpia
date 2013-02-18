@@ -12,7 +12,11 @@ input[type='password'] {
 
 div.input-label-left {
 	float:left;
-	padding-top: 5px;
+	padding-top: 2px;
+}
+
+div.input-label-top {
+	padding-top: 3px;
 }
 
 div.label-fix-width div.input-label-left {
@@ -42,6 +46,21 @@ input.fieldOpt, select.fieldOpt, textarea.fieldOpt {
 
 input.Small, select.Small, textarea.Small {
 	background-color:#ffffff;
+}
+
+input[data-xp-type='field.datetime'] {
+	background: url(images/blue-basic/24/clock.png) right no-repeat;
+	background-size: 16px;
+}
+
+input[data-xp-type='field.time'] {
+	background: url(images/blue-basic/24/clock.png) right no-repeat;
+	background-size: 16px;
+}
+
+input[data-xp-type='field.date'] {
+	background: url(images/blue-basic/24/calendar.png) right no-repeat;
+	background-size: 16px;
 }
 
 .formBlock {
@@ -80,6 +99,7 @@ input.Small, input.SmallMust {
 input.field, input.fieldMust {
     padding-left: 5px;
     border-radius: 4px;
+    margin-left: 3px;
 }
 
 select {
@@ -783,7 +803,7 @@ div.listContainer {
 	border: 1px solid #bbb;
 	min-height: 24px;
 	max-height: 72px;
-	margin-bottom: 15px;
+	/*margin-bottom: 15px;*/
 	width: 400px;
 	float: left;
 	border-radius: 5px;
@@ -1319,12 +1339,15 @@ div[data-xp-type="basic.select"] {
 	border-top-right-radius: 0px;
 	padding-left: 7px;
 	border-right: 0px;
+	height: 16px;
+	border: 1px solid #ccc;
 }
 
 textarea {
 	border-radius: 5px;
 	border: 1px solid #ddd;
 	padding: 5px;
+	font-size: 1.2em;
 }
 
 .arUp:after {
@@ -1374,7 +1397,7 @@ legend {
 	padding: 0px 15px; 
 	font-weight: bold; 
 	font-size: 80%;
-	line-height: 24px;
+	line-height: 18px;
 	font-size: 1.0em;
 }
 

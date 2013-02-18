@@ -112,15 +112,17 @@ class Field( DjField ):
 		self.localize = False
 		self.attrs['label'] = label or self.label
 		self.attrs['helpText'] = self.helpText
+		self.attrs['required'] = self.required 
+		self.attrs['jsRequired'] = self.jsRequired
 		super(Field, self).__init__(required=required, widget=None, label=label, initial=initial,
                  help_text=helpText, error_messages=None, show_hidden_initial=False, validators=[], localize=False)
 		
 	def _doInstanceInit(self, instance, insField):
-		"""Set instance and instanceName and instanceFieldName"""
-		if insField.find('.') != -1:
-			instanceName, instanceFieldName = insField.split('.')
-			self.instanceName = instanceName
-			self.instanceFieldName = instanceFieldName
+		"""
+		Set instance and instanceName and instanceFieldName
+		"""
+		if insField != '' or insField is not None:
+			self.instanceFieldName = insField
 			self.instance = instance
 	def _getModelField(self):
 		"""
@@ -300,7 +302,6 @@ class CharField( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``minLength``:str
 	* ``maxLength``:str
@@ -315,9 +316,12 @@ class CharField( Field ):
 	minLength = None
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
-		self.minLength, self.maxLength = minLength, maxLength
 		super(CharField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
+		if maxLength != None:
+			self.maxLength = maxLength
+		if minLength != None:
+			self.minLength = minLength
 		if len(self.defaultValidators) == 0:
 			self.defaultValidators = [validateTxtField]
 		if self.minLength is not None:
@@ -356,7 +360,6 @@ class BooleanField ( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -407,7 +410,6 @@ class IPAddressField(Field):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -452,7 +454,6 @@ class GenericIPAddressField(CharField):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -517,7 +518,6 @@ class DecimalField ( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -648,7 +648,6 @@ class IntegerField ( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -729,7 +728,6 @@ class FloatField ( IntegerField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -790,7 +788,6 @@ class _BaseTemporalField ( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -880,7 +877,6 @@ class DateField ( _BaseTemporalField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -951,7 +947,6 @@ class DateTimeField ( _BaseTemporalField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -1031,7 +1026,6 @@ class TimeField ( _BaseTemporalField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -1102,7 +1096,6 @@ class UserField( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``minLength``:str
 	* ``maxLength``:str
@@ -1147,7 +1140,6 @@ class EmailField( CharField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``minLength``:str
 	* ``maxLength``:str
@@ -1196,7 +1188,6 @@ class PasswordField( CharField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``minLength``:str
 	* ``maxLength``:str
@@ -1296,7 +1287,6 @@ class FileBrowseField ( CharField ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``minLength``:str
 	* ``maxLength``:str
@@ -1370,7 +1360,6 @@ class OneListField( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str
@@ -1505,7 +1494,6 @@ class ManyListField( Field ):
 	** Attributes **
 	
 	* ``instance``:object
-	* ``instanceName``:str
 	* ``instanceFieldName``:str
 	* ``required``:bool
 	* ``initial``:str

@@ -602,6 +602,7 @@ class View( BaseModel ):
 	* ``accessGroups`` <-> site.Group through ViewAccessGroup
 	
 	"""
+	# TODO: isPublished:bool
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW')
 	parent = models.ForeignKey('self', null=True, blank=True, related_name='view_parent', 
 		    verbose_name = _('Parent'), help_text = _('Parent'), db_column='ID_PARENT')
