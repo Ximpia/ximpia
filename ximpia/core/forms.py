@@ -100,13 +100,28 @@ class XBaseForm( forms.Form ):
 						elif isManyToMany:
 							logger.debug('XBaseForm :: Many data: %s' % (eval('dbResolved.' + instanceFieldName + '.all()')) )
 							data = eval('dbResolved.' + instanceFieldName + '.all()')
-							manyOut = []
+							manyOutStr = '['
+							# [{pk: 1},{pk: 12}]
 							for dataItem in data:
-								if type(dataItem) == types.StringType or type(dataItem) == types.UnicodeType:
-									manyOut.append("'" + json.dumps(dataItem.pk) + "'")
+								if manyOutStr == '[':
+									manyOutStr += '{'
 								else:
-									manyOut.append(json.dumps(dataItem.pk))
-							field.initial = str(manyOut)
+									manyOutStr += ', {'
+								dataItemValue = json.dumps(dataItem.pk)
+								if dataItemValue.find('"') != -1:
+									dataItemValue = dataItemValue.replace('"',"'")
+								manyOutStr += "pk: " + dataItemValue
+								logger.debug('XBaseForm :: field.values: %s' % (field.values) )
+								if len(field.values) != 0:
+									for valuesItem in field.values:
+										dataItemValue = json.dumps(eval('dataItem.' + valuesItem))
+										if dataItemValue.find('"') != -1:
+											dataItemValue = dataItemValue.replace('"',"'")
+										manyOutStr += ', ' + valuesItem + ": " + dataItemValue
+								manyOutStr += '}'
+							manyOutStr += ']'
+							logger.debug('XBaseForm :: manyOutStr: %s' % (manyOutStr) )
+							field.initial = manyOutStr
 							field.instance = dbResolved
 						else:
 							field.initial = eval('dbResolved.' + instanceFieldName)
@@ -156,6 +171,13 @@ class XBaseForm( forms.Form ):
 				dbResolved = instance
 				break
 		return dbResolved
+	def _getInstanceName(self, instance):
+		"""
+		Get model instance name
+		"""
+		insTypeFields = str(type(instance)).split('.')
+		instanceName = insTypeFields[len(insTypeFields)-1].split("'")[0]
+		return instanceName
 	def _isForeignKey(self, instance, instanceFieldName):
 		"""
 		Checks if field is foreign key
@@ -369,6 +391,60 @@ class XBaseForm( forms.Form ):
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
 		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
+	def save(self):
+		"""
+		Saves the form.
+		
+		In case it is a new register, inserts into database form data.
+		
+		In case we are updating, modifies all instances related to form fields.
+		
+		=================================
+		
+		Page button save will call jxService which will call service operation save
+		Service operation save (from core common service)
+		fill form with form = MyForm(request.POST) and call form.save() for all forms, Decorators????
+		
+		Take into account form input / select elements that do not appear in form definition, and should not since they are
+		built to populate other components like FieldList, etc...
+		
+		Algorithm
+		=========
+		
+		1. We get all fields, add to instances list, map, set value
+		2. Travel list of instances, save each instance
+		
+		=================================
+		"""
+		
+		fieldList = self.fields.keys()
+		instances = {}
+		for field in fieldList:
+			instanceName = self._getInstanceName(field.instance)
+			if not instances.has_key(instanceName):
+				instances[instanceName] = field.instance
+			isMany = self._isManyToMany(instances[instanceName], field.instanceFieldName)
+			isFK = self._isForeignKey(instances[instanceName], field.instanceFieldName)
+			if isFK:
+				instances[instanceName].__setattr__(field.instanceFieldName + '_id', field.initial)
+			else:
+				if not isMany:
+					instances[instanceName].__setattr__(field.instanceFieldName, field.initial)
+		# Save model instances
+		for instanceName in instances:
+			logger.debug('XBaseForm.save :: Saving %s' % (instanceName) )
+			instances[instanceName].save()
+			logger.debug('XBaseForm.save :: %s saved!' % (instanceName) )
+		# TODO: Do ManyToMany: Delete all associations, and insert new associations
+		# In case we have other fields related to a many to many relationship????
+	
+	def delete(self, isReal=False):
+		"""
+		Deletes the reference model instance defined in the form.
+		
+		Get the pk from reference model in the form and calls delete()
+		"""
+		pass
 	def buildJsData(self, app, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
@@ -406,7 +482,7 @@ class XBaseForm( forms.Form ):
 	
 	def disableFields(self, fields):
 		"""
-		Diable fields
+		Diable fields, will show them with ``readonly`` html attribute.
 		
 		** Attributes **
 		

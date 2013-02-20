@@ -39,7 +39,7 @@ class Field( DjField ):
 	defaultValidators = []
 	defaultErrorMessages = {}
 	localize = False
-	def __init__(self, instance, insField, required=True, jsRequired=None, jsVal=None, label=None, initial=None, helpText=None, 
+	def __init__(self, instance, insField, required=None, jsRequired=None, jsVal=None, label=None, initial=None, helpText=None, 
 				errorMessages=None, validators=[]):
 		"""
 		Common field form class
@@ -62,14 +62,14 @@ class Field( DjField ):
 		self.attrs = {}
 		self._doInstanceInit(instance, insField)
 		self.required, self.jsRequired = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		if required == False and jsRequired == True:
+		classStr = 'fieldMust' if self.required == True else 'field'
+		if self.required == False and self.jsRequired == True:
 			classStr = 'fieldMust'
 		# attrs
 		self.attrs['class'] = classStr
 		if label is not None:
 			label = smart_unicode(label)
-		self.required, self.label, self.initial = required, label, initial
+		self.label, self.initial = label, initial
 		initValue = initial if initial != None else ''
 		# helpText		
 		if helpText is None:
@@ -84,10 +84,10 @@ class Field( DjField ):
 			if not helpText:
 				self.helpText = smart_unicode(self.instance._meta.get_field_by_name(self.instanceFieldName)[0].help_text.title())
 		# jsRequired
-		self.jsRequired = jsRequired
-		if required == True and not self.jsRequired:
+		#self.jsRequired = jsRequired
+		if self.required == True and not self.jsRequired:
 			self.jsRequired= True
-		if required == False and not self.jsRequired:
+		if self.required == False and not self.jsRequired:
 			self.jsRequired = False
 		if self.jsRequired:
 			if self.jsRequired == True:
@@ -137,6 +137,41 @@ class Field( DjField ):
 		modelField = self._getModelField()
 		fieldTypeFields = str(type(modelField)).split('.')
 		return fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
+	def _getLimitChoicesTo(self, instance, instanceFieldName):
+		"""
+		Get limit_choices_to from model for field name. Searches for through table.
+		
+		** Attributes **
+		
+		* ``instance``
+		* ``instanceFieldName``
+		
+		** Returns**
+		
+		limitChoices:dict
+		"""
+		limitChoicesTo = {}
+		rel = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel
+		if rel:
+			through = rel.through
+			if through:
+				# Many through another table
+				mainTo = rel.to
+				# Resolve fieldName for link from through table to main table
+				fieldList = through._meta.fields
+				fieldName = ''
+				for field in fieldList:
+					if field.rel:
+						relTo = field.rel.to
+						if relTo and relTo == mainTo:
+							# This is the field
+							fieldName = field.name
+				if fieldName != '':
+					limitChoicesTo = through._meta.get_field_by_name(fieldName)[0].rel.limit_choices_to
+			else:
+				# No through table
+				limitChoicesTo = rel.limit_choices_to
+		return limitChoicesTo
 	def _doInstance(self, initial, initValue):
 		"""
 		Perform instance logic with basic fields, foreign key fields and many to many fields
@@ -173,6 +208,10 @@ class Field( DjField ):
 		"""Process required and javascript required"""
 		# True | None => True		
 		# False | None => False
+		if required == None and self.instance != None:
+			required = not self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null
+			logger.debug('Field._doRequired :: field: %s model field null: %s required: %s' % 
+						(self.instanceFieldName, self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null, required) )
 		if jsRequired == None:
 			jsRequired = required
 		t = (required, jsRequired)
@@ -314,7 +353,7 @@ class CharField( Field ):
 	"""
 	maxLength = None
 	minLength = None
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
 		super(CharField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
@@ -568,9 +607,10 @@ class DecimalField ( Field ):
 			self.attrs['decimalPlaces'] = modelField.decimal_places
 			self.decimalPlaces = modelField.decimal_places
 			self.maxDigits = modelField.max_digits
+		
 		# For fields PossitiveIntegerField and PossitiveSmallIntegerField if no minValue defined, set minValue to 0
-		if (modelFieldType == 'PossitiveIntegerField' or modelFieldType == 'PossitiveSmallIntegerField') and minValue is None:
-			self.attrs['minValue'] = modelField.minValue
+		if (modelFieldType == 'PositiveIntegerField' or modelFieldType == 'PositiveSmallIntegerField') and minValue is None:
+			self.attrs['minValue'] = 0
 
 	def to_python(self, value):
 		"""
@@ -679,9 +719,8 @@ class IntegerField ( Field ):
 		
 		# For fields PossitiveIntegerField and PossitiveSmallIntegerField if no minValue defined, set minValue to 0
 		modelFieldType = self._getModelFieldType()
-		modelField = self._getModelField()
-		if (modelFieldType == 'PossitiveIntegerField' or modelFieldType == 'PossitiveSmallIntegerField') and minValue is None:
-			self.attrs['minValue'] = modelField.minValue
+		if (modelFieldType == 'PositiveIntegerField' or modelFieldType == 'PositiveSmallIntegerField') and minValue is None:
+			self.attrs['minValue'] = 0
 
 	def to_python(self, value):
 		"""
@@ -1539,6 +1578,8 @@ class ManyListField( Field ):
 		if choices == None and self._isManyToMany() == False:
 			raise XpMsgException(AttributeError, _('Either choices must be declared or field be a ManyToMany relationship'))
 		self.attrs['choicesId'] = self.choicesId
+		if initial == '':
+			self.initial = '[]'
 		
 	def buildList(self):
 		"""
@@ -1549,7 +1590,9 @@ class ManyListField( Field ):
 		
 		``valueList``:list<(name, value)>
 		
-		"""		
+		"""
+		
+		# TODO: Should get filter from model to filter out values, limitTo insertion from model
 		
 		if len(self.choices) != 0:
 			# choices
@@ -1558,12 +1601,17 @@ class ManyListField( Field ):
 			model = self.instance.__class__  #@UnusedVariableWarning
 
 			if self._isManyToMany() == False:
-				raise XpMsgException(AttributeError, _('Field must be ManyToMany if choices attribute  is not declared.'))
+				raise XpMsgException(AttributeError, _('Field must be ManyToMany if choices attribute is not declared.'))
 			# many to many			
 			valueList = []
+			
+			limitChoicesTo = self._getLimitChoicesTo(self.instance, self.instanceFieldName)
+			if len(limitChoicesTo) != 0 and len(self.limitTo) == 0:
+				self.limitTo = limitChoicesTo
 			# in case we have limitTo, place filter query. Otherwise, run all() on related parent model related to foreign key
 			if len(self.limitTo) == 0:
 				if len(self.orderBy) == 0:
+					# Default query without limitTo or orderBy
 					rows = model._meta.get_field_by_name(self.instanceFieldName)[0].related.parent_model.\
 						objects.all()
 				else:
