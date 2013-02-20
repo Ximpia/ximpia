@@ -1006,22 +1006,22 @@
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
-				ximpia.console.log('xpOption :: element : ' + element); 
+				ximpia.console.log('xpCheck :: element : ' + element); 
 				var idBase = $(element).attr('id').split('_comp')[0];
 				var name = idBase.split('id_')[1];
-				ximpia.console.log('xpOption :: idBase : ' + idBase);
+				ximpia.console.log('xpCheck :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
 					var value = "";
 					var choicesId = "";
-					value = data[name]['value'];
+					var valueList = eval(data[name]['value']);
 					choicesId = data[name]['choicesId']
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 	        		// Choices
-	        		ximpia.console.log('xpOption :: choicesId: ' + choicesId);
+	        		ximpia.console.log('xpCheck :: choicesId: ' + choicesId);
 	        		var choiceList = JSON.parse(data['choices']['value'])[choicesId];
-	        		ximpia.console.log('xpOption :: choicesList: ' + choiceList);
+	        		ximpia.console.log('xpCheck :: choicesList: ' + choiceList);
 	        		var htmlContent = "";
 	        		if (!attrs.hasOwnProperty('labelPosition') && attrs.hasOwnProperty('hasLabel')) {
 	        			attrs['labelPosition'] = settings.labelPosition;
@@ -1057,7 +1057,7 @@
 	        			if (attrs.labelPosition == 'left') {
 	        				htmlContent += ': ';
 	        			}
-	        			htmlContent += "</div>";	        			
+	        			htmlContent += "</div>";
 	        		}
 	        		// Option items
 	        		if (attrs.alignment == 'horizontal') {
@@ -1065,11 +1065,16 @@
 	        		} else  {
 	        			htmlContent += "<ul class=\"ui-check-vertical\">";
 	        		}
+	        		var valueNewList = [];
+	        		for (var j=0; j<valueList.length; j++) {
+	        			valueNewList.push(valueList[j].pk);
+	        		};
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
 						var controlHtml = "";
 						var ctlId = "id_" + name + "_" + choiceList[j][0];
-						if (choiceList[j][0] == value) {
+						var hasValue = ximpia.common.ArrayUtil.hasKey(valueNewList, choiceList[j][0]);
+						if (hasValue) {
 							controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"check\" name=\"" + name + 
 								"\" value=\"" + choiceList[j][0] + "\" data-xp=\"{}\" checked=\"checked\"";
 						} else {
@@ -1093,7 +1098,7 @@
 					// Trace
 					ximpia.console.log(htmlContent);
 				} else if (!data.hasOwnProperty(name)) {
-					ximpia.console.log('xpOption.render :: server data has no variable');
+					ximpia.console.log('xpCheck.render :: server data has no variable');
 				}
 			}
 		},
@@ -1136,12 +1141,17 @@
  * 
  * They can be rendered as tags horizontally
  * 
+ * ** Field Type HTML **
+ * 
+ * ** Select Type HTML **
+ * 
  * 
  * ** Attributes **
  * 
- * * ``type``:string [default: field]. Type of control for adding values: ``field`` and ``select.plus`` possible values.
- * * ``labelWidth``:number
- * * ``selectObjId``:string
+ * * ``type``:string [default: field] [optional] : Type of control for adding values: ``field`` and ``select.plus`` possible values.
+ * * ``labelWidth``:number [optional]
+ * * ``selectObjId``:string [optional]
+ * * ``modelField``:string [optiona] : For field input type, the model field value. Required for fields. Not required for select input.
  * 
  * ** Methods **
  * 
@@ -1169,6 +1179,12 @@
         	limit: 10,
         	type: 'field'
         };
+        /*
+         * Variables
+         */
+        var vars = {
+        	form: ''
+        };
         /**
          * Build Item html code
          * 
@@ -1182,10 +1198,13 @@
          */
         var buildItemHtml = function(obj) {
 			var sHtml = '<div class="listField" style=\"float:left\"><div class="listFieldText"' +  
-				' style=\"float:left\">' + 
-				obj.data + '</div><!--<div class="listFieldSep" style=\"float:left\">&nbsp;</div>-->' + 
+				' style=\"float:left\">' + obj.data + '</div>' + 
 				'<div class="listFieldDel" style=\"float:left\" data-xp-field-id=\"' + obj.dataId + 
-				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"' + obj.idBase + '\">X</div></div>';
+				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"' + obj.idBase + '\"';
+			/*if (obj.hasOwnProperty('attrs') && obj.attrs.hasOwnProperties('modelField')) {
+				sHtml += ' data-xp-field-model=\"' + obj.attrs.modelField + '\"';
+			}*/
+			sHtml += '>X</div></div>';
 			return sHtml;
         };
         /**
@@ -1198,29 +1217,46 @@
          * * ``inputDataId``: input id (field, select, etc...)
          */
         var deleteItem = function(element, idBase, inputDataId) {
-			var fieldId = $(element).attr('data-xp-field-id');
+        	var index = $(element).parent().index();
 			var idElementHid = $(element).attr('data-xp-field-hidden-id');
     		$(element).parent().remove();
     		var baseValue = $("#" + idElementHid).attr('value');
 			var valueList = eval(baseValue);
-			var valueListNew = [];
-			for (var i=0; i<valueList.length; i++) {
-				if (valueList[i] != fieldId) {
-					valueListNew.push(valueList[i])
-				}
-			}
-			var valueListStr = "[";
-			for (var i=0; i<valueListNew.length; i++) {
-				if (i == 0) {
-					valueListStr += "'" + valueListNew[i] + "'";
-				} else {
-					valueListStr += ",'" + valueListNew[i] + "'";
-				}							
-			}
-			valueListStr += "]";
+			valueList.splice(index, 1);
+			ximpia.console.log('xpFieldList.deleteItem :: valueList...');
+			ximpia.console.log(valueList);
+			var valueListStr = JSON.stringify(valueList).replace(/"/g, "'");
 			$('#' + idBase).val(valueListStr);
 			$('#' + inputDataId).focus();
         };
+        /**
+         * Get global type: field, select. Field would group all field types and select would group all select components
+         */
+        var getGlobalType = function(type) {
+			if (type == 'field') {
+				var globalType = 'field';
+			} else if (type == 'select' || type == 'select.plus') {
+				var globalType = 'select';
+			}
+			return globalType;
+       };
+       /**
+        * Get data values : [dataId, data]
+        */
+       var getDataValues = function(globalType, dataItemObj, attrs, dataObj) {
+			if (globalType == 'select') {
+				var dataId = dataItemObj.pk;
+				var data = dataObj[dataId] || '';
+			} else {
+				var dataId = dataItemObj.pk;
+				if (attrs.hasOwnProperty('modelField')) {
+					var data = dataItemObj[attrs['modelField']];
+				} else {
+					var data = '';
+				}
+			}
+			return [dataId, data];
+      };
         /**
          * Add field
          * 
@@ -1234,25 +1270,20 @@
         	ximpia.console.log('xpFieldList.addField...');
         	ximpia.console.log('xpFieldList.addField :: inputField: ' + inputField + ' feedType: ' + feedType);
         	var inputDataId = inputField.split('_comp')[0];
-        	if (feedType == 'field') {
+        	var globalType = getGlobalType(feedType);
+        	if (globalType == 'field') {
         		var idBase = inputField.split('Input_comp')[0];
 				var data = $("#" + inputDataId).prop('value');
 				var dataId = data;
-        	} else if (feedType == 'select.plus') {
+        	} else if (globalType == 'select') {
         		var idBase = $('#' + inputField).parent().attr('id').split('_comp')[0];
         		var dataId = $("#" + inputDataId).prop('value');
         		// Get from choices data
-        		var choiceList = JSON.parse($("[name='choices']").attr('value'))[choicesId];
-        		for (j in choiceList) {
-        			if (choiceList[j][0] == dataId) {
-        				data = choiceList[j][1];
-        			}
-        		}
+        		var data = ximpia.common.Choices.getData(vars.form, choicesId, dataId);
         	}
 			ximpia.console.log('xpFieldList.addField :: data: ' + data + ' dataId: ' + dataId);
 			var idBaseList = idBase;
 			var baseValue = $("#" + idBase).attr('value');
-			//alert('baseValue: ' + baseValue);
 			var baseFields = [];
 			if (typeof baseValue != 'undefined') {
 				baseFields = baseValue.split(',');
@@ -1261,12 +1292,18 @@
 			var attrs = $("#" + idBase).parent().metadata();
 			var limit = attrs['limit'] || settings.limit;
 			ximpia.console.log('xpFieldList.addField :: idBaseList: ' + idBaseList);
-			// TODO: Build input list object
 			var hasElement = false;
 			var valueList = eval(baseValue);
 			for (i=0; i<valueList.length; i++) {
-				if (valueList[i] == dataId) {
-					hasElement = true;
+				if (globalType == 'select') {
+					if (valueList[i].pk == dataId) {
+						hasElement = true;
+					}
+				} else {
+					fieldModelName = attrs['modelField']
+					if (valueList[i][fieldModelName] == data) {
+						hasElement = true;
+					}
 				}
 			}
 			var size = 0;
@@ -1285,46 +1322,48 @@
 				var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data:data});
 				ximpia.console.log(sHtml);
 				$('#' + idBase + 'Show').append(sHtml);
-				if (baseValue == '') {
-					var valueList = [];
-					valueList.push(dataId);
-					var valueListStr = "[";
-					for (var i=0; i<valueList.length; i++) {
-						if (i == 0) {
-							valueListStr += "'" + valueList[i] + "'";
-						} else {
-							valueListStr += ",'" + valueList[i] + "'";
+				var baseList = eval(baseValue);
+				if (feedType == 'field') {
+					var itemObj = {};					
+					if ($('#' + inputField).attr('data-xp-complete')) {
+						$.metadata.setType("attr", "data-xp-complete");
+						var attrsComplete = $("#" + inputField).metadata();
+						if (attrsComplete.hasOwnProperty('choicesId')) {
+							var choicesId = attrsComplete.choicesId;
+							var itemChObj = ximpia.common.Choices.getByValue(vars.form, choicesId, data);
+							if (itemChObj) {
+								itemObj.pk = parseInt(itemChObj[0]);
+							}
 						}
 					}
-					valueListStr += "]";
-					$('#' + idBase).val(valueListStr);
+					itemObj[attrs['modelField']] = data;
+					baseList.push(itemObj);
 				} else {
-					var valueList = eval(baseValue);
-					valueList.push(dataId);
-					var valueListStr = "[";
-					for (var i=0; i<valueList.length; i++) {
-						if (i == 0) {
-							valueListStr += "'" + valueList[i] + "'";
-						} else {
-							valueListStr += ",'" + valueList[i] + "'";
-						}
-					}
-					valueListStr += "]";
-					$('#' + idBase).val(valueListStr);
+					baseList.push({ pk: dataId });
 				}
-				if (feedType == 'input') {
+				ximpia.console.log(baseList);
+				baseListStr = JSON.stringify(baseList).replace(/"/g, "'");
+				$('#' + idBase).val(baseListStr);
+				if (globalType == 'field') {
 					$('#' + inputDataId).prop('value', '');
 					$('#' + inputDataId).focus();
-				} else if (feedType == 'select') {
-					$('#' + idBase + 'Select_input').prop('value', '');
+				} else {
+					$('#' + inputField).xpSelectPlus('setValue', '', '');
 				}
 				// Remove Field Bind
-				$('.listFieldDel').click(function() {
+				$('#' + idBase + 'Show').children().last().find('.listFieldDel').click(function() {
 					deleteItem($(this), idBase, inputDataId);
 				});
 			} else if (size >= limit) {
 				// TODO: Show a fancy messahe window
-				alert('Can´t include more fields to the list');
+				alert('Can´t include more fields to the list!');
+			} else if (hasElement == true) {
+				if (globalType == 'field') {
+					$('#' + inputDataId).prop('value', '');
+					$('#' + inputDataId).focus();
+				} else {
+					$('#' + inputField).xpSelectPlus('setValue', '', '');
+				}
 			}
         };
         var methods = {
@@ -1340,6 +1379,7 @@
 		render: function(xpForm) {
 			ximpia.console.log('xpFieldList :: render...');
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
+			vars.form = ximpia.common.Browser.getForm(xpForm); 
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				//ximpia.console.log($(this)[i]);
@@ -1351,8 +1391,6 @@
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);				
 				if (doRender == true) {
 					var nameInput = name + 'Input';
-					//var nameSelect = name + 'Select';
-					/*var nameList = name + 'ListValue';*/
 					var nameList = name;
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
@@ -1360,14 +1398,6 @@
 					if (data.hasOwnProperty(name)) {
 						dataAttrs = data[name];
 					}
-					// ????????????????????????????????????????????????
-					/*var dataSelectAttrs = {}
-					if (attrs.hasOwnProperty('selectObjId')) {
-						var nameSelect = attrs['selectObjId'].split('_comp')[0].split('id_')[1];
-						if (data.hasOwnProperty(nameSelect)) {
-							dataSelectAttrs = data[nameSelect];
-						}
-					}*/
 					ximpia.console.log('xpFieldList.render :: attrs....');
 					ximpia.console.log(attrs); 
 					var type = attrs.type || settings.type;
@@ -1389,6 +1419,7 @@
 					var helpText = attrs.helpText || dataAttrs.helpText;
 					var choicesId = attrs.choicesId || '';
 					var inputField = '';
+					var globalType = getGlobalType(type);
 					if (type == "field") {
 						var htmlContent = "";
 						inputField = idBase + 'Input_comp';
@@ -1396,7 +1427,7 @@
 						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + "}\" style=\"float: left; margin-top: 0px\" data-xp-related=\"field.list\" ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
 						htmlContent += " data-xp-type=\"button.field\"";
-						htmlContent += " data-xp=\"{input: " + idBase + "Input_comp, type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
+						htmlContent += " data-xp=\"{input: '" + idBase + "Input_comp', type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\"";
 						htmlContent += " style=\"width: 300px; margin-left: 15px; \" ></div><div style='clear:both'></div>";
 						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + myValue + "\" />";
@@ -1407,19 +1438,18 @@
 						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + ", helpText:'" + helpText + "', choicesId: '" + choicesId + "'}\" style=\"float: left; margin-top: 2px\" data-xp-related=\"field.list\"  ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
 						htmlContent += " onclick=\"return false;\" data-xp-type=\"button.field\" data-xp=\"{input: '" + attrs['selectObjId'];
-						htmlContent += "', type: 'select.plus', choicesId: '" + choicesId + "'}\" style=\"margin-top:4px\" >Add</a></div>";
+						htmlContent += "', type: 'select', choicesId: '" + choicesId + "'}\" style=\"margin-top:4px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\" style=\"width: 300px;";
 						htmlContent += " margin-left: 15px; margin-top: 2px\" ></div><div style='clear:both'></div>";
 						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + 
 											myValue + "\" />";
 					}
-					// TODO: Integrate html like this...
-					/*var htmlContent2 = '\
-					<div id="{{}}" >\
-					';*/
 					$(element).html(htmlContent);
+					if (globalType == 'field' && $(element).attr('data-xp-complete')) {
+						$('#' + idBase + 'Input_comp').attr('data-xp-complete', $(element).attr('data-xp-complete'));
+					}
 					$(element).attr('data-xp-render', JSON.stringify(true));
-					$(element).css('clear', 'both');					
+					$(element).css('clear', 'both');
 					// Render item values
 					if (myValue != '[]') {
 		        		var dataObj = {};
@@ -1429,10 +1459,14 @@
 		        		}
 		        		ximpia.console.log(dataObj);
 						var itemList = eval(myValue);
+						ximpia.console.log('xpFieldList.render :: itemList...');
+						ximpia.console.log(itemList);
 						var inputDataId = inputField.split('_comp')[0];
 						for (var i=0; i<itemList.length; i++) {
-							var dataId = itemList[i];
-							var data = dataObj[dataId] || '';
+							var dataItemObj = itemList[i];
+							var dataValues = getDataValues(globalType, dataItemObj, attrs, dataObj);
+							var dataId = dataValues[0];
+							var data = dataValues[1];
 							if (data != '') {
 								var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data: data});
 								$('#' + idBase + 'Show').append(sHtml);
@@ -1471,8 +1505,10 @@
 					if (e.which == 13) {
 						// Enter Key
 						var inputField = e.currentTarget.id + '_comp';
-						ximpia.console.log('inputField: ' + inputField);
-                		addField(inputField, 'input');
+						ximpia.console.log('xpFieldList.keyPress :: inputField: ' + inputField);
+						//ximpia.console.log($(element)[0].form.id);
+						vars.form = $(element)[0].form.id;
+                		addField(inputField, 'field');
 					}
 				});
 			}			
@@ -1929,14 +1965,19 @@
     		var nameField = idField.split('_field')[0].split('id_')[1];
     		ximpia.console.log('setValue :: nameField: ' + nameField);
     		ximpia.console.log(data);
-    		var field = data[nameField];
-    		var choicesId = field['choicesId'];
-    		ximpia.console.log('setValue :: choicesId: ' + choicesId);
-    		var controlList = ximpia.common.Choices.get(formId, choicesId);
-    		ximpia.console.log('setValue :: controlList: ' + controlList);
-			var value = ximpia.common.List.getValueFromList(code, controlList);
-    		$(id).val(code).removeClass('watermark');
-    		$(id + '_input').val(value).removeClass('watermark');
+    		if (typeof data != 'undefined' && data.hasOwnProperty(nameField)) {
+    			var field = data[nameField];
+    			var choicesId = field['choicesId'];
+    			ximpia.console.log('setValue :: choicesId: ' + choicesId);
+    			var controlList = ximpia.common.Choices.get(formId, choicesId);
+    			ximpia.console.log('setValue :: controlList: ' + controlList);
+    			var value = ximpia.common.List.getValueFromList(code, controlList);
+    			$(id).val(code).removeClass('watermark');
+    			$(id + '_input').val(value).removeClass('watermark');
+    		} else {
+    			$(id).val(code).removeClass('watermark');
+    			$(id + '_input').val(value).removeClass('watermark');
+    		}
 		}	
         };		
         if ( methods[method] ) {

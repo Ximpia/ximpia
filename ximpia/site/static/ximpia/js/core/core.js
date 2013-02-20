@@ -350,13 +350,23 @@ ximpia.console.log = (function(logData, level) {
 ximpia.common.ArrayUtil = {};
 /*
  * Checks if array has key
+ * 
+ * ** Attributes **
+ * 
+ * * ``array``
+ * * ``keyTarget``
+ * 
+ * ** Returns **
+ * 
+ * boolean
+ * 
  */
 ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 	var exists = false;
 	//ximpia.console.log(JSON.stringify(array));
-	for (key in array) {
+	for (index in array) {
 		//ximpia.console.log(key + ' ' + array[key] + ' ' + keyTarget);
-		if (array[key] == keyTarget) {
+		if (array[index] == keyTarget) {
 			exists = true;
 		}
 	}
@@ -364,11 +374,85 @@ ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 }
 
 ximpia.common.Choices = {};
+/*
+ * Get choice
+ * 
+ * ** Attributes **
+ * 
+ * * ``formId``
+ * * ``choicesId``
+ * 
+ * ** Returns **
+ * 
+ * choices:list<object>
+ */
 ximpia.common.Choices.get = function(formId, choicesId) {
 	// Integrate here the new location for choices object
-	var list = JSON.parse($('#id_' + formId + '_choices').attr('value'))[choicesId];
+	var list = JSON.parse($('#id_' + formId + '_choices').attr('value'))[choicesId] || null;
 	return list;
 }
+/*
+ * Get choice data for dataId
+ */
+ximpia.common.Choices.getData = function(formId, choicesId, dataId) {
+	var choiceList = ximpia.common.Choices.get(formId, choicesId);
+	var data = '';
+	for (j in choiceList) {
+		if (choiceList[j][0] == dataId) {
+			data = choiceList[j][1];
+		}
+	}
+	return data
+}
+/*
+ * Checks for value
+ * 
+ * ** Attributes **
+ * 
+ * * ``formId``
+ * * ``choicesId``
+ * * ``data``
+ * 
+ * ** Returns **
+ * check:boolean
+ */
+ximpia.common.Choices.hasValue = function(formId, choicesId, data) {
+	var choiceList = ximpia.common.Choices.get(formId, choicesId);
+	var check = false;
+	for (j in choiceList) {
+		if (choiceList[j][1] == data) {
+			check = true;
+		}
+	}
+	return check
+}
+/*
+ * Get choice data by name
+ */
+ximpia.common.Choices.getByName = function(formId, choicesId, name) {
+	var choiceList = ximpia.common.Choices.get(formId, choicesId);
+	var choiceData = null;
+	for (j in choiceList) {
+		if (choiceList[j][0] == name) {
+			choiceData = choiceList[j];
+		}
+	}
+	return choiceData;
+}
+/*
+ * Get choice data by value
+ */
+ximpia.common.Choices.getByValue = function(formId, choicesId, value) {
+	var choiceList = ximpia.common.Choices.get(formId, choicesId);
+	var choiceData = null;
+	for (j in choiceList) {
+		if (choiceList[j][1] == value) {
+			choiceData = choiceList[j];
+		}
+	}
+	return choiceData;
+}
+
 /*
  ximpia.common.ClassType10 = function() {
  var _attr = {
