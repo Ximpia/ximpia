@@ -1332,7 +1332,7 @@
 							var choicesId = attrsComplete.choicesId;
 							var itemChObj = ximpia.common.Choices.getByValue(vars.form, choicesId, data);
 							if (itemChObj) {
-								itemObj.pk = parseInt(itemChObj[0]);
+								itemObj.pk = itemChObj[0];
 							}
 						}
 					}
@@ -1484,6 +1484,7 @@
 			// Bind click event to add button
 			$("[data-xp-type='button.field']").click(function(evt) {
 				evt.preventDefault();
+				$.metadata.setType("attr", "data-xp");
 				var attrsButton = $(this).metadata();
 				ximpia.console.log(attrsButton);
 				var inputField = attrsButton['input'];

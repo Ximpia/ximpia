@@ -153,7 +153,10 @@ class Field( DjField ):
 		limitChoicesTo = {}
 		rel = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel
 		if rel:
-			through = rel.through
+			try:
+				through = rel.through
+			except AttributeError:
+				through = None
 			if through:
 				# Many through another table
 				mainTo = rel.to
@@ -1465,7 +1468,10 @@ class OneListField( Field ):
 			if self._isForeignKey() == False:
 				raise XpMsgException(AttributeError, _('Field must be ForeignKey if choices attribute  is not declared.'))
 			# foreign key
-			valueList = []
+			valueList = []			
+			limitChoicesTo = self._getLimitChoicesTo(self.instance, self.instanceFieldName)
+			if len(limitChoicesTo) != 0 and len(self.limitTo) == 0:
+				self.limitTo = limitChoicesTo			
 			# in case we have limitTo, place filter query. Otherwise, run all() on queryset related to foreign key
 			if len(self.limitTo) == 0:
 				if len(self.orderBy) == 0:
@@ -1591,8 +1597,6 @@ class ManyListField( Field ):
 		``valueList``:list<(name, value)>
 		
 		"""
-		
-		# TODO: Should get filter from model to filter out values, limitTo insertion from model
 		
 		if len(self.choices) != 0:
 			# choices
