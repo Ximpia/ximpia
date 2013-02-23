@@ -95,11 +95,15 @@ class XBaseForm( forms.Form ):
 						logger.debug('XBaseForm :: field: %s isForeignKey: %s' % (instanceFieldName, isFK) )
 						logger.debug('XBaseForm :: field: %s isManyToMany: %s' % (instanceFieldName, isManyToMany) )
 						if isFK:
-							field.initial = eval('dbResolved.' + instanceFieldName + '.pk')
+							field.initial = eval('dbResolved.' + instanceFieldName + '_id')
 							field.instance = dbResolved
 						elif isManyToMany:
-							logger.debug('XBaseForm :: Many data: %s' % (eval('dbResolved.' + instanceFieldName + '.all()')) )
-							data = eval('dbResolved.' + instanceFieldName + '.all()')
+							through = self._getThrough(dbResolved, instanceFieldName)
+							logger.debug('XBaseForm :: Through: %s' % (through) ) 
+							logger.debug('XBaseForm :: Many data: %s' % (eval('dbResolved.' + instanceFieldName + '.through.objects.all()')) )
+							data = eval('dbResolved.' + instanceFieldName + '.through.objects.all()')
+							logger.debug('XBaseForm :: field name through: %s' % (self._getThroughEndField(dbResolved, instanceFieldName)) )
+							throughField = self._getThroughEndField(dbResolved, instanceFieldName)
 							manyOutStr = '['
 							# [{pk: 1},{pk: 12}]
 							for dataItem in data:
@@ -107,17 +111,17 @@ class XBaseForm( forms.Form ):
 									manyOutStr += '{'
 								else:
 									manyOutStr += ', {'
-								dataItemValue = json.dumps(dataItem.pk)
+								dataItemValue = json.dumps(eval('dataItem.' + throughField + '_id'))
 								if dataItemValue.find('"') != -1:
 									dataItemValue = dataItemValue.replace('"',"'")
-								manyOutStr += "pk: " + dataItemValue
+								manyOutStr += "'pk': '" + dataItemValue + "'"
 								logger.debug('XBaseForm :: field.values: %s' % (field.values) )
 								if len(field.values) != 0:
 									for valuesItem in field.values:
-										dataItemValue = json.dumps(eval('dataItem.' + valuesItem))
+										dataItemValue = json.dumps(eval('dataItem.' + valuesItem.replace('__','.')))
 										if dataItemValue.find('"') != -1:
 											dataItemValue = dataItemValue.replace('"',"'")
-										manyOutStr += ', ' + valuesItem + ": " + dataItemValue
+										manyOutStr += ", '" + valuesItem + "': " + dataItemValue
 								manyOutStr += '}'
 							manyOutStr += ']'
 							logger.debug('XBaseForm :: manyOutStr: %s' % (manyOutStr) )
@@ -205,6 +209,72 @@ class XBaseForm( forms.Form ):
 				 str(type(eval('instance.__class__.' + instanceFieldName))) == "<class 'django.db.models.fields.related.ReverseManyRelatedObjectsDescriptor'>":
 			isManyToMany = True
 		return isManyToMany
+	def _getThrough(self, instance, instanceFieldName):
+		"""
+		Checks if instance field has through relationship.
+		"""
+		rel = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel
+		if rel:
+			try:
+				through = rel.through
+			except AttributeError:
+				through = None
+		else:
+			through = None
+		return through
+	def _hasThrough(self, field):
+		"""
+		Checks weather many to many relationship has a through attribute. If not, add() method exists for field.
+		
+		** Attributes **
+		
+		* ``field``
+		
+		** Returns **
+		
+		bool
+		"""
+		check = False
+		try:
+			addMethod = field.add
+			check = True
+		except AttributeError:
+			pass
+		return check
+	def _getThroughEndField(self, instance, instanceFieldName):
+		"""
+		Get end relationship through field name
+		"""
+		fieldName = ''
+		try:
+			through = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel.through
+			mainTo = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel.to
+			for field in through._meta.fields:
+				if field.rel:
+					relTo = field.rel.to
+					if relTo and relTo == mainTo:
+						# This is the field
+						fieldName = field.name
+		except AttributeError:
+			pass
+		return fieldName
+	def _getThroughFromField(self, instance, instanceFieldName):
+		"""
+		Get from relationship through field name. field name for origin relationship.
+		"""
+		fieldName = ''
+		try:
+			through = instance.__class__._meta.get_field_by_name(instanceFieldName)[0].rel.through
+			origin = instance.__class__
+			for field in through._meta.fields:
+				if field.rel:
+					relTo = field.rel.to
+					if relTo and relTo == origin:
+						# This is the field
+						fieldName = field.name
+		except AttributeError:
+			pass
+		return fieldName
 	def setViewMode(self, viewList):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
@@ -391,6 +461,7 @@ class XBaseForm( forms.Form ):
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
 		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
+
 	def save(self):
 		"""
 		Saves the form.
@@ -419,6 +490,7 @@ class XBaseForm( forms.Form ):
 		
 		fieldList = self.fields.keys()
 		instances = {}
+		manyList = []
 		for field in fieldList:
 			instanceName = self._getInstanceName(field.instance)
 			if not instances.has_key(instanceName):
@@ -430,13 +502,104 @@ class XBaseForm( forms.Form ):
 			else:
 				if not isMany:
 					instances[instanceName].__setattr__(field.instanceFieldName, field.initial)
+				else:
+					# Many To Many relationship logic
+					manyList[field]
+
 		# Save model instances
 		for instanceName in instances:
 			logger.debug('XBaseForm.save :: Saving %s' % (instanceName) )
 			instances[instanceName].save()
-			logger.debug('XBaseForm.save :: %s saved!' % (instanceName) )
-		# TODO: Do ManyToMany: Delete all associations, and insert new associations
-		# In case we have other fields related to a many to many relationship????
+			logger.debug('XBaseForm.save :: %s saved!' % (instanceName) )		
+		
+		# TODO: Place this into method. In future, patterns for different many operations???
+		for field in manyList:
+			nowValues = eval('field.instance.' + field.instanceFieldName + '.through.objects.all()')
+			manyField = eval('field.instance.' + field.instanceFieldName)
+			visualListStr = field.initial.replace("'", '"')
+			visualList = json.loads(visualListStr)
+			delList = []
+			visualDict = {}
+			# origin <- through -> destination
+			hasThrough = self._hasThrough(manyField)
+			destinationModelClass = field.instance.__class__._meta.get_field_by_name(field.instanceFieldName)[0].rel.to
+			if hasThrough:
+				throughModelClass = field.instance.__class__._meta.get_field_by_name(field.instanceFieldName)[0].rel.through
+			for visualObj in visualList:
+				logger.debug('XBaseForm.save :: visualObj: %s' % (visualObj) )				
+				originField = self._getThroughFromField(field.instance, field.instanceFieldName)
+				destinationField = self._getThroughEndField(field.instance, field.instanceFieldName)
+				if not visualObj.has_key('pk'):
+					# Not having pk, which means we need to create destination data and through data
+					# Create destination data
+					logger.debug('XBaseForm.save :: No pk...')
+					args = {}
+					for key in visualObj.keys():
+						if key.find('__') > 0:
+							args[key.split('__')[1]] = visualObj[key]
+					destination = destinationModelClass.objects.create( **args )
+					logger.debug('XBaseForm.save :: Created destination table: %s' % (args) )
+					if not hasThrough:
+						# No through table
+						field.instance.add(destination)						
+					else:
+						# Through table
+						# Insert to destiny table
+						# Insert to intermidiate table
+						args = { originField: field.instance, destinationField: destination }
+						# Add to args for values in visualObj
+						for key in visualObj.keys():
+							if key != 'pk' and key.find('__') == -1:
+								args[key] = visualObj[key]
+						throughModelClass.objects.create( **args )
+						logger.debug('XBaseForm.save :: Created through table: %s' % (args) )
+				else:
+					# They have pk, either add to through table or insert into container visualDict					
+					# TODO: We should have a more efficient way than filter every time???
+					logger.debug('XBaseForm.save :: Have pk...')
+					destination = destinationModelClass.objects.get(pk=visualObj['pk'])
+					args = { self._getThroughEndField(field.instance, field.instanceFieldName) + '_id': visualObj['pk'] }
+					if len(nowValues.filter( **args )) == 0:
+						# pk not added to through table, we add
+						if hasThrough:
+							args = { originField: field.instance, destinationField: destination }
+							# Add to args for values in visualObj
+							for key in visualObj.keys():
+								if key != 'pk' and key.find('__') == -1:
+									args[key] = visualObj[key]
+							throughModelClass.objects.create( **args )
+							logger.debug('XBaseForm.save :: Created through table: %s' % (args) )
+						else:
+							field.instance.add(destination)
+					visualDict[visualObj['pk']] = visualObj
+								
+			# nowValues[0]['meta_id']
+			# mark for delete
+			for obj in nowValues:
+				myPk = eval('obj.' + field.instanceFieldName + '_id')
+				if not visualDict.has_key(myPk):
+					logger.debug('XBaseForm.save :: Mark for delete: %s' % (myPk) )
+					delList.append(myPk)
+				# Do updates
+				if visualDict.has_key(myPk):
+					visualObj = visualDict[myPk]
+					if visualObj.has_key('__doUpdate') and visualObj['__doUpdate'] == True:
+						# Will update from visual object attributes to through table
+						logger.debug('XBaseForm.save :: Will update model for pk: %s' % (myPk) )
+						attrs = visualObj.keys()
+						logger.debug('XBaseForm.save :: visualObj:%s' % (visualObj) )
+						for attr in attrs:
+							if attr.find('__') == -1:
+								obj.__setattr__(attr, visualObj[attr])
+						obj.save()
+			
+			# fieldMany = eval('field.instance.' + field.instanceFieldName)
+			# delete items in delList
+			if len(delList) != 0:
+				logger.debug('XBaseForm.save :: Deleting ... %s' % (delList) )			
+				delQuery = eval('field.instance.' + field.instanceFieldName + '.through.objects.filter(pk__in=delList)')
+				delQuery.delete()
+				logger.debug('XBaseForm.save :: Deleted completed' )
 	
 	def delete(self, isReal=False):
 		"""
@@ -445,6 +608,7 @@ class XBaseForm( forms.Form ):
 		Get the pk from reference model in the form and calls delete()
 		"""
 		pass
+	
 	def buildJsData(self, app, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
