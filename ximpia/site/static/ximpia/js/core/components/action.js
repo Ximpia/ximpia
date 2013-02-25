@@ -102,13 +102,18 @@
         		} else if (obj.viewType == 'title') {
         			createTitleMsgBar(obj);
         		}
-                	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
+                $("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
         		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
         		// Set form values from data-xp and action
         		var attrs = getFormAttrs(obj.form)
-        		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
+        		if (obj.action == 'save') {
+        			$("#" + obj.form).attr('action', ximpia.common.Path.getSave());
+        		} else {
+        			$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
+        		}
+        		$("#" + obj.form).append('<input type="hidden" name="form" value="' + obj.form.split('_')[1] + '" />');
         		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button action : ' + obj.action)
+        		console.log('form :: button action : ' + obj.action);
         		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         	} else {

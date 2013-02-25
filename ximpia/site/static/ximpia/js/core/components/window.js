@@ -279,10 +279,10 @@
 		},
 		destroy: function() {
 			ximpia.console.log('Will destroy popup...');
-			//$("div.PopMessage").fadeOut('fast');
-			//$("#Wrapper").fadeTo("fast", 1.0);
-			//$("#id_pops").remove()
-			alert('Closing popup...');
+			$("div.PopMessage").fadeOut('fast');
+			$("#Wrapper").fadeTo("fast", 1.0);
+			$("#id_pops").remove()
+			//alert('Closing popup...');
 		}
         };
 		

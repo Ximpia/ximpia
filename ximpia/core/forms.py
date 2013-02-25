@@ -492,28 +492,33 @@ class XBaseForm( forms.Form ):
 		instances = {}
 		manyList = []
 		for field in fieldList:
-			instanceName = self._getInstanceName(field.instance)
-			if not instances.has_key(instanceName):
-				instances[instanceName] = field.instance
-			isMany = self._isManyToMany(instances[instanceName], field.instanceFieldName)
-			isFK = self._isForeignKey(instances[instanceName], field.instanceFieldName)
-			if isFK:
-				instances[instanceName].__setattr__(field.instanceFieldName + '_id', field.initial)
-			else:
-				if not isMany:
-					instances[instanceName].__setattr__(field.instanceFieldName, field.initial)
+			#logger.debug('xBaseForm.save :: field: %s' % (field) )
+			if self.fields[field].instance:
+				fieldObj = self.fields[field]
+				instanceName = self._getInstanceName(fieldObj.instance)
+				if not instances.has_key(instanceName):
+					instances[instanceName] = fieldObj.instance
+				isMany = self._isManyToMany(instances[instanceName], fieldObj.instanceFieldName)
+				isFK = self._isForeignKey(instances[instanceName], fieldObj.instanceFieldName)
+				#logger.debug('XBaseForm.save :: isFK: %s' % (isFK) )
+				#logger.debug('XBaseForm.save :: isMany: %s' % (isMany) )
+				if isFK:
+					#logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
+					instances[instanceName].__setattr__(fieldObj.instanceFieldName + '_id', self.d(fieldObj.instanceFieldName) )
 				else:
-					# Many To Many relationship logic
-					manyList[field]
+					if not isMany:
+						#logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
+						instances[instanceName].__setattr__(fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName))
+					else:
+						# Many To Many relationship logic
+						manyList.append(fieldObj)
 
 		# Save model instances
 		for instanceName in instances:
-			logger.debug('XBaseForm.save :: Saving %s' % (instanceName) )
-			instances[instanceName].save()
-			logger.debug('XBaseForm.save :: %s saved!' % (instanceName) )		
+			instances[instanceName].save()		
 		
 		# TODO: Place this into method. In future, patterns for different many operations???
-		for field in manyList:
+		"""for field in manyList:
 			nowValues = eval('field.instance.' + field.instanceFieldName + '.through.objects.all()')
 			manyField = eval('field.instance.' + field.instanceFieldName)
 			visualListStr = field.initial.replace("'", '"')
@@ -599,7 +604,7 @@ class XBaseForm( forms.Form ):
 				logger.debug('XBaseForm.save :: Deleting ... %s' % (delList) )			
 				delQuery = eval('field.instance.' + field.instanceFieldName + '.through.objects.filter(pk__in=delList)')
 				delQuery.delete()
-				logger.debug('XBaseForm.save :: Deleted completed' )
+				logger.debug('XBaseForm.save :: Deleted completed' )"""
 	
 	def delete(self, isReal=False):
 		"""

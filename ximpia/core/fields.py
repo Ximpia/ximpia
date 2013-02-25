@@ -8,7 +8,6 @@ from decimal import Decimal, DecimalException
 
 from django.forms.widgets import Widget
 from django.forms import Field as DjField
-
 from django.forms.util import from_current_timezone, to_current_timezone
 from django.core.exceptions import ValidationError
 from django.utils import formats
@@ -190,12 +189,16 @@ class Field( DjField ):
 			elif self._isManyToMany() == True:
 				# ManyToMany
 				try:
-					values = eval('self.instance' + '.' + self.instanceFieldName + '.all().values(\'' + 'pk' + '\')')
 					initialList = []
-					for value in values:
-						initialList.append(str(value['pk']))
-					self.initial = '[' + ','.join(initialList) + ']' if self.instance != None and not initial else initValue
-				except ValueError:
+					values1 = eval('self.instance' + '.' + self.instanceFieldName + '.all()')
+					if len(values1) != 0:
+						values = values1.values('pk')
+						for value in values:
+							initialList.append(str(value['pk']))
+						self.initial = '[' + ','.join(initialList) + ']' if self.instance != None and not initial else initValue
+					else:
+						self.initial = '[]' if self.instance != None and not initial else initValue
+				except:
 					self.initial = initValue
 			else:
 				# Any field...
@@ -614,6 +617,8 @@ class DecimalField ( Field ):
 		# For fields PossitiveIntegerField and PossitiveSmallIntegerField if no minValue defined, set minValue to 0
 		if (modelFieldType == 'PositiveIntegerField' or modelFieldType == 'PositiveSmallIntegerField') and minValue is None:
 			self.attrs['minValue'] = 0
+			self.minValue = 0
+			self.validators.append(django.core.validators.MinValueValidator(0))
 
 	def to_python(self, value):
 		"""
@@ -724,6 +729,8 @@ class IntegerField ( Field ):
 		modelFieldType = self._getModelFieldType()
 		if (modelFieldType == 'PositiveIntegerField' or modelFieldType == 'PositiveSmallIntegerField') and minValue is None:
 			self.attrs['minValue'] = 0
+			self.minValue = 0
+			self.validators.append(django.core.validators.MinValueValidator(0))
 
 	def to_python(self, value):
 		"""

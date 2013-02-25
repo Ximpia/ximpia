@@ -761,10 +761,27 @@ ximpia.common.Path.getServer = (function() {
 	var server = ximpia.settings.HOST + '/';
 	return server;
 });
+/**
+ * Get business path: jxService
+ */
 ximpia.common.Path.getBusiness = (function() {
 	var path = ximpia.common.Path.getServer() + 'jxService';
-	return path
-})
+	return path;
+});
+/**
+ * Get service path: jxService
+ */
+ximpia.common.Path.getService = (function() {
+	var path = ximpia.common.Path.getServer() + 'jxService';
+	return path;
+});
+/*
+ * Get save path
+ */
+ximpia.common.Path.getSave = (function() {
+	var path = ximpia.common.Path.getServer() + 'jxSave';
+	return path;
+});
 /*
  * Get template for popups and views
  *

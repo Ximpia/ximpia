@@ -58,425 +58,7 @@ from forms import DefaultForm
 
 from ximpia.util.js import Form as _jsf
 
-class CommonService( object ):
-	
-	_ctx = None
-	_request = None
-	_errorDict = {}
-	_resultDict = {}
-	_form = None
-	_postDict = {}
-	_businessOK = False
-	_viewNameTarget = ''
-	_isFormOK = None
-	_views = {}
-	_actions = {}
-	_wf = None
-	_wfUserId = ''
-	
-	def __init__(self, ctx):
-		self._ctx = ctx
-		if False: self._ctx = ContextDecorator()
-		self._resultDict = getResultERROR([])
-		self._postDict = ctx.post
-		self._errorDict = {}
-		self._resultDict = {}
-		self._isFormOK = None
-		self._wf = WorkFlowBusiness(self._ctx)
-		self._viewNameTarget = ''
-		self._wfUserId = ''
-	
-	def _buildJSONResult(self, resultDict):
-		"""Builds json result
-		@param resultDict: dict : Dictionary with json data
-		@return: result : HttpResponse"""
-		#logger.debug( 'Dumping...' )
-		sResult = json.dumps(resultDict)
-		#logger.debug( 'sResult : %s' % (sResult) )
-		result = HttpResponse(sResult)
-		return result
-	
-	def _addErrorFields(self, idError, form, errorField):
-		"""Add error
-		@param idError: String : Id of error
-		@param form: Form
-		@param errorField: String : The field inside class form"""
-		if not self._errorDict.has_key(idError):
-			self._errorDict[idError] = {}
-		self._errorDict[idError] = form.fields[errorField].initial
-	
-	def _putFlowParams(self, **args):
-		"""Put parameters into workflow or navigation system.
-		@param args: Arguments to insert into persistence"""
-		self._wf.putParams(**args)
-		"""if self._ctx.isFlow:
-			self._wf.putParams(**args)
-		else:
-			dd = json.loads(self._ctx.form.base_fields['entryFields'].initial)
-			for name in args:
-				dd[name] = args[name]
-			self._ctx.form.base_fields['entryFields'].initial = json.dumps(dd)"""
-	
-	def _addAttr(self, name, value):
-		"""
-		Add attribute to jsData response object
-		
-		**Attributes**
-		
-		* ``name``
-		* ``value``
-		
-		** Returns **
-		
-		"""
-		self._ctx.jsData.addAttr(name, value)
-	
-	def _setTargetView(self, viewName):
-		"""Set the target view for navigation."""
-		self._viewNameTarget = viewName
-		self._ctx.viewNameTarget = viewName
-	
-	def _showView(self, viewName, viewAttrs={}):
-		"""Show view.
-		@param viewName: 
-		@param viewAttrs: 
-		@return: result"""
-		self._setTargetView(viewName)
-		db = ViewDAO(self._ctx)
-		viewTarget = db.get(name=viewName)
-		impl = viewTarget.implementation
-		implFields = impl.split('.')
-		method = implFields[len(implFields)-1]
-		classPath = ".".join(implFields[:-1])
-		cls = getClass( classPath )
-		objView = cls(self._ctx) #@UnusedVariable
-		if (len(viewAttrs) == 0) :
-			result = eval('objView.' + method)()
-		else:
-			result = eval('objView.' + method)(**viewAttrs)
-		
-		return result
-	
-	def _getTargetView(self):
-		"""Get target view."""
-		return self._viewNameTarget
-	
-	def _getFlowParams(self, *nameList):
-		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
-		@param nameList: List of parameters to fetch"""
-		logger.debug( 'wfUserId: %s flowCode: %s' % (self._ctx.wfUserId, self._ctx.flowCode) )
-		valueDict = self._wf.getFlowDataDict(self._ctx.wfUserId, self._ctx.flowCode)['data']
-		logger.debug( 'valueDict: %s' % (valueDict) )
-		"""valueDict = {}
-		for name in nameList:
-			#value = self._wf.getParam(name)
-			value = self._wf.getParamFromCtx(name)
-			valueDict[name] = value"""
-		"""if self._ctx.isFlow:
-			logger.debug( 'flow!!!!' )
-			for name in nameList:
-				#value = self._wf.getParam(name)
-				value = self._wf.getParamFromCtx(name)
-				valueDict[name] = value
-		else:
-			logger.debug( 'navigation!!!' )
-			dd = json.loads(self._ctx.form.base_fields['entryFields'].initial)
-			for name in nameList:
-				if dd.has_key(name):
-					valueDict[name] = dd[name]"""
-		return valueDict
-	
-	def _getWFUser(self):
-		"""Get Workflow user."""
-		if self._ctx.cookies.has_key('XP_WFUID'):
-			self._ctx.wfUserId = self._ctx.cookies['XP_WFUID']
-		else:
-			self._ctx.wfUserId = self._wf.genUserId()
-			self._setCookie('XP_WFUID', self._ctx.wfUserId)
-		self._wfUserId = self._ctx.wfUserId
-		return self._wfUserId
-	
-	def _getErrorResultDict(self, errorDict, pageError=False):
-		"""Get sorted error list to show in pop-up window
-		@return: self._resultDict : ResultDict"""
-		#dict = self._errorDict
-		keyList = errorDict.keys()
-		keyList.sort()
-		myList = []
-		for key in keyList:
-			message = errorDict[key]
-			index = key.find('id_')
-			if pageError == False:
-				if index == -1:
-					myList.append(('id_' + key, message, False))
-				else:
-					myList.append((key, message, False))
-			else:
-				if index == -1:
-					myList.append(('id_' + key, message, True))
-				else:
-					myList.append((key, message, True))
-		self._resultDict = getResultERROR(myList)
-		return self._resultDict
-	
-	def _getSetting(self, settingName):
-		"""
-		Get setting model instance.
-		
-		** Attributes ** 
-		
-		* ``settingName``:String : Setting name
-		
-		** Returns **
-		
-		models.site.Setting model instance
-		"""
-		self._dbSetting = SettingDAO(self._ctx, relatedDepth=2)
-		setting = self._dbSetting.get(name__name=settingName)
-		return setting
 
-	def _doValidations(self, validationDict):
-		"""Do all validations defined in validation dictionary"""
-		bFormOK = self._ctx.form.is_valid()
-		if bFormOK:
-			keys = self.validationDict.keys()
-			for key in keys:
-				oVal = eval(key)(self._ctx)
-				for sFunc in self.validationDict[key]:
-					oVal.eval(sFunc)()
-				self._doErrors(oVal.getErrors())
-		"""if self.isBusinessOK() and bFormOK:
-			result = f(*argsTuple, **argsDict)
-			# check errors
-			return wrapped_f
-		else:
-			# Errors
-			result = self._buildJSONResult(self._getErrorResultDict())
-			return result"""
-	
-	def _getForm(self):
-		"""Get form"""
-		#logger.debug( 'form: %s' % (self._ctx.form) )
-		return self._ctx.form
-	
-	def _setForm(self, formInstance):
-		"""Sets the form instance"""
-		self._ctx.form = formInstance
-		self._isFormOK = self._ctx.form.is_valid()
-	
-	def _getMainFormId(self):
-		""""
-		Get main form id, like ``form_xxxx`` where xxxx is the returned value
-		"""
-		logger.debug('main formId: %s' % (self._ctx.form._XP_FORM_ID) )
-		return self._ctx.form._XP_FORM_ID
-	
-	def _getPostDict(self):
-		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
-		return self._postDict
-	
-	def _isBusinessOK(self):
-		"""Checks that no errors have been generated in the validation methods
-		@return: isOK : boolean"""
-		if len(self._errorDict) == 0:
-			self._businessOK = True
-		return self._businessOK
-	
-	def _isFormValid(self):
-		"""Is form valid?"""
-		if self._isFormOK == None:
-			self._isFormOK = self._ctx.form.is_valid()
-		return self._isFormOK
-
-	def _isFormBsOK(self):
-		"""Is form valid and business validations passed?"""
-		bDo = False
-		if len(self._errorDict.keys()) == 0:
-			self._isBusinessOK = True
-		if self._isFormOK == True and self._isBusinessOK == True:
-			bDo = True
-		return bDo
-		
-	def _f(self):
-		"""Returns form from context"""
-		return self._ctx.form
-	
-	def _addError(self, fieldName, errMsg):
-		"""Add error
-		@param idError: String : Id of error
-		@param form: Form
-		@param errorField: String : The field inside class form"""
-		#form = self._getForm()
-		#logger.debug( 'form: %s' % (form) )
-		#msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
-		idError = 'id_' + fieldName
-		if not self._errorDict.has_key(idError):
-			self._errorDict[idError] = {}
-		self._errorDict[idError] = errMsg
-		logger.debug( '_errorDict : %s' % (self._errorDict) )
-
-	def _getErrors(self):
-		"""Get error dict
-		@return: errorDict : Dictionary"""
-		return self._errorDict	
-
-	def _getPost(self):
-		"""Get post dictionary"""
-		return self._ctx.post
-	
-	def _validateExists(self, dbDataList):
-		"""Validates that db data provided exists. Error is shown in case does not exist.
-		Db data contains data instance, query arguments in a dictionary
-		and errorName for error message display at the front
-		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
-		logger.debug( 'validateExists...' )
-		logger.debug( 'dbDataList : %s' % (dbDataList) )
-		for dbData in dbDataList:
-			dbObj, qArgs, fieldName, errMsg = dbData
-			exists = dbObj.check(**qArgs)
-			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' % 
-						(qArgs, str(exists), str(fieldName), str(errMsg)) )
-			if not exists:
-				self._addError(fieldName, errMsg)
-	
-	def _validateNotExists(self, dbDataList):
-		"""Validates that db data provided does not exist. Error is shown in case exists.
-		Db data contains data instance, query arguments in a dictionary
-		and errorName for error message display at the front
-		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
-		logger.debug( 'validateNotExists...' )
-		logger.debug( 'dbDataList : %s' % (dbDataList) )
-		for dbData in dbDataList:
-			dbObj, qArgs, fieldName, errMsg = dbData
-			exists = dbObj.check(**qArgs)
-			logger.debug( 'Exists : %s' % (exists) )
-			if exists:
-				logger.debug( 'I add error: %s %s' % (fieldName, errMsg) )
-				self._addError(fieldName, errMsg)
-		
-	def _validateContext(self, ctxDataList):
-		"""Validates context variable. [[name, value, fieldName, errName],...]"""
-		for ctxData in ctxDataList:
-			name, value, fieldName, errMsg = ctxData
-			if self._ctx[name] != value:
-				self._addError(fieldName, errMsg)
-			
-	def _authenticateUser(self, ximpiaId, password, fieldName, errorMsg):
-		"""Authenticates user and password"""
-		qArgs = {'username': ximpiaId, 'password': password}
-		user = authenticate(**qArgs)
-		if user:
-			pass
-		else:
-			self._addError(fieldName, errorMsg)
-		return user
-	
-	def _authenticateUserSocNet(self, socialId, socialToken, authSource, fieldName, errorMsg):
-		"""Authenticates user and password"""
-		qArgs = {'socialId': socialId, 'socialToken': socialToken}
-		logger.debug('_authenticateUsersocNet :: Arguments: %s' % (qArgs) )
-		user = authenticate(**qArgs)
-		if user:
-			pass
-		else:
-			self._addError(fieldName, errorMsg)
-		return user
-		
-	def _isValid(self):
-		"""Checks if no errors have been written to error container.
-		If not, raises XpMsgException """
-		self._errorDict = self._getErrors()
-		logger.debug( '_isValid() :: errorDict : %s %s' % (self._errorDict, self._isBusinessOK()) )
-		if not self._isBusinessOK():
-			# Here throw the BusinessException
-			logger.debug( 'I raise error on business validation!!!!!!!!!!!!!!!!!!' )
-			raise XpMsgException(None, _('Error in validating business layer'))
-
-	def _setOkMsg(self, idOK):
-		"""Sets the ok message id"""
-		msgDict = _jsf.decodeArray(self._ctx.form.fields['okMessages'].initial)
-		self._ctx.form.fields['msg_ok'].initial = msgDict[idOK]
-		logger.debug('ok message: %s' % (self._ctx.form.fields['msg_ok'].initial) )
-	
-	def _setCookie(self, key, value):
-		"""
-		Add key and value to context cookies data. 
-		
-		** Attributes **
-		
-		* ``key``
-		* ``value``
-		
-		** Returns **
-		
-		None
-		"""
-		self._ctx.set_cookies.append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 
-										'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
-
-	def _setMainForm(self, formInstance):
-		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
-		@param formInstance: Form instance"""
-		self._ctx.form = formInstance
-		self._ctx.forms[formInstance.getFormId()] = formInstance
-	
-	def _addForm(self, formInstance):
-		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
-		@param formInstance: Form instance"""
-		self._ctx.forms[formInstance.getFormId()] = formInstance
-	
-	def _putFormValue(self, fieldName, fieldValue, formId=None):
-		"""
-		Add form value to field already defined in the forms for the service
-		
-		** Required Attributes **
-		 
-		* ``fieldName`` : field name as appears in form definition
-		* ``fieldValue`` : Field value
-		
-		** Optional Attributes **
-		
-		* ``formId`` : Id for the form ro modify field, like ``signup``. Default value None. In case None, 
-		we get formId from self._getMainFormId()
-		
-		** Returns ** 
-		
-		None
-		"""
-		if formId == None:
-			formId = self._getMainFormId()
-		self._ctx.forms[formId].fields[fieldName].initial = fieldValue
-	
-	def _getUserChannelName(self):
-		"""Get user social name"""
-		if self._ctx.cookies.has_key('userChannelName'):
-			userChannelName = self._ctx.cookies['userChannelName']
-			logger.debug( 'COOKIE :: userChannelName: %s' % (userChannelName) )
-		else:
-			userChannelName = K.USER
-			self._setCookie('userChannelName', userChannelName)
-		return userChannelName
-	
-	def _login(self):
-		"""Do login"""
-		login(self._ctx.rawRequest, self._ctx.user)
-		self._ctx.isLogin = True
-	
-	def _logout(self):
-		"""Do logout"""
-		logout(self._ctx.rawRequest)
-		self._ctx.isLogin = False
-	
-	def _addList(self, name, values):
-		"""Add name to list_$name in the result JSON object"""
-		dictList = []
-		for entry in values:
-			dd = {}
-			keys = entry.keys()
-			for key in keys:
-				dd[key] = entry[key]
-			dictList.append(dd)
-		self._ctx.jsData.addAttr('list_' + name, dictList)	
 
 class EmailService(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
@@ -1690,6 +1272,466 @@ class TemplateService ( object ):
 		#logger.debug( 'templates: %s' % (templates) )
 		return templates
 
+
+class CommonService( object ):
+	
+	_ctx = None
+	_request = None
+	_errorDict = {}
+	_resultDict = {}
+	_form = None
+	_postDict = {}
+	_businessOK = False
+	_viewNameTarget = ''
+	_isFormOK = None
+	_views = {}
+	_actions = {}
+	_wf = None
+	_wfUserId = ''
+	
+	def __init__(self, ctx):
+		self._ctx = ctx
+		if False: self._ctx = ContextDecorator()
+		self._resultDict = getResultERROR([])
+		self._postDict = ctx.post
+		self._errorDict = {}
+		self._resultDict = {}
+		self._isFormOK = None
+		self._wf = WorkFlowBusiness(self._ctx)
+		self._viewNameTarget = ''
+		self._wfUserId = ''
+	
+	def _buildJSONResult(self, resultDict):
+		"""Builds json result
+		@param resultDict: dict : Dictionary with json data
+		@return: result : HttpResponse"""
+		#logger.debug( 'Dumping...' )
+		sResult = json.dumps(resultDict)
+		#logger.debug( 'sResult : %s' % (sResult) )
+		result = HttpResponse(sResult)
+		return result
+	
+	def _addErrorFields(self, idError, form, errorField):
+		"""Add error
+		@param idError: String : Id of error
+		@param form: Form
+		@param errorField: String : The field inside class form"""
+		if not self._errorDict.has_key(idError):
+			self._errorDict[idError] = {}
+		self._errorDict[idError] = form.fields[errorField].initial
+	
+	def _putFlowParams(self, **args):
+		"""Put parameters into workflow or navigation system.
+		@param args: Arguments to insert into persistence"""
+		self._wf.putParams(**args)
+		"""if self._ctx.isFlow:
+			self._wf.putParams(**args)
+		else:
+			dd = json.loads(self._ctx.form.base_fields['entryFields'].initial)
+			for name in args:
+				dd[name] = args[name]
+			self._ctx.form.base_fields['entryFields'].initial = json.dumps(dd)"""
+	
+	def _addAttr(self, name, value):
+		"""
+		Add attribute to jsData response object
+		
+		**Attributes**
+		
+		* ``name``
+		* ``value``
+		
+		** Returns **
+		
+		"""
+		self._ctx.jsData.addAttr(name, value)
+	
+	def _setTargetView(self, viewName):
+		"""Set the target view for navigation."""
+		self._viewNameTarget = viewName
+		self._ctx.viewNameTarget = viewName
+	
+	def _showView(self, viewName, viewAttrs={}):
+		"""Show view.
+		@param viewName: 
+		@param viewAttrs: 
+		@return: result"""
+		self._setTargetView(viewName)
+		db = ViewDAO(self._ctx)
+		viewTarget = db.get(name=viewName)
+		impl = viewTarget.implementation
+		implFields = impl.split('.')
+		method = implFields[len(implFields)-1]
+		classPath = ".".join(implFields[:-1])
+		cls = getClass( classPath )
+		objView = cls(self._ctx) #@UnusedVariable
+		if (len(viewAttrs) == 0) :
+			result = eval('objView.' + method)()
+		else:
+			result = eval('objView.' + method)(**viewAttrs)
+		
+		return result
+	
+	def _getTargetView(self):
+		"""Get target view."""
+		return self._viewNameTarget
+	
+	def _getFlowParams(self, *nameList):
+		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
+		@param nameList: List of parameters to fetch"""
+		logger.debug( 'wfUserId: %s flowCode: %s' % (self._ctx.wfUserId, self._ctx.flowCode) )
+		valueDict = self._wf.getFlowDataDict(self._ctx.wfUserId, self._ctx.flowCode)['data']
+		logger.debug( 'valueDict: %s' % (valueDict) )
+		"""valueDict = {}
+		for name in nameList:
+			#value = self._wf.getParam(name)
+			value = self._wf.getParamFromCtx(name)
+			valueDict[name] = value"""
+		"""if self._ctx.isFlow:
+			logger.debug( 'flow!!!!' )
+			for name in nameList:
+				#value = self._wf.getParam(name)
+				value = self._wf.getParamFromCtx(name)
+				valueDict[name] = value
+		else:
+			logger.debug( 'navigation!!!' )
+			dd = json.loads(self._ctx.form.base_fields['entryFields'].initial)
+			for name in nameList:
+				if dd.has_key(name):
+					valueDict[name] = dd[name]"""
+		return valueDict
+	
+	def _getWFUser(self):
+		"""Get Workflow user."""
+		if self._ctx.cookies.has_key('XP_WFUID'):
+			self._ctx.wfUserId = self._ctx.cookies['XP_WFUID']
+		else:
+			self._ctx.wfUserId = self._wf.genUserId()
+			self._setCookie('XP_WFUID', self._ctx.wfUserId)
+		self._wfUserId = self._ctx.wfUserId
+		return self._wfUserId
+	
+	def _getErrorResultDict(self, errorDict, pageError=False):
+		"""Get sorted error list to show in pop-up window
+		@return: self._resultDict : ResultDict"""
+		#dict = self._errorDict
+		keyList = errorDict.keys()
+		keyList.sort()
+		myList = []
+		for key in keyList:
+			message = errorDict[key]
+			index = key.find('id_')
+			if pageError == False:
+				if index == -1:
+					myList.append(('id_' + key, message, False))
+				else:
+					myList.append((key, message, False))
+			else:
+				if index == -1:
+					myList.append(('id_' + key, message, True))
+				else:
+					myList.append((key, message, True))
+		self._resultDict = getResultERROR(myList)
+		return self._resultDict
+	
+	def _getSetting(self, settingName):
+		"""
+		Get setting model instance.
+		
+		** Attributes ** 
+		
+		* ``settingName``:String : Setting name
+		
+		** Returns **
+		
+		models.site.Setting model instance
+		"""
+		self._dbSetting = SettingDAO(self._ctx, relatedDepth=2)
+		setting = self._dbSetting.get(name__name=settingName)
+		return setting
+
+	def _doValidations(self, validationDict):
+		"""Do all validations defined in validation dictionary"""
+		bFormOK = self._ctx.form.is_valid()
+		if bFormOK:
+			keys = self.validationDict.keys()
+			for key in keys:
+				oVal = eval(key)(self._ctx)
+				for sFunc in self.validationDict[key]:
+					oVal.eval(sFunc)()
+				self._doErrors(oVal.getErrors())
+		"""if self.isBusinessOK() and bFormOK:
+			result = f(*argsTuple, **argsDict)
+			# check errors
+			return wrapped_f
+		else:
+			# Errors
+			result = self._buildJSONResult(self._getErrorResultDict())
+			return result"""
+	
+	def _getForm(self):
+		"""Get form"""
+		#logger.debug( 'form: %s' % (self._ctx.form) )
+		return self._ctx.form
+	
+	def _setForm(self, formInstance):
+		"""Sets the form instance"""
+		self._ctx.form = formInstance
+		self._isFormOK = self._ctx.form.is_valid()
+	
+	def _getMainFormId(self):
+		""""
+		Get main form id, like ``form_xxxx`` where xxxx is the returned value
+		"""
+		logger.debug('main formId: %s' % (self._ctx.form._XP_FORM_ID) )
+		return self._ctx.form._XP_FORM_ID
+	
+	def _getPostDict(self):
+		"""Get post dictionary. This will hold data even if form is not validated. If not validated cleaned_value will have no values"""
+		return self._postDict
+	
+	def _isBusinessOK(self):
+		"""Checks that no errors have been generated in the validation methods
+		@return: isOK : boolean"""
+		if len(self._errorDict) == 0:
+			self._businessOK = True
+		return self._businessOK
+	
+	def _isFormValid(self):
+		"""Is form valid?"""
+		if self._isFormOK == None:
+			self._isFormOK = self._ctx.form.is_valid()
+		return self._isFormOK
+
+	def _isFormBsOK(self):
+		"""Is form valid and business validations passed?"""
+		bDo = False
+		if len(self._errorDict.keys()) == 0:
+			self._isBusinessOK = True
+		if self._isFormOK == True and self._isBusinessOK == True:
+			bDo = True
+		return bDo
+		
+	def _f(self):
+		"""Returns form from context"""
+		return self._ctx.form
+	
+	def _addError(self, fieldName, errMsg):
+		"""Add error
+		@param idError: String : Id of error
+		@param form: Form
+		@param errorField: String : The field inside class form"""
+		#form = self._getForm()
+		#logger.debug( 'form: %s' % (form) )
+		#msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
+		idError = 'id_' + fieldName
+		if not self._errorDict.has_key(idError):
+			self._errorDict[idError] = {}
+		self._errorDict[idError] = errMsg
+		logger.debug( '_errorDict : %s' % (self._errorDict) )
+
+	def _getErrors(self):
+		"""Get error dict
+		@return: errorDict : Dictionary"""
+		return self._errorDict	
+
+	def _getPost(self):
+		"""Get post dictionary"""
+		return self._ctx.post
+	
+	def _validateExists(self, dbDataList):
+		"""Validates that db data provided exists. Error is shown in case does not exist.
+		Db data contains data instance, query arguments in a dictionary
+		and errorName for error message display at the front
+		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
+		logger.debug( 'validateExists...' )
+		logger.debug( 'dbDataList : %s' % (dbDataList) )
+		for dbData in dbDataList:
+			dbObj, qArgs, fieldName, errMsg = dbData
+			exists = dbObj.check(**qArgs)
+			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' % 
+						(qArgs, str(exists), str(fieldName), str(errMsg)) )
+			if not exists:
+				self._addError(fieldName, errMsg)
+	
+	def _validateNotExists(self, dbDataList):
+		"""Validates that db data provided does not exist. Error is shown in case exists.
+		Db data contains data instance, query arguments in a dictionary
+		and errorName for error message display at the front
+		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
+		logger.debug( 'validateNotExists...' )
+		logger.debug( 'dbDataList : %s' % (dbDataList) )
+		for dbData in dbDataList:
+			dbObj, qArgs, fieldName, errMsg = dbData
+			exists = dbObj.check(**qArgs)
+			logger.debug( 'Exists : %s' % (exists) )
+			if exists:
+				logger.debug( 'I add error: %s %s' % (fieldName, errMsg) )
+				self._addError(fieldName, errMsg)
+		
+	def _validateContext(self, ctxDataList):
+		"""Validates context variable. [[name, value, fieldName, errName],...]"""
+		for ctxData in ctxDataList:
+			name, value, fieldName, errMsg = ctxData
+			if self._ctx[name] != value:
+				self._addError(fieldName, errMsg)
+			
+	def _authenticateUser(self, ximpiaId, password, fieldName, errorMsg):
+		"""Authenticates user and password"""
+		qArgs = {'username': ximpiaId, 'password': password}
+		user = authenticate(**qArgs)
+		if user:
+			pass
+		else:
+			self._addError(fieldName, errorMsg)
+		return user
+	
+	def _authenticateUserSocNet(self, socialId, socialToken, authSource, fieldName, errorMsg):
+		"""Authenticates user and password"""
+		qArgs = {'socialId': socialId, 'socialToken': socialToken}
+		logger.debug('_authenticateUsersocNet :: Arguments: %s' % (qArgs) )
+		user = authenticate(**qArgs)
+		if user:
+			pass
+		else:
+			self._addError(fieldName, errorMsg)
+		return user
+		
+	def _isValid(self):
+		"""Checks if no errors have been written to error container.
+		If not, raises XpMsgException """
+		self._errorDict = self._getErrors()
+		logger.debug( '_isValid() :: errorDict : %s %s' % (self._errorDict, self._isBusinessOK()) )
+		if not self._isBusinessOK():
+			# Here throw the BusinessException
+			logger.debug( 'I raise error on business validation!!!!!!!!!!!!!!!!!!' )
+			raise XpMsgException(None, _('Error in validating business layer'))
+
+	def _setOkMsg(self, idOK):
+		"""Sets the ok message id"""
+		msgDict = _jsf.decodeArray(self._ctx.form.fields['okMessages'].initial)
+		self._ctx.form.fields['msg_ok'].initial = msgDict[idOK]
+		logger.debug('ok message: %s' % (self._ctx.form.fields['msg_ok'].initial) )
+	
+	def _setCookie(self, key, value):
+		"""
+		Add key and value to context cookies data. 
+		
+		** Attributes **
+		
+		* ``key``
+		* ``value``
+		
+		** Returns **
+		
+		None
+		"""
+		self._ctx.set_cookies.append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN, 
+										'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
+
+	def _setMainForm(self, formInstance):
+		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
+		@param formInstance: Form instance"""
+		self._ctx.form = formInstance
+		self._ctx.forms[formInstance.getFormId()] = formInstance
+	
+	def _addForm(self, formInstance):
+		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
+		@param formInstance: Form instance"""
+		self._ctx.forms[formInstance.getFormId()] = formInstance
+	
+	def _putFormValue(self, fieldName, fieldValue, formId=None):
+		"""
+		Add form value to field already defined in the forms for the service
+		
+		** Required Attributes **
+		 
+		* ``fieldName`` : field name as appears in form definition
+		* ``fieldValue`` : Field value
+		
+		** Optional Attributes **
+		
+		* ``formId`` : Id for the form ro modify field, like ``signup``. Default value None. In case None, 
+		we get formId from self._getMainFormId()
+		
+		** Returns ** 
+		
+		None
+		"""
+		if formId == None:
+			formId = self._getMainFormId()
+		self._ctx.forms[formId].fields[fieldName].initial = fieldValue
+	
+	def _getUserChannelName(self):
+		"""Get user social name"""
+		if self._ctx.cookies.has_key('userChannelName'):
+			userChannelName = self._ctx.cookies['userChannelName']
+			logger.debug( 'COOKIE :: userChannelName: %s' % (userChannelName) )
+		else:
+			userChannelName = K.USER
+			self._setCookie('userChannelName', userChannelName)
+		return userChannelName
+	
+	def _login(self):
+		"""Do login"""
+		login(self._ctx.rawRequest, self._ctx.user)
+		self._ctx.isLogin = True
+	
+	def _logout(self):
+		"""Do logout"""
+		logout(self._ctx.rawRequest)
+		self._ctx.isLogin = False
+	
+	def _addList(self, name, values):
+		"""Add name to list_$name in the result JSON object"""
+		dictList = []
+		for entry in values:
+			dd = {}
+			keys = entry.keys()
+			for key in keys:
+				dd[key] = entry[key]
+			dictList.append(dd)
+		self._ctx.jsData.addAttr('list_' + name, dictList)
+	
+	@ServiceDecorator()
+	def save(self):
+		"""
+		Save form
+		"""
+		logger.debug('CommonService.save ...')
+		self._f().save()
+		"""# Resolve form instance from formId
+		#self._form = argsTuple[0]
+		obj = self
+		obj._ctx.jsData = JsResultDict()
+		obj._ctx.form = self._form(obj._ctx.post, ctx=obj._ctx)
+		bForm = obj._ctx.form.is_valid()
+		if bForm == True:
+			obj._setMainForm(obj._ctx.form)
+			# code here
+			self._form.save()
+		else:
+			pass"""
+		"""if settings.DEBUG == True:
+				logger.debug( 'Validation error!!!!!' )
+				logger.debug( obj._ctx.form.errors )
+				if obj._ctx.form.errors.has_key('invalid'):
+					logger.debug( obj._ctx.form.errors['invalid'] )
+				traceback.print_exc()
+			if obj._ctx.form.errors.has_key('invalid'):
+				errorDict = {'': obj._ctx.form.errors['invalid'][0]}
+				logger.debug( 'errorDict: %s' % (errorDict) )
+				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+			else:
+				# Build errordict
+				errorDict = {}
+				for field in obj._ctx.form.errors:
+					if field != '__all__':
+						errorDict[field] = obj._ctx.form.errors[field][0]
+				logger.debug( 'errorDict: %s' % (errorDict) )
+				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=False))
+			return result"""
+
 class DefaultService ( CommonService ):
 	
 	def __init__(self, ctx):
@@ -1699,9 +1741,6 @@ class DefaultService ( CommonService ):
 	def show(self):
 		"""Method to execute for view with no business code, only showing a html template."""
 		pass
-
-
-
 
 
 

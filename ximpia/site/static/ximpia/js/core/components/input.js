@@ -2058,6 +2058,9 @@
 						attrs['labelPosition'] = settings.labelPosition;
 					}
 					var value = "";
+					if (dataAttrs.hasOwnProperty('value')) {
+						value = dataAttrs.value;
+					}
 					// id, name, type
 					var htmlContent = "";
 					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
@@ -2087,7 +2090,11 @@
 						$("#" + idInput).append("<option value=\"\"></option>");
 					}
 					for (choiceIndex in choices) {
-						var htmlSelect = "<option value=\"" + choices[choiceIndex][0] + "\">" + choices[choiceIndex][1] + "</option>";
+						if (choices[choiceIndex][0] == value) {
+							var htmlSelect = "<option value=\"" + choices[choiceIndex][0] + "\" selected=\"selected\">" + choices[choiceIndex][1] + "</option>";
+						} else {
+							var htmlSelect = "<option value=\"" + choices[choiceIndex][0] + "\">" + choices[choiceIndex][1] + "</option>";
+						}
 						$("#" + idInput).append(htmlSelect);
 					}
 					// Label				

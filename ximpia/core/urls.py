@@ -13,5 +13,7 @@ urlpatterns = patterns('',
     (r'^jxSuggestList$', 'ximpia.core.views.jxSuggestList'),
     (r'^jxJSON$', 'ximpia.core.views.jxJSON'),
     (r'^jxService$', 'ximpia.core.views.jxService'),
+    (r'^jxSave$', 'ximpia.core.views.jxSave'),
+    (r'^jxDelete$', 'ximpia.core.views.jxDelete'),
     (r'^jxSearchHeader$', 'ximpia.core.views.searchHeader'),        
 )

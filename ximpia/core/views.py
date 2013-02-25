@@ -16,8 +16,8 @@ from django.shortcuts import render_to_response
 from django.http import Http404
 
 from ximpia.core.util import getClass
-from models import context, ContextViewDecorator, ContextDecorator
-from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService
+from models import context, ContextViewDecorator, ContextDecorator, JsResultDict
+from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
 
 from ximpia.site import constants as KSite
@@ -300,7 +300,7 @@ def jxService(request, **args):
 		dbApplication = ApplicationDAO(args['ctx'])
 		app = request.REQUEST['app']
 		application = dbApplication.get(name=app)
-		if request.REQUEST.has_key('view'):			
+		if request.REQUEST.has_key('view'):
 			view = request.REQUEST['view']
 			logger.debug( 'view: %s' % (view) )
 			dbView = ViewDAO(args['ctx'])
@@ -344,6 +344,77 @@ def jxService(request, **args):
 		logger.debug( 'Unvalid business request' )
 		raise Http404
 	return result
+
+@ContextDecorator()
+@transaction.commit_on_success
+def jxSave(request, **args):
+	logger.debug( 'jxSave...' )
+	logger.debug( json.dumps(request.REQUEST.items()) )
+	request.session.set_test_cookie()
+	request.session.delete_test_cookie()
+	if (request.REQUEST.has_key('action')) and request.is_ajax() == True:
+		action = request.REQUEST['action']
+		logger.debug( 'action: %s' % (action) )
+		if action == 'save':
+			# resolve form, set to args['ctx'].form
+			logger.debug('jxSave :: form: %s' % (request.REQUEST['form']) )
+			formId = request.REQUEST['form']
+			app = request.REQUEST['app']
+			formModule = getattr(getattr(__import__(app.split('.')[0]), app.split('.')[1]), 'forms')
+			classes = dir(formModule)
+			resolvedForm = None
+			for myClass in classes:
+				try:
+					formIdTarget = eval('formModule.' + myClass + '._XP_FORM_ID')
+					if formIdTarget == formId:
+						resolvedForm = eval('formModule.' + myClass)
+				except AttributeError:
+					pass
+			logger.debug('jxSave :: resolvedForm: %s' % (resolvedForm) )
+			# Instantiate form, validate form
+			logger.debug('jxSave :: post: %s' % (args['ctx'].post) )
+			args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'])
+			logger.debug('jxSave :: instantiated form')
+			args['ctx'].jsData = JsResultDict()
+			isFormValid = args['ctx'].form.is_valid()
+			#isFormValid = False
+			logger.debug('jxSave :: isFormValid: %s' % (isFormValid) )
+			obj = CommonService(args['ctx'])
+			if isFormValid == True:
+				obj._setMainForm(args['ctx'].form)
+				result = obj.save()
+			else:
+				if settings.DEBUG == True:
+					logger.debug( 'Validation error!!!!!' )
+					logger.debug( args['ctx'].form.errors )
+					if args['ctx'].form.errors.has_key('invalid'):
+						logger.debug( args['ctx'].form.errors['invalid'] )
+					traceback.print_exc()
+				if args['ctx'].form.errors.has_key('invalid'):
+					errorDict = {'': args['ctx'].form.errors['invalid'][0]}
+					logger.debug( 'errorDict: %s' % (errorDict) )
+					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+				else:
+					# Build errordict
+					errorDict = {}
+					for field in args['ctx'].form.errors:
+						if field != '__all__':
+							errorDict[field] = args['ctx'].form.errors[field][0]
+					logger.debug( 'errorDict: %s' % (errorDict) )
+					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=False))
+				return result
+		else:
+			logger.debug( 'Invalid action name. Only save is allowed' )
+			raise Http404
+	else:
+		logger.debug( 'Unvalid business request' )
+		raise Http404
+	return result
+
+@ContextDecorator()
+@transaction.commit_on_success
+def jxDelete(request, **args):
+	pass
 
 @ContextViewDecorator()
 @ViewTmplDecorator()

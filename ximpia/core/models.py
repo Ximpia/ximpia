@@ -2006,7 +2006,9 @@ class ContextDecorator(object):
 			try:
 				request = argsTuple[0]
 				REQ = request.REQUEST
-				logger.debug('REQUEST: %s' % (request.REQUEST) )
+				#logger.debug('REQUEST: %s' % (request.REQUEST) )
+				for key in request.REQUEST:
+					logger.debug('REQUEST:: %s = %s' % (key, request.REQUEST[key]) )
 				self._app = request.REQUEST['app'] if request.REQUEST.has_key('app') else ''
 				langs = ('en')
 				lang = translation.get_language()

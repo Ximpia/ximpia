@@ -23,6 +23,7 @@
 			},
             wait : function() {
 				$(this).removeClass('AjaxButton');
+				$(this).removeClass('AjaxButtonOK');
 				$(this).removeClass('AjaxButtonERROR');
 				$(this).addClass('AjaxButtonLoading');
 			},
