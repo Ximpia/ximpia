@@ -115,7 +115,7 @@ class XBaseForm( forms.Form ):
 								if dataItemValue.find('"') != -1:
 									dataItemValue = dataItemValue.replace('"',"'")
 								manyOutStr += "'pk': '" + dataItemValue + "'"
-								logger.debug('XBaseForm :: field.values: %s' % (field.values) )
+								logger.debug('XBaseForm :: field.values: %s' % (str(field.values)) )
 								if len(field.values) != 0:
 									for valuesItem in field.values:
 										dataItemValue = json.dumps(eval('dataItem.' + valuesItem.replace('__','.')))
@@ -130,6 +130,7 @@ class XBaseForm( forms.Form ):
 						else:
 							field.initial = eval('dbResolved.' + instanceFieldName)
 							field.instance = dbResolved
+							logger.debug('XBaseForm :: %s = %s' % (instanceFieldName, field.initial) )
 				except AttributeError:
 					raise
 			# Set instance too
@@ -625,23 +626,21 @@ class XBaseForm( forms.Form ):
 			attrs = oField.attrs
 			fieldTypeFields = str(type(oField)).split('.')
 			attrs['fieldType'] = fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
-			"""try:
-				attrs['type'] = oField.widget.input_type
-			except AttributeError:
-				pass"""
-			#attrs['element'] = oField.widget._element
 			try:
 				attrs['choices'] = oField.choices
 			except AttributeError:
 				pass
 			attrs['name'] = fieldName
-			
-			attrs['value'] = oField.initial or ''
+			#logger.debug( 'XBaseForm.buildJsData :: field initial: %s' % (oField.initial) )
+			if oField.initial != None:
+				attrs['value'] = oField.initial
+			else:
+				attrs['value'] = ''
 			if attrs['label'] is not None:
 				attrs['label'] = attrs['label'].replace('"', '')
 			if attrs['helpText'] is not None:
 				attrs['helpText'] = attrs['helpText'].replace('"', '')
-			#logger.debug( 'field: %s' % (fieldName) )
+			#logger.debug( 'XBaseForm.buildJsData :: field: %s' % (fieldName) )
 			#logger.debug( attrs )
 			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs
 		# populate choices with foreign key fields: XpSelectField

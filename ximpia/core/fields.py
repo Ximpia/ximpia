@@ -38,6 +38,7 @@ class Field( DjField ):
 	defaultValidators = []
 	defaultErrorMessages = {}
 	localize = False
+	label = ''
 	def __init__(self, instance, insField, required=None, jsRequired=None, jsVal=None, label=None, initial=None, helpText=None, 
 				errorMessages=None, validators=[]):
 		"""
@@ -109,6 +110,7 @@ class Field( DjField ):
 		# maxLength from model
 		self.maxLength = self.instance._meta.get_field_by_name(self.instanceFieldName)[0].max_length if self.instance else None
 		self.localize = False
+		self.label = label or self.label
 		self.attrs['label'] = label or self.label
 		self.attrs['helpText'] = self.helpText
 		self.attrs['required'] = self.required 
@@ -214,12 +216,17 @@ class Field( DjField ):
 		"""Process required and javascript required"""
 		# True | None => True		
 		# False | None => False
+		logger.debug('Field._doRequired :: field: %s required: %s' % (self.instanceFieldName, required) )
 		if required == None and self.instance != None:
 			required = not self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null
 			logger.debug('Field._doRequired :: field: %s model field null: %s required: %s' % 
 						(self.instanceFieldName, self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null, required) )
 		if jsRequired == None:
 			jsRequired = required
+		fieldTypeFields = str(type(self)).split('.')
+		fieldType = fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
+		if fieldType == 'BooleanField':
+			required = jsRequired = False
 		t = (required, jsRequired)
 		return t
 	def _getFieldName(self, insField):
@@ -510,7 +517,7 @@ class GenericIPAddressField(CharField):
 	
 	defaultErrorMessages = {}
 
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, protocol='both', unpackIpv4=False, jsVal=None):
 		self.unpack_ipv4 = unpackIpv4
 		self.defaultValidators, invalidErrorMessage = django.core.validators.ip_address_validators(protocol, unpackIpv4)
@@ -581,7 +588,7 @@ class DecimalField ( Field ):
 		'max_whole_digits': _('Ensure that there are no more than %s digits before the decimal point.')
 	}
 
-	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
+	def __init__(self, instance, insField, required=None, initial='', jsRequired=None, label=None, helpText=None, 
 				maxValue=None, minValue=None, maxDigits=None, decimalPlaces=None, jsVal=None):
 		self.maxValue, self.minValue = maxValue, minValue
 		self.maxDigits, self.decimalPlaces = maxDigits, decimalPlaces
@@ -711,7 +718,7 @@ class IntegerField ( Field ):
 		'min_value': _(u'Ensure this value is greater than or equal to %(limit_value)s.'),
 	}
 
-	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, 
+	def __init__(self, instance, insField, required=None, initial='', jsRequired=None, label=None, helpText=None, 
 				maxValue=None, minValue=None, jsVal=None):
 		self.maxValue, self.minValue = maxValue, minValue
 		super(IntegerField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
@@ -846,7 +853,7 @@ class _BaseTemporalField ( Field ):
 	
 	"""
 
-	def __init__(self, instance, insField, required=True, initial='', jsRequired=None, label=None, helpText=None, inputFormats=None,
+	def __init__(self, instance, insField, required=None, initial='', jsRequired=None, label=None, helpText=None, inputFormats=None,
 				jsVal=None):
 		super(_BaseTemporalField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
@@ -1161,7 +1168,7 @@ class UserField( Field ):
 							}
 	defaultValidators = [validateUserId]
 	
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
 		super(UserField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
@@ -1205,7 +1212,7 @@ class EmailField( CharField ):
 	}
 	defaultValidators = [django.core.validators.validate_email]
 	
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
 		super(EmailField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
@@ -1253,57 +1260,12 @@ class PasswordField( CharField ):
 	}
 	defaultValidators = [validatePassword]
 	
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
 		super(PasswordField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
 		self.attrs['data-xp-val'] = 'password'
 
-@DeprecationWarning
-class TextChoiceField( Field  ):
-	"""Text Choice Field. Field with autocompletion
-	
-	This field is ximple CharField with autocompletion support. Autocompletion values fetched from id_choices or ajax jxSuggestList
-	
-	in autocomplete we have visual component attributes:
-	
-	- maxHeight:int
-	- mincharacters:int
-	- maxFields:int
-	- hasSearchMore:bool
-	
-	In case not defined, we get them from js settings. Fields with autocomplete field.*
-	
-	- arguments:
-	
-	- * dbClass (url) : completeDb
-	- * params (url) . completeParams 
-	
-	django settings??? model settings ???	
-	
-	"""
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, init=None, jsRequired=None, maxHeight=200, 
-				minCharacters=3, choicesId='', dbClass='', params={}, xpType='field', **args):
-		self._doInstanceInit(instance, insField)
-		fieldMaxLength = self._getMaxLength()
-		args['validators'] = []
-		args['max_length'] = maxLength if maxLength != None else fieldMaxLength
-		args['min_length'] = minLength if minLength != None else None
-		args['required'], args['jsRequired'] = self._doRequired(required, jsRequired)
-		classStr = 'fieldMust' if required == True else 'field'
-		attrs = self._doAttrs(args, {	'class': classStr,
-							'maxlength': str(args['max_length']),
-							'choicesId': choicesId,
-							'xpType': xpType})
-		attrs['data-xp'] = {	'maxHeight': maxHeight,
-								'minCharacters' : minCharacters
-								}
-		if dbClass != '' and len(params) != 0:
-			attrs['data-xp']['url'] = '/jxSuggestList?dbClass=' + dbClass + ';params=' + json.dumps(params) 
-		"""if not args.has_key('widget'):
-			args['widget'] = TextInputWidget(attrs=attrDict)"""
-		args['widget'] = Widget(attrs=attrs)
-		super(TextChoiceField, self).__init__(**args)
 
 class FileBrowseField ( CharField ):
 	"""
@@ -1355,7 +1317,7 @@ class FileBrowseField ( CharField ):
         'extension': _(u'Extension %(ext)s is not allowed. Only %(allowed)s is allowed.'),
     }
 	
-	def __init__(self, instance, insField, minLength=None, maxLength=None, required=True, initial='', jsRequired=None, 
+	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, site=None, directory=None, extensions=None, fieldFormats=None, jsVal=None):
 		self.site = site
 		self.directory = directory
@@ -1437,7 +1399,7 @@ class OneListField( Field ):
 	
 	"""
 	def __init__(self, instance, insField, choicesId=None, limitTo=None, listValue=None, values=None, choices=None, orderBy=None,
-				required=True, initial='', jsRequired=None, label=None, helpText=None):
+				required=None, initial='', jsRequired=None, label=None, helpText=None):
 		if choicesId == None:
 			raise XpMsgException(AttributeError, _('choicesId is required'))
 		#instanceFieldName = self._getFieldName(insField)
@@ -1574,7 +1536,7 @@ class ManyListField( Field ):
 	
 	"""
 	def __init__(self, instance, insField, choicesId=None, limitTo=None, listValue=None, values=None, choices=None, orderBy=None,
-				required=True, initial='', jsRequired=None, label=None, helpText=None):
+				required=None, initial='', jsRequired=None, label=None, helpText=None):
 		if choicesId == None:
 			raise XpMsgException(AttributeError, _('choicesId is required'))
 		#instanceFieldName = self._getFieldName(insField)

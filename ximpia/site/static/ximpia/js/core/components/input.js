@@ -540,7 +540,7 @@
         	excudeListInputSug: ['type','id','element','help_text','label','left'],
         	excludeListLabel: ['type','id','element'],
         	excludeList: ['info','type','left'],
-        	htmlAttrs: ['tabindex','maxlength','readonly','class','value','name'],
+        	htmlAttrs: ['tabindex','maxlength','readonly','class','name'],
         	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype'],
         	isRender: false
         };
@@ -591,10 +591,10 @@
 					var ctlId = "id_" + name;
 					if (value == true || value == '1') {
 						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
-							"\" value=\"\" data-xp=\"{}\" checked=\"checked\"";
+							"\" data-xp=\"{}\" checked=\"checked\"";
 					} else {
 						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
-							"\" value=\"\" data-xp=\"{}\"";
+							"\" data-xp=\"{}\"";
 					}
 					controlHtml += "/>";
         			var helpText = "";
