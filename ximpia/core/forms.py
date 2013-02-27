@@ -87,8 +87,7 @@ class XBaseForm( forms.Form ):
 					# resolve instance in form related to instance in field by type
 					if field.instance:
 						dbResolved = self._resolveDbInstance(field) #@UnusedVariable
-						#print 'instance: ', dbResolved
-						logger.debug('XBaseForm :: resolved instance: %s' % (dbResolved) )
+						logger.debug('XBaseForm :: resolved instance: %s db: %s' % (dbResolved, dbResolved._state.db) )
 						# check if foreign key, should place pk as initial instead of model instance
 						isFK = self._isForeignKey(dbResolved, instanceFieldName)
 						isManyToMany = self._isManyToMany(dbResolved, instanceFieldName)
@@ -235,10 +234,10 @@ class XBaseForm( forms.Form ):
 		
 		bool
 		"""
-		check = False
+		check = True
 		try:
 			addMethod = field.add
-			check = True
+			check = False
 		except AttributeError:
 			pass
 		return check
@@ -493,7 +492,7 @@ class XBaseForm( forms.Form ):
 		instances = {}
 		manyList = []
 		for field in fieldList:
-			#logger.debug('xBaseForm.save :: field: %s' % (field) )
+			logger.debug('xBaseForm.save :: field: %s' % (field) )
 			if self.fields[field].instance:
 				fieldObj = self.fields[field]
 				instanceName = self._getInstanceName(fieldObj.instance)
@@ -501,14 +500,16 @@ class XBaseForm( forms.Form ):
 					instances[instanceName] = fieldObj.instance
 				isMany = self._isManyToMany(instances[instanceName], fieldObj.instanceFieldName)
 				isFK = self._isForeignKey(instances[instanceName], fieldObj.instanceFieldName)
-				#logger.debug('XBaseForm.save :: isFK: %s' % (isFK) )
-				#logger.debug('XBaseForm.save :: isMany: %s' % (isMany) )
+				logger.debug('XBaseForm.save :: isFK: %s' % (isFK) )
+				logger.debug('XBaseForm.save :: isMany: %s' % (isMany) )
+				logger.debug('XBaseForm.save :: instance db: %s' % (fieldObj.instance._state.db) )
+				logger.debug('XBaseForm.save :: pk: %s' % (fieldObj.instance.pk) )
 				if isFK:
-					#logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
+					logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
 					instances[instanceName].__setattr__(fieldObj.instanceFieldName + '_id', self.d(fieldObj.instanceFieldName) )
 				else:
 					if not isMany:
-						#logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
+						logger.debug('XBaseForm.save :: %s = %s' % (fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName)) )
 						instances[instanceName].__setattr__(fieldObj.instanceFieldName, self.d(fieldObj.instanceFieldName))
 					else:
 						# Many To Many relationship logic
@@ -516,18 +517,28 @@ class XBaseForm( forms.Form ):
 
 		# Save model instances
 		for instanceName in instances:
-			instances[instanceName].save()		
+			# TODO: Get master node from pool of masters
+			instances[instanceName]._state.db = 'default'
+			instances[instanceName].save()
 		
 		# TODO: Place this into method. In future, patterns for different many operations???
-		"""for field in manyList:
+		for field in manyList:
+			# TODO: Get master node from pool of masters
+			field.instance._state.db = 'default'
+			throughEndfield = self._getThroughEndField(field.instance, field.instanceFieldName)
 			nowValues = eval('field.instance.' + field.instanceFieldName + '.through.objects.all()')
+			logger.debug('XBaseForm.save :: field: %s nowValues: %s' % (field.instanceFieldName, nowValues.values()) )
 			manyField = eval('field.instance.' + field.instanceFieldName)
-			visualListStr = field.initial.replace("'", '"')
+			logger.debug('XBaseForm.save :: visualListfield: %s' % (self.d(field.instanceFieldName)) )
+			if self.d(field.instanceFieldName) is None:
+				continue
+			visualListStr = self.d(field.instanceFieldName).replace("'", '"')
 			visualList = json.loads(visualListStr)
-			delList = []
+			logger.debug('xBaseForm.save :: visualList: %s' % (visualList) )
 			visualDict = {}
 			# origin <- through -> destination
 			hasThrough = self._hasThrough(manyField)
+			logger.debug('XBaseForm.save :: hasThrough: %s' % (hasThrough) )
 			destinationModelClass = field.instance.__class__._meta.get_field_by_name(field.instanceFieldName)[0].rel.to
 			if hasThrough:
 				throughModelClass = field.instance.__class__._meta.get_field_by_name(field.instanceFieldName)[0].rel.through
@@ -537,17 +548,18 @@ class XBaseForm( forms.Form ):
 				destinationField = self._getThroughEndField(field.instance, field.instanceFieldName)
 				if not visualObj.has_key('pk'):
 					# Not having pk, which means we need to create destination data and through data
+					logger.debug('XBaseForm.save :: Not having pk, which means we need to create destination data and through data')
 					# Create destination data
-					logger.debug('XBaseForm.save :: No pk...')
 					args = {}
 					for key in visualObj.keys():
 						if key.find('__') > 0:
 							args[key.split('__')[1]] = visualObj[key]
+					logger.debug('XBaseForm.save :: Creating destination table: %s' % (args) )
 					destination = destinationModelClass.objects.create( **args )
-					logger.debug('XBaseForm.save :: Created destination table: %s' % (args) )
 					if not hasThrough:
 						# No through table
-						field.instance.add(destination)						
+						field.instance.add(destination)
+						visualDict[field.instance.through.objects.get( **args ).pk] = visualObj
 					else:
 						# Through table
 						# Insert to destiny table
@@ -557,16 +569,20 @@ class XBaseForm( forms.Form ):
 						for key in visualObj.keys():
 							if key != 'pk' and key.find('__') == -1:
 								args[key] = visualObj[key]
-						throughModelClass.objects.create( **args )
-						logger.debug('XBaseForm.save :: Created through table: %s' % (args) )
+						logger.debug('XBaseForm.save :: Creating through table: %s' % (args) )
+						dbData = throughModelClass.objects.create( **args ) #@UnusedVariable
+						myPk = eval('dbData.' + throughEndfield + '_id')
+						visualDict[str(myPk)] = visualObj
 				else:
 					# They have pk, either add to through table or insert into container visualDict					
 					# TODO: We should have a more efficient way than filter every time???
 					logger.debug('XBaseForm.save :: Have pk...')
 					destination = destinationModelClass.objects.get(pk=visualObj['pk'])
 					args = { self._getThroughEndField(field.instance, field.instanceFieldName) + '_id': visualObj['pk'] }
+					logger.debug('XBaseForm.save :: filter nowValues: %s' % (nowValues.filter( **args ).values()) )
 					if len(nowValues.filter( **args )) == 0:
 						# pk not added to through table, we add
+						logger.debug('XBaseForm.save :: pk not added to through table, we add')
 						if hasThrough:
 							args = { originField: field.instance, destinationField: destination }
 							# Add to args for values in visualObj
@@ -581,9 +597,12 @@ class XBaseForm( forms.Form ):
 								
 			# nowValues[0]['meta_id']
 			# mark for delete
+			logger.debug('XBaseForm.save :: visualDict: %s' % (visualDict) )
+			delList = []
 			for obj in nowValues:
-				myPk = eval('obj.' + field.instanceFieldName + '_id')
-				if not visualDict.has_key(myPk):
+				# myPk is value pk for destination table, obj is through
+				myPk = eval('obj.' + throughEndfield + '_id')
+				if not visualDict.has_key(str(myPk)):
 					logger.debug('XBaseForm.save :: Mark for delete: %s' % (myPk) )
 					delList.append(myPk)
 				# Do updates
@@ -601,11 +620,14 @@ class XBaseForm( forms.Form ):
 			
 			# fieldMany = eval('field.instance.' + field.instanceFieldName)
 			# delete items in delList
+			logger.debug('XBaseForm.save :: delList: %s' % (delList) )
 			if len(delList) != 0:
-				logger.debug('XBaseForm.save :: Deleting ... %s' % (delList) )			
-				delQuery = eval('field.instance.' + field.instanceFieldName + '.through.objects.filter(pk__in=delList)')
+				logger.debug('XBaseForm.save :: Deleting ... %s' % (delList) )
+				logger.debug('XBaseForm.save :: Using: %s' % (field.instance._state.db) )
+				delQuery = eval('field.instance.' + field.instanceFieldName + '.through.objects.filter(' + throughEndfield + '__in=delList)')
+				logger.debug('xBaseForm.save :: delQuery: %s' % (delQuery.values()) )
 				delQuery.delete()
-				logger.debug('XBaseForm.save :: Deleted completed' )"""
+				logger.debug('XBaseForm.save :: Deleted completed' )
 	
 	def delete(self, isReal=False):
 		"""
@@ -632,10 +654,17 @@ class XBaseForm( forms.Form ):
 				pass
 			attrs['name'] = fieldName
 			#logger.debug( 'XBaseForm.buildJsData :: field initial: %s' % (oField.initial) )
-			if oField.initial != None:
-				attrs['value'] = oField.initial
+			if attrs['fieldType'] == 'DateField' and oField.initial != None:
+				attrs['value'] = oField.initial.strftime('%m/%d/%Y')
+			elif attrs['fieldType'] == 'TimeField' and oField.initial != None:
+				attrs['value'] = oField.initial.strftime('%H:%M')
+			elif attrs['fieldType'] == 'DateTimeField' and oField.initial != None:
+				attrs['value'] = oField.initial.strftime('%m/%d/%Y %H:%M')
 			else:
-				attrs['value'] = ''
+				if oField.initial != None:
+					attrs['value'] = oField.initial
+				else:
+					attrs['value'] = ''
 			if attrs['label'] is not None:
 				attrs['label'] = attrs['label'].replace('"', '')
 			if attrs['helpText'] is not None:

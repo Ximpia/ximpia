@@ -596,7 +596,7 @@
 						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
 							"\" data-xp=\"{}\"";
 					}
-					controlHtml += "/>";
+					controlHtml += "style=\"float: left; margin-top: 4px\"" +  " />";
         			var helpText = "";
         			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText') && 
         						attrs['controlPosition'] == 'after') {
@@ -608,12 +608,13 @@
         			}
         			var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['controlPosition'] == 'before') {
-						htmlContent += controlHtml + "<div style=\"width: " + labelWidth + "\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + 
+						htmlContent += controlHtml + "<div style=\"width: " + labelWidth + "; float:left; margin-top: 4px\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + 
 							label + "</label></div>";
 					} else {
-						htmlContent += "<div style=\"width: " + labelWidth + "\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + label + ": </label></div>" + 
+						htmlContent += "<div style=\"width: " + labelWidth + "; float:left; margin-top: 4px\"><label for=\"" + ctlId + "\"" + attrClass + ' ' + helpText + ">" + label + ": </label></div>" + 
 							controlHtml;
 					}
+					htmlContent += "<div style=\"clear: both\" > </div>";
 					// Assign html visual component div element
 					$(element).html(htmlContent);
 					// Help text...

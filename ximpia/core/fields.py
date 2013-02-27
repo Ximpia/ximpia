@@ -1,20 +1,18 @@
 # coding: utf-8
 
-import json
 import os
 import datetime
 import copy
 from decimal import Decimal, DecimalException
 
-from django.forms.widgets import Widget
 from django.forms import Field as DjField
 from django.forms.util import from_current_timezone, to_current_timezone
-from django.core.exceptions import ValidationError
 from django.utils import formats
+from django.core.exceptions import ValidationError
 from django.utils.encoding import smart_str, force_unicode, smart_unicode
 from django.utils.ipv6 import clean_ipv6_address
 from django.utils.translation import ugettext_lazy as _
-import django.core.validators
+import django.core.validators 
 
 from models import XpMsgException
 from validators import validateTxtField, validatePassword, validateUserId
