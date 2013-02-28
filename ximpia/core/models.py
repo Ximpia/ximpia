@@ -2215,14 +2215,15 @@ class ContextViewDecorator(object):
 				return resp
 			except Exception as e: #@UnusedVariable
 				logger.debug( 'ContextViewDecorator :: Exception... type: %s' % (type(e)) )
+				print e.__dict__
+				print dir(e)
+				print e
 				if settings.DEBUG == True:
 					traceback.print_exc()
 					showError = True
 					#try:
-					if e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
+					if e.__dict__.has_key('argsDict') and e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
 						showError = False
-					"""except AttributeError:
-						showError = True"""
 					if type(e) == XpMsgException and showError == True:
 						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
 						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))

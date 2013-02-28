@@ -373,7 +373,22 @@ def jxSave(request, **args):
 			logger.debug('jxSave :: resolvedForm: %s' % (resolvedForm) )
 			# Instantiate form, validate form
 			logger.debug('jxSave :: post: %s' % (args['ctx'].post) )
-			args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'])
+			# instantiate form for create and update with db instances dbObjects from form
+			# dbObjects : pk, model			
+			instances = {}
+			dbObjects = json.loads(args['ctx'].post['dbObjects'].replace("'", '"'))
+			logger.debug('jxSave :: dbObjects: %s' % (dbObjects) )
+			# TODO: In case we support more masters than 'default', resolve appropiate master db name
+			for key in dbObjects:
+				# Get instance model by pk
+				impl = dbObjects[key]['impl']
+				cls = getClass( impl ) 
+				instances[key] = cls.objects.using('default').get(pk=dbObjects[key]['pk'])
+			logger.debug('jxSave :: instances. %s' % (instances) )
+			if len(instances) == 0:
+				args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'])
+			else:
+				args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'], instances=instances)
 			logger.debug('jxSave :: instantiated form')
 			args['ctx'].jsData = JsResultDict()
 			isFormValid = args['ctx'].form.is_valid()

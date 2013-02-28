@@ -53,7 +53,7 @@ class XBaseForm( forms.Form ):
 	viewNameSource = HiddenField(initial='')
 	viewNameTarget = HiddenField(initial=' ')
 	result = HiddenField(initial=' ')
-	objects = HiddenField(initial='{}')
+	dbObjects = HiddenField(initial='{}')
 	#errors = {}
 	_argsDict = {}
 	_instances = {}
@@ -76,6 +76,7 @@ class XBaseForm( forms.Form ):
 		#self.errors = {}
 		#self.errors['invalid'] = []
 		#logger.debug( 'argsDict : ' + argsDict )
+		# TODO: Init all database model instances
 		if argsDict.has_key('instances'):
 			d = argsDict['instances']
 			self._instances = d
@@ -149,11 +150,18 @@ class XBaseForm( forms.Form ):
 			d = {}
 			for key in self._argsDict['instances']:
 				# Get json object, parse, serialize fields object
-				jsonObj = _s.serialize("json", [self._argsDict['instances'][key]])
+				instance = self._argsDict['instances'][key]
+				jsonObj = _s.serialize("json", [instance])
+				#logger.debug( 'XBaseForm._buildObjects :: jsonObj: %s' % (jsonObj) )
 				obj = json.loads(jsonObj)[0]
-				#logger.debug( key + ' ' + obj )
-				d[key] = obj['fields']
-				self.base_fields['objects'].initial = json.dumps(d)
+				#logger.debug( 'XBaseForm._buildObjects :: obj: %s' % (obj) )
+				d[key] = {}
+				d[key]['pk'] = obj['pk']
+				#d[key]['model'] = obj['model']
+				d[key]['impl'] = str(instance.__class__).split("'")[1]
+				# TODO: Define model field attribute showHidden=True to show model field attribute in dbObjects inside fields
+				#d[key]['fields'] = obj['fields']
+				self.base_fields['dbObjects'].initial = json.dumps(d)
 	def _resolveDbInstance(self, field):
 		"""
 		Resolves the instance for field from the instances dictionary sent to constructor instances argument:
@@ -465,29 +473,10 @@ class XBaseForm( forms.Form ):
 	def save(self):
 		"""
 		Saves the form.
-		
-		In case it is a new register, inserts into database form data.
-		
-		In case we are updating, modifies all instances related to form fields.
-		
-		=================================
-		
-		Page button save will call jxService which will call service operation save
-		Service operation save (from core common service)
-		fill form with form = MyForm(request.POST) and call form.save() for all forms, Decorators????
-		
-		Take into account form input / select elements that do not appear in form definition, and should not since they are
-		built to populate other components like FieldList, etc...
-		
-		Algorithm
-		=========
-		
-		1. We get all fields, add to instances list, map, set value
-		2. Travel list of instances, save each instance
-		
-		=================================
 		"""
 		
+		logger.debug('XBaseForm.save ...')
+		logger.debug('XBaseForm.save :: form cleaned data: %s' % (self.cleaned_data) )
 		fieldList = self.fields.keys()
 		instances = {}
 		manyList = []
@@ -517,23 +506,47 @@ class XBaseForm( forms.Form ):
 
 		# Save model instances
 		for instanceName in instances:
-			# TODO: Get master node from pool of masters
-			instances[instanceName]._state.db = 'default'
+			if self._ctx.user:
+				if instances[instanceName].pk:
+					instances[instanceName].userModifyId = self._ctx.user.id
+				else:
+					instances[instanceName].userCreateId = self._ctx.user.id
 			instances[instanceName].save()
 		
 		# TODO: Place this into method. In future, patterns for different many operations???
 		for field in manyList:
-			# TODO: Get master node from pool of masters
-			field.instance._state.db = 'default'
 			throughEndfield = self._getThroughEndField(field.instance, field.instanceFieldName)
 			nowValues = eval('field.instance.' + field.instanceFieldName + '.through.objects.all()')
+			#logger.debug('XBaseForm.save :: form attrs: %s' % (dir(self)) )
+			#logger.debug('XBaseForm.save :: data: %s' % (self.data) )
+			# self.d['tags'] = []
+			# self.data['tags'] = ['1','2']
 			logger.debug('XBaseForm.save :: field: %s nowValues: %s' % (field.instanceFieldName, nowValues.values()) )
 			manyField = eval('field.instance.' + field.instanceFieldName)
-			logger.debug('XBaseForm.save :: visualListfield: %s' % (self.d(field.instanceFieldName)) )
+			
 			if self.d(field.instanceFieldName) is None:
-				continue
-			visualListStr = self.d(field.instanceFieldName).replace("'", '"')
-			visualList = json.loads(visualListStr)
+				visualList = []
+			else:		
+				if self.d(field.instanceFieldName).find('{') == -1 and self.data.has_key(field.instanceFieldName):
+					# checkbox
+					# Like [u'1',u'2'] : list of pk values
+					visualList = []
+					fieldValueList = self.data.getlist(field.instanceFieldName)
+					# valueListStr :: [{'pk': '1'},{'pk': '2'}]
+					for fieldValue in fieldValueList:
+						visualList.append({'pk': fieldValue})
+				else:
+					# Not checkbox
+					fieldValue = self.d(field.instanceFieldName)
+					visualListStr = fieldValue.replace("'", '"')
+					visualListStr = fieldValue.replace("'", '"')
+					visualList = json.loads(visualListStr)			
+			
+			#visualListStr = fieldValue.replace("'", '"')
+			#logger.debug('XBaseForm.save :: visualListStr: %s' % (visualListStr) )
+
+			# visualListStr :: []
+			#visualList = json.loads(visualListStr)
 			logger.debug('xBaseForm.save :: visualList: %s' % (visualList) )
 			visualDict = {}
 			# origin <- through -> destination
@@ -654,17 +667,22 @@ class XBaseForm( forms.Form ):
 				pass
 			attrs['name'] = fieldName
 			#logger.debug( 'XBaseForm.buildJsData :: field initial: %s' % (oField.initial) )
-			if attrs['fieldType'] == 'DateField' and oField.initial != None:
-				attrs['value'] = oField.initial.strftime('%m/%d/%Y')
-			elif attrs['fieldType'] == 'TimeField' and oField.initial != None:
-				attrs['value'] = oField.initial.strftime('%H:%M')
-			elif attrs['fieldType'] == 'DateTimeField' and oField.initial != None:
-				attrs['value'] = oField.initial.strftime('%m/%d/%Y %H:%M')
-			else:
-				if oField.initial != None:
-					attrs['value'] = oField.initial
-				else:
+			
+			if oField.initial != None:
+				try:
+					if attrs['fieldType'] == 'DateField' and oField.initial != None:
+						attrs['value'] = oField.initial.strftime('%m/%d/%Y')
+					elif attrs['fieldType'] == 'TimeField' and oField.initial != None:
+						attrs['value'] = oField.initial.strftime('%H:%M')
+					elif attrs['fieldType'] == 'DateTimeField' and oField.initial != None:
+						attrs['value'] = oField.initial.strftime('%m/%d/%Y %H:%M')
+					else:
+						attrs['value'] = oField.initial
+				except AttributeError:
 					attrs['value'] = ''
+			else:
+				attrs['value'] = ''
+			
 			if attrs['label'] is not None:
 				attrs['label'] = attrs['label'].replace('"', '')
 			if attrs['helpText'] is not None:
