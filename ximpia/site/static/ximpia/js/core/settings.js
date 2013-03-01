@@ -23,6 +23,11 @@ ximpia.settings.COMPLETE_MIN_CHARACTERS = 3
 ximpia.settings.LABEL_WIDTH = 'auto'
 
 /*
+ * Tooltip
+ */
+ximpia.settings.IMAGE_TOOLTIP = true;
+
+/*
  * Static Locations
  */
 ximpia.settings.static = ximpia.settings.media || {};
