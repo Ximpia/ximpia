@@ -1632,3 +1632,7 @@ div[data-xp-type='field.check'] label {
 	position: relative;
 	top: -2px;
 }
+
+.ui-tooltip-opacity {
+	opacity: 0.9 !important;
+}

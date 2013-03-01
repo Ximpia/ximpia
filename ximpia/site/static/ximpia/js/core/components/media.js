@@ -29,13 +29,13 @@
  * * ``hostLocation`` [optional] : Host location mapping to use. You can define in settings alternate host location for your images, like
  * 									ximpia.settings.hostLocations['S3'] = 'https://ximpia.s3.amazonaws.com/'. In case not defined, will
  * 									use the default host location. This way for images can point to S3, local, cloudfront, etc...
- * * ``title`` [optional] : Tooltip to show when mouse is placed over image.
+ * * ``title`` : Tooltip to show when mouse is placed over image.
  * * ``version`` [optional] : Version to generate url for image versions. In case to include version you need no ``dimensions``attribute. 
  * 								Dimensions from version will be used.
- * * ``dimensions`` [optional] :List<width, height> : Dimensions for image, like [40,60] Dimensions will be converted to pixels (px)
  * 
  *
  */
+
 
 (function($) {	
 
@@ -43,6 +43,10 @@
 
         // Settings		
         var settings = {
+        	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete','size','style'],
+        };
+        var templates = {
+        	main: '<img id="{{id}}" src="{{src}}" />'
         };
         
         var methods = {
@@ -57,28 +61,67 @@
 		},
 		render : function(xpForm) {
 			ximpia.console.log('image :: render...');
-			//var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
-			//ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
 				var idElement = $(element).attr('id').split('_comp')[0];
-				var nameElement = idInput.split('id_')[1];
+				var nameElement = idElement.split('id_')[1];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				alert(doRender);
 				if (doRender == true) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
+					$.metadata.setType("attr", "data-xp");
+					var attrs = $(element).metadata();
+					ximpia.console.log('xpImage :: attrs...')
+					ximpia.console.log(attrs);
+					$(element).html("<img id=\"" + idElement + "\" />");
+					// Build src
+					if (attrs.hasOwnProperty('src')) {
+						$('#' + idElement).attr('src', attrs.src);
+					} else {
+						var src="";
+						if (attrs.hasOwnProperty('hostLocation') && 
+								ximpia.settings.static.hostLocations.hasOwnProperty(attrs['hostLocation'])) {
+							src += ximpia.settings.static.hostLocations[attrs['hostLocation']];
+						} else {
+							src += ximpia.settings.static.hostLocations['default'];
+						}
+						if (attrs.hasOwnProperty('location') && ximpia.settings.static.locations.hasOwnProperty(attrs['locations'])) {
+							src += ximpia.settings.static.locations[attrs['locations']];
+						} else {
+							src += ximpia.settings.static.locations['images'];
+						}
+						if (attrs.hasOwnProperty('version')) {
+							var fileFields = attrs['file'].split('.');
+							var fileName = fileFields.slice(0, fileFields.length-1).join('.');
+							src += fileName + '_' + attrs['version'] + '.' + fileFields[fileFields.length-1];
+						} else {
+							src += attrs['file'];							
+						}
+						$('#' + idElement).attr('src', src);
+					}
+					// Build title
+					$('#' + idElement).attr('title', attrs.title);
+					var dataAttrs = {};
+					ximpia.common.Form.doAttributes({
+						djangoAttrs: [],
+						htmlAttrs: settings.htmlAttrs,
+						excludeList: [],
+						dataAttrs: dataAttrs,
+						attrs: attrs,
+						idElement: idElement
+					});
 				}
+			}
 		}
-        };
+		};
 		
-        if ( methods[method] ) {
-            return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
-        } else if ( typeof method === 'object' || ! method ) {
-            return methods.init.apply( this, arguments );
-        } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpImage' );
-        }    
+		if ( methods[method] ) {
+		    return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		} else if ( typeof method === 'object' || ! method ) {
+		    return methods.init.apply( this, arguments );
+		} else {
+		    $.error( 'Method ' +  method + ' does not exist on jQuery.xpImage' );
+		}    
 		
 	};
 

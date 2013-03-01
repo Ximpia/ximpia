@@ -1455,6 +1455,29 @@ ximpia.common.Form = function() {
 						classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
 					}
 				});
+				if (ximpia.settings.IMAGE_TOOLTIP == true) {
+					$("img").qtip({
+						content : {
+							attr : 'title'
+						},
+						events : {
+							focus : function(event, api) {
+							}
+						},
+						position: {
+							/*my: 'top center',
+							at: 'bottom center',*/
+							target: 'mouse',
+							adjust: {
+								y: 20
+							}
+						},
+						style : {
+							//classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+							classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-opacity'
+						}
+					});
+				}
 			}
 		}
 	}
@@ -2360,7 +2383,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.action']").xpLink('render');
 	$("[data-xp-type='link.view']").xpLink('render');
 	// Image
-	//$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
+	$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
 	// TODO: analyse the onSelect function
 	// TODO: Integrate header search with jxSuggestList
