@@ -95,27 +95,39 @@
         	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon();
         	ximpia.console.log('viewType: ' + obj.viewType);
         	if (isValid == true) {
-        		if (obj.viewType == 'page') {
-        			createPageMsgBar(obj);
-        		} else if (obj.viewType == 'popup') {
-        			createPopupMsgBar(obj);
-        		} else if (obj.viewType == 'title') {
-        			createTitleMsgBar(obj);
-        		}
-                $("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
-        		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
         		// Set form values from data-xp and action
         		var attrs = getFormAttrs(obj.form)
+        		var cancelAction = false;
         		if (obj.action == 'save') {
+        			// process parameters sent to action through data-xp-params
         			$("#" + obj.form).attr('action', ximpia.common.Path.getSave());
-        		} else {
+        		} else if (obj.action == 'delete') {
+        			// process parameters sent to action through data-xp-params
+        			var doDelete = confirm('Are you sure you want to delete it?');
+        			if (doDelete == true) {
+        				$("#" + obj.form).attr('action', ximpia.common.Path.getDelete());
+        			} else {
+        				cancelAction = true;
+        			}
+        		}else {
         			$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
         		}
-        		$("#" + obj.form).append('<input type="hidden" name="form" value="' + obj.form.split('_')[1] + '" />');
-        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button action : ' + obj.action);
-        		$("#id_" + obj.form + "_action").val(obj.action);
-        		$("#" + obj.form).submit();
+        		if (cancelAction == false) {
+	        		if (obj.viewType == 'page') {
+	        			createPageMsgBar(obj);
+	        		} else if (obj.viewType == 'popup') {
+	        			createPopupMsgBar(obj);
+	        		} else if (obj.viewType == 'title') {
+	        			createTitleMsgBar(obj);
+	        		}
+	                $("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
+	        		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
+	        		$("#" + obj.form).append('<input type="hidden" name="form" value="' + obj.form.split('_')[1] + '" />');
+	        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
+	        		console.log('form :: button action : ' + obj.action);
+	        		$("#id_" + obj.form + "_action").val(obj.action);
+	        		$("#" + obj.form).submit();        			
+        		}
         	} else {
         		if (obj.viewType == 'page') {
         			createPageMsgBar(obj);

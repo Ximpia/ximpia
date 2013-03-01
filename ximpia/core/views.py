@@ -348,6 +348,15 @@ def jxService(request, **args):
 @ContextDecorator()
 @transaction.commit_on_success
 def jxSave(request, **args):
+	"""
+	Save register. Operation executed when clicking on "Save" button on forms. Saves all instances related to forms, included
+	many to many relationships.
+	
+	** Attributes **
+	
+	* ``request``
+	* ``**args``
+	"""
 	logger.debug( 'jxSave...' )
 	logger.debug( json.dumps(request.REQUEST.items()) )
 	request.session.set_test_cookie()
@@ -429,7 +438,57 @@ def jxSave(request, **args):
 @ContextDecorator()
 @transaction.commit_on_success
 def jxDelete(request, **args):
-	pass
+	"""
+	Deletes registers associated to form. In case more than one instance associated to form, button must define instances to delete.
+	
+	This operation is executed when "Delete" button is clicked on forms.
+	
+	Deletes the register by pk: dbInstance.objects.get(pk=myPk).delete()
+	
+	** Attributes **
+	
+	* ``request``
+	* ``**args``
+	"""
+	logger.debug('jxDelete ...')
+	logger.debug('jxDelete :: args: %s' % (args) )
+	request.session.set_test_cookie()
+	request.session.delete_test_cookie()
+	if (request.REQUEST.has_key('action')) and request.is_ajax() == True:
+		action = request.REQUEST['action']
+		logger.debug( 'action: %s' % (action) )
+		if action == 'delete':
+			# resolve form, set to args['ctx'].form
+			logger.debug('jxDelete :: form: %s' % (request.REQUEST['form']) )
+			formId = request.REQUEST['form']
+			app = request.REQUEST['app']
+			formModule = getattr(getattr(__import__(app.split('.')[0]), app.split('.')[1]), 'forms')
+			classes = dir(formModule)
+			resolvedForm = None
+			for myClass in classes:
+				try:
+					formIdTarget = eval('formModule.' + myClass + '._XP_FORM_ID')
+					if formIdTarget == formId:
+						resolvedForm = eval('formModule.' + myClass)
+				except AttributeError:
+					pass
+			logger.debug('jxDelete :: resolvedForm: %s' % (resolvedForm) )
+			args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'])
+			args['ctx'].jsData = JsResultDict()
+			# Instantiate form, validate form
+			logger.debug('jxDelete :: post: %s' % (args['ctx'].post) )
+			# instantiate form for create and update with db instances dbObjects from form
+			# dbObjects : pk, model			
+			obj = CommonService(args['ctx'])
+			obj._setMainForm(args['ctx'].form)			
+			result = obj.delete()
+		else:
+			logger.debug( 'Invalid action name. Only save is allowed' )
+			raise Http404
+	else:
+		logger.debug( 'Unvalid business request' )
+		raise Http404
+	return result
 
 @ContextViewDecorator()
 @ViewTmplDecorator()

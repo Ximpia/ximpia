@@ -1696,41 +1696,33 @@ class CommonService( object ):
 	@ServiceDecorator()
 	def save(self):
 		"""
-		Save form
+		Save data associated to form
 		"""
 		logger.debug('CommonService.save ...')
 		self._f().save()
-		"""# Resolve form instance from formId
-		#self._form = argsTuple[0]
-		obj = self
-		obj._ctx.jsData = JsResultDict()
-		obj._ctx.form = self._form(obj._ctx.post, ctx=obj._ctx)
-		bForm = obj._ctx.form.is_valid()
-		if bForm == True:
-			obj._setMainForm(obj._ctx.form)
-			# code here
-			self._form.save()
+	
+	@ServiceDecorator()
+	def delete(self):
+		"""
+		Delete register associated with form
+		"""
+		logger.debug('CommonService.delete ...')
+		instances = {}
+		dbObjects = json.loads(self._ctx.post['dbObjects'].replace("'", '"'))
+		logger.debug('CommonService.delete :: dbObjects: %s' % (dbObjects) )
+		for key in dbObjects:
+			# Get instance model by pk
+			impl = dbObjects[key]['impl']
+			cls = getClass( impl ) 
+			instances[key] = cls.objects.using('default').get(pk=dbObjects[key]['pk'])
+		logger.debug('CommonService.delete :: instances: %s' % (instances) )
+		if len(instances) == 1:
+			instances[instances.keys()[0]].delete()
+			logger.debug('CommonService.delete :: deleted instance: %s pk: %s' % (instances.keys()[0], instances[instances.keys()[0]].pk) )
 		else:
-			pass"""
-		"""if settings.DEBUG == True:
-				logger.debug( 'Validation error!!!!!' )
-				logger.debug( obj._ctx.form.errors )
-				if obj._ctx.form.errors.has_key('invalid'):
-					logger.debug( obj._ctx.form.errors['invalid'] )
-				traceback.print_exc()
-			if obj._ctx.form.errors.has_key('invalid'):
-				errorDict = {'': obj._ctx.form.errors['invalid'][0]}
-				logger.debug( 'errorDict: %s' % (errorDict) )
-				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
-			else:
-				# Build errordict
-				errorDict = {}
-				for field in obj._ctx.form.errors:
-					if field != '__all__':
-						errorDict[field] = obj._ctx.form.errors[field][0]
-				logger.debug( 'errorDict: %s' % (errorDict) )
-				result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=False))
-			return result"""
+			# Get instances to delete from button parameters
+			# TODO: Include support for deleting more than one instance for forms with multiple instances associated
+			pass
 
 class DefaultService ( CommonService ):
 	

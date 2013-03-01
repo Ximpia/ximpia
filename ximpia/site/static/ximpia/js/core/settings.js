@@ -21,3 +21,27 @@ ximpia.settings.DEBUG = true;
 ximpia.settings.COMPLETE_MAX_HEIGHT = 200
 ximpia.settings.COMPLETE_MIN_CHARACTERS = 3
 ximpia.settings.LABEL_WIDTH = 'auto'
+
+/*
+ * Static Locations
+ */
+ximpia.settings.static = ximpia.settings.media || {};
+ximpia.settings.static.locations = {};
+ximpia.settings.static.locations['default'] = '';
+ximpia.settings.static.locations['images'] = 'images/';
+ximpia.settings.static.hostLocations = {};
+ximpia.settings.static.hostLocations['default'] = ximpia.settings.STATIC_URL;
+ximpia.settings.static.hostLocations['S3'] = 'https://ximpia.s3.amazonaws.com/';
+ximpia.settings.static.hostLocations['cloudfront'] = 'https://d22von4i3krd3k.cloudfront.net/';
+
+/*
+ * Image versions
+ *  
+ */
+ximpia.settings.imageVersions = ximpia.settings.imageVersions || {};
+ximpia.settings.imageVersions.mini = {verboseName: 'Mini', width: 24, height: 24};
+ximpia.settings.imageVersions.thumbnail = {verboseName: 'Thumbnail', width: 60, height: 60};
+ximpia.settings.imageVersions.small = {verboseName: 'Small', width: 140};
+ximpia.settings.imageVersions.medium = {verboseName: 'Medium', width: 300};
+ximpia.settings.imageVersions.big = {verboseName: 'Big', width: 460};
+ximpia.settings.imageVersions.large = {verboseName: 'Large', width: 680};

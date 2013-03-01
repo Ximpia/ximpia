@@ -783,6 +783,13 @@ ximpia.common.Path.getSave = (function() {
 	return path;
 });
 /*
+ * Get delete path
+ */
+ximpia.common.Path.getDelete = (function() {
+	var path = ximpia.common.Path.getServer() + 'jxDelete';
+	return path;
+});
+/*
  * Get template for popups and views
  *
  */
@@ -2352,6 +2359,8 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$("[data-xp-type='link.url']").xpLink('render');
 	$("[data-xp-type='link.action']").xpLink('render');
 	$("[data-xp-type='link.view']").xpLink('render');
+	// Image
+	//$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
 	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
 	// TODO: analyse the onSelect function
 	// TODO: Integrate header search with jxSuggestList
