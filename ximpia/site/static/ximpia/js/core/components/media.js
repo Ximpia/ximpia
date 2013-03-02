@@ -100,7 +100,14 @@
 						$('#' + idElement).attr('src', src);
 					}
 					// Build title
-					$('#' + idElement).attr('title', attrs.title);
+					if (attrs.hasOwnProperty('title')) {
+						$('#' + idElement).attr('title', attrs.title);
+						$('#' + idElement).attr('alt', attrs.title);
+					} else {
+						$('#' + idElement).attr('title', 'Image');
+						$('#' + idElement).attr('alt', 'Image');
+					}
+					// Process attributes					
 					var dataAttrs = {};
 					ximpia.common.Form.doAttributes({
 						djangoAttrs: [],
@@ -110,6 +117,11 @@
 						attrs: attrs,
 						idElement: idElement
 					});
+					// Dimensions for version in case no defined by styles
+					if ((attrs.hasOwnProperty('style') && attrs['style'].indexOf('width') == -1 && attrs.hasOwnProperty('version')) ||
+							(!attrs.hasOwnProperty('style') && attrs.hasOwnProperty('version'))) {
+						$('#' + idElement).css('width', ximpia.settings.imageVersions[attrs['version']].width + 'px');
+					}
 				}
 			}
 		}
