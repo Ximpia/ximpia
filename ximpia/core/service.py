@@ -1683,7 +1683,17 @@ class CommonService( object ):
 		self._ctx.isLogin = False
 	
 	def _addList(self, name, values):
-		"""Add name to list_$name in the result JSON object"""
+		"""Add name to list_$name in the result JSON object
+		
+		** Attributes **
+		
+		* ``name``:str
+		* ``values``:list<dict>
+		
+		** Returns **
+		
+		"""
+		# TODO: Check option to have values() for queryset and include values() list of dicts in 'list_xxxx'
 		dictList = []
 		for entry in values:
 			dd = {}

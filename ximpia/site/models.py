@@ -282,7 +282,7 @@ class Category ( BaseModel ):
 
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_CATEGORY')
 	name = models.CharField(max_length=55,
-		verbose_name = _('name'), help_text = _('Category name'), db_column='NAME')
+		verbose_name = _('Name'), help_text = _('Category name'), db_column='NAME')
 	slug = models.SlugField(max_length=200,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	description = models.CharField(max_length=255, null=True, blank=True,

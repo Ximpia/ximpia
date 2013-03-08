@@ -1,3 +1,13 @@
+
+/*
+ * 
+ * Copyright (c) 2013 Ximpia, Inc, All rights reserved
+ * This Source Code Form is subject to the terms of the Mozilla Public License, 
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain 
+ * one at http://mozilla.org/MPL/2.0/.
+ * 
+ */
+
 var ximpia = ximpia || {};
 ximpia.common = ximpia.common || {};
 ximpia.visual = ximpia.visual || {};
@@ -187,7 +197,8 @@ ximpia.external.Captcha.renderCaptcha = (function(attrs, callable) {
 
 ximpia.common.List = {};
 /**
- * Doc 
+ * Get value from list representation in element, like ['1','2']
+ * 
  */
 ximpia.common.List.getValue = (function(id, key) {
 	ximpia.console.log('value : ' + $("#" + id).attr('value'));
@@ -202,12 +213,12 @@ ximpia.common.List.getValue = (function(id, key) {
 	return value;
 });
 /**
- * Doc
+ * list has key: ['1','2']. id is the reference for element.
  */
 ximpia.common.List.hasKey = (function(id, key) {
 });
 /*
- * Doc
+ * Get value from input list.
  */
 ximpia.common.List.getValueFromList = (function(key, list) {
 	for (j in list) {
@@ -216,6 +227,67 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 		}
 	}
 	return value;
+});
+
+ximpia.common.JxDataQuery = {};
+/*
+ * Search for data. Calls server view jxDataQuery
+ * 
+ * ** Ajax Attributes **
+ * 
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * * ````
+ * 
+ * 
+ * 	* ``dbClass``:str : Data class name (DAO)
+	* ``fields``:list<str> [optional]
+	* ``pageStart``:str [optional] [default:1] : Start page number
+	* ``pageEnd``:str [optional] : End page number
+	* ``orderBy``:tuple<str> [optional]
+	* ``method``:str [optional] [default:searchFields]
+	* ``args``:dict<str,str> [optional]
+	* ``hasOrdering``:bool [optional]
+	* ``orderField``:str [optional]
+ * 
+ */
+
+ximpia.common.JxDataQuery.search = (function(app, dbClass, obj, func) {
+	// Build data
+	var request = obj;
+	request.dbClass = dbClass;
+	request.app = app;
+	var keys = Object.keys(obj);
+	for (var i=0; i<keys.length; i++) {
+		if (typeof obj[keys[i]] == 'object') {
+			request[keys[i]] = JSON.stringify(obj[keys[i]]);
+		}
+	}
+	//request.disablePaging = true;
+	ximpia.console.log('JxDataQuery.search :: request...');
+	ximpia.console.log(request);
+	var response = {};
+	$.ajax({
+  		type: "POST",
+  		url: '/jxDataQuery',
+  		data: request,
+  		dataType: 'json',
+  		traditional: false
+	}).done(function( response ) {
+		ximpia.console.log('JxDataQuery.search :: result...');
+		ximpia.console.log(response);
+		func(response);
+	}).fail(function(jqXHR, textStatus) {
+  		// TODO: throw exception????
+  		ximpia.console.log('JxDataQuery.search :: request failed: ' + textStatus);
+	});
 });
 
 ximpia.common.Object = {};
@@ -331,6 +403,60 @@ ximpia.common.timeOutCounter = (function(func) {
 	}, 100);	
 });
 
+/*
+ * Wait until list of components has been rendered, data-xp-render='true'
+ */
+ximpia.common.waitUntilListRenders = (function(func) {
+	var waitCounter = 1;
+	var timeout = setInterval(function() {
+		var counterLeftRender = 0;
+		//$.find('[data-xp-type*="list."]')[0].attributes['data-xp-render'].value
+		$.find('[data-xp-type*="list."]').forEach(function(element) {
+			if (element.attributes['data-xp-render'] == undefined) {
+				counterLeftRender += 1;
+			}
+		});
+		$.find('[data-xp-type*="container."]').forEach(function(element) {
+			if (element.attributes['data-xp-render'] == undefined) {
+				counterLeftRender += 1;
+			}
+		});
+		if (waitCounter > 100) {
+			clearInterval(timeout);
+		}
+		if (counterLeftRender == 0) {
+			clearInterval(timeout);
+			eval('new func()');
+		}
+		waitCounter += 1;
+		ximpia.console.log('waitCounter: ' + waitCounter);
+		ximpia.console.log('counterLeftRender: ' + counterLeftRender);
+	}, 100);
+});
+
+/*
+ * Get visual component div element for elements inside component
+ */
+ximpia.common.getParentComponent = (function(element) {
+	var isComp = false;
+	var counter = 0;
+	var elementTarget = $(element).parent();
+	if (elementTarget.attr('data-xp-type')) {
+		isComp = true;
+	}
+	while (isComp == false) {
+		if (counter > 20) {
+			break;
+		}
+		var elementTarget = $(elementTarget).parent();
+		if (elementTarget.attr('data-xp-type')) {
+			isComp = true;
+		}
+		counter += 1;
+	}
+	return elementTarget;
+});
+
 ximpia.console = {};
 /*
  * For log for levels: debug, info, warn, errors. If no level is informed, debug is default.
@@ -353,8 +479,8 @@ ximpia.common.ArrayUtil = {};
  * 
  * ** Attributes **
  * 
- * * ``array``
- * * ``keyTarget``
+ * * ``array``:object
+ * * ``keyTarget``:string
  * 
  * ** Returns **
  * 
@@ -2351,47 +2477,52 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('body').xpHidden('addHidden', xpForm);
 	// container
 	$('#' + formId).find("[data-xp-type='container']").xpContainer('render', xpForm);
-	// field.list
-	$('#' + formId).find("[data-xp-type='field.list']").xpFieldList('render', xpForm);
-	// basic.text
-	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
-	// field.datetime
-	$('#' + formId).find("[data-xp-type='field.datetime']").xpFieldDateTime('render', xpForm);
-	// field.number
-	$('#' + formId).find("[data-xp-type='field.number']").xpFieldNumber('render', xpForm);
-	// select.plus
-	$('#' + formId).find("[data-xp-type='select.plus']").xpSelectPlus('render', xpForm);
-	// select
-	$('#' + formId).find("[data-xp-type='select']").xpSelect('render', xpForm);
-	// option
-	$('#' + formId).find("[data-xp-type='option']").xpOption('render', xpForm);
-	// check
-	$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
-	// field check
-	$('#' + formId).find("[data-xp-type='field.check']").xpFieldCheck('render', xpForm);
-	// textarea
-	$('#' + formId).find("[data-xp-type='textarea']").xpTextArea('render', xpForm);
-	// field.list
-	$('#' + formId).find("input[data-xp-related='field.list']")
-			.filter("input[data-xp-type='field']")
-			.xpFieldList('keyPress', xpForm);
-	// button
-	$("[data-xp-type='button']").xpButton('render');
-	// link
-	$("[data-xp-type='link.popup']").xpLink('render');
-	$("[data-xp-type='link.url']").xpLink('render');
-	$("[data-xp-type='link.action']").xpLink('render');
-	$("[data-xp-type='link.view']").xpLink('render');
-	// Image
-	$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
-	ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
-	// TODO: analyse the onSelect function
-	// TODO: Integrate header search with jxSuggestList
-	$("#id_header_search").jsonSuggest({
-		url : '/jxSearchHeader',
-		maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
-		minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
-		onSelect : ximpia.common.Search.doClick
+	// list.data
+	$('#' + formId).find("[data-xp-type='list.data']").xpListData('render', xpForm);
+	// Wait until containers and lists have rendered other components like images, fields, etc...
+	ximpia.common.waitUntilListRenders(function() {
+		// field.list
+		$('#' + formId).find("[data-xp-type='field.list']").xpFieldList('render', xpForm);
+		// basic.text
+		$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
+		// field.datetime
+		$('#' + formId).find("[data-xp-type='field.datetime']").xpFieldDateTime('render', xpForm);
+		// field.number
+		$('#' + formId).find("[data-xp-type='field.number']").xpFieldNumber('render', xpForm);
+		// select.plus
+		$('#' + formId).find("[data-xp-type='select.plus']").xpSelectPlus('render', xpForm);
+		// select
+		$('#' + formId).find("[data-xp-type='select']").xpSelect('render', xpForm);
+		// option
+		$('#' + formId).find("[data-xp-type='option']").xpOption('render', xpForm);
+		// check
+		$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
+		// field check
+		$('#' + formId).find("[data-xp-type='field.check']").xpFieldCheck('render', xpForm);
+		// textarea
+		$('#' + formId).find("[data-xp-type='textarea']").xpTextArea('render', xpForm);
+		// field.list
+		$('#' + formId).find("input[data-xp-related='field.list']")
+				.filter("input[data-xp-type='field']")
+				.xpFieldList('keyPress', xpForm);
+		// button
+		$("[data-xp-type='button']").xpButton('render');
+		// link
+		$("[data-xp-type='link.popup']").xpLink('render');
+		$("[data-xp-type='link.url']").xpLink('render');
+		$("[data-xp-type='link.action']").xpLink('render');
+		$("[data-xp-type='link.view']").xpLink('render');
+		// Image
+		$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
+		ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
+		// TODO: analyse the onSelect function
+		// TODO: Integrate header search with jxSuggestList
+		$("#id_header_search").jsonSuggest({
+			url : '/jxSearchHeader',
+			maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
+			minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
+			onSelect : ximpia.common.Search.doClick
+		});		
 	});
 }
 /**

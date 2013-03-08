@@ -11,6 +11,8 @@ from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, 
 from models import ViewMenuCondition
 from models import Context, JsResultDict
 
+from ximpia.site.models import Setting
+
 # Settings
 from ximpia.core.util import getClass
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
@@ -119,6 +121,21 @@ class CommonDAO(object):
 			dbName = self._ctx.dbName
 		logger.debug('CommonDAO :: dbName: %s view: %s' % (dbName, self._ctx.viewNameSource) )
 		return dbName
+	
+	def _getSetting(self, settingName):
+		"""
+		Get setting model instance.
+		
+		** Attributes ** 
+		
+		* ``settingName``:String : Setting name
+		
+		** Returns **
+		
+		models.site.Setting model instance
+		"""
+		setting = Setting.objects.get(name__name=settingName).value
+		return setting
 	
 	def getMap(self, idList):
 		"""Get object map for a list of ids 
@@ -306,19 +323,61 @@ class CommonDAO(object):
 								origin='data')
 		return xpList
 	
-	def searchFields(self, fields, iPage=1, numberResults=100, orderBy=[], **args):
-		"""Search table with paging, ordering for set of fields. listMap allows mapping from keys to model fields.
-		@param fields: List of fields, like ['field1','field2', ... ]
-		@param iPage: Page to be returned. Default=1
-		@param numberResults: Number of results returned: Default: 100
-		@param orderBy: Tuple of fields to order by: Default: []
-		@return: xpList: ValuesQuerySet."""
+	def searchFields(self, fields, pageStart=1, pageEnd=None, numberResults=None, orderBy=[], **args):
+		"""
+		Search table with paging, ordering for set of fields. listMap allows mapping from keys to model fields.
+		
+		** Attributes **
+		
+		* ``fields``:tuple<str>
+		* ``pageStart``:int [optional] [default:1]
+		* ``pageEnd``:int [optional]
+		* ``numberResults``:int [optional] [default:from settings]
+		* ``orderBy``:tuple<str> [optional] [default:[]]
+		
+		** Returns **
+		
+		Returns the query set with values(*fields).
+		
+		xpList:ValuesQueryset
+		"""
 		try:
-			xpList = self.filterData(xpPage=iPage, xpNumberMatches=numberResults, xpOrderBy=orderBy, **args).values(*fields)
+			if numberResults is None:
+				# get numberResults from settings
+				numberResults = int(self._getSetting('NUMBER_RESULTS_LIST'))
+			logger.debug('CommonDAO.searchFields :: numberResults: %s' % (numberResults) )
+			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
+				iStart = (pageStart-1)*numberResults
+				if pageEnd is None:
+					iEnd = iStart+numberResults
+				else:
+					iEnd = iStart + numberResults*pageEnd
+			dbObj = self._processRelated()
+			"""if len(orderBy) != 0:
+				dbObj = self._model.objects.order_by(*orderBy)"""
+			logger.debug( self._resolveDbName() )
+			logger.debug('CommonDAO.searchFields :: args: %s' % (args) )
+			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
+				logger.debug('CommonDAO.searchField:: iStart: %s iEnd: %s' % (iStart, iEnd) )
+				if args.has_key('disablePaging'):
+					del args['disablePaging']
+				if len(orderBy) == 0:
+					xpList = dbObj.using(self._resolveDbName()).filter(**args)[iStart:iEnd].values_list(*fields)
+				else:
+					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*orderBy)[iStart:iEnd].values_list(*fields)
+			else:
+				logger.debug('CommonDAO.searchField:: Have no paging, we get all the data...')
+				if args.has_key('disablePaging'):
+					del args['disablePaging']				
+				if len(orderBy) == 0:
+					xpList = dbObj.using(self._resolveDbName()).filter(**args).values_list(*fields)
+				else:
+					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*orderBy).values_list(*fields)
+			"""if len(orderBy) != 0:
+				xpList.orderBy(*orderBy)"""
 			return xpList
 		except Exception as e:
-			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model), 
-								origin='data')
+			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model), origin='data')
 
 	ctx = property(_getCtx, None)
 

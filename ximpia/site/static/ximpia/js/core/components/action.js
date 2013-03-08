@@ -1,4 +1,13 @@
 /*
+ * 
+ * Copyright (c) 2013 Ximpia, Inc, All rights reserved
+ * This Source Code Form is subject to the terms of the Mozilla Public License, 
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain 
+ * one at http://mozilla.org/MPL/2.0/.
+ * 
+ */
+
+/*
  * Ximpia Visual Component 
  * Button
  *
@@ -555,7 +564,7 @@
 		if (obj.isCurrent == true && obj.zone == 'service') {
 			classPlus = ' iconMenuCurrent';
 		}
-		var path = '/apps/' + obj.appSlug + '/' + obj.viewSlug + '/';
+		var path = '/' + obj.appSlug + '/' + obj.viewSlug + '/';
 		if (obj.view == 'home') {
 			path = '/';
 		}

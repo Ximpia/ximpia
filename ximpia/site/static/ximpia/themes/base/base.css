@@ -626,6 +626,18 @@ img.AjaxButtonERROR {
     background: url(images/error_16.png) 4px 4px no-repeat;
 }
 
+img.checkSmall {
+	background: url(images/check_16.png) no-repeat;
+	width: 16px;
+	height: 16px;
+}
+
+img.errorSmall {
+	background: url(images/error_16.png) no-repeat;
+	width: 16px;
+	height: 16px;
+}
+
 img.loadBig {
 	background: url(images/loading_big.gif) 4px 4px no-repeat;
 	width: 235px;
@@ -1635,4 +1647,185 @@ div[data-xp-type='field.check'] label {
 
 .ui-tooltip-opacity {
 	opacity: 0.9 !important;
+}
+
+/*
+ * data list
+ */
+.ui-list-data {
+	display: table;
+	border-collapse: separate;
+	/*border-spacing: 2px;*/
+	border-color: gray;
+	margin: 0;
+	padding: 0;
+	border-spacing: none;
+	border-collapse: separate;
+	/*border: 1px solid #CCC;*/
+	border-right: 1px solid #CCC;
+	border-top: 1px solid #CCC;
+	/*-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-ms-border-radius: 3px;
+	-o-border-radius: 3px;
+	border-radius: 3px;*/
+}
+
+.ui-list-data thead {
+	display: table-header-group;
+	vertical-align: middle;
+	border-color: inherit;
+}
+
+.ui-list-data td, .ui-list-data th {
+	vertical-align: text-top;
+	padding: 6px 10px;
+	font-size: 1.0em;
+	line-height: 15px;
+}
+
+.ui-list-data th {
+	vertical-align: text-top;
+	padding: 2px 6px;
+	font-size: 1.00em;
+	line-height: 15px;
+}
+
+.ui-list-data caption {
+	background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2UwZTBlMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+	background-size: 100%;
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #EEE), color-stop(100%, #E0E0E0));
+	background-image: -webkit-linear-gradient(#EEE,#E0E0E0);
+	background-image: -moz-linear-gradient(#EEE,#E0E0E0);
+	background-image: -o-linear-gradient(#EEE,#E0E0E0);
+	background-image: linear-gradient(#EEE,#E0E0E0);
+	line-height: 30px;
+	font-weight: bold;
+	font-size: 1.2em;
+	/*background: #EEE;*/
+}
+
+.ui-list-data thead th {
+	vertical-align: top;
+	/*padding: 6px 10px 6px;*/
+	/*padding: 5px 20px;*/
+	line-height: 12px;
+	color: #888;
+	white-space: nowrap;
+	border-left: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
+	background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2UwZTBlMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+	background-size: 100%;
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #EEE), color-stop(100%, #E0E0E0));
+	background-image: -webkit-linear-gradient(#EEE,#E0E0E0);
+	background-image: -moz-linear-gradient(#EEE,#E0E0E0);
+	background-image: -o-linear-gradient(#EEE,#E0E0E0);
+	background-image: linear-gradient(#EEE,#E0E0E0);
+	font-weight: normal;
+}
+
+.ui-list-data thead th a {
+	display: block;
+	/*margin: -6px -10px;*/
+	padding: 6px 10px;
+	height: 100%;
+	/*color: #59AFCC;*/
+	color: #0083CC;
+	font-size: 1.0em;
+	text-decoration: none;
+}
+
+.ui-list-data thead th:hover {
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e0e0e0), color-stop(100%, #eee));
+}
+
+.ui-list-data tr:nth-child(odd)    { 
+	background-color:#f6f6f6; 
+}
+.ui-list-data tr:nth-child(even)    { 
+	background-color:#fff; 
+}
+
+.ui-list-data thead th a:hover {
+	color: #444;
+}
+
+.ui-list-data tbody.has-link tr:hover {
+	cursor: pointer;
+	background: #eee;
+}
+
+.ui-list-data thead th .grp-sortoptions {
+	position: relative;
+	display: block;
+	float: right;
+	clear: right;
+	margin: 0 5px 0 0;
+}
+
+.ui-list-data thead th .grp-sortoptions a.grp-ascending {
+	background-position: 0 -338px !important;
+	background: url('images/icons-grappelli.png') no-repeat;
+}
+
+.ui-list-data thead th .grp-sortoptions a.grp-descending {
+	background-position: 0 -381px !important;
+	background: url('images/icons-grappelli.png') no-repeat;
+}
+
+.ui-list-data thead th.sortable.sorted.ascending {
+	background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjUwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2UwZTBlMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+	background-size: 100%;
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #E0E0E0), color-stop(100%, #EEE));
+	background-image: -webkit-linear-gradient(#E0E0E0,#EEE);
+	background-image: -moz-linear-gradient(#E0E0E0,#EEE);
+	background-image: -o-linear-gradient(#E0E0E0,#EEE);
+	background-image: linear-gradient(#E0E0E0,#EEE);
+}
+
+.ui-list-data thead th .grp-sortoptions a.grp-sortremove:hover, 
+.ui-list-data thead th .grp-sortoptions a.grp-sortremove.sort-remove_hover, 
+.ui-list-data thead th .grp-sortoptions a.grp-sortremove.sort-remove-hover {
+	background-position: 0 -510px !important;
+	background: url('images/icons-grappelli.png') no-repeat;
+}
+
+.ui-list-data thead th .grp-text a {
+	margin: 0;
+	padding: 6px 10px;
+}
+
+.ui-list-data thead th .grp-sortoptions a {
+	position: relative;
+	float: left;
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+}
+
+/*.icons-sprite, .icons-add-another, .icons-back-link, .icons-breadcrumbs-rtl, .icons-breadcrumbs, .icons-date-hierarchy-back-rtl, .icons-date-hierarchy-back, .icons-datepicker, .icons-datetime-now, .icons-form-select, .icons-object-tools-add-link, .icons-object-tools-viewsite-link, .icons-pulldown-handler, .icons-pulldown-handler_selected, .icons-related-lookup-m2m, .icons-related-lookup, .icons-related-remove, .icons-searchbox, .icons-selector-add-m2m-horizontal, .icons-selector-add-m2m-vertical, .icons-selector-filter, .icons-selector-remove-m2m-horizontal, .icons-selector-remove-m2m-vertical, .icons-sort-remove, .icons-sorted-ascending, .icons-sorted-descending, .icons-status-no, .icons-status-unknown, .icons-status-yes, .icons-th-ascending, .icons-th-descending, .icons-timepicker, .icons-tools-add-handler, .icons-tools-arrow-down-handler, .icons-tools-arrow-up-handler, .icons-tools-close-handler, .icons-tools-delete-handler, .icons-tools-drag-handler, .icons-tools-open-handler, .icons-tools-remove-handler, .icons-tools-trash-handler, .icons-tools-trash-list-toggle-handler, .icons-tools-viewsite-link, .icons-ui-datepicker-next, .icons-ui-datepicker-prev, a.grp-back-link, a.grp-back-link:hover, a.fb_show, a.related-lookup, body.tinyMCE input[name="src"] + div a, body.tinyMCE input[name="href"] + div a, a.related-lookup.m2m, .grp-autocomplete-wrapper-m2m a.related-lookup, .grp-autocomplete-wrapper-fk a.related-lookup, a.grp-related-remove, button.ui-datepicker-trigger, button.ui-timepicker-trigger, button.ui-datetime-now, .grp-search-button, a.add-another, img[src$="admin/img/icon-unknown.gif"], img[src$="admin/img/icon-no.gif"], img[src$="admin/img/icon-yes.gif"], .grp-tools li a.grp-add-handler, .grp-tools li a.grp-delete-handler, .grp-tools li a.grp-remove-handler, .grp-tools li a.grp-drag-handler, .grp-tools li a.grp-viewsite-link, .grp-tools li a.grp-open-handler, .grp-tools li a.grp-close-handler, .grp-tools li a.grp-arrow-down-handler, .grp-tools li a.grp-arrow-up-handler, .grp-tools li a.grp-trash-handler, .grp-tools li a.grp-trash-list-toggle-handler, table.grp-sortable thead th.sortable .grp-sortoptions a.grp-sortremove, table.grp-sortable thead th.sortable .grp-sortoptions a.grp-ascending, table.grp-sortable thead th.sortable .grp-sortoptions a.grp-descending, .grp-date-hierarchy ul li a.grp-date-hierarchy-back, .grp-pulldown-container .grp-pulldown-handler, .grp-pulldown-container .grp-pulldown-handler:hover, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler, .grp-pulldown-container.grp-pulldown-state-open .grp-pulldown-handler:hover, body.grp-filebrowser table td.grp-sorted.grp-ascending a, body.grp-filebrowser table th.grp-sorted.grp-ascending a, body.grp-filebrowser table td.grp-sorted.grp-descending a, body.grp-filebrowser table th.grp-sorted.grp-descending a, .ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next, #grp-breadcrumbs > ul a, #grp-breadcrumbs > ul a:hover, #grp-page-tools ul li a#grp-open-all, #grp-page-tools ul li a#grp-close-all {
+	background: url('images/icons-grappelli.png') no-repeat;
+}*/
+
+.ui-list-data thead th .grp-sortoptions a.grp-sortremove, 
+.ui-list-data thead th .grp-sortoptions a.grp-ascending, 
+.ui-list-data thead th .grp-sortoptions a.grp-descending {
+	width: 21px;
+	height: 24px;
+}
+
+.ui-list-data thead th .ui-list-data-grp-text {
+	position: relative;
+	float: left;
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
+.ui-list-data td, .ui-data-list th  {
+	/*padding: 5px 10px;*/
+	font-size: 1.0em;
+	line-height: 15px;
+	border-left: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
 }

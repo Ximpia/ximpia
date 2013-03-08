@@ -1,3 +1,13 @@
+
+/*
+ * 
+ * Copyright (c) 2013 Ximpia, Inc, All rights reserved
+ * This Source Code Form is subject to the terms of the Mozilla Public License, 
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain 
+ * one at http://mozilla.org/MPL/2.0/.
+ * 
+ */
+
 /*
  * Renders into ``img`` html element.
  * 
@@ -5,6 +15,9 @@
  * can define ``src`` attribute with full path for images. 
  * 
  * ** HTML **
+ * 
+ * By class:
+ * <div id="id_myImage_comp" data-xp-type="image" data-xp="{imgClass: 'checkSmall'}" > </div>
  * 
  * Using images location and default host location:
  * <div id="id_myImage_comp" data-xp-type="image" data-xp="{file: 'github-icon-source.jpg'}" > </div>
@@ -20,6 +33,7 @@
  * 
  * ** Attributes **
  * 
+ * * ``imgClass`` : Image file name is blank.png. Image has background from css class.
  * * ``file`` : Phisical file name with extension, like ``myphoto.png``. In case version attribute is defined, phisical file name will
  * 				be modified to include version in the url. In case src is defined, this field is not required.
  * * ``location`` [optional] : Location name. Locations are mapped into settings.js file. In case no location is defined, we use
@@ -95,7 +109,12 @@
 							var fileName = fileFields.slice(0, fileFields.length-1).join('.');
 							src += fileName + '_' + attrs['version'] + '.' + fileFields[fileFields.length-1];
 						} else {
-							src += attrs['file'];							
+							// imgClass: we render blank.png and include class
+							if (attrs.hasOwnProperty('imgClass')) {
+								src += 'blank.png';
+							} else {
+								src += attrs['file'];
+							}
 						}
 						$('#' + idElement).attr('src', src);
 					}
@@ -107,7 +126,7 @@
 						$('#' + idElement).attr('title', 'Image');
 						$('#' + idElement).attr('alt', 'Image');
 					}
-					// Process attributes					
+					// Process attributes
 					var dataAttrs = {};
 					ximpia.common.Form.doAttributes({
 						djangoAttrs: [],
@@ -121,6 +140,9 @@
 					if ((attrs.hasOwnProperty('style') && attrs['style'].indexOf('width') == -1 && attrs.hasOwnProperty('version')) ||
 							(!attrs.hasOwnProperty('style') && attrs.hasOwnProperty('version'))) {
 						$('#' + idElement).css('width', ximpia.settings.imageVersions[attrs['version']].width + 'px');
+					}
+					if (attrs.hasOwnProperty('imgClass')) {
+						$('#' + idElement).addClass(attrs.imgClass);
 					}
 				}
 			}

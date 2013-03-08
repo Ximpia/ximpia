@@ -13,6 +13,7 @@ import time
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
+from django.utils.translation import ugettext as _
 from django.http import Http404
 
 from ximpia.core.util import getClass
@@ -280,6 +281,226 @@ def jxTemplate(request, app, mode, tmplName):
 		cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)"""
 
 	return HttpResponse(tmpl)
+
+@context
+def jxDataQuery(request, **args):
+	"""
+	Execute data queries for lists with ordering, page and filters.
+	
+	** Attributes **
+	
+	* ``request``
+	* ``args``
+	
+	** Html Attributes **
+	
+	* ``dbClass``:str : Data class name (DAO)
+	* ``fields``:list<str> [optional]
+	* ``pageStart``:str [optional] [default:1] : Start page number
+	* ``pageEnd``:str [optional] : End page number
+	* ``orderBy``:tuple<str> [optional]
+	* ``method``:str [optional] [default:searchFields]
+	* ``args``:dict<str,str> [optional]
+	* ``hasOrdering``:bool [optional]
+	* ``orderField``:str [optional]
+	
+	** Returns **
+	
+	result
+	"""
+	logger.debug( 'jxDataQuery...' )
+	logger.debug('jxDataQuery :: args: %s' % (args) )
+	logger.debug('jxDataQuery :: REQUEST: %s' % (request.REQUEST) )
+	if not request.REQUEST.has_key('dbClass') or not request.REQUEST.has_key('app'):
+		raise XpMsgException(AttributeError, _('app and dbClass must be defined.'))
+	dbClass = request.REQUEST['dbClass'] 
+	dbApplication = ApplicationDAO(args['ctx'])
+	app = request.REQUEST['app']
+	application = dbApplication.get(name=app)
+	# app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
+	classPath = app + '.data.' + dbClass
+	cls = getClass( classPath )
+	obj = cls(args['ctx']) #@UnusedVariable
+	logger.debug('jxDataQuery :: obj: %s' % (obj) )
+	# fields
+	fields = []
+	if request.REQUEST.has_key('fields'):
+		fields = json.loads(request.REQUEST['fields'])
+	dbArgs = {}
+	# disablePaging
+	dbArgs['disablePaging'] = False
+	if request.REQUEST.has_key('disablePaging'):
+		dbArgs['disablePaging'] = json.loads(request.REQUEST['disablePaging'])
+	if not dbArgs['disablePaging']:
+		if request.REQUEST.has_key('pageStart'):
+			dbArgs['pageStart'] = int(request.REQUEST['pageStart'])
+		else:
+			dbArgs['pageStart'] = 1
+		logger.debug('jxDataQuery :: pageStart: %s' % (dbArgs['pageStart']) )
+	# pageEnd
+	if request.REQUEST.has_key('pageEnd') and not dbArgs['disablePaging']:
+		dbArgs['pageEnd'] = int(request.REQUEST['pageEnd'])
+	# orderBy
+	if request.REQUEST.has_key('orderBy'):
+		dbArgs['orderBy'] = json.loads(request.REQUEST['orderBy'])
+	# args
+	if request.REQUEST.has_key('args'):
+		requestArgs = json.loads(request.REQUEST['args'])
+		for requestArg in requestArgs:
+			try:
+				dbArgs[requestArg] = json.loads(requestArgs[requestArg])
+			except ValueError:
+				dbArgs[requestArg] = requestArgs[requestArg]
+	# numberResults
+	if request.REQUEST.has_key('numberResults'):
+		dbArgs['numberResults'] = int(request.REQUEST['numberResults'])
+
+	# hasOrdering
+	if request.REQUEST.has_key('hasOrdering') and request.REQUEST['hasOrdering'] == 'true':
+		if request.REQUEST.has_key('orderField'):
+			fields.append(request.REQUEST['orderField'])
+		else:
+			fields.append('order')
+	# hasHeader
+	hasHeader = False
+	if request.REQUEST.has_key('hasHeader'):
+		hasHeader = json.loads(request.REQUEST['hasHeader'])
+	logger.debug('jxDataQuery :: hasHeader: %s' % (hasHeader) )
+	if 'id' not in fields and len(fields) != 0:
+		fields.insert(0, 'id')
+	logger.debug('jxDataQuery :: fields: %s' % (fields) )
+	logger.debug('jxDataQuery :: dbArgs: %s' % (dbArgs) )
+	if request.REQUEST.has_key('method'):
+		dataListTmp = eval('obj.' + request.REQUEST['method'])(fields, **dbArgs)
+	else:
+		dataListTmp = obj.searchFields(fields, **dbArgs)
+	#logger.debug('jxDataQuery :: dataListTmp: %s' % (dataListTmp) )
+	dataList = []
+	for dbFields in dataListTmp:
+		ll = []
+		for dbField in dbFields:
+			if type(dbField) == datetime.date:
+				ll.append(dbField.strftime('%m/%d/%Y'))
+			elif type(dbField) == datetime.datetime:
+				ll.append(dbField.strftime('%m/%d/%Y %H:%M'))
+			elif type(dbField) == datetime.time:
+				ll.append(dbField.strftime('%H:%M'))
+			else:
+				ll.append(dbField)
+		dataList.append(ll)
+	logger.debug('jxDataQuery :: dataList: %s' % (dataList) )
+	# headers
+	headers = []
+	if hasHeader:
+		modelFields = obj._model._meta.fields
+		logger.debug('jxDataQuery :: modelFields: %s' % (modelFields) )
+		if len(fields) == 0:
+			# get all model fields from table and add to headers
+			for modelField in modelFields:
+				headers.append(modelField.verbose_name)
+		else:
+			# Get model fields with max level 3: field__field__field
+			for field in fields:
+				if field.count('__') == 0:
+					headerField = obj._model._meta.get_field_by_name(field)[0].verbose_name
+					logger.debug('jxDataQuery :: headerField: %s' % (headerField) )
+					headers.append(headerField)
+				elif field.count('__') == 1:
+					fieldFrom, fieldTo = field.split('__')
+					logger.debug('jxDataQuery :: fieldFrom: %s fieldTo: %s' % (fieldFrom, fieldTo) )
+					"""relField = obj._model._meta.get_field_by_name(fieldFrom)[0]\
+						.rel.to._meta.get_field_by_name(fieldTo)[0]"""
+					# 03/07/2013 : We get header name from fk verbose name and not linked to verbose name
+					relField = obj._model._meta.get_field_by_name(fieldFrom)[0]
+					if type(relField.verbose_name) == types.UnicodeType:
+						headerField = relField.verbose_name
+					else:
+						headerField = relField.name
+					logger.debug('jxDataQuery :: headerField: %s' % (headerField) )
+					headers.append(headerField)
+				elif field.count('__') == 2:
+					fieldFrom, fieldTo1, fieldTo2 = field.split('__')
+					logger.debug('jxDataQuery :: fieldFrom: %s fieldTo: %s' % (fieldFrom, fieldTo1, fieldTo2) )
+					"""relField = obj._model._meta.get_field_by_name(fieldFrom)[0]\
+						.rel.to._meta.get_field_by_name(fieldTo1)[0]\
+						.rel.to._meta.get_field_by_name(fieldTo2)[0]"""
+					# 03/07/2013 : We get header name from fk verbose name and not linked to verbose name
+					relField = obj._model._meta.get_field_by_name(fieldFrom)[0]
+					if type(relField.verbose_name) == types.UnicodeType:
+						headerField = relField.verbose_name
+					else:
+						headerField = relField.name
+					logger.debug('jxDataQuery :: headerField: %s' % (headerField) )
+					headers.append(headerField)
+	logger.debug('jxDataQuery :: headers: %s' % (headers) )
+	results = {'headers': headers, 'data': dataList}
+	return HttpResponse(json.dumps(results))
+
+@context
+def jxDataSwitchOrder(request, **args):
+	"""
+	Change order in a data table
+	
+	** Attributes **
+	
+	* ``request``
+	* ``args``
+	
+	** Html Attributes **
+	
+	* ``dbClass``:str
+	* ``orderCurrent``:str ????
+	* ``orderNew``:str
+	* ``pk``
+	
+	"""
+	logger.debug('jxDataSwitchOrder...')
+	# TODO: Hit master for this operation
+	# get current order
+	# get list fields from current order to new order
+	# new order higher or lower than current order?
+	orderCurrent = int(request.REQUEST['orderCurrent'])
+	orderNew = int(request.REQUEST['orderCurrent'])
+	pk = request.REQUEST['pk']
+	dbClass = request.REQUEST['dbClass']
+	orderField = 'order'
+	if request.REQUEST.has_key('orderField'):
+		orderField = request.REQUEST['orderField']
+	logger.debug('jxDataSwitchOrder :: pk: %s orderCurrent: %s orderNew: %s dbClass: %s' % (pk, orderCurrent, orderNew, dbClass) )
+	dbApplication = ApplicationDAO(args['ctx'])
+	app = request.REQUEST['app']
+	application = dbApplication.get(name=app)
+	# app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
+	classPath = app + '.data.' + dbClass
+	cls = getClass( classPath )
+	obj = cls(args['ctx']) #@UnusedVariable
+	item = obj.get(pk=pk)
+	logger.debug('jxDataSwitchOrder :: change order : %s -> %s' % (orderCurrent, orderNew) )
+	item.__setattr__(orderField, orderNew)
+	orderDbCurrent = eval('item.' + orderField)
+	logger.debug('jxDataSwitchOrder :: orderDbCurrent: %s' % (orderDbCurrent) )
+	if orderCurrent != orderDbCurrent:
+		raise XpMsgException(None, _('Sorting error. Please retry later. Thanks'))
+	if orderNew > orderCurrent:
+		# Moving down the list
+		logger.debug('jxDataSwitchOrder :: Moving down the list...')
+		itemsToUpdate = obj.objects.filter(order__gt = orderCurrent, order__lte = orderNew).values()
+		logger.debug('jxDataSwitchOrder :: itemsToUpdate. %s' % (itemsToUpdate))
+		for itemToUpdate in itemsToUpdate:
+			logger.debug('jxDataSwitchOrder :: Move down: %s -> %s' % (itemToUpdate[orderField], itemToUpdate[orderField]-1) )
+			itemToUpdate[orderField] -= 1
+			itemToUpdate.save()
+	else:
+		# Moving up the list
+		logger.debug('jxDataSwitchOrder :: Moving up the list...')
+		itemsToUpdate = obj.objects.filter(order__gt = orderNew, order__lt = orderCurrent).values()
+		logger.debug('jxDataSwitchOrder :: itemsToUpdate. %s' % (itemsToUpdate))
+		for itemToUpdate in itemsToUpdate:
+			logger.debug('jxDataSwitchOrder :: Move up: %s -> %s' % (itemToUpdate[orderField], itemToUpdate[orderField]+1) )
+			itemToUpdate[orderField] += 1
+			itemToUpdate.save()
+	logger.debug('jxDataSwitchOrder :: finished!!!')
+	return HttpResponse(json.dumps('OK'))
 
 @ContextDecorator()
 @transaction.commit_on_success
