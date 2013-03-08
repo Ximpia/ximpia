@@ -123,6 +123,10 @@
 			var nameInput = idInput.split('id_')[1];
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $('#' + compId).metadata();
+			var hasLinkRow = false;
+			if (attrs.hasOwnProperty('hasLinkRow')) {
+				hasLinkRow = JSON.parse(attrs.hasLinkRow)
+			}
 			var fields = [];
 			if (attrs.hasOwnProperty('fields')) {
 				fields = attrs.fields;
@@ -156,6 +160,42 @@
 			$(elementLink).css('padding','6px 10px');
 			// must remove .grp-sortoptions
 			$(element).parent().remove();
+			// we search table data with updated orderBy
+			$('#' + compId).attr('data-xp-order-by', JSON.stringify(orderBy));
+			ximpia.console.log('xpListData.orderColumn :: orderBy...');
+			ximpia.console.log(orderBy);
+			var app = '';
+			if (attrs.hasOwnProperty('app')) {
+				app = attrs.app;
+			} else {
+				app = ximpia.common.Browser.getApp();
+			}
+			var dbClass = attrs.dbClass;
+			attrs.orderBy = orderBy;
+			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
+				var data = result.data;
+				var headers = result.headers;
+				ximpia.console.log('xpListData.render :: result data...');
+				ximpia.console.log(data);
+				ximpia.console.log('xpListData.render :: result headers: ' + headers);
+				if (data.length > 0) {
+					// Render new results under tbody
+					html = '';
+					for (var l=0; l<data.length; l++) {
+						html += buildRow(data[l], nameInput, fields, l);
+					}
+					$('#' + compId + ' table.ui-list-data tbody').html(html);
+					
+					// Bind click row
+					if (hasLinkRow == true) {
+						$('#' + compId + ' table.ui-list-data tbody').addClass('has-link');
+						$('#' + compId + ' table.ui-list-data tbody tr').click(clickItem);
+					}
+					
+					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);					
+					
+				}
+			});
         };
         /*
          * Add delete control to column
@@ -255,8 +295,6 @@
 				ximpia.console.log(data);
 				ximpia.console.log('xpListData.render :: result headers: ' + headers);
 				if (data.length > 0) {
-					// Remove results
-					$('#' + compId + ' table.ui-list-data tbody').empty();
 					// Render new results under tbody
 					html = '';
 					for (var l=0; l<data.length; l++) {
@@ -273,7 +311,6 @@
 					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);
 				}
 			});
-			
         };
         /*
          * Build table row html
