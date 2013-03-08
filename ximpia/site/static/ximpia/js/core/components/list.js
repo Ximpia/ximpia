@@ -128,7 +128,7 @@
 				fields = attrs.fields;
 			}
 			var orderBy = JSON.parse($('#' + compId).attr('data-xp-order-by'));
-			ximpia.console.log('xpListData.orderColumn :: orderBy...');
+			ximpia.console.log('xpListData.deleteOrder :: orderBy...');
 			ximpia.console.log(orderBy);
 			var myField = attrs.fields[index];
 			var hasOrderField = false;
@@ -151,10 +151,11 @@
 			orderBy.splice(indexOrder, 1);
 			ximpia.console.log('xpListData.deleteOrder :: orderBy after delete: ' + orderBy.length);
 			$(comp).attr('data-xp-order-by', JSON.stringify(orderBy));
+			// restore padding for text column
+			var elementLink = $(element).parent().next().children('a');
+			$(elementLink).css('padding','6px 10px');
 			// must remove .grp-sortoptions
 			$(element).parent().remove();
-			// restore padding for text column
-			$(element).parent().next().children('a').css('padding','6px 10px');
         };
         /*
          * Add delete control to column
