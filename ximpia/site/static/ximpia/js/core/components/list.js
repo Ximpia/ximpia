@@ -111,12 +111,74 @@
          * Delete column ordering
          */
         var deleteOrder = function(evt, element) {
-        	
+        	ximpia.console.log('xpListData.deleteOrder...');
+			ximpia.console.log(evt);
+			ximpia.console.log(element);
+			evt.preventDefault();
+			var index = $(element).parent().parent().index();
+			var comp = ximpia.common.getParentComponent($(element));
+			var compId = comp.attr('id');
+			ximpia.console.log('xpListData.deleteOrder :: compId: ' + comp.attr('id'));
+			var idInput = comp.attr('id').split('_comp')[0];
+			var nameInput = idInput.split('id_')[1];
+			$.metadata.setType("attr", "data-xp");
+			var attrs = $('#' + compId).metadata();
+			var fields = [];
+			if (attrs.hasOwnProperty('fields')) {
+				fields = attrs.fields;
+			}
+			var orderBy = JSON.parse($('#' + compId).attr('data-xp-order-by'));
+			ximpia.console.log('xpListData.orderColumn :: orderBy...');
+			ximpia.console.log(orderBy);
+			var myField = attrs.fields[index];
+			var hasOrderField = false;
+			var indexOrder = -1;
+			// hasOrderField, indexOrder
+			for (var i=0; i<orderBy.length; i++) {
+				var targetFieldTmp = orderBy[i];
+				if (orderBy[i][0] == '-') {
+					var targetField = targetFieldTmp.slice(1);
+				} else {
+					var targetField = targetFieldTmp;
+				}
+				if (targetField == myField) {
+					hasOrderField = true;
+					indexOrder = i;
+				}
+			}
+			ximpia.console.log('xpListData.deleteOrder :: add: ' + hasOrderField);
+			// must delete from orderBy and write to data-xp-order-by
+			orderBy.splice(indexOrder, 1);
+			ximpia.console.log('xpListData.deleteOrder :: orderBy after delete: ' + orderBy.length);
+			$(comp).attr('data-xp-order-by', JSON.stringify(orderBy));
+			// must remove .grp-sortoptions
+			$(element).parent().remove();
+			// restore padding for text column
+			$(element).parent().next().children('a').css('padding','6px 10px');
+        };
+        /*
+         * Add delete control to column
+         */
+        var addDeleteCtrl = function(element, type) {
+	 		var htmlCtrl = "<div class=\"grp-sortoptions\"><a class=\"grp-sortremove\" href=\"#\" title=\"Remove from sorting\"></a>";
+            htmlCtrl += '<a href=\"#\" class=\"grp-toggle grp-' + type + '\" title=\"Toggle sorting\"></a></div>';
+            $(element).parent().parent().prepend(htmlCtrl);
+            $(element).parent().parent().addClass('sortable sorted ' + type);
+            $(element).css('padding','6px 0px');
+			// When click on sort image... 
+			$('.grp-toggle').click(function(evt) {
+				var elementTextLink = $(this).parent().next().children('a');
+				orderColumn(evt, $(elementTextLink));
+			});
+			$('.grp-sortremove').click(function(evt) {
+				deleteOrder(evt, $(this));
+			});
         };
         /*
          * Order rows by column field
          */
         var orderColumn = function(evt, element) {
+        	ximpia.console.log('xpListData.deleteOrder...');
 			evt.preventDefault();
 			ximpia.console.log(evt);
 			ximpia.console.log(element);
@@ -127,6 +189,10 @@
 			var nameInput = idInput.split('id_')[1];
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $('#' + compId).metadata();
+			var hasLinkRow = false;
+			if (attrs.hasOwnProperty('hasLinkRow')) {
+				hasLinkRow = JSON.parse(attrs.hasLinkRow)
+			}
 			var fields = [];
 			if (attrs.hasOwnProperty('fields')) {
 				fields = attrs.fields;
@@ -168,14 +234,8 @@
 				// i dont have field in order by, add to orderBy ascensing
 				orderBy.push(myField);
 				// I add delete order and asc / desc control
-		 		var htmlCtrl = "<div class=\"grp-sortoptions\"><a class=\"grp-sortremove\" href=\"#\" title=\"Remove from sorting\"></a><a href=\"#\" class=\"grp-toggle grp-ascending\" title=\"Toggle sorting\"></a></div>";
-                $(element).parent().parent().prepend(htmlCtrl);
-                $(element).parent().parent().addClass('sortable sorted ascending');
-                $(element).css('padding','6px 0px');
+				addDeleteCtrl(element, 'ascending');
 			}
-							/*$('.grp-toggle.jxColumnOrder').click(function(evt) {
-								orderColumn(evt, $(this));
-							});*/
 			$('#' + compId).attr('data-xp-order-by', JSON.stringify(orderBy));
 			ximpia.console.log('xpListData.orderColumn :: orderBy...');
 			ximpia.console.log(orderBy);
@@ -204,17 +264,18 @@
 					$('#' + compId + ' table.ui-list-data tbody').html(html);
 					
 					// Bind click row
-					$('.ui-list-data tbody tr').click(clickItem);
+					if (hasLinkRow == true) {
+						$('#' + compId + ' table.ui-list-data tbody').addClass('has-link');
+						$('#' + compId + ' table.ui-list-data tbody tr').click(clickItem);
+					}
 					
-					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);					
+					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);
 				}
-			});			
-			
-
+			});
 			
         };
         /*
-         * 
+         * Build table row html
          */
         var buildRow = function(row, nameInput, fields, index) {
 			html = '<tr data-xp-data-id=\"' + row[0] + '\">';
@@ -225,6 +286,7 @@
 					renderField = '';
 				} else if (typeof renderField == 'boolean') {
 					var imgScope = nameInput + '_' + index;
+					// TODO: Get image to show checked box and unchecked box (as image) checkbox disabled???
 					if (renderField == true) {
 						renderField = '<div id=\"id_exists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'checkSmall\', title: \'Yes\'}\" > </div>';
 					} else {
@@ -240,7 +302,8 @@
 						html += '<td>'+ renderField + '</td>';
 					}
 				}
-				// TODO: Do the row ordering control at end of row
+				// TODO: Do the row ordering control at end of row: move row from one position to another
+				// TODO: Group rows with + sign. Ability to move rows from one container to another, would open container and change parent
 			}
 			html += '</tr>';
 			return html;
@@ -255,6 +318,9 @@
                     		}
                 	});
 		},
+		/*
+		 * Render data list table
+		 */
 		render : function(xpForm) {
 			ximpia.console.log('xpListData :: render...');
 			/*var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
@@ -293,6 +359,10 @@
 					if (attrs.hasOwnProperty('orderBy')) {
 						orderBy = attrs.orderBy;
 					}
+					var hasLinkRow = false;
+					if (attrs.hasOwnProperty('hasLinkRow')) {
+						hasLinkRow = JSON.parse(attrs.hasLinkRow);
+					}
 					ximpia.console.log('xpListData.render :: attrs...');
 					ximpia.console.log(attrs);
 					ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
@@ -323,8 +393,10 @@
 									if ((fields.length != 0 && i > 0) && !ximpia.common.ArrayUtil.hasKey(fields, 'id') || 
 											fields.length == 0 || (fields.length != 0 && ximpia.common.ArrayUtil.hasKey(fields, 'id'))) {
 										ximpia.console.log('xpListData.render :: header: ' + headers[i]);
-										html += '<th scope=\"col\"><div class=\"ui-list-data-grp-text\"><a href=\"#\" title=\"' + headers[i] + '\" class=\"jxColumnOrder\" data-xp-element-id=\"' + $(element).attr('id') + '\" >' + headers[i] + '</a></div></th>';
-									}
+										html += '<th scope=\"col\"><div class=\"ui-list-data-grp-text\"><a href=\"#\" title=\"';
+										html += headers[i] + '\" class=\"jxColumnOrder\" data-xp-element-id=\"'
+										html += $(element).attr('id') + '\" >' + headers[i] + '</a></div></th>';
+									} 
 								}
 								html += '</tr></thead>';
 							}
@@ -341,18 +413,33 @@
 							$(element).attr('data-xp-render', JSON.stringify(true));
 							$(element).attr('data-xp-order-by', JSON.stringify(orderBy));
 							
+							if (hasHeader == true) {
+								for (var i=0; i<headers.length; i++) {
+									var type = 'ascending';
+									if (ximpia.common.ArrayUtil.hasKey(orderBy, '-' + fields[i])) {
+										type = 'descending';
+									}
+									if (orderBy.length != 0 && (ximpia.common.ArrayUtil.hasKey(orderBy, fields[i]) ||
+											ximpia.common.ArrayUtil.hasKey(orderBy, '-' + fields[i]))) {
+										var elementLink = $('#' + $(element).attr('id') + ' th a:contains("' + headers[i] + '")');
+										ximpia.console.log('xpListData.render :: render Order ... elementLink...');
+										ximpia.console.log(elementLink);
+										addDeleteCtrl(elementLink, type);
+									}
+								}
+							}
+							
 							$(".jxColumnOrder").click(function(evt) {
 								orderColumn(evt, $(this));
 							});
 							
 							// Bind click row
-							var hasLinkRow = JSON.parse(attrs.hasLinkRow) || false;
 							if (hasLinkRow == true) {
 								$('.ui-list-data tbody').addClass('has-link');
 								$('.ui-list-data tbody tr').click(clickItem);
 							}
 							
-							// TODO: Bind the delete order
+							// TODO: Bind the delete order when orders are rendered
 							
 						}
 					});
