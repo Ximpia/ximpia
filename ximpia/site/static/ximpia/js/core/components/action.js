@@ -33,7 +33,7 @@
 	 * form: The form id associated with the action
 	 * align: left | right
 	 * text: Button text, without multi-language. English only
-	 * mode: actionMsg | action | closePopup | closeView
+	 * mode: actionMsg | action | closePopup | closeView | contentInsert
 	 * action: Action that executes the button
 	 * type: color | icon | iconPopup | simple
 	 * icon: add | edit | delete | save | email | like | next | star | spark | play

@@ -4,8 +4,10 @@ import os
 from HTMLParser import HTMLParser
 
 class AttrDict(dict):
-	__getattr__ = dict.__getitem__
-	__setattr__ = dict.__setitem__
+	def __getattr__(self, attr):
+		return self[attr]
+	def __setattr__(self, attr, value):
+		self[attr] = value
 
 def getClass( kls ):
 	"""

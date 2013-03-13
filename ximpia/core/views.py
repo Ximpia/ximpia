@@ -9,6 +9,7 @@ import traceback
 import os
 import datetime
 import time
+import copy
 
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
@@ -16,12 +17,13 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 from django.http import Http404
 
-from ximpia.core.util import getClass
+from ximpia.core.util import getClass, AttrDict
 from models import context, ContextViewDecorator, ContextDecorator, JsResultDict
 from service import XpMsgException, ViewTmplDecorator, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
 
 from ximpia.site import constants as KSite
+from ximpia.site.models import Setting
 
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
@@ -327,6 +329,7 @@ def jxDataQuery(request, **args):
 	if request.REQUEST.has_key('fields'):
 		fields = json.loads(request.REQUEST['fields'])
 	dbArgs = {}
+	meta = AttrDict()
 	# disablePaging
 	dbArgs['disablePaging'] = False
 	if request.REQUEST.has_key('disablePaging'):
@@ -354,6 +357,10 @@ def jxDataQuery(request, **args):
 	# numberResults
 	if request.REQUEST.has_key('numberResults'):
 		dbArgs['numberResults'] = int(request.REQUEST['numberResults'])
+	else:
+		# Get number results from settings
+		dbArgs['numberResults'] = int(Setting.objects.get(name__name=KSite.SET_NUMBER_RESULTS_LIST).value)
+	logger.debug('jxDataQuery :: numberResults: %s' % (dbArgs['numberResults']) )	
 
 	# hasOrdering
 	if request.REQUEST.has_key('hasOrdering') and request.REQUEST['hasOrdering'] == 'true':
@@ -370,10 +377,42 @@ def jxDataQuery(request, **args):
 		fields.insert(0, 'id')
 	logger.debug('jxDataQuery :: fields: %s' % (fields) )
 	logger.debug('jxDataQuery :: dbArgs: %s' % (dbArgs) )
+	
+	"""dbArgs['disablePaging'] = False	
+	dbArgs['pageStart'] = 1
+	dbArgs['pageEnd'] = 1
+	dbArgs['numberResults'] = 2"""
+	
 	if request.REQUEST.has_key('method'):
 		dataListTmp = eval('obj.' + request.REQUEST['method'])(fields, **dbArgs)
 	else:
 		dataListTmp = obj.searchFields(fields, **dbArgs)
+	# numberPages
+	if dbArgs['disablePaging'] != True:
+		dbArgsPages = copy.copy(dbArgs)
+		if dbArgsPages.has_key('pageStart'): del dbArgsPages['pageStart']
+		if dbArgsPages.has_key('pageEnd'): del dbArgsPages['pageEnd']
+		if request.REQUEST.has_key('method'):
+			"""dataListTmp = eval('obj.' + request.REQUEST['method'])(fields, **dbArgsPages)
+			logger.debug('jxDataQuery :: type dataListTmp: %s' % (type(dataListTmp)) )
+			meta.numberPages = dataListTmp.count()/numberResults"""
+			pass
+		else:
+			if dbArgsPages.has_key('disablePaging'):
+				del dbArgsPages['disablePaging']
+			if dbArgsPages.has_key('numberResults'):
+				numberResults = dbArgsPages['numberResults']
+				del dbArgsPages['numberResults']
+			meta.numberPages = int(round(float(obj._model.objects.filter(**dbArgsPages).count())/float(numberResults)))
+	else:
+		meta.numberPages = 1
+	
+	meta.pageStart = 1
+	meta.pageEnd = 1
+	if dbArgs.has_key('pageStart'):
+		meta.pageStart = dbArgs['pageStart']
+	if dbArgs.has_key('pageEnd'):
+		meta.pageEnd = dbArgs['pageEnd']
 	#logger.debug('jxDataQuery :: dataListTmp: %s' % (dataListTmp) )
 	dataList = []
 	for dbFields in dataListTmp:
@@ -433,7 +472,8 @@ def jxDataQuery(request, **args):
 					logger.debug('jxDataQuery :: headerField: %s' % (headerField) )
 					headers.append(headerField)
 	logger.debug('jxDataQuery :: headers: %s' % (headers) )
-	results = {'headers': headers, 'data': dataList}
+	results = {'headers': headers, 'data': dataList, 'meta': meta}
+	logger.debug('jxDataQuery :: results: %s' % (results) )
 	return HttpResponse(json.dumps(results))
 
 @context

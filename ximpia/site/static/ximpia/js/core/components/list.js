@@ -598,6 +598,14 @@
 								html += buildRow(data[l], nameInput, fields, l, hasCheck);
 							}
 							html += '</tbody>';
+							
+							if (result.meta.numberPages > result.meta.pageEnd) {
+								var footerColspan = headers.length;
+								if (hasCheck) footerColspan = headers.length + 1;
+								html += '<tfoot class=\"paging\"><tr><td colspan=\"' + footerColspan + '\">More Results...' + 										 
+											'</td></tr></tfoot>';								
+							}
+							
 							html += '</table>';
 							// Insert into DOM, set render to true
 							$(element).html(html);

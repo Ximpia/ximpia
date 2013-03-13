@@ -342,16 +342,14 @@ class CommonDAO(object):
 		xpList:ValuesQueryset
 		"""
 		try:
-			if numberResults is None:
-				# get numberResults from settings
-				numberResults = int(self._getSetting('NUMBER_RESULTS_LIST'))
-			logger.debug('CommonDAO.searchFields :: numberResults: %s' % (numberResults) )
+			logger.debug('CommonDAO.searchFields :: numberResults: %s disablePaging: %s' % (numberResults, args['disablePaging']) )
 			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
 				iStart = (pageStart-1)*numberResults
 				if pageEnd is None:
 					iEnd = iStart+numberResults
 				else:
 					iEnd = iStart + numberResults*pageEnd
+				logger.debug('CommonDAO.searchFields :: iStart: %s iEnd: %s' % (iStart, iEnd) )
 			dbObj = self._processRelated()
 			"""if len(orderBy) != 0:
 				dbObj = self._model.objects.order_by(*orderBy)"""
