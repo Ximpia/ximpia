@@ -208,6 +208,14 @@
 			if (attrs.hasOwnProperty('hasCheck')) {
 				hasCheck = attrs.hasCheck;
 			}
+			var onCheckClick = settings.onCheckClick;
+			if (attrs.hasOwnProperty('onCheckClick')) {
+				onCheckClick = attrs.onCheckClick;
+			}
+			var compsActivateOnClick = [];
+			if (attrs.hasOwnProperty('activateOnCheck')) {
+				compsActivateOnClick = attrs.activateOnCheck;
+			}
 			var dbClass = attrs.dbClass;
 			attrs.orderBy = orderBy;
 			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
@@ -226,9 +234,44 @@
 					
 					// Bind click row
 					if (hasLinkRow == true) {
-						$('#' + compId + ' table.ui-list-data tbody').addClass('has-link');
-						$('#' + compId + ' table.ui-list-data tbody tr').click(clickItem);
+						$('#' + compId + ' .ui-list-data tbody').addClass('has-link');
+						$('#' + compId + ' .ui-list-data tbody tr td.clickable').click(clickItem);						
 					}
+					
+					// Check click bind
+					$('#' + compId + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+						ximpia.console.log(evt);
+						ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
+						if (defaultInputValue != 'All') {
+							if (onCheckClick == 'enable') {
+								// Better ways to toggle???
+								if (compsActivateOnClick.length > 0 && $('#' + compId + ' .jxListDataCheck').is(':checked')) {
+									// enable
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('enable');
+									}
+								} else if (compsActivateOnClick.length > 0) {
+									// disable
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('disable');
+									}
+								}									
+							} else if (onCheckClick == 'render') {
+								// I render buttons associated with check
+								if (compsActivateOnClick.length > 0 && $('#' + compId + ' .jxListDataCheck').is(':checked')) {
+									// render
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('render');
+									}
+								} else if (compsActivateOnClick.length > 0) {
+									// unrender
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('unrender');
+									}
+								}
+							}									
+						}
+					});
 					
 					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);					
 					
@@ -332,6 +375,14 @@
 			if (attrs.hasOwnProperty('hasCheck')) {
 				hasCheck = attrs.hasCheck;
 			}
+			var compsActivateOnClick = [];
+			if (attrs.hasOwnProperty('activateOnCheck')) {
+				compsActivateOnClick = attrs.activateOnCheck;
+			}
+			var onCheckClick = settings.onCheckClick;
+			if (attrs.hasOwnProperty('onCheckClick')) {
+				onCheckClick = attrs.onCheckClick;
+			}
 			var dbClass = attrs.dbClass;
 			attrs.orderBy = orderBy;
 			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
@@ -353,6 +404,41 @@
 						$('#' + idElement + ' .ui-list-data tbody').addClass('has-link');
 						$('#' + idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 					}
+					
+					// Check click bind
+					$('#' + idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+						ximpia.console.log(evt);
+						ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
+						if (defaultInputValue != 'All') {
+							if (onCheckClick == 'enable') {
+								// Better ways to toggle???
+								if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+									// enable
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('enable');
+									}
+								} else if (compsActivateOnClick.length > 0) {
+									// disable
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('disable');
+									}
+								}									
+							} else if (onCheckClick == 'render') {
+								// I render buttons associated with check
+								if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+									// render
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('render');
+									}
+								} else if (compsActivateOnClick.length > 0) {
+									// unrender
+									for (var i=0; i<compsActivateOnClick.length; i++) {
+										$('#' + compsActivateOnClick[i]).xpButton('unrender');
+									}
+								}
+							}									
+						}
+					});
 					
 					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);
 				}
@@ -632,8 +718,6 @@
 					});
 				}
 			}
-		},
-		clickItem : function(xpForm) {
 		}
         };
 		
