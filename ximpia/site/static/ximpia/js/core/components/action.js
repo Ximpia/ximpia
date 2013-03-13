@@ -38,7 +38,9 @@
 	 * type: color | icon | iconPopup | simple
 	 * icon: add | edit | delete | save | email | like | next | star | spark | play
 	 * callback:  The callback function to execute after button is clicked
-	 * clickStatus : disable
+	 * title [optional] : Tooltip for button
+	 * titleDisabled [optional] : Title to show when state is disabled
+	 * clickStatus : disable : Button status when button has been clicked and action processed.
 	 * 
 	 * data-xp-action
 	 * ==============
@@ -58,7 +60,11 @@
          */
         var createPageMsgBar = function(obj) {
         	$("#id_pageButton").xpButton('createPageMsgBar');
-        	$("#id_btPageMsg").css('top', $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()-10);
+        	$("#id_btPageMsg").css('top', $("#" + obj.element.id).offset().top);
+        	var newTop = $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()-10;
+        	$("#id_btPageMsg").animate({
+        		top: newTop
+        	});
         };
         var createPopupMsgBar = function(obj) {
         	$("#id_popupButton").xpButton('createPopupMsgBar');
@@ -258,6 +264,9 @@
 					htmlContent += "</div>";
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
+					if (attrs.hasOwnProperty('title')) {
+						$('#' + idButton).attr('data-xp-title', attrs.title);
+					}
 					var classNameList = className.split(' ');
 					console.log('classNameList: ' + classNameList);
 					console.log('idButton: ' + idButton);
@@ -340,29 +349,101 @@
 			/*
 			 * Disable button
 			 */
+			var myId = $(this).attr('id'); 
+			var isRendered = $('#' + myId).attr('data-xp-render');
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $(this).metadata();
-			var className = getClassName(attrs);
-			var classNameList = className.split(' ');			
-			if (attrs.type == 'color') {
-				$(this).addClass(settings.classButtonColor +  '-disabled');
-			} else if (attrs.type == 'iconPopup') {
-				$(this).addClass('buttonIcon-disabled');
-			}
-	   		$(this).css('cursor', 'default');
-	   		$(this).unbind('mouseenter mouseleave click mousedown mouseup');
+			oform = ximpia.common.Form();
+			var timeout = setInterval(function() {
+				if (isRendered == 'true') {
+					var className = getClassName(attrs);
+					var classNameList = className.split(' ');
+					if (attrs.type == 'color') {
+						$('#'+ myId + ' a').addClass(settings.classButtonColor +  '-disabled');
+					} else if (attrs.type == 'iconPopup') {
+						$('#'+ myId + ' a').addClass('buttonIcon-disabled');
+					}
+			   		$('#'+ myId + ' a').css('cursor', 'default');
+			   		$('#'+ myId + ' a').unbind('mouseenter mouseleave click mousedown mouseup');
+			   		if (attrs.hasOwnProperty('titleDisabled')) {
+			   			$('#' + myId + ' a').attr('data-xp-title', attrs.titleDisabled);
+			   			oform.doBindButton($('#' + myId + ' a'));
+			   		}
+					clearInterval(timeout);
+				}
+				isRendered = $('#' + myId).attr('data-xp-render');
+			}, 100);
+
 		},
 		enable: function() {
 			/*
 			 * Enable button 
 			 */
+			var myId = $(this).attr('id');
+			$.metadata.setType("attr", "data-xp");
+			var attrs = $(this).metadata();
+			var className = getClassName(attrs);
+			var classNameList = className.split(' ');
+			if (attrs.type == 'color') {
+				$('#'+ myId + ' a').removeClass(settings.classButtonColor +  '-disabled');
+			} else if (attrs.type == 'iconPopup') {
+				$('#'+ myId + ' a').removeClass('buttonIcon-disabled');
+			}
+			$('#'+ myId + ' a').css('cursor', 'pointer');
+			var idButton = myId.split('_comp')[0];
+			$("#" + idButton).hover(function() {
+				console.log($(this));
+				for (var classNameItem in classNameList) {
+					$(this).addClass(classNameList[classNameItem] +  '-hover');
+				}
+			}, function() {
+				for (var classNameItem in classNameList) {
+					$(this).removeClass(classNameList[classNameItem] +  '-hover');
+				}
+			});
+			$("#" + idButton).mousedown(function() {
+				//console.log('mousedown...')
+				for (var classNameItem in classNameList) {
+					$(this).addClass(classNameList[classNameItem] +  '-active');
+				}
+			}).mouseup(function(){
+				for (var classNameItem in classNameList) {
+					$(this).removeClass(classNameList[classNameItem] +  '-active');
+				}
+			})
+			$("#" + idButton).click(function() {
+				$(this).xpButton('click');
+			});
+	   		if (attrs.hasOwnProperty('title')) {
+	   			$('#' + myId + ' a').attr('data-xp-title', attrs.title);
+	   			oform.doBindButton($('#' + myId + ' a'));
+	   		} else {
+	   			// Must unbind tooltip
+	   			$('#' + myId + ' a').qtip('destroy');
+	   		}
+		},
+		/*
+		 * Unrender button: delete content inside component and remove attribute ``data-xp-render``
+		 */
+		unrender: function() {
+			var myId = $(this).attr('id');
+			//var isRendered = $('#' + myId).attr('data-xp-render');			
+			var timeout = setInterval(function() {
+				isRendered = $('#' + myId).attr('data-xp-render');
+				ximpia.console.log('xpButton.unrender :: isRendered: ' + isRendered);
+				if (isRendered == 'true') {
+					$('#' + myId).empty();
+					$('#' + myId).removeAttr('data-xp-render');
+					clearInterval(timeout);
+				}
+			}, 100);
 		},
 		createPageMsgBar: function() {
 			/*
 			 * Creates the page bar to place buttons. Places the bar at right position
 			 */
 			if ($("#id_btPageMsg").length == 0) {
-				var htmlContent = "<div id=\"id_btPageMsg\" class=\"btMsg\">";
+				var htmlContent = "<div id=\"id_btPageMsg\" class=\"btMsg\" >";
 				htmlContent += "<div style=\"top: -5px; border: 0px solid; height: 25px; margin-top: 0px; padding: 0px; float: left\">";
 				htmlContent += "<img id=\"id_btPageMsg_img\" src=\"" + ximpia.settings.SITE_MEDIA_URL + "images/blank.png\" alt=\" \" class=\"AjaxButtonLoading\" style=\"margin-top: -6px\" />";
 				htmlContent += "<span id=\"id_btPageMsg_text\">Waiting...</span>";
@@ -373,7 +454,7 @@
 				// Bind close page message bar
 				$("#id_btPageMsg_close").click(function() {
 					$(this).xpButton('destroyPageMsgBar');
-				});				
+				});		
 			}
 		},
 		createPopupMsgBar: function() {

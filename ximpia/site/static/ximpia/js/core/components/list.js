@@ -72,7 +72,8 @@
  * * ``dbClass``:string
  * * ``app``:string [optional]
  * * ``method``:string [optional] [default:searchFields] : Data method to execute
- * * ``detailView``:string [optional] : View to display detail. hasLinkedRow must be true.
+ * * ``detailView``:string [optional] : View to display detail. hasLinkedRow must be true. Full path, like 'myProject.myApp.myView'
+ * * ``detailType``:string [optional] [default:window] : Window type: window, popup.
  * * ``fields``:object<string> [optional]
  * * ``args``:object [optional] : Initial arguments. Object with arguments
  * * ``orderBy``:object [optional] : Order by fields, ascending with '-' sign before field name. Supports relationships, 
@@ -80,12 +81,13 @@
  * * ``disablePaging``:boolean [optional] [default: false]
  * * ``caption``:string [optional]
  * * ``headComponents``:object [optional] : List of header components. Possible values: search|filter
- * * ``hasCheck``:boolean [optional]
- * * ``hasSorting``:boolean [optional]
+ * * ``hasCheck``:boolean [optional] : Table has operations linked to row checks. User would check rows and click button to execute
+ * 										actions on checked items.
+ * * ``activateOnCheck``:object : List of components to activate when row check is clicked.
+ * * ``onCheckClick``:string [optional] [default:enable] . Enable or render action components when user clicks on check.
  * * ``hasHeader``:boolean [optional] [default:true]
- * * ``orderField``:string [optional]
  * * ``pagingStyle``:string [optional] [default:more] : Possible values: more
- * * ``hasLinkedRow``:boolean [optional] [default:false]
+ * * ``hasLinkRow``:boolean [optional] [default:false]
  * 
  * ** Build Attributes **
  * 
@@ -106,17 +108,38 @@
         var settings = {
         	pagingStyle: 'more',
         	hasLinkedRow: false,
-        	hasHeader: true
+        	hasHeader: true,
+        	onCheckClick: 'enable'
         };
         var variables = {
         	xpForm: null,
-        	formId: null
+        	formId: null,
+        	app: null
         };
         /*
          * Click on a row. Opens up a view with id selected
          */
         var clickItem = function() {
-        	alert($(this).attr('data-xp-data-id'));
+			ximpia.console.log('xpListData.clickItem...');
+			var pageJx = ximpia.common.PageAjax();
+			// app, params, view
+			var params = {pk: $(this).parent().attr('data-xp-data-id')};
+			var comp = ximpia.common.getParentComponent($(this));
+			$.metadata.setType("attr", "data-xp");
+			var attrs = $('#' + comp.attr('id')).metadata();
+			if (attrs.hasOwnProperty('detailView')) {
+				var fields = attrs.detailView.split('.');
+				var detailView = fields[fields.length-1];
+				var app = fields.slice(0,2).join('.');
+				ximpia.console.log('xpListData :: view: ' + detailView + ' params: ' + JSON.stringify(params) 
+						+ ' app: ' + app);
+				ximpia.common.PageAjax.doFadeIn();
+				var obj ={ view: detailView, params: JSON.stringify(params), app: app };
+				if (attrs.hasOwnProperty('detailType')) {
+					obj.winType = attrs.detailType;
+				}
+				pageJx.getView(obj);
+			}
         };
         /*
          * Delete column ordering
@@ -181,6 +204,10 @@
 			} else {
 				app = ximpia.common.Browser.getApp();
 			}
+			var hasCheck = false;
+			if (attrs.hasOwnProperty('hasCheck')) {
+				hasCheck = attrs.hasCheck;
+			}
 			var dbClass = attrs.dbClass;
 			attrs.orderBy = orderBy;
 			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
@@ -193,7 +220,7 @@
 					// Render new results under tbody
 					html = '';
 					for (var l=0; l<data.length; l++) {
-						html += buildRow(data[l], nameInput, fields, l);
+						html += buildRow(data[l], nameInput, fields, l, hasCheck);
 					}
 					$('#' + compId + ' table.ui-list-data tbody').html(html);
 					
@@ -238,9 +265,13 @@
 			ximpia.console.log('xpListData.orderColumn :: index: ' + index);
 			var compId = $(element).attr('data-xp-element-id');
 			var idInput = compId.split('_comp')[0];
+			var idElement = compId;
 			var nameInput = idInput.split('id_')[1];
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $('#' + compId).metadata();
+			if (attrs.hasOwnProperty('hasCheck')) {
+				index = index - 1;
+			}
 			var hasLinkRow = false;
 			if (attrs.hasOwnProperty('hasLinkRow')) {
 				hasLinkRow = JSON.parse(attrs.hasLinkRow)
@@ -297,6 +328,10 @@
 			} else {
 				app = ximpia.common.Browser.getApp();
 			}
+			var hasCheck = false;
+			if (attrs.hasOwnProperty('hasCheck')) {
+				hasCheck = attrs.hasCheck;
+			}
 			var dbClass = attrs.dbClass;
 			attrs.orderBy = orderBy;
 			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
@@ -309,14 +344,14 @@
 					// Render new results under tbody
 					html = '';
 					for (var l=0; l<data.length; l++) {
-						html += buildRow(data[l], nameInput, fields, l);
+						html += buildRow(data[l], nameInput, fields, l, hasCheck);
 					}
 					$('#' + compId + ' table.ui-list-data tbody').html(html);
 					
 					// Bind click row
 					if (hasLinkRow == true) {
-						$('#' + compId + ' table.ui-list-data tbody').addClass('has-link');
-						$('#' + compId + ' table.ui-list-data tbody tr').click(clickItem);
+						$('#' + idElement + ' .ui-list-data tbody').addClass('has-link');
+						$('#' + idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 					}
 					
 					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);
@@ -326,8 +361,11 @@
         /*
          * Build table row html
          */
-        var buildRow = function(row, nameInput, fields, index) {
+        var buildRow = function(row, nameInput, fields, index, hasCheck) {
 			html = '<tr data-xp-data-id=\"' + row[0] + '\">';
+			if (hasCheck == true) {
+				html += '<td><input type=\"checkbox\" name=\"' + nameInput + '\" value=\"' + row[0] + '\" class=\"jxListDataCheck\" /></td>';
+			}
 			for (var i =0; i<row.length; i++) {
 				// TODO: Do the row check
 				var renderField = row[i];
@@ -339,8 +377,8 @@
 					if (renderField == true) {
 						renderField = '<div id=\"id_exists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'checkSmall\', title: \'Yes\'}\" > </div>';
 					} else {
-						//renderField = '<div id=\"id_notExists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'errorSmall\', title: \'No\'}\" > </div>';
-						renderField = '';
+						renderField = '<div id=\"id_notExists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'errorSmall\', title: \'No\'}\" > </div>';
+						//renderField = '';
 					}
 				}
 				if (fields.length == 0) {
@@ -348,7 +386,7 @@
 				} else {
 					if ((fields.length != 0 && i > 0 && !ximpia.common.ArrayUtil.hasKey(fields, 'id')) || 
 								(fields.length != 0 && ximpia.common.ArrayUtil.hasKey(fields, 'id'))) {
-						html += '<td>'+ renderField + '</td>';
+						html += '<td class=\"clickable\">'+ renderField + '</td>';
 					}
 				}
 				// TODO: Do the row ordering control at end of row: move row from one position to another
@@ -379,6 +417,7 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i];
+				var idElement = $(element).attr('id');
 				var idInput = $(element).attr('id').split('_comp')[0];
 				var nameInput = idInput.split('id_')[1];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
@@ -393,10 +432,15 @@
 					} else {
 						app = ximpia.common.Browser.getApp();
 					}
+					variables.app = app;
 					var dbClass = attrs.dbClass;
 					var fields = [];
 					if (attrs.hasOwnProperty('fields')) {
 						fields = attrs.fields;
+					}
+					var compsActivateOnClick = [];
+					if (attrs.hasOwnProperty('activateOnCheck')) {
+						compsActivateOnClick = attrs.activateOnCheck;
 					}
 					var hasHeader = settings.hasHeader;
 					if (attrs.hasOwnProperty('hasHeader')) {
@@ -411,6 +455,14 @@
 					var hasLinkRow = false;
 					if (attrs.hasOwnProperty('hasLinkRow')) {
 						hasLinkRow = JSON.parse(attrs.hasLinkRow);
+					}
+					var hasCheck = false;
+					if (attrs.hasOwnProperty('hasCheck')) {
+						hasCheck = attrs.hasCheck;
+					}
+					var onCheckClick = settings.onCheckClick;
+					if (attrs.hasOwnProperty('onCheckClick')) {
+						onCheckClick = attrs.onCheckClick;
 					}
 					ximpia.console.log('xpListData.render :: attrs...');
 					ximpia.console.log(attrs);
@@ -431,13 +483,17 @@
 							// We build table
 							// caption
 							if (attrs.hasOwnProperty('caption')) {
-								html += '<caption>' + attrs.caption + '</caption>';
+								var colSpan = headers.length;
+								html += '<thead class="caption"><tr><td colspan="' + colSpan + '">' + attrs.caption + '</td></tr></thead>';
 							}
 							// thead
 							if (hasHeader == true) {
 								html += '<thead><tr>';
 								ximpia.console.log('xpListData.render :: fields...');
 								ximpia.console.log(fields);
+								if (hasCheck == true) {
+									html += '<th scope=\"col\"> <input type=\"checkbox\" name=\"' + nameInput + '_all\" class=\"jxListDataCheckAll\"  /> </th>';
+								}
 								for (var i=0; i<headers.length; i++) {
 									if ((fields.length != 0 && i > 0) && !ximpia.common.ArrayUtil.hasKey(fields, 'id') || 
 											fields.length == 0 || (fields.length != 0 && ximpia.common.ArrayUtil.hasKey(fields, 'id'))) {
@@ -453,7 +509,7 @@
 							// tbody
 							html += '<tbody>';
 							for (var l=0; l<data.length; l++) {
-								html += buildRow(data[l], nameInput, fields, l);
+								html += buildRow(data[l], nameInput, fields, l, hasCheck);
 							}
 							html += '</tbody>';
 							html += '</table>';
@@ -476,20 +532,102 @@
 										addDeleteCtrl(elementLink, type);
 									}
 								}
-							}
+							}							
 							
-							$(".jxColumnOrder").click(function(evt) {
+							// Click on column for ordering
+							$("#" + idElement + " .jxColumnOrder").click(function(evt) {
 								orderColumn(evt, $(this));
 							});
 							
 							// Bind click row
 							if (hasLinkRow == true) {
-								$('.ui-list-data tbody').addClass('has-link');
-								$('.ui-list-data tbody tr').click(clickItem);
+								$('#' + idElement + ' .ui-list-data tbody').addClass('has-link');
+								$('#' + idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 							}
 							
-							// TODO: Bind the delete order when orders are rendered
+							// Disable buttons associated with activateOnCheck
+							if (onCheckClick == 'enable') {
+								// Enable / disable buttons when user clicks on check
+								for (var i=0; i<compsActivateOnClick.length; i++) {
+									$('#' + compsActivateOnClick[i]).xpButton('disable');
+								}
+							} else if (onCheckClick == 'render') {
+								// Render buttons when user clicks on check
+								// We unrender buttons associated with table...
+								for (var i=0; i<compsActivateOnClick.length; i++) {
+									$('#' + compsActivateOnClick[i]).xpButton('unrender');
+								}
+							}
 							
+							// Check all
+							$('#' + idElement + ' .ui-list-data .jxListDataCheckAll').click(function() {
+								// Check all rows in table
+								// Send data to trigger
+								$('#' + idElement + ' .ui-list-data').find('input[class=jxListDataCheck]').trigger('click', ['All']);
+								// disable buttons if no checks
+								var timeout = setTimeout(function() {
+									if (onCheckClick == 'enable') {
+										if (!$('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+											// disable
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('disable');
+											}
+										} else {
+											// enable
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('enable');
+											}
+										}
+									} else {
+										if (!$('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+											// unrender
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('unrender');
+											}
+										} else {
+											// render
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('render');
+											}
+										}
+									}
+								}, 100);
+							});
+														
+							// Check click bind
+							$('#' + idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+								ximpia.console.log(evt);
+								ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
+								if (defaultInputValue != 'All') {
+									if (onCheckClick == 'enable') {
+										// Better ways to toggle???
+										if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+											// enable
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('enable');
+											}
+										} else if (compsActivateOnClick.length > 0) {
+											// disable
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('disable');
+											}
+										}									
+									} else if (onCheckClick == 'render') {
+										// I render buttons associated with check
+										if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+											// render
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('render');
+											}
+										} else if (compsActivateOnClick.length > 0) {
+											// unrender
+											for (var i=0; i<compsActivateOnClick.length; i++) {
+												$('#' + compsActivateOnClick[i]).xpButton('unrender');
+											}
+										}
+									}									
+								}
+							});
 						}
 					});
 				}

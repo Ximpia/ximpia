@@ -50,3 +50,9 @@ ximpia.settings.imageVersions.small = {verboseName: 'Small', width: 140};
 ximpia.settings.imageVersions.medium = {verboseName: 'Medium', width: 300};
 ximpia.settings.imageVersions.big = {verboseName: 'Big', width: 460};
 ximpia.settings.imageVersions.large = {verboseName: 'Large', width: 680};
+/*
+ * PageButton
+ */
+ximpia.settings.pagebutton = ximpia.settings.pagebutton || {};
+ximpia.settings.pagebutton.msg = ximpia.settings.pagebutton.msg || {};
+ximpia.settings.pagebutton.msg.slideTimeout = 1500;

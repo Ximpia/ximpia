@@ -1282,7 +1282,12 @@ ximpia.common.Form = function() {
 											}
 										}
 										ximpia.console.log('bindAction :: okMsg: ' + msg);
-										$("#" + obj.idMsg + "_text").text(msg);
+										$("#" + obj.idMsg + "_text").text(msg);										
+										
+										var timeout = setTimeout(function() {
+											$("#" + obj.idMsg).animate({top: parseInt($('#' + obj.idMsg).css('top')) + 30});
+										}, ximpia.settings.pagebutton.msg.slideTimeout);
+										
 									} else {
 										if (responseMap['response']['winType'] == 'popup') {
 											// popup : Must show in same popup
@@ -1572,6 +1577,31 @@ ximpia.common.Form = function() {
 					$("#id_ImgCaptcha").attr('src', '/captcha/captcha.png?code=' + kk);
 				});
 			},
+			/*
+			 * Bind tooltip for button
+			 */
+			doBindButton : function(element) {
+				$(element).qtip({
+					content : {
+						attr : 'data-xp-title'
+					},
+					events : {
+						focus : function(event, api) {
+						}
+					},
+					position: {
+						my: 'bottom center',
+						at: 'top center',
+						adjust: {
+							y: -2
+						}
+					},
+					style : {
+						//classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+						classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-opacity'
+					}
+				});				
+			},
 			/**
 			 * Tooltip for form labels
 			 */
@@ -1590,6 +1620,26 @@ ximpia.common.Form = function() {
 					style : {
 						width : 200,
 						classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+					}
+				});
+				$("a.button").qtip({
+					content : {
+						attr : 'data-xp-title'
+					},
+					events : {
+						focus : function(event, api) {
+						}
+					},
+					position: {
+						my: 'bottom center',
+						at: 'top center',
+						adjust: {
+							y: -2
+						}
+					},
+					style : {
+						//classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+						classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-opacity'
 					}
 				});
 				if (ximpia.settings.IMAGE_TOOLTIP == true) {
@@ -2303,7 +2353,22 @@ ximpia.common.PageAjax = function() {
 							var appSlug = responseMap['response']['appSlug'];
 							var viewSlug = responseMap['response']['viewSlug'];
 							$('title').text(title);
-							var location = '/apps/' + appSlug + '/' + viewSlug + '/';
+							// params
+							var location = '/' + appSlug + '/' + viewSlug + '/';
+							if (obj.hasOwnProperty('params')) {
+								var params = JSON.parse(obj.params);
+								var paramList = Object.keys(params);
+								if (paramList.length != 0) {
+									for (var i=0; i<paramList.length; i++) {
+										if (i == 0) {
+											location += params[paramList[i]];
+										} else {
+											location += '/' + params[paramList[i]];
+										}
+										
+									}
+								}								
+							}
 							var stateData = {
 												appSlug: appSlug,
 												viewSlug: viewSlug,
@@ -2525,15 +2590,20 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 		$("[data-xp-type='link.view']").xpLink('render');
 		// Image
 		$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
+		// TODO: Replace password strength dur to license problems with GPL
 		ximpia.common.PageAjax.doShowPasswordStrength('id_username', 'id_password');
 		// TODO: analyse the onSelect function
 		// TODO: Integrate header search with jxSuggestList
+		// TODO: Alternative for jsonSuggest due to license problems with GPL
 		$("#id_header_search").jsonSuggest({
 			url : '/jxSearchHeader',
 			maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
 			minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
 			onSelect : ximpia.common.Search.doClick
-		});		
+		});
+		// Bind bubbles
+		oform = ximpia.common.Form();
+		oform.doBindBubbles();		
 	});
 }
 /**

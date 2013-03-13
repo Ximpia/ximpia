@@ -1733,6 +1733,10 @@ class CommonService( object ):
 			# Get instances to delete from button parameters
 			# TODO: Include support for deleting more than one instance for forms with multiple instances associated
 			pass
+	
+	def _getListPkValues(self, fieldName):
+		pks = [int(x) for x in self._ctx.request.getlist(fieldName)]
+		return pks
 
 class DefaultService ( CommonService ):
 	
