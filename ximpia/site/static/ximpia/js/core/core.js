@@ -240,6 +240,15 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 	return value;
 });
 
+ximpia.common.Util = {};
+ximpia.common.Util.initVariable = (function(name, defaultValue, attrs) {
+	var value = defaultValue;
+	if (attrs.hasOwnProperty(name)) {
+		value = attrs[name];
+	}
+	return value
+});
+
 ximpia.common.JxDataQuery = {};
 /*
  * Search for data. Calls server view jxDataQuery
@@ -2394,7 +2403,7 @@ ximpia.common.PageAjax = function() {
 				try {
 					$('div.loadError').remove();
 					ximpia.console.log('PageAjax.getView :: Path: ' + _attr.priv.path);
-					ximpia.console.log('PageAjax.getView :: winType: ' + obj.winType);
+					ximpia.console.log('PageAjax.getView :: winType: ' + obj.winType);					
 					if (obj.winType == 'popup') {
 						ximpia.console.log('PageAjax.getView :: getView() :: Will open popup...');
 						var obj = {
@@ -2557,6 +2566,8 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='list.data']").xpListData('render', xpForm);
 	// Wait until containers and lists have rendered other components like images, fields, etc...
 	ximpia.common.waitUntilListRenders(function() {
+		// Paging More
+		$('#' + formId).find("[data-xp-type='paging.more']").xpPagingMore('render', xpForm);
 		// field.list
 		$('#' + formId).find("[data-xp-type='field.list']").xpFieldList('render', xpForm);
 		// basic.text

@@ -403,16 +403,20 @@ def jxDataQuery(request, **args):
 			if dbArgsPages.has_key('numberResults'):
 				numberResults = dbArgsPages['numberResults']
 				del dbArgsPages['numberResults']
+			if dbArgsPages.has_key('pageStart'): del dbArgsPages['pageStart']
+			if dbArgsPages.has_key('pageEnd'): del dbArgsPages['pageEnd']
+			if dbArgsPages.has_key('orderBy'): del dbArgsPages['orderBy']
 			meta.numberPages = int(round(float(obj._model.objects.filter(**dbArgsPages).count())/float(numberResults)))
 	else:
 		meta.numberPages = 1
 	
 	meta.pageStart = 1
-	meta.pageEnd = 1
 	if dbArgs.has_key('pageStart'):
 		meta.pageStart = dbArgs['pageStart']
 	if dbArgs.has_key('pageEnd'):
 		meta.pageEnd = dbArgs['pageEnd']
+	else:
+		meta.pageEnd = meta.pageStart
 	#logger.debug('jxDataQuery :: dataListTmp: %s' % (dataListTmp) )
 	dataList = []
 	for dbFields in dataListTmp:

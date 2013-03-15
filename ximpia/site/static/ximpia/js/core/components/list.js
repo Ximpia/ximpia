@@ -42,8 +42,7 @@
                     		}
                 	});
 		},
-		render : function() {
-			
+		render : function() {			
 		}
         };
 		
@@ -111,10 +110,7 @@
         	hasHeader: true,
         	onCheckClick: 'enable'
         };
-        var variables = {
-        	xpForm: null,
-        	formId: null,
-        	app: null
+        var vars = {
         };
         /*
          * Click on a row. Opens up a view with id selected
@@ -127,19 +123,47 @@
 			var comp = ximpia.common.getParentComponent($(this));
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $('#' + comp.attr('id')).metadata();
+			// write into sessionStorage pageStart, pageEnd, orderBy and args for table...
+			var detailType = ximpia.common.Util.initVariable('detailType', 'window', attrs);
+			if (detailType == 'window') {
+				ximpia.common.Browser.setObject('list', $(comp).attr('id'));
+				if ($(comp).attr('data-xp-page-start')) {
+					ximpia.common.Browser.setObject('list-pageStart', parseInt($(comp).attr('data-xp-page-start')));
+				}
+				if ($(comp).attr('data-xp-page-end')) {
+					ximpia.common.Browser.setObject('list-pageEnd', parseInt($(comp).attr('data-xp-page-end')));
+				}
+				if ($(comp).attr('data-xp-order-by')) {
+					ximpia.common.Browser.setObject('list-orderBy', $(comp).attr('data-xp-order-by'));
+				}				
+			}
 			if (attrs.hasOwnProperty('detailView')) {
 				var fields = attrs.detailView.split('.');
 				var detailView = fields[fields.length-1];
 				var app = fields.slice(0,2).join('.');
 				ximpia.console.log('xpListData :: view: ' + detailView + ' params: ' + JSON.stringify(params) 
 						+ ' app: ' + app);
-				ximpia.common.PageAjax.doFadeIn();
-				var obj ={ view: detailView, params: JSON.stringify(params), app: app };
-				if (attrs.hasOwnProperty('detailType')) {
-					obj.winType = attrs.detailType;
+				if (detailType == 'window') {
+					ximpia.common.PageAjax.doFadeIn();
 				}
+				var obj ={ view: detailView, params: JSON.stringify(params), app: app, winType: detailType };
 				pageJx.getView(obj);
 			}
+        };
+        /*
+         * Init variables from attributes
+         */
+        var initVars = function() {
+			vars.app = ximpia.common.Util.initVariable('app', ximpia.common.Browser.getApp(), vars.attrs);
+			vars.dbClass = vars.attrs.dbClass;
+			vars.fields = ximpia.common.Util.initVariable('fields', [], vars.attrs);
+			vars.compsActivateOnClick = ximpia.common.Util.initVariable('activateOnCheck', [], vars.attrs);
+			vars.hasHeader = ximpia.common.Util.initVariable('hasHeader', settings.hasHeader, vars.attrs);
+			if (!vars.attrs.hasOwnProperty('hasHeader')) vars.attrs.hasHeader = vars.hasHeader;
+			vars.orderBy = ximpia.common.Util.initVariable('orderBy', [], vars.attrs);
+			vars.hasLinkRow = JSON.parse(ximpia.common.Util.initVariable('hasLinkRow', false, vars.attrs));
+			vars.hasCheck = ximpia.common.Util.initVariable('hasCheck', false, vars.attrs);
+			vars.onCheckClick = ximpia.common.Util.initVariable('onCheckClick', settings.onCheckClick, vars.attrs);
         };
         /*
          * Delete column ordering
@@ -149,32 +173,24 @@
 			ximpia.console.log(evt);
 			ximpia.console.log(element);
 			evt.preventDefault();
-			var index = $(element).parent().parent().index();
-			var comp = ximpia.common.getParentComponent($(element));
-			var compId = comp.attr('id');
-			ximpia.console.log('xpListData.deleteOrder :: compId: ' + comp.attr('id'));
-			var idInput = comp.attr('id').split('_comp')[0];
-			var nameInput = idInput.split('id_')[1];
+			vars.index = $(element).parent().parent().index();
+			vars.comp = ximpia.common.getParentComponent($(element));
+			vars.compId = vars.comp.attr('id');
+			ximpia.console.log('xpListData.deleteOrder :: compId: ' + vars.comp.attr('id'));
+			vars.idInput = vars.comp.attr('id').split('_comp')[0];
+			vars.nameInput = vars.idInput.split('id_')[1];
 			$.metadata.setType("attr", "data-xp");
-			var attrs = $('#' + compId).metadata();
-			var hasLinkRow = false;
-			if (attrs.hasOwnProperty('hasLinkRow')) {
-				hasLinkRow = JSON.parse(attrs.hasLinkRow)
-			}
-			var fields = [];
-			if (attrs.hasOwnProperty('fields')) {
-				fields = attrs.fields;
-			}
-			var orderBy = JSON.parse($('#' + compId).attr('data-xp-order-by'));
+			vars.attrs = $('#' + vars.compId).metadata();
+			vars.orderBy = JSON.parse($('#' + vars.compId).attr('data-xp-order-by'));
 			ximpia.console.log('xpListData.deleteOrder :: orderBy...');
-			ximpia.console.log(orderBy);
-			var myField = attrs.fields[index];
+			ximpia.console.log(vars.orderBy);
+			var myField = vars.attrs.fields[vars.index];
 			var hasOrderField = false;
 			var indexOrder = -1;
 			// hasOrderField, indexOrder
-			for (var i=0; i<orderBy.length; i++) {
-				var targetFieldTmp = orderBy[i];
-				if (orderBy[i][0] == '-') {
+			for (var i=0; i<vars.orderBy.length; i++) {
+				var targetFieldTmp = vars.orderBy[i];
+				if (vars.orderBy[i][0] == '-') {
 					var targetField = targetFieldTmp.slice(1);
 				} else {
 					var targetField = targetFieldTmp;
@@ -186,41 +202,27 @@
 			}
 			ximpia.console.log('xpListData.deleteOrder :: add: ' + hasOrderField);
 			// must delete from orderBy and write to data-xp-order-by
-			orderBy.splice(indexOrder, 1);
-			ximpia.console.log('xpListData.deleteOrder :: orderBy after delete: ' + orderBy.length);
-			$(comp).attr('data-xp-order-by', JSON.stringify(orderBy));
+			vars.orderBy.splice(indexOrder, 1);
+			ximpia.console.log('xpListData.deleteOrder :: orderBy after delete: ' + vars.orderBy.length);
+			$(vars.comp).attr('data-xp-order-by', JSON.stringify(vars.orderBy));
 			// restore padding for text column
 			var elementLink = $(element).parent().next().children('a');
 			$(elementLink).css('padding','6px 10px');
 			// must remove .grp-sortoptions
 			$(element).parent().remove();
 			// we search table data with updated orderBy
-			$('#' + compId).attr('data-xp-order-by', JSON.stringify(orderBy));
+			$('#' + vars.compId).attr('data-xp-order-by', JSON.stringify(vars.orderBy));
 			ximpia.console.log('xpListData.orderColumn :: orderBy...');
-			ximpia.console.log(orderBy);
-			var app = '';
-			if (attrs.hasOwnProperty('app')) {
-				app = attrs.app;
-			} else {
-				app = ximpia.common.Browser.getApp();
-			}
-			var hasCheck = false;
-			if (attrs.hasOwnProperty('hasCheck')) {
-				hasCheck = attrs.hasCheck;
-			}
-			var onCheckClick = settings.onCheckClick;
-			if (attrs.hasOwnProperty('onCheckClick')) {
-				onCheckClick = attrs.onCheckClick;
-			}
-			var compsActivateOnClick = [];
-			if (attrs.hasOwnProperty('activateOnCheck')) {
-				compsActivateOnClick = attrs.activateOnCheck;
-			}
-			var dbClass = attrs.dbClass;
-			attrs.orderBy = orderBy;
-			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
+			ximpia.console.log(vars.orderBy);
+			// init vars
+			initVars();
+			vars.attrs.orderBy = vars.orderBy;
+			vars.attrs.pageStart = parseInt($('#' + vars.compId).attr('data-xp-page-start'));
+			vars.attrs.pageEnd = parseInt($('#' + vars.compId).attr('data-xp-page-end'));
+			ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
 				var data = result.data;
 				var headers = result.headers;
+				var meta = result.meta;
 				ximpia.console.log('xpListData.render :: result data...');
 				ximpia.console.log(data);
 				ximpia.console.log('xpListData.render :: result headers: ' + headers);
@@ -228,52 +230,52 @@
 					// Render new results under tbody
 					html = '';
 					for (var l=0; l<data.length; l++) {
-						html += buildRow(data[l], nameInput, fields, l, hasCheck);
+						html += buildRow(l, data[l]);
 					}
-					$('#' + compId + ' table.ui-list-data tbody').html(html);
+					$('#' + vars.compId + ' table.ui-list-data tbody').html(html);
 					
 					// Bind click row
-					if (hasLinkRow == true) {
-						$('#' + compId + ' .ui-list-data tbody').addClass('has-link');
-						$('#' + compId + ' .ui-list-data tbody tr td.clickable').click(clickItem);						
+					if (vars.hasLinkRow == true) {
+						$('#' + vars.compId + ' .ui-list-data tbody').addClass('has-link');
+						$('#' + vars.compId + ' .ui-list-data tbody tr td.clickable').click(clickItem);						
 					}
 					
 					// Check click bind
-					$('#' + compId + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+					$('#' + vars.compId + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
 						ximpia.console.log(evt);
 						ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
 						if (defaultInputValue != 'All') {
-							if (onCheckClick == 'enable') {
+							if (vars.onCheckClick == 'enable') {
 								// Better ways to toggle???
-								if (compsActivateOnClick.length > 0 && $('#' + compId + ' .jxListDataCheck').is(':checked')) {
+								if (vars.compsActivateOnClick.length > 0 && $('#' + vars.compId + ' .jxListDataCheck').is(':checked')) {
 									// enable
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('enable');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('enable');
 									}
-								} else if (compsActivateOnClick.length > 0) {
+								} else if (vars.compsActivateOnClick.length > 0) {
 									// disable
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('disable');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
 									}
 								}									
-							} else if (onCheckClick == 'render') {
+							} else if (vars.onCheckClick == 'render') {
 								// I render buttons associated with check
-								if (compsActivateOnClick.length > 0 && $('#' + compId + ' .jxListDataCheck').is(':checked')) {
+								if (vars.compsActivateOnClick.length > 0 && $('#' + vars.compId + ' .jxListDataCheck').is(':checked')) {
 									// render
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('render');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('render');
 									}
-								} else if (compsActivateOnClick.length > 0) {
+								} else if (vars.compsActivateOnClick.length > 0) {
 									// unrender
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('unrender');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 									}
 								}
 							}									
 						}
 					});
 					
-					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);					
+					$('#' + vars.formId).find("[data-xp-type='image']").xpImage('render', vars.xpForm);					
 					
 				}
 			});
@@ -304,35 +306,29 @@
 			evt.preventDefault();
 			ximpia.console.log(evt);
 			ximpia.console.log(element);
-			var index = $(element).parent().parent().index();
+			vars.index = $(element).parent().parent().index();
 			ximpia.console.log('xpListData.orderColumn :: index: ' + index);
-			var compId = $(element).attr('data-xp-element-id');
-			var idInput = compId.split('_comp')[0];
-			var idElement = compId;
-			var nameInput = idInput.split('id_')[1];
+			vars.compId = $(element).attr('data-xp-element-id');
+			vars.idInput = vars.compId.split('_comp')[0];
+			vars.idElement = vars.compId;
+			vars.nameInput = vars.idInput.split('id_')[1];
 			$.metadata.setType("attr", "data-xp");
-			var attrs = $('#' + compId).metadata();
-			if (attrs.hasOwnProperty('hasCheck')) {
-				index = index - 1;
+			vars.attrs = $('#' + vars.compId).metadata();
+			// init vars
+			initVars();
+			if (vars.attrs.hasOwnProperty('hasCheck')) {
+				vars.index = vars.index - 1;
 			}
-			var hasLinkRow = false;
-			if (attrs.hasOwnProperty('hasLinkRow')) {
-				hasLinkRow = JSON.parse(attrs.hasLinkRow)
-			}
-			var fields = [];
-			if (attrs.hasOwnProperty('fields')) {
-				fields = attrs.fields;
-			}
-			var orderBy = JSON.parse($('#' + compId).attr('data-xp-order-by'));
+			vars.orderBy = JSON.parse($('#' + vars.compId).attr('data-xp-order-by'));
 			ximpia.console.log('xpListData.orderColumn :: orderBy...');
-			ximpia.console.log(orderBy);
-			var myField = attrs.fields[index];
+			ximpia.console.log(vars.orderBy);
+			var myField = vars.attrs.fields[vars.index];
 			var hasOrderField = false;
 			var indexOrder = -1;
 			// hasOrderField, indexOrder
-			for (var i=0; i<orderBy.length; i++) {
-				var targetFieldTmp = orderBy[i];
-				if (orderBy[i][0] == '-') {
+			for (var i=0; i<vars.orderBy.length; i++) {
+				var targetFieldTmp = vars.orderBy[i];
+				if (vars.orderBy[i][0] == '-') {
 					var targetField = targetFieldTmp.slice(1);
 				} else {
 					var targetField = targetFieldTmp;
@@ -345,49 +341,33 @@
 			ximpia.console.log('xpListData.orderColumn :: hasOrderField: ' + hasOrderField);
 			if (hasOrderField) {
 				// I have order field in orderBy, change ascending or descending
-				if (orderBy[indexOrder].search('\\-') == -1) {
-					orderBy[indexOrder] = '-' + orderBy[indexOrder];
+				if (vars.orderBy[indexOrder].search('\\-') == -1) {
+					vars.orderBy[indexOrder] = '-' + vars.orderBy[indexOrder];
 					$(element).parent().parent().removeClass('ascending');
 					$(element).parent().parent().addClass('descending');
 					$(element).parent().prev().children('.grp-ascending').removeClass('grp-ascending').addClass('grp-descending');
 				} else {
-					orderBy[indexOrder] = orderBy[indexOrder].slice(1);
+					vars.orderBy[indexOrder] = vars.orderBy[indexOrder].slice(1);
 					$(element).parent().parent().removeClass('descending');
 					$(element).parent().parent().addClass('ascending');
 					$(element).parent().prev().children('.grp-descending').removeClass('grp-descending').addClass('grp-ascending');
 				}
 			} else {
 				// i dont have field in order by, add to orderBy ascensing
-				orderBy.push(myField);
+				vars.orderBy.push(myField);
 				// I add delete order and asc / desc control
 				addDeleteCtrl(element, 'ascending');
 			}
-			$('#' + compId).attr('data-xp-order-by', JSON.stringify(orderBy));
+			$('#' + vars.compId).attr('data-xp-order-by', JSON.stringify(vars.orderBy));
 			ximpia.console.log('xpListData.orderColumn :: orderBy...');
-			ximpia.console.log(orderBy);
-			var app = '';
-			if (attrs.hasOwnProperty('app')) {
-				app = attrs.app;
-			} else {
-				app = ximpia.common.Browser.getApp();
-			}
-			var hasCheck = false;
-			if (attrs.hasOwnProperty('hasCheck')) {
-				hasCheck = attrs.hasCheck;
-			}
-			var compsActivateOnClick = [];
-			if (attrs.hasOwnProperty('activateOnCheck')) {
-				compsActivateOnClick = attrs.activateOnCheck;
-			}
-			var onCheckClick = settings.onCheckClick;
-			if (attrs.hasOwnProperty('onCheckClick')) {
-				onCheckClick = attrs.onCheckClick;
-			}
-			var dbClass = attrs.dbClass;
-			attrs.orderBy = orderBy;
-			ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
+			ximpia.console.log(vars.orderBy);
+			vars.attrs.orderBy = vars.orderBy;
+			vars.attrs.pageStart = parseInt($('#' + vars.compId).attr('data-xp-page-start'));
+			vars.attrs.pageEnd = parseInt($('#' + vars.compId).attr('data-xp-page-end'));
+			ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
 				var data = result.data;
 				var headers = result.headers;
+				var meta = result.meta;
 				ximpia.console.log('xpListData.render :: result data...');
 				ximpia.console.log(data);
 				ximpia.console.log('xpListData.render :: result headers: ' + headers);
@@ -395,62 +375,62 @@
 					// Render new results under tbody
 					html = '';
 					for (var l=0; l<data.length; l++) {
-						html += buildRow(data[l], nameInput, fields, l, hasCheck);
+						html += buildRow(l, data[l]);
 					}
-					$('#' + compId + ' table.ui-list-data tbody').html(html);
+					$('#' + vars.compId + ' table.ui-list-data tbody').html(html);
 					
 					// Bind click row
-					if (hasLinkRow == true) {
-						$('#' + idElement + ' .ui-list-data tbody').addClass('has-link');
-						$('#' + idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
+					if (vars.hasLinkRow == true) {
+						$('#' + vars.idElement + ' .ui-list-data tbody').addClass('has-link');
+						$('#' + vars.idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 					}
 					
 					// Check click bind
-					$('#' + idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+					$('#' + vars.idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
 						ximpia.console.log(evt);
 						ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
 						if (defaultInputValue != 'All') {
-							if (onCheckClick == 'enable') {
+							if (vars.onCheckClick == 'enable') {
 								// Better ways to toggle???
-								if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+								if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 									// enable
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('enable');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('enable');
 									}
-								} else if (compsActivateOnClick.length > 0) {
+								} else if (vars.compsActivateOnClick.length > 0) {
 									// disable
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('disable');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
 									}
 								}									
-							} else if (onCheckClick == 'render') {
+							} else if (vars.onCheckClick == 'render') {
 								// I render buttons associated with check
-								if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+								if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 									// render
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('render');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('render');
 									}
-								} else if (compsActivateOnClick.length > 0) {
+								} else if (vars.compsActivateOnClick.length > 0) {
 									// unrender
-									for (var i=0; i<compsActivateOnClick.length; i++) {
-										$('#' + compsActivateOnClick[i]).xpButton('unrender');
+									for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+										$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 									}
 								}
 							}									
 						}
 					});
 					
-					$('#' + variables.formId).find("[data-xp-type='image']").xpImage('render', variables.xpForm);
+					$('#' + vars.formId).find("[data-xp-type='image']").xpImage('render', vars.xpForm);
 				}
 			});
         };
         /*
          * Build table row html
          */
-        var buildRow = function(row, nameInput, fields, index, hasCheck) {
+        var buildRow = function(index, row) {
 			html = '<tr data-xp-data-id=\"' + row[0] + '\">';
-			if (hasCheck == true) {
-				html += '<td><input type=\"checkbox\" name=\"' + nameInput + '\" value=\"' + row[0] + '\" class=\"jxListDataCheck\" /></td>';
+			if (vars.hasCheck == true) {
+				html += '<td><input type=\"checkbox\" name=\"' + vars.nameInput + '\" value=\"' + row[0] + '\" class=\"jxListDataCheck\" /></td>';
 			}
 			for (var i =0; i<row.length; i++) {
 				// TODO: Do the row check
@@ -458,7 +438,7 @@
 				if (renderField == null) {
 					renderField = '';
 				} else if (typeof renderField == 'boolean') {
-					var imgScope = nameInput + '_' + index;
+					var imgScope = vars.nameInput + '_' + row[0] + '_' + i;
 					// TODO: Get image to show checked box and unchecked box (as image) checkbox disabled???
 					if (renderField == true) {
 						renderField = '<div id=\"id_exists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'checkSmall\', title: \'Yes\'}\" > </div>';
@@ -467,11 +447,11 @@
 						//renderField = '';
 					}
 				}
-				if (fields.length == 0) {
+				if (vars.fields.length == 0) {
 					html += '<td>'+ renderField + '</td>';
 				} else {
-					if ((fields.length != 0 && i > 0 && !ximpia.common.ArrayUtil.hasKey(fields, 'id')) || 
-								(fields.length != 0 && ximpia.common.ArrayUtil.hasKey(fields, 'id'))) {
+					if ((vars.fields.length != 0 && i > 0 && !ximpia.common.ArrayUtil.hasKey(vars.fields, 'id')) || 
+								(vars.fields.length != 0 && ximpia.common.ArrayUtil.hasKey(vars.fields, 'id'))) {
 						html += '<td class=\"clickable\">'+ renderField + '</td>';
 					}
 				}
@@ -496,71 +476,66 @@
 		 */
 		render : function(xpForm) {
 			ximpia.console.log('xpListData :: render...');
+			ximpia.console.log($(this));
+			ximpia.console.log(this);
 			/*var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			ximpia.console.log(data);*/
-			variables.xpForm = xpForm;
-			variables.formId = ximpia.common.Browser.getForm(variables.xpForm);
+			vars.xpForm = xpForm;
+			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
-				var element = $(this)[i];
-				var idElement = $(element).attr('id');
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
-				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				if (doRender == true) {
-					ximpia.console.log('xpListData.render :: id: ' + $(element).attr('id'));
-					ximpia.console.log('xpListData.render :: nameInput: ' + nameInput);
+				vars.element = $(this)[i];
+				vars.idElement = $(vars.element).attr('id');
+				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
+				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
+				if (vars.doRender == true) {
+					ximpia.console.log('xpListData.render :: id: ' + $(vars.element).attr('id'));
+					ximpia.console.log('xpListData.render :: nameInput: ' + vars.nameInput);
 					$.metadata.setType("attr", "data-xp");
-					var attrs = $(element).metadata();
-					var app = '';
-					if (attrs.hasOwnProperty('app')) {
-						app = attrs.app;
-					} else {
-						app = ximpia.common.Browser.getApp();
-					}
-					variables.app = app;
-					var dbClass = attrs.dbClass;
-					var fields = [];
-					if (attrs.hasOwnProperty('fields')) {
-						fields = attrs.fields;
-					}
-					var compsActivateOnClick = [];
-					if (attrs.hasOwnProperty('activateOnCheck')) {
-						compsActivateOnClick = attrs.activateOnCheck;
-					}
-					var hasHeader = settings.hasHeader;
-					if (attrs.hasOwnProperty('hasHeader')) {
-						var hasHeader = attrs.hasHeader;
-					} else {
-						attrs.hasHeader = hasHeader;
-					}
-					var orderBy = [];
-					if (attrs.hasOwnProperty('orderBy')) {
-						orderBy = attrs.orderBy;
-					}
-					var hasLinkRow = false;
-					if (attrs.hasOwnProperty('hasLinkRow')) {
-						hasLinkRow = JSON.parse(attrs.hasLinkRow);
-					}
-					var hasCheck = false;
-					if (attrs.hasOwnProperty('hasCheck')) {
-						hasCheck = attrs.hasCheck;
-					}
-					var onCheckClick = settings.onCheckClick;
-					if (attrs.hasOwnProperty('onCheckClick')) {
-						onCheckClick = attrs.onCheckClick;
-					}
+					vars.attrs = $(vars.element).metadata();
+					// init vars
+					initVars();
 					ximpia.console.log('xpListData.render :: attrs...');
-					ximpia.console.log(attrs);
-					ximpia.common.JxDataQuery.search(app, dbClass, attrs, function(result) {
+					ximpia.console.log(vars.attrs);
+					// sessionStorage
+					// TODO: Place this into a common method
+					var sessionList = ximpia.common.Browser.getObject('list');
+					if (sessionList == vars.idElement) {
+						var sessionPageStart = ximpia.common.Browser.getObject('list-pageStart');
+						var sessionPageEnd = ximpia.common.Browser.getObject('list-pageEnd');
+						var sessionOrderBy = ximpia.common.Browser.getObject('list-orderBy');
+						if (sessionPageStart != null) {
+							vars.attrs.pageStart = sessionPageStart;
+							$('#' + vars.idElement).attr('data-xp-page-start', sessionPageStart);
+						}
+						if (sessionPageEnd != null) {
+							vars.attrs.pageEnd = sessionPageEnd;
+							$('#' + vars.idElement).attr('data-xp-page-end', sessionPageEnd);
+						}
+						if (sessionOrderBy != null) {
+							vars.attrs.orderBy = vars.orderBy = JSON.parse(sessionOrderBy); 
+							$('#' + vars.idElement).attr('data-xp-order-by', vars.attrs.orderBy);
+						}
+						ximpia.common.Browser.deleteObject('list');
+						ximpia.common.Browser.deleteObject('list-pageStart');
+						ximpia.common.Browser.deleteObject('list-pageEnd');
+						ximpia.common.Browser.deleteObject('list-orderBy');
+					}
+					ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
+						// TODO: Insert this into insertRows private method
 						// data and headers
 						// data: [{},{}]
 						// headers : ['','','']
 						var data = result.data;
 						var headers = result.headers;
+						var meta = result.meta;
+						if (meta.hasOwnProperty('pageStart')) $(vars.element).attr('data-xp-page-start',meta.pageStart);
+						if (meta.hasOwnProperty('pageEnd')) $(vars.element).attr('data-xp-page-end',meta.pageEnd);
 						ximpia.console.log('xpListData.render :: result data...');
 						ximpia.console.log(data);
 						ximpia.console.log('xpListData.render :: result headers: ' + headers);
+						// Reset sessionStorage for pageStart, pageEnd, orderBy
 						if (data.length > 0) {
 							// we got valid response
 							var headerMap = {};
@@ -568,25 +543,26 @@
 							var html = '<table class=\"ui-list-data\" cellspacing=\"0\">';
 							// We build table
 							// caption
-							if (attrs.hasOwnProperty('caption')) {
+							if (vars.attrs.hasOwnProperty('caption')) {
 								var colSpan = headers.length;
-								html += '<thead class="caption"><tr><td colspan="' + colSpan + '">' + attrs.caption + '</td></tr></thead>';
+								html += '<thead class="caption"><tr><td colspan="' + colSpan + '">' + vars.attrs.caption + '</td></tr></thead>';
 							}
 							// thead
-							if (hasHeader == true) {
+							if (vars.hasHeader == true) {
 								html += '<thead><tr>';
 								ximpia.console.log('xpListData.render :: fields...');
-								ximpia.console.log(fields);
-								if (hasCheck == true) {
-									html += '<th scope=\"col\"> <input type=\"checkbox\" name=\"' + nameInput + '_all\" class=\"jxListDataCheckAll\"  /> </th>';
+								ximpia.console.log(vars.fields);
+								if (vars.hasCheck == true) {
+									html += '<th scope=\"col\"> <input type=\"checkbox\" name=\"' + vars.nameInput + '_all\" class=\"jxListDataCheckAll\"  /> </th>';
 								}
 								for (var i=0; i<headers.length; i++) {
-									if ((fields.length != 0 && i > 0) && !ximpia.common.ArrayUtil.hasKey(fields, 'id') || 
-											fields.length == 0 || (fields.length != 0 && ximpia.common.ArrayUtil.hasKey(fields, 'id'))) {
+									if ((vars.fields.length != 0 && i > 0) && !ximpia.common.ArrayUtil.hasKey(vars.fields, 'id') || 
+											vars.fields.length == 0 || (vars.fields.length != 0 && 
+												ximpia.common.ArrayUtil.hasKey(vars.fields, 'id'))) {
 										ximpia.console.log('xpListData.render :: header: ' + headers[i]);
 										html += '<th scope=\"col\"><div class=\"ui-list-data-grp-text\"><a href=\"#\" title=\"';
 										html += headers[i] + '\" class=\"jxColumnOrder\" data-xp-element-id=\"'
-										html += $(element).attr('id') + '\" >' + headers[i] + '</a></div></th>';
+										html += $(vars.element).attr('id') + '\" >' + headers[i] + '</a></div></th>';
 									} 
 								}
 								html += '</tr></thead>';
@@ -595,32 +571,35 @@
 							// tbody
 							html += '<tbody>';
 							for (var l=0; l<data.length; l++) {
-								html += buildRow(data[l], nameInput, fields, l, hasCheck);
+								html += buildRow(l, data[l]);
 							}
 							html += '</tbody>';
 							
-							if (result.meta.numberPages > result.meta.pageEnd) {
+							if (meta.numberPages > meta.pageEnd) {
 								var footerColspan = headers.length;
-								if (hasCheck) footerColspan = headers.length + 1;
-								html += '<tfoot class=\"paging\"><tr><td colspan=\"' + footerColspan + '\">More Results...' + 										 
-											'</td></tr></tfoot>';								
+								if (vars.hasCheck) footerColspan = headers.length + 1;
+								var pageAttrsStr = $(vars.element).attr('data-xp');
+								html += '<tfoot class=\"paging\"><tr><td colspan=\"' + footerColspan + '\">' + 
+										'<div id=\"id_' + vars.nameInput + '_paging_comp\" data-xp-type=\"paging.more\" data-xp=\"' + 
+												'{listDataId: \'' + vars.idElement + '\'}' + '\" >More Results...</div>' +
+										'</td></tr></tfoot>';
 							}
 							
 							html += '</table>';
 							// Insert into DOM, set render to true
-							$(element).html(html);
-							$(element).attr('data-xp-render', JSON.stringify(true));
-							$(element).attr('data-xp-order-by', JSON.stringify(orderBy));
+							$(vars.element).html(html);
+							$(vars.element).attr('data-xp-render', JSON.stringify(true));
+							$(vars.element).attr('data-xp-order-by', JSON.stringify(vars.orderBy));
 							
-							if (hasHeader == true) {
+							if (vars.hasHeader == true) {
 								for (var i=0; i<headers.length; i++) {
 									var type = 'ascending';
-									if (ximpia.common.ArrayUtil.hasKey(orderBy, '-' + fields[i])) {
+									if (ximpia.common.ArrayUtil.hasKey(vars.orderBy, '-' + vars.fields[i])) {
 										type = 'descending';
 									}
-									if (orderBy.length != 0 && (ximpia.common.ArrayUtil.hasKey(orderBy, fields[i]) ||
-											ximpia.common.ArrayUtil.hasKey(orderBy, '-' + fields[i]))) {
-										var elementLink = $('#' + $(element).attr('id') + ' th a:contains("' + headers[i] + '")');
+									if (vars.orderBy.length != 0 && (ximpia.common.ArrayUtil.hasKey(vars.orderBy, vars.fields[i]) ||
+											ximpia.common.ArrayUtil.hasKey(vars.orderBy, '-' + vars.fields[i]))) {
+										var elementLink = $('#' + $(vars.element).attr('id') + ' th a:contains("' + headers[i] + '")');
 										ximpia.console.log('xpListData.render :: render Order ... elementLink...');
 										ximpia.console.log(elementLink);
 										addDeleteCtrl(elementLink, type);
@@ -629,59 +608,59 @@
 							}							
 							
 							// Click on column for ordering
-							$("#" + idElement + " .jxColumnOrder").click(function(evt) {
+							$("#" + vars.idElement + " .jxColumnOrder").click(function(evt) {
 								orderColumn(evt, $(this));
 							});
 							
 							// Bind click row
-							if (hasLinkRow == true) {
-								$('#' + idElement + ' .ui-list-data tbody').addClass('has-link');
-								$('#' + idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
+							if (vars.hasLinkRow == true) {
+								$('#' + vars.idElement + ' .ui-list-data tbody').addClass('has-link');
+								$('#' + vars.idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 							}
 							
 							// Disable buttons associated with activateOnCheck
-							if (onCheckClick == 'enable') {
+							if (vars.onCheckClick == 'enable') {
 								// Enable / disable buttons when user clicks on check
-								for (var i=0; i<compsActivateOnClick.length; i++) {
-									$('#' + compsActivateOnClick[i]).xpButton('disable');
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
 								}
-							} else if (onCheckClick == 'render') {
+							} else if (vars.onCheckClick == 'render') {
 								// Render buttons when user clicks on check
 								// We unrender buttons associated with table...
-								for (var i=0; i<compsActivateOnClick.length; i++) {
-									$('#' + compsActivateOnClick[i]).xpButton('unrender');
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 								}
 							}
 							
 							// Check all
-							$('#' + idElement + ' .ui-list-data .jxListDataCheckAll').click(function() {
+							$('#' + vars.idElement + ' .ui-list-data .jxListDataCheckAll').click(function() {
 								// Check all rows in table
 								// Send data to trigger
-								$('#' + idElement + ' .ui-list-data').find('input[class=jxListDataCheck]').trigger('click', ['All']);
+								$('#' + vars.idElement + ' .ui-list-data').find('input[class=jxListDataCheck]').trigger('click', ['All']);
 								// disable buttons if no checks
 								var timeout = setTimeout(function() {
-									if (onCheckClick == 'enable') {
-										if (!$('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+									if (vars.onCheckClick == 'enable') {
+										if (!$('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 											// disable
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('disable');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
 											}
 										} else {
 											// enable
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('enable');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('enable');
 											}
 										}
 									} else {
-										if (!$('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+										if (!$('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 											// unrender
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('unrender');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 											}
 										} else {
 											// render
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('render');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('render');
 											}
 										}
 									}
@@ -689,34 +668,34 @@
 							});
 														
 							// Check click bind
-							$('#' + idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+							$('#' + vars.idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
 								ximpia.console.log(evt);
 								ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
 								if (defaultInputValue != 'All') {
-									if (onCheckClick == 'enable') {
+									if (vars.onCheckClick == 'enable') {
 										// Better ways to toggle???
-										if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+										if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 											// enable
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('enable');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('enable');
 											}
-										} else if (compsActivateOnClick.length > 0) {
+										} else if (vars.compsActivateOnClick.length > 0) {
 											// disable
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('disable');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
 											}
 										}									
-									} else if (onCheckClick == 'render') {
+									} else if (vars.onCheckClick == 'render') {
 										// I render buttons associated with check
-										if (compsActivateOnClick.length > 0 && $('#' + idElement + ' .jxListDataCheck').is(':checked')) {
+										if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
 											// render
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('render');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('render');
 											}
-										} else if (compsActivateOnClick.length > 0) {
+										} else if (vars.compsActivateOnClick.length > 0) {
 											// unrender
-											for (var i=0; i<compsActivateOnClick.length; i++) {
-												$('#' + compsActivateOnClick[i]).xpButton('unrender');
+											for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+												$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 											}
 										}
 									}									
@@ -725,6 +704,90 @@
 						}
 					});
 				}
+			}
+		},
+		/*
+		 * Insert rows into table
+		 */
+		insertRows : function(xpForm, result) {
+			ximpia.console.log(result);
+			vars.xpForm = xpForm;
+			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
+			vars.element = $(this);
+			vars.idElement = $(vars.element).attr('id');
+			vars.idInput = $(vars.element).attr('id').split('_comp')[0];
+			vars.nameInput = vars.idInput.split('id_')[1];
+			$.metadata.setType("attr", "data-xp");
+			vars.attrs = $(vars.element).metadata();
+			// init vars
+			initVars();
+			var data = result.data;
+			var headers = result.headers;
+			var meta = result.meta;
+			if (meta.hasOwnProperty('pageEnd')) $(vars.element).attr('data-xp-page-end', meta.pageEnd);
+			ximpia.console.log('xpListData.render :: result data...');
+			ximpia.console.log(data);
+			ximpia.console.log('xpListData.render :: result headers: ' + headers);
+			if (data.length > 0) {
+				// we got valid response
+				
+				// tbody
+				html = '';
+				for (var l=0; l<data.length; l++) {
+					html += buildRow(l, data[l]);
+				}
+				
+				// Remove paging content in case last page
+				if (meta.numberPages == meta.pageEnd) {
+					$('#' + vars.idElement + ' tfoot').empty();
+				}
+				
+				// Insert into DOM, set render to true
+				$('#' + $(vars.element).attr('id') + ' tbody').append(html);
+				
+				$('#' + vars.formId).find("[data-xp-type='image']").xpImage('render', vars.xpForm);
+				
+				// Bind click row
+				if (vars.hasLinkRow == true) {
+					$('#' + vars.idElement + ' .ui-list-data tbody').addClass('has-link');
+					$('#' + vars.idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
+				}
+				
+				// Check click bind
+				$('#' + vars.idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
+					ximpia.console.log(evt);
+					ximpia.console.log(defaultInputValue + ' ' + typeof defaultInputValue);
+					if (defaultInputValue != 'All') {
+						if (vars.onCheckClick == 'enable') {
+							// Better ways to toggle???
+							if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
+								// enable
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('enable');
+								}
+							} else if (vars.compsActivateOnClick.length > 0) {
+								// disable
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('disable');
+								}
+							}									
+						} else if (vars.onCheckClick == 'render') {
+							// I render buttons associated with check
+							if (vars.compsActivateOnClick.length > 0 && $('#' + vars.idElement + ' .jxListDataCheck').is(':checked')) {
+								// render
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('render');
+								}
+							} else if (vars.compsActivateOnClick.length > 0) {
+								// unrender
+								for (var i=0; i<vars.compsActivateOnClick.length; i++) {
+									$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
+								}
+							}
+						}									
+					}
+				});
+				
 			}
 		}
         };
@@ -741,4 +804,136 @@
 
 })(jQuery);
 
+/*
+ * More paging component
+ *  
+ */
 
+(function($) {	
+
+	$.fn.xpPagingMore = function( method ) {  
+
+        // Settings		
+        var settings = {
+        };
+        var vars = {
+        };
+        var initVars = function() {
+			vars.app = ximpia.common.Util.initVariable('app', ximpia.common.Browser.getApp(), vars.attrs);
+			vars.dbClass = vars.attrs.dbClass;
+			vars.fields = ximpia.common.Util.initVariable('fields', [], vars.attrs);
+			vars.compsActivateOnClick = ximpia.common.Util.initVariable('activateOnCheck', [], vars.attrs);
+			vars.hasHeader = ximpia.common.Util.initVariable('hasHeader', settings.hasHeader, vars.attrs);
+			if (!vars.attrs.hasOwnProperty('hasHeader')) vars.attrs.hasHeader = vars.hasHeader;
+			vars.orderBy = ximpia.common.Util.initVariable('orderBy', [], vars.attrs);
+			vars.hasLinkRow = JSON.parse(ximpia.common.Util.initVariable('hasLinkRow', false, vars.attrs));
+			vars.hasCheck = ximpia.common.Util.initVariable('hasCheck', false, vars.attrs);
+			vars.onCheckClick = ximpia.common.Util.initVariable('onCheckClick', settings.onCheckClick, vars.attrs);        	
+        };
+        
+        var methods = {
+		init : function( options ) { 
+                	return this.each(function() {        
+                    		// If options exist, lets merge them
+                    		// with our default settings
+                    		if ( options ) { 
+	                        	$.extend( settings, options );
+                    		}
+                	});
+		},
+		render : function(xpForm) {
+			// Render paging more...
+			ximpia.console.log('xpListData :: render...');
+			vars.xpForm = xpForm;
+			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
+			for (var i=0; i<$(this).length; i++) {
+				ximpia.console.log($(this)[i]);
+				vars.element = $(this)[i];
+				vars.idElement = $(vars.element).attr('id');
+				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
+				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
+				if (vars.doRender == true) {
+					ximpia.console.log('xpListData.render :: id: ' + $(vars.element).attr('id'));
+					ximpia.console.log('xpListData.render :: nameInput: ' + vars.nameInput);
+					$.metadata.setType("attr", "data-xp");
+					vars.attrs = $($(this)).metadata();
+					vars.listCompId = '';
+					if (vars.attrs.hasOwnProperty('listDataId')) {
+						vars.listCompId = vars.attrs.listDataId;
+					}
+					vars.listComp = $('#' + vars.listCompId);
+					vars.listCompAttrs = $(vars.listComp).metadata();
+					vars.attrs = vars.listCompAttrs;
+					// initVars
+					initVars();
+					$('#' + vars.idElement).click(function() {
+						vars.pageStart = parseInt($(vars.listComp).attr('data-xp-page-start'));
+						vars.pageEnd = parseInt($(vars.listComp).attr('data-xp-page-end'))+1 || vars.pageStart + 1;
+						// Send query
+						vars.attrs.pageStart = vars.pageEnd;
+						ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
+							// data and headers
+							// data: [{},{}]
+							// headers : ['','','']
+							var data = result.data;
+							var headers = result.headers;
+							var meta = result.meta;
+							// inyect result into listData or listContent???
+							$(vars.listComp).xpListData('insertRows', vars.xpForm, result);
+						});
+					});
+				}
+			}
+		}
+        };
+		
+        if ( methods[method] ) {
+            return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+        } else if ( typeof method === 'object' || ! method ) {
+            return methods.init.apply( this, arguments );
+        } else {
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpPagingMore' );
+        }    
+		
+	};
+
+})(jQuery);
+
+/*
+ * Footer paging with selector of n controls to advance in paging at bottom of content
+ *  
+ */
+
+(function($) {	
+
+	$.fn.xpPaging = function( method ) {  
+
+        // Settings		
+        var settings = {
+        };        
+        var methods = {
+		init : function( options ) { 
+                	return this.each(function() {        
+                    		// If options exist, lets merge them
+                    		// with our default settings
+                    		if ( options ) { 
+	                        	$.extend( settings, options );
+                    		}
+                	});
+		},
+		render : function() {			
+		}
+        };
+		
+        if ( methods[method] ) {
+            return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+        } else if ( typeof method === 'object' || ! method ) {
+            return methods.init.apply( this, arguments );
+        } else {
+            $.error( 'Method ' +  method + ' does not exist on jQuery.xpPaging' );
+        }    
+		
+	};
+
+})(jQuery);
