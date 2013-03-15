@@ -71,7 +71,8 @@
  * * ``dbClass``:string
  * * ``app``:string [optional]
  * * ``method``:string [optional] [default:searchFields] : Data method to execute
- * * ``detailView``:string [optional] : View to display detail. hasLinkedRow must be true. Full path, like 'myProject.myApp.myView'
+ * * ``detailView``:object [optional] <viewPath, winType>: View to display detail. hasLinkedRow must be true. Full path, 
+ * 															like 'myProject.myApp.myView'. winType can be ``window``or ``popup``
  * * ``detailType``:string [optional] [default:window] : Window type: window, popup.
  * * ``fields``:object<string> [optional]
  * * ``args``:object [optional] : Initial arguments. Object with arguments
@@ -123,24 +124,26 @@
 			var comp = ximpia.common.getParentComponent($(this));
 			$.metadata.setType("attr", "data-xp");
 			var attrs = $('#' + comp.attr('id')).metadata();
-			// write into sessionStorage pageStart, pageEnd, orderBy and args for table...
-			var detailType = ximpia.common.Util.initVariable('detailType', 'window', attrs);
-			if (detailType == 'window') {
-				ximpia.common.Browser.setObject('list', $(comp).attr('id'));
-				if ($(comp).attr('data-xp-page-start')) {
-					ximpia.common.Browser.setObject('list-pageStart', parseInt($(comp).attr('data-xp-page-start')));
+			if (attrs.hasOwnProperty('detailView')) {				
+				var fields = attrs.detailView;
+				var detailView = fields[0];
+				var detailType = fields[1];
+				// write into sessionStorage pageStart, pageEnd, orderBy and args for table...
+				if (detailType == 'window') {
+					ximpia.common.Browser.setObject('list', $(comp).attr('id'));
+					if ($(comp).attr('data-xp-page-start')) {
+						ximpia.common.Browser.setObject('list-pageStart', parseInt($(comp).attr('data-xp-page-start')));
+					}
+					if ($(comp).attr('data-xp-page-end')) {
+						ximpia.common.Browser.setObject('list-pageEnd', parseInt($(comp).attr('data-xp-page-end')));
+					}
+					if ($(comp).attr('data-xp-order-by')) {
+						ximpia.common.Browser.setObject('list-orderBy', $(comp).attr('data-xp-order-by'));
+					}				
 				}
-				if ($(comp).attr('data-xp-page-end')) {
-					ximpia.common.Browser.setObject('list-pageEnd', parseInt($(comp).attr('data-xp-page-end')));
-				}
-				if ($(comp).attr('data-xp-order-by')) {
-					ximpia.common.Browser.setObject('list-orderBy', $(comp).attr('data-xp-order-by'));
-				}				
-			}
-			if (attrs.hasOwnProperty('detailView')) {
-				var fields = attrs.detailView.split('.');
-				var detailView = fields[fields.length-1];
-				var app = fields.slice(0,2).join('.');
+				var pathFields = detailView.split('.');
+				var detailView = pathFields[pathFields.length-1];
+				var app = pathFields.slice(0,2).join('.');
 				ximpia.console.log('xpListData :: view: ' + detailView + ' params: ' + JSON.stringify(params) 
 						+ ' app: ' + app);
 				if (detailType == 'window') {
