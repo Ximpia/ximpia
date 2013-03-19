@@ -55,4 +55,4 @@ ximpia.settings.imageVersions.large = {verboseName: 'Large', width: 680};
  */
 ximpia.settings.pagebutton = ximpia.settings.pagebutton || {};
 ximpia.settings.pagebutton.msg = ximpia.settings.pagebutton.msg || {};
-ximpia.settings.pagebutton.msg.slideTimeout = 1500;
+ximpia.settings.pagebutton.msg.slideTimeout = 2000;

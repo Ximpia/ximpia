@@ -1822,6 +1822,32 @@ ximpia.common.Form.doAttributes = (function(obj) {
 	$("#" + obj.idElement).attr('data-xp', attrDataS);
 });
 
+ximpia.common.Content = {}
+/**
+ * Replace content fields like {{obj.url}} by actual values from the response object
+ * 
+ * ** Attributes ** 
+ * 
+ * * ``htmlFields``:string : html string with {{}} fields
+ * 
+ * ** Returns **
+ * 
+ * The result htm with replaced values 
+ */
+ximpia.common.Content.replaceFields = (function(htmlFields) {
+	var resp = ximpia.common.Browser.getResponse();
+	var varPatt = /{{[a-zA-Z0-9_\.]+}}/g;
+	html = htmlFields.replace(varPatt,
+			function( $0, $1, $2){
+				var result = $0;
+				result = result.replace('{{', '');
+				result = result.replace('}}', '');
+				var value = eval('resp.' + result);
+				return( value );
+			}
+	)
+	return html;
+});
 
 /**
  * Condition
@@ -2565,7 +2591,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	// list.data
 	$('#' + formId).find("[data-xp-type='list.data']").xpListData('render', xpForm);
 	// Wait until containers and lists have rendered other components like images, fields, etc...
-	ximpia.common.waitUntilListRenders(function() {
+	ximpia.common.waitUntilListRenders(function() {		
 		// Paging More
 		$('#' + formId).find("[data-xp-type='paging.more']").xpPagingMore('render', xpForm);
 		// field.list
@@ -2614,7 +2640,9 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 		});
 		// Bind bubbles
 		oform = ximpia.common.Form();
-		oform.doBindBubbles();		
+		oform.doBindBubbles();
+		// Content
+		$("[data-xp-type='content']").xpContent('render');
 	});
 }
 /**
