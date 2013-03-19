@@ -21,6 +21,39 @@
 
 /*
  * List of content elements
+ * 
+ * ** Html **
+ * 
+ * <div id="id_myList_comp" type="list.content" data-xp="{dbClass: 'MyDAO'}"> </div>
+ * 
+ * ** Attributes **
+ *
+ * * ``dbClass``:string
+ * * ``app``:string [optional]
+ * * ``method``:string [optional] [default:searchFields] : Data method to execute
+ * * ``detailView``:object [optional] <viewPath, winType>: View to display detail. hasLinkedRow must be true. Full path, 
+ * 															like 'myProject.myApp.myView'. winType can be ``window``or ``popup``
+ * * ``detailType``:string [optional] [default:window] : Window type: window, popup.
+ * * ``fields``:object<string> [optional]
+ * * ``args``:object [optional] : Initial arguments. Object with arguments
+ * * ``orderBy``:object [optional] : Order by fields, ascending with '-' sign before field name. Supports relationships, 
+ * 									like 'field__value' 
+ * * ``disablePaging``:boolean [optional] [default: false]
+ * * ``hasCheck``:boolean [optional] : Table has operations linked to row checks. User would check rows and click button to execute
+ * 										actions on checked items.
+ * * ``activateOnCheck``:object : List of components to activate when row check is clicked.
+ * * ``onCheckClick``:string [optional] [default:enable] . Enable or render action components when user clicks on check.
+ * * ``pagingStyle``:string [optional] [default:more] : Possible values: more
+ * * ``hasLinkRow``:boolean [optional] [default:false]
+ * 
+ * ** Interfaces **
+ * 
+ * * ``IList``
+ * 
+ * ** Methods **
+ * 
+ * * ``render``(xpForm:string)
+ * * ``insertRows``(xpForm:string, result:object)
  *  
  */
 
@@ -30,7 +63,11 @@
 
         // Settings		
         var settings = {
+        	pagingStyle: 'more',
+        	hasLinkedRow: false,
+        	onCheckClick: 'enable'
         };
+        var vars = {};
         
         var methods = {
 		init : function( options ) { 
@@ -42,8 +79,25 @@
                     		}
                 	});
 		},
-		render : function() {			
-		}
+		/*
+		 * Render list
+		 * 
+		 * ** Attributes **
+		 * 
+		 * * ``xpForm``:string
+		 */
+		render : function(xpForm) {			
+		},
+		/*
+		 * Insert rows into list
+		 * 
+		 * ** Attributes **
+		 * 
+		 * * ``xpForm``:string
+		 * * ``result``:object
+		 * 
+		 */
+		insertRows : function(xpForm, result)
         };
 		
         if ( methods[method] ) {
@@ -64,7 +118,7 @@
  * 
  * * HTML **
  * 
- * <div id="id_myList_comp" data-xp-type="list.data" data-xp="{dbClass: 'MyDAO', linkFields: ['name'], fields: ['name','value']}" > </div>
+ * <div id="id_myList_comp" data-xp-type="list.data" data-xp="{dbClass: 'MyDAO', fields: ['name','value']}" > </div>
  * 
  * ** Attributes **
  *
@@ -97,6 +151,11 @@
  * ** Interfaces **
  * 
  * IList 
+ * 
+ * ** Methods **
+ * 
+ * * ``render``(xpForm:string)
+ * * ``insertRows``(xpForm:string, result:object) : Result contains keys data, headers and meta for list result
  *  
  */
 
@@ -711,6 +770,12 @@
 		},
 		/*
 		 * Insert rows into table
+		 * 
+		 * ** Attributes **
+		 * 
+		 * * ``xpForm``:string
+		 * * ``result``object : Contains keys ``data``, ``headers``and ``meta``. Data has list items. Headers contains the table header
+		 * 						information and meta contains data related to query like pageStart and pageEnd.
 		 */
 		insertRows : function(xpForm, result) {
 			ximpia.console.log(result);
@@ -897,44 +962,6 @@
             return methods.init.apply( this, arguments );
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.xpPagingMore' );
-        }    
-		
-	};
-
-})(jQuery);
-
-/*
- * Footer paging with selector of n controls to advance in paging at bottom of content
- *  
- */
-
-(function($) {	
-
-	$.fn.xpPaging = function( method ) {  
-
-        // Settings		
-        var settings = {
-        };        
-        var methods = {
-		init : function( options ) { 
-                	return this.each(function() {        
-                    		// If options exist, lets merge them
-                    		// with our default settings
-                    		if ( options ) { 
-	                        	$.extend( settings, options );
-                    		}
-                	});
-		},
-		render : function() {			
-		}
-        };
-		
-        if ( methods[method] ) {
-            return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
-        } else if ( typeof method === 'object' || ! method ) {
-            return methods.init.apply( this, arguments );
-        } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.xpPaging' );
         }    
 		
 	};
