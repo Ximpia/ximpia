@@ -269,6 +269,8 @@ div.PopMessage div.MsgText {
 	min-height: 100px;
 	max-height: 500px;
 	overflow:auto;
+	/*border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;*/
 }
 
 .msgPopBody {

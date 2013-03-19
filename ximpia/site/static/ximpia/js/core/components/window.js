@@ -161,6 +161,20 @@
         	ximpia.console.log(elemContent);
         	var popupData = $(tmplData).filter('#id_popup').metadata();
         	var elementButtons = $(tmplData).filter('#id_sectionButton');
+        	var hasButtons = true;
+        	if ($(elementButtons).html().length <= 1) {
+        		hasButtons = false;
+        	}
+        	/*if (hasButtons == true) {
+        		$('.MsgText').css('border-bottom-left-radius', '0px');
+        		$('.MsgText').css('border-bottom-right-radius', '0px');
+        		$('.MsgButtons').css('border-top-left-radius', '0px');
+        		$('.MsgButtons').css('border-top-right-radius', '0px');
+        	}*/
+        	if (hasButtons == false) {
+        		$('.MsgText').css('border-bottom-left-radius', '10px');
+        		$('.MsgText').css('border-bottom-right-radius', '10px');
+        	}
         	ximpia.console.log('xpObjPopUp :: doCreateReqView :: elementButtons...');
         	ximpia.console.log(elementButtons);
         	ximpia.console.log('xpObjPopUp :: doCreateReqView :: popupData...');
