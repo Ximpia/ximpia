@@ -239,6 +239,26 @@ ximpia.common.List.getValueFromList = (function(key, list) {
 	}
 	return value;
 });
+/*
+ * Make map for list and having keys as in fields list. We consider order is same in keyList and list
+ * 
+ * ** Attributes **
+ * 
+ * * ``keyList``:object : List of fields as keys for map
+ * * ``list``:object : List of value for keys
+ * 
+ * ** Returns **
+ * 
+ * * ``map``:object : Object with mapping key->value
+ * 
+ */
+ximpia.common.List.getMapByKeyList = (function(keyList, list) {
+	var map = {};
+	for (var i=0; i<keyList.length; i++) {
+		map[keyList[i]] = list[i];
+	}
+	return map;
+});
 
 ximpia.common.Util = {};
 ximpia.common.Util.initVariable = (function(name, defaultValue, attrs) {
@@ -430,7 +450,6 @@ ximpia.common.waitUntilListRenders = (function(func) {
 	var waitCounter = 1;
 	var timeout = setInterval(function() {
 		var counterLeftRender = 0;
-		//$.find('[data-xp-type*="list."]')[0].attributes['data-xp-render'].value
 		$.find('[data-xp-type*="list."]').forEach(function(element) {
 			if (element.attributes['data-xp-render'] == undefined) {
 				counterLeftRender += 1;
@@ -510,11 +529,14 @@ ximpia.common.ArrayUtil = {};
 ximpia.common.ArrayUtil.hasKey = function(array, keyTarget) {
 	var exists = false;
 	//ximpia.console.log(JSON.stringify(array));
-	for (index in array) {
-		//ximpia.console.log(key + ' ' + array[key] + ' ' + keyTarget);
-		if (array[index] == keyTarget) {
-			exists = true;
-		}
+	if (typeof array == 'object') {
+		for (var index=0; index<array.length; index++) {
+			//ximpia.console.log(key + ' ' + array[key] + ' ' + keyTarget);
+			//alert('ArrayUtil ' + array[index] + ' ' + keyTarget);
+			if (array[index] == keyTarget) {
+				exists = true;
+			}
+		}		
 	}
 	return exists;
 }
@@ -1829,13 +1851,17 @@ ximpia.common.Content = {}
  * ** Attributes ** 
  * 
  * * ``htmlFields``:string : html string with {{}} fields
+ * * ``resp``:object [optional] : Response object, namespace where to obtain tag values. In case not included will use
+ * 									Browser.getResponse() from sessionStorage.
  * 
  * ** Returns **
  * 
  * The result htm with replaced values 
  */
-ximpia.common.Content.replaceFields = (function(htmlFields) {
-	var resp = ximpia.common.Browser.getResponse();
+ximpia.common.Content.replaceFields = (function(htmlFields, resp) {
+	if (typeof resp == 'undefined') {
+		var resp = ximpia.common.Browser.getResponse(); 
+	} 
 	var varPatt = /{{[a-zA-Z0-9_\.]+}}/g;
 	html = htmlFields.replace(varPatt,
 			function( $0, $1, $2){
@@ -2590,6 +2616,8 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='container']").xpContainer('render', xpForm);
 	// list.data
 	$('#' + formId).find("[data-xp-type='list.data']").xpListData('render', xpForm);
+	// list.content
+	$('#' + formId).find("[data-xp-type='list.content']").xpListContent('render', xpForm);
 	// Wait until containers and lists have rendered other components like images, fields, etc...
 	ximpia.common.waitUntilListRenders(function() {		
 		// Paging More
