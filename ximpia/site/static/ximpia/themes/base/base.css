@@ -350,9 +350,12 @@ img#TecorLogo {
 }
 
 footer {
-	background-color: #fafafa;
+	/*background-color: #fafafa;*/
 	width: 1000px;
 	line-height:15px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 10px;
 }
 
 div#id_footerContent {

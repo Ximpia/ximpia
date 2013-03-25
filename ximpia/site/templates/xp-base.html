@@ -13,16 +13,14 @@
 <link rel="stylesheet" type="text/css" href="{% static "ximpia/themes/base/base.css" %}"  />
 <link rel="stylesheet" type="text/css" href="{% static "ximpia/themes/base/base.plugins.css" %}"  />
 <link rel="stylesheet" type="text/css" href="{% static "ximpia/css/main.css" %}"  />
+{% block styles %}
+{% endblock %}
 </head>
 
 <body>
-<!-- Facebook should be supportted by external links: buttons that link to fb in modal window, etc... -->
-<!--<div id="fb-root"> </div>-->
 
 <div id="id_header_wrapper">
 <div id="id_header" >
-	
-<!--<header id="id_header" >-->
 
 <form id="form_header" action="" method="post" >
 
@@ -31,10 +29,6 @@
 <!-- Make this link with javascript when user logs in: href="#" onclick="return false" -->
 <!-- <a href="/" onclick="return false"><img id="LogoImg" src="{% static "images/logo.png" %}" alt=" " style="height: 35px;margin: 1px 10px;" /> </a> -->
 </div>
-
-<!--<div id="id_sys_selector" class="sys-selector" >
-<div class="arrow-down" > </div>
-</div>-->
 
 <div id="id_sys_selector" class="sys-selector"  >
 <a href="#" ><img src="{% static "images/blank.png" %}" alt=" " /></a>
@@ -106,11 +100,16 @@
 
 </section>
 
-</div>
+<footer>
+	<div id="id_content_footer">
+		{% block footer %}
+		{% endblock %}
+	</div>
+</footer>
 
 </div>
 
-<br/>
+</div>
 
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>-->
 <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>-->
@@ -137,7 +136,6 @@
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.mousewheel.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.mwheelIntent.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.jscrollpane.js" %}"></script>
-<!--<script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.selectBox.js" %}"></script>-->
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.flexbox.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.contextMenu.js" %}"></script>
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.render_ext.js" %}"></script>
@@ -159,12 +157,9 @@
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
 <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>-->
 
-
-
 <script>
 jQuery(document).ready(function($){
 	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
-	//$("#id_sect_loading").css('display', 'block');
 	ximpia.common.Page.init();
 	var pageJx = ximpia.common.PageAjax();
 	var data = $('[name="result"]').val();

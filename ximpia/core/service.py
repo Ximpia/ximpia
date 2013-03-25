@@ -683,8 +683,10 @@ class ViewTmplDecorator ( object ):
 				parser = TemplateParser()
 				parser.feed(tmplData)
 				try:
+					masterTmpl = self.__APP.split('.')[1] + '.html'
+					logger.debug('ViewTmplDecorator :: masterTmpl: %s' % (masterTmpl) )
 					logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
-					result = render_to_response( 'main.html', RequestContext(request, 
+					result = render_to_response( masterTmpl, RequestContext(request, 
 													{	'id_view': parser.id_view,
 														'title': parser.title,
 														'titleBar': parser.titleBar,
@@ -1159,28 +1161,31 @@ class TemplateService ( object ):
 		#path = m.__file__.split('__init__')[0] + 'templates/' + mode + '/' + tmplName + '.html'
 		path = ''
 		pathMain = module.__file__.split('__init__')[0] + 'templates'
+		logger.debug('TemplateService.__findTemplPath :: pathMain: %s' % (pathMain) )
 		fileList = os.listdir(pathMain)
+		logger.debug('TemplateService.__findTemplPath :: fileList: %s' % (fileList) )
+		logger.debug('TemplateService.__findTemplPath :: tmplName: %s mode: %s' % (self.__tmplName, self.__mode) )
 		for item in fileList:
 			if item != 'site':
 				if item in self.__MODES:
 					fileList = os.listdir(pathMain + '/' + item)
-					for file in fileList:
-						if file == self.__tmplName + '.html':
-							path = pathMain + '/' + item + '/' + file
+					for myFile in fileList:
+						if myFile == self.__tmplName + '.html':
+							path = pathMain + '/' + item + '/' + myFile
 							break
 				else:
 					if os.path.exists(pathMain + '/' + item + '/' + self.__mode):
 						fileList = os.listdir(pathMain + '/' + item + '/' + self.__mode)
-						for file in fileList:
-							if file == self.__tmplName + '.html':
-								path = pathMain + '/' + item + '/' + self.__mode + '/' +  file
+						for myFile in fileList:
+							if myFile == self.__tmplName + '.html':
+								path = pathMain + '/' + item + '/' + self.__mode + '/' +  myFile
 								break
 					else:
 						raise XpMsgException(None, _('Template directory has no ' + ' or '.join(self.__MODES) + ' modes') )
 			if path != '':
 				break
 		if path == '':
-			raise XpMsgException(None, _('Could not obtaine template file for applciation=%s, mode=%s, templName=%s' %\
+			raise XpMsgException(None, _('Could not get template file for application=%s, mode=%s, templName=%s' %\
 										 (self.__app, self.__mode, self.__tmplName) ))
 		return path
 	def get(self, app, mode, tmplName):
@@ -1200,7 +1205,7 @@ class TemplateService ( object ):
 		"""
 		self.__app, self.__mode, self.__tmplName = app, mode, tmplName
 		
-		logger.debug('TemplateService :: app: %s' % app)
+		logger.debug('TemplateService.get :: app: %s' % app)
 		
 		if settings.DEBUG == True:
 			package, module = app.split('.')
@@ -1215,9 +1220,8 @@ class TemplateService ( object ):
 			else:
 				path = self.__findTemplPath(m)
 			logger.debug('TemplateService.get :: path: %s' % (path) )
-			f = open(path)
-			tmpl = f.read()
-			f.close()
+			with open(path) as f:
+				tmpl = f.read()
 			cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
 		else:
 			tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
