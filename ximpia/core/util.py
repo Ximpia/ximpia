@@ -194,3 +194,140 @@ class TemplateParser(HTMLParser):
 	titleBar = property(get_title_bar, set_title_bar, del_title_bar, "titleBar's docstring")
 	content = property(get_content, set_content, del_content, "content's docstring")
 	id_view = property(get_id_view, set_id_view, del_id_view, "id_view's docstring")
+
+class AppTemplateParser(HTMLParser):
+	__startFooter = False
+	__startScript = False
+	__startStyle = False
+	__scripts = ''
+	__styles = ''
+	__footer = ''
+	def __searchId(self, attrs):
+		"""
+		Get id from attributes
+		
+		**Attributes**
+		
+		* ``attrs`` : Attributes as tuple (name,value)
+		
+		**Returns**
+		
+		* ``nodeId`` : element id
+		
+		"""
+		nodeId = None
+		for data in attrs:
+			name, value = data
+			if name == 'id':
+				nodeId = value
+		return nodeId
+	def __getAttrs(self, attrs):
+		"""Get attributes in html element"""
+		attrsStr = ''
+		for attr in attrs:
+			if attr[1] != None:
+				attrsStr += ' ' + attr[0] + '="' + attr[1] + '"'
+			else:
+				attrsStr += ' ' + attr[0]
+		return attrsStr
+	def __hasAttributeStylesheet(self, attrs):
+		for attr in attrs:
+			if attr[0] == 'rel' and attr[1].lower() == 'stylesheet':
+				return True
+		return False
+	def handle_startendtag(self, tag, attrs):
+		"""
+		Handle start and end tags, of type <link rel="stylesheet" type="text/css" href="{% static "jQueryThemes/base/jquery-ui.css" %}"  />
+		"""
+		if tag == 'link' and self.__hasAttributeStylesheet(attrs):
+			if len(attrs) != 0:
+				self.__styles += '<' + tag
+				self.__styles += self.__getAttrs(attrs)
+				self.__styles += '/>'
+			else:
+				self.__styles += '<' + tag + '/>'
+	def handle_starttag(self, tag, attrs):
+		"""
+		Handle template start tag: <script></script> and <footer></footer>
+		"""
+		if tag == 'footer':
+			self.__startFooter = True
+			if len(attrs) != 0:
+				self.__footer += '<' + tag
+				self.__footer += self.__getAttrs(attrs)
+				self.__footer += '>'
+			else:
+				self.__footer += '<' + tag + '>'
+		elif tag == 'script':
+			self.__startScript = True
+			if len(attrs) != 0:
+				self.__scripts += '<' + tag
+				self.__scripts += self.__getAttrs(attrs)
+				self.__scripts += '/>'
+			else:
+				self.__scripts += '<' + tag + '/>'
+		elif tag == 'style':
+			self.__startStyle = True
+			if len(attrs) != 0:
+				self.__styles += '<' + tag
+				self.__styles += self.__getAttrs(attrs)
+				self.__styles += '/>'
+			else:
+				self.__styles += '<' + tag + '/>'
+		else:
+			if self.__startFooter == True:
+				if len(attrs) != 0:
+					self.__footer += '<' + tag
+					self.__footer += self.__getAttrs(attrs)
+					self.__footer += '/>'
+				else:
+					self.__footer += '<' + tag + '/>'
+	def handle_endtag(self, tag):
+		"""		
+		Handle template end tag: <script></script> and <footer></footer>
+		"""
+		if tag == 'footer':
+			self.__startFooter = False
+			self.__footer += '</' + tag + '>'
+		elif tag == 'script':
+			self.__startScript = False
+			self.__scripts += '</' + tag + '>'
+		elif tag == 'style':
+			self.__startStyle = False
+			self.__styles += '</' + tag + '>'
+		else:
+			if self.__startFooter == True:
+				self.__footer += '</' + tag + '>'
+	def handle_data(self, data):
+		"""
+		Handle data for <script></script> and <footer></footer>
+		"""
+		if self.__startFooter == True:
+			self.__footer += data
+		elif self.__startStyle == True:
+			self.__styles += data
+		elif self.__startScript == True:
+			self.__scripts += data
+
+	def get_scripts(self):
+		return self.__scripts
+	def get_styles(self):
+		return self.__styles
+	def get_footer(self):
+		return self.__footer
+	def set_scripts(self, value):
+		self.__scripts = value
+	def set_styles(self, value):
+		self.__styles = value
+	def set_footer(self, value):
+		self.__footer = value
+	def del_scripts(self):
+		del self.__scripts
+	def del_styles(self):
+		del self.__styles
+	def del_footer(self):
+		del self.__footer
+	
+	scripts = property(get_scripts, set_scripts, del_scripts, "scripts's docstring")
+	styles = property(get_styles, set_styles, del_styles, "styles's docstring")
+	footer = property(get_footer, set_footer, del_footer, "footer's docstring")

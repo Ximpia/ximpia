@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
+{% load i18n %}
 <html>
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>{% block title %}{% endblock %}</title>
+<title>{% block title %}{{title}}{% endblock %}</title>
 
 <link rel="shortcut icon" href="{% static "ximpia/images/favicon.ico" %}">
 <link rel="apple-touch-icon" href="{% static "ximpia/images/ximpia_icon.png" %}">
@@ -14,6 +15,7 @@
 <link rel="stylesheet" type="text/css" href="{% static "ximpia/themes/base/base.plugins.css" %}"  />
 <link rel="stylesheet" type="text/css" href="{% static "ximpia/css/main.css" %}"  />
 {% block styles %}
+{{styles|safe}}
 {% endblock %}
 </head>
 
@@ -75,11 +77,13 @@
 <div id="id_view_zone" >
 
 {% block id_view %}
+{{id_view|safe}}
 {% endblock %}
 
 <section id="id_sectionTitle" class="sectionTitle">
 
 {% block sectionTitle %}
+{{titleBar|safe}}
 {% endblock%}
 
 </section>
@@ -87,6 +91,7 @@
 <section id="id_content" class="sectionContent" >	
 
 {% block sectionContent %}
+{{content|safe}}
 {% endblock%}
 
 <input type="hidden" name="result" value="{{result}}" />
@@ -96,16 +101,14 @@
 <section id="id_sectionButton" class="sectionButton">
 
 {% block buttons %}
+{{buttons|safe}}
 {% endblock %}
 
 </section>
 
-<footer>
-	<div id="id_content_footer">
-		{% block footer %}
-		{% endblock %}
-	</div>
-</footer>
+{% block footer %}
+{{footer|safe}}
+{% endblock %}
 
 </div>
 
@@ -124,6 +127,7 @@
 <!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBQzkNe8GObf8_Wx_SJEVFvejmByPpknWk&sensor=false"></script>-->
 
 {% block scripts %}
+{{scripts|safe}}
 {% endblock %}
 
 <script type="text/javascript" src="{% static "ximpia/js/jquery-plugins/ximpia.passStrengthener.js" %}"></script>
@@ -157,10 +161,9 @@
 <!--<script type="text/javascript" src="http://connect.facebook.net/en_US/all.js"></script>
 <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>-->
 
-<script>
+<script type="text/javascript">/* <![CDATA[ */
 jQuery(document).ready(function($){
 	$("#id_sect_loading").css('left', $(".sectionComp").offset().left);
-	ximpia.common.Page.init();
 	var pageJx = ximpia.common.PageAjax();
 	var data = $('[name="result"]').val();
 	ximpia.console.log('data...');
@@ -183,7 +186,7 @@ jQuery(document).ready(function($){
 	window.history.pushState(stateData, "{{title}}", "{{request.path}}");	
 });
 
-</script>
+/* ]]> */</script>
 
 </body>
 

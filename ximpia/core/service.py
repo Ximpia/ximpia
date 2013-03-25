@@ -16,12 +16,13 @@ from django.contrib.auth.models import User
 
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render_to_response
+from django.template.loader import get_template, find_template, get_template_from_string
 from django.template import RequestContext
 from django.core.cache import cache
 
 from business import WorkFlowBusiness
 from models import getResultERROR, XpMsgException
-from util import TemplateParser
+from util import TemplateParser, AppTemplateParser
 
 from models import SearchIndex, Context
 
@@ -679,14 +680,20 @@ class ViewTmplDecorator ( object ):
 				# Get template data
 				tmplService = TemplateService(ctx)
 				tmplData = tmplService.get(self.__APP, 'window', tmplName)
+				# Get application template data with footer, scripts and styles
+				tmplApp = tmplService.getApp(self.__APP)
+				logger.debug('ViewTmplDecorator :: tmplApp: %s' % (tmplApp) )
+				parserApp = AppTemplateParser()
+				parserApp.feed(tmplApp)
+				logger.debug('ViewTmplDecorator :: styles: %s' % (parserApp.styles) )				
 				#logger.debug('ViewTmplDecorator :: tmplData: %s' % (tmplData) )
 				parser = TemplateParser()
 				parser.feed(tmplData)
 				try:
 					masterTmpl = self.__APP.split('.')[1] + '.html'
 					logger.debug('ViewTmplDecorator :: masterTmpl: %s' % (masterTmpl) )
-					logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )
-					result = render_to_response( masterTmpl, RequestContext(request, 
+					logger.debug('ViewTmplDecorator :: title: %s' % (parser.title) )					
+					result = render_to_response( 'xp-base.html', RequestContext(request, 
 													{	'id_view': parser.id_view,
 														'title': parser.title,
 														'titleBar': parser.titleBar,
@@ -697,7 +704,10 @@ class ViewTmplDecorator ( object ):
 														'view': resultJs['response']['view'],
 														'viewSlug': resultJs['response']['viewSlug'],
 														'app': self.__APP,
-														'appSlug': self.__APP_SLUG
+														'appSlug': self.__APP_SLUG,
+														'scripts': parserApp.scripts,
+														'styles': parserApp.styles,
+														'footer': parserApp.footer
 													}))
 				except AttributeError as e:
 					raise XpMsgException(e, _('Error in getting attributes from template. Check that title, titleBar, content and bottom button area exists.'))
@@ -1188,6 +1198,44 @@ class TemplateService ( object ):
 			raise XpMsgException(None, _('Could not get template file for application=%s, mode=%s, templName=%s' %\
 										 (self.__app, self.__mode, self.__tmplName) ))
 		return path
+	
+	def getApp(self, app):
+		"""
+		Get application template with styles, scripts and footer
+		
+		** Attributes **
+		
+		* ``app``:string : Application, like 'ximpia.site'
+		
+		** Returns **
+		
+		* ``tmpl``:string
+		"""
+		self.__app = app
+		logger.debug('TemplateService.get :: app: %s' % app)
+		if settings.DEBUG == True:
+			package, module = app.split('.')
+			m = getClass(package + '.' + module)
+			path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
+			if os.path.isfile(path):
+				with open(path) as f:
+					tmpl = f.read()
+				cache.set('tmpl/' + app, tmpl)
+			else:
+				raise XpMsgException(None, _('application template is not found.'))
+		else:
+			tmpl = cache.get('tmpl/' + app)
+			if not tmpl:
+				package, module = app.split('.')
+				m = getClass(package + '.' + module)
+				path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
+				if os.path.isfile(path):
+					with open(path) as f:
+						tmpl = f.read()
+				else:
+					raise XpMsgException(None, _('application template is not found.'))
+		return tmpl
+	
 	def get(self, app, mode, tmplName):
 		"""
 		Get template
