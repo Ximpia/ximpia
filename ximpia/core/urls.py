@@ -5,6 +5,7 @@ from django.conf.urls.defaults import patterns
 urlpatterns = patterns('',
     # Ximpia Templates
     (r'^jxTemplate/(?P<app>.*)/(?P<mode>.*)/(?P<tmplName>.*)$', 'ximpia.core.views.jxTemplate'),
+    (r'^jxAppTemplate/(?P<app>.*)$', 'ximpia.core.views.jxAppTemplate'),
     # Exec Server action
     (r'^(?P<appSlug>[a-zA-Z0-9-]+)/do/(?P<actionSlug>[a-zA-Z0-9-]+)/(?P<actionAttrs>.*)$', 'ximpia.core.views.execActionMsg'),
     # Show Server View

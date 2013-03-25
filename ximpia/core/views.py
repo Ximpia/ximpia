@@ -270,17 +270,27 @@ def jxTemplate(request, app, mode, tmplName):
 	"""
 	
 	service = TemplateService(None)
-	tmpl = service.get(app, mode, tmplName)
+	tmpl = service.get(app, mode, tmplName)	
+
+	return HttpResponse(tmpl)
+
+def jxAppTemplate(request, app):
+	"""
 	
-	"""tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
-	if not tmpl:
-		package, module = app.split('.')
-		m = getClass(package + '.' + module)
-		path = m.__file__.split('__init__')[0] + '/xp_templates/' + mode + '/' + tmplName + '.html'
-		f = open(path)
-		tmpl = f.read()
-		f.close()
-		cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)"""
+	Get ximpia application template
+	
+	**Attributes**
+	
+	* ``app``:String : Application
+	
+	** Returns **
+	
+	* ``template``:HttpResponse	
+	
+	"""
+	
+	service = TemplateService(None)
+	tmpl = service.getApp(app)	
 
 	return HttpResponse(tmpl)
 
