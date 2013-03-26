@@ -682,9 +682,9 @@ class ViewTmplDecorator ( object ):
 				tmplData = tmplService.get(self.__APP, 'window', tmplName)
 				# Get application template data with footer, scripts and styles
 				tmplApp = tmplService.getApp(self.__APP)
-				logger.debug('ViewTmplDecorator :: tmplApp: %s' % (tmplApp) )
+				#logger.debug('ViewTmplDecorator :: tmplApp: %s' % (tmplApp) )
 				parserApp = AppTemplateParser()
-				parserApp.feed(tmplApp)
+				parserApp.feedApp(tmplApp, self.__APP)
 				logger.debug('ViewTmplDecorator :: styles: %s' % (parserApp.styles) )				
 				#logger.debug('ViewTmplDecorator :: tmplData: %s' % (tmplData) )
 				parser = TemplateParser()

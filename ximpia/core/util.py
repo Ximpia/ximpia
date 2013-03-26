@@ -196,12 +196,21 @@ class TemplateParser(HTMLParser):
 	id_view = property(get_id_view, set_id_view, del_id_view, "id_view's docstring")
 
 class AppTemplateParser(HTMLParser):
+	"""
+	Application template parser: Parses style, script and footer tags as well as link styles.
+	
+	Application must be set before calling feed method
+	"""
+	__app = ''
 	__startFooter = False
 	__startScript = False
 	__startStyle = False
 	__scripts = ''
 	__styles = ''
 	__footer = ''
+	def feedApp(self, data, app):
+		self.__app = app
+		self.feed(data)
 	def __searchId(self, attrs):
 		"""
 		Get id from attributes
@@ -237,55 +246,58 @@ class AppTemplateParser(HTMLParser):
 		return False
 	def handle_startendtag(self, tag, attrs):
 		"""
-		Handle start and end tags, of type <link rel="stylesheet" type="text/css" href="{% static "jQueryThemes/base/jquery-ui.css" %}"  />
+		Handle start and end tags, of type <link rel="stylesheet" type="text/css" href="/static/jQueryThemes/base/jquery-ui.css" />
 		"""
+		logger.debug('AppTemplateParser.handle_startendtag :: app: %s' % (self.__app) )
 		if tag == 'link' and self.__hasAttributeStylesheet(attrs):
 			if len(attrs) != 0:
 				self.__styles += '<' + tag
 				self.__styles += self.__getAttrs(attrs)
-				self.__styles += '/>'
+				self.__styles += ' data-xp-app="' + self.__app + '"/>'
 			else:
-				self.__styles += '<' + tag + '/>'
+				self.__styles += '<' + tag + ' data-xp-app="' + self.__app + '/>'
 	def handle_starttag(self, tag, attrs):
 		"""
 		Handle template start tag: <script></script> and <footer></footer>
 		"""
+		logger.debug('AppTemplateParser.handle_starttag :: app: %s' % (self.__app) )
 		if tag == 'footer':
 			self.__startFooter = True
 			if len(attrs) != 0:
 				self.__footer += '<' + tag
 				self.__footer += self.__getAttrs(attrs)
-				self.__footer += '>'
+				self.__footer += ' data-xp-app="' + self.__app + '" >'
 			else:
-				self.__footer += '<' + tag + '>'
+				self.__footer += '<' + tag + ' data-xp-app="' + self.__app + '" >'
 		elif tag == 'script':
 			self.__startScript = True
 			if len(attrs) != 0:
 				self.__scripts += '<' + tag
 				self.__scripts += self.__getAttrs(attrs)
-				self.__scripts += '/>'
+				self.__scripts += ' data-xp-app="' + self.__app + '" >'
 			else:
-				self.__scripts += '<' + tag + '/>'
+				self.__scripts += '<' + tag + ' data-xp-app="' + self.__app + '" >'
 		elif tag == 'style':
 			self.__startStyle = True
 			if len(attrs) != 0:
 				self.__styles += '<' + tag
 				self.__styles += self.__getAttrs(attrs)
-				self.__styles += '/>'
+				self.__styles += ' data-xp-app="' + self.__app + '" >'
 			else:
-				self.__styles += '<' + tag + '/>'
+				self.__styles += '<' + tag + '>'
 		else:
 			if self.__startFooter == True:
 				if len(attrs) != 0:
 					self.__footer += '<' + tag
 					self.__footer += self.__getAttrs(attrs)
-					self.__footer += '/>'
+					self.__footer += ' data-xp-app="' + self.__app + '" >'
 				else:
-					self.__footer += '<' + tag + '/>'
+					self.__footer += '<' + tag + ' data-xp-app="' + self.__app + '" >'
 	def handle_endtag(self, tag):
 		"""		
 		Handle template end tag: <script></script> and <footer></footer>
 		"""
+		logger.debug('AppTemplateParser.handle_endtag :: app: %s' % (self.__app) )
 		if tag == 'footer':
 			self.__startFooter = False
 			self.__footer += '</' + tag + '>'
@@ -327,7 +339,14 @@ class AppTemplateParser(HTMLParser):
 		del self.__styles
 	def del_footer(self):
 		del self.__footer
+	def get_app(self):
+		return self.__app
+	def set_app(self, value):
+		self.__app = value
+	def del_app(self):
+		del self.__app
 	
 	scripts = property(get_scripts, set_scripts, del_scripts, "scripts's docstring")
 	styles = property(get_styles, set_styles, del_styles, "styles's docstring")
 	footer = property(get_footer, set_footer, del_footer, "footer's docstring")
+	app = property(get_app, set_app, del_app, "app's docstring")
