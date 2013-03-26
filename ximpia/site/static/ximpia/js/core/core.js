@@ -964,6 +964,13 @@ ximpia.common.Path.getDelete = (function() {
 ximpia.common.Path.getTemplate = (function(app, name, tmplType) {
 	return ximpia.common.Path.getServer() + 'jxTemplate/' + app + '/' + tmplType + '/' + name;
 });
+/*
+ * Get template for application
+ *
+ */
+ximpia.common.Path.getAppTemplate = (function(app) {
+	return ximpia.common.Path.getServer() + 'jxAppTemplate/' + app;
+});
 
 ximpia.common.Browser = {};
 /**
@@ -2133,7 +2140,7 @@ ximpia.common.PageAjax = function() {
 					var oGoogleMaps = ximpia.common.GoogleMaps();
 					oGoogleMaps.insertCityCountry(cityList, countryList);
 				}
-			})
+			}),
 			/**
 			 * Show password strength indicator. Password leads to a strength variable. Analyze if this behavior is common
 			 * and make common behavior. One way would be to have a data-xp-obj variable strength and be part of validation, showing
@@ -2155,6 +2162,39 @@ ximpia.common.PageAjax = function() {
 			 }
 			 });
 			 })*/
+			/*
+			 * Parse new application template: remove previous application tags and include new app tags in DOM
+			 * 
+			 * ** Attributes **
+			 * 
+			 * * ``appBefore``:string
+			 * * ``app``:string
+			 */
+			_getParseNewAppTemplate: (function(appBefore, app) {
+				$.get(ximpia.common.Path.getAppTemplate(app), function(dataTmpl) {
+					// Process script, style, link and footer with data-xp-app="$appBefore"
+					// Delete old tags, insert new tags
+					// links
+					$('link[data-xp-app="' + appBefore + '"]').remove();
+					$(dataTmpl).find('link[data-xp-app="' + app + '"]').each(function() {
+						$('head').append($(this));
+					})
+					// styles
+					$('style[data-xp-app="' + appBefore + '"]').remove();
+					$(dataTmpl).find('style[data-xp-app="' + app + '"]').each(function() {
+						$('head').append($(this));
+					})
+					// footer
+					$('footer').html($(dataTmpl).find('footer:first').html());
+					$('footer[data-xp-app="' + appBefore + '"]').empty();
+					$('footer[data-xp-app="' + appBefore + '"]').attr('data-xp-app', app);
+					// scripts
+					$('script[data-xp-app="' + appBefore + '"]').remove();
+					$(dataTmpl).find('script[data-xp-app="' + app + '"]').each(function() {
+						$('body').append($(this));
+					})
+				});				
+			})
 		},
 		pub : {
 			init : function(obj) {
@@ -2370,6 +2410,7 @@ ximpia.common.PageAjax = function() {
 				 */
 				ximpia.console.log('PageAjax.doForm...');
 				ximpia.console.log(obj);
+				var appBefore = ximpia.common.Browser.getApp();
 				if (typeof(state) == 'undefined') {
 					state = true;
 				}
@@ -2393,6 +2434,10 @@ ximpia.common.PageAjax = function() {
 					});
 					ximpia.console.log('tmplPath: ' + tmplPath);
 					ximpia.console.log('viewName: ' + viewName);
+					if (app != appBefore) {
+						// We request a view in another application: we need to request new application template and process DOM
+						_attr.priv._getParseNewAppTemplate(appBefore, app);
+					}
 					$.get(tmplPath, function(dataTmpl) {
 						ximpia.common.PageAjax.doTmplInject(dataTmpl);
 						//$('#id_content').wrap('<form id="form_' + viewName + '" method="post" action="" />');
