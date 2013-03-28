@@ -475,22 +475,47 @@ ximpia.common.waitUntilListRenders = (function(func) {
 
 /*
  * Get visual component div element for elements inside component
+ * 
+ * ** Attributes **
+ * 
+ * * ``element``:object : Element from which we start getting parents
+ * * ``args``:object : Object with additional arguments:
+ * 		* ``type`` : Parse until this type of object is found
+ * 
+ * ** Returns **
+ * 
+ * elementFinal
+ * 
  */
-ximpia.common.getParentComponent = (function(element) {
+ximpia.common.getParentComponent = (function(element, args) {
+	var args = args || {};
 	var isComp = false;
 	var counter = 0;
 	var elementTarget = $(element).parent();
-	if (elementTarget.attr('data-xp-type')) {
-		isComp = true;
-	}
-	while (isComp == false) {
-		if (counter > 20) {
-			break;
-		}
-		var elementTarget = $(elementTarget).parent();
+	if (args.hasOwnProperty('type')) {
+			if (elementTarget.attr('data-xp-type') == args.type) {
+				isComp = true;
+			}
+	} else {
 		if (elementTarget.attr('data-xp-type')) {
 			isComp = true;
+		}		
+	}
+	while (isComp == false && counter < 20) {
+		if (counter > 20) {
+			elementTarget = null;
+			break;
 		}
+		var elementTarget = $(elementTarget).parent();		
+		if (args.hasOwnProperty('type')) {
+				if (elementTarget.attr('data-xp-type') == args.type) {
+					isComp = true;
+				}
+		} else {
+			if (elementTarget.attr('data-xp-type')) {
+				isComp = true;
+			}		
+		}		
 		counter += 1;
 	}
 	return elementTarget;
@@ -1680,6 +1705,28 @@ ximpia.common.Form = function() {
 						classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-opacity'
 					}
 				});
+				$("a.bubble").qtip({
+					content : {
+						attr : 'title'
+					},
+					events : {
+						focus : function(event, api) {
+						}
+					},
+					position: {
+						/*my: 'top center',
+						at: 'bottom center',*/
+						my: 'top center',
+						target: 'mouse',
+						adjust: {
+							y: 17
+						}
+					},
+					style : {
+						//classes : 'ui-tooltip-blue ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-cluetip'
+						classes: 'ui-tooltip-dark ui-tooltip-shadow ui-tooltip-rounded ui-tooltip-opacity'
+					}
+				});
 				if (ximpia.settings.IMAGE_TOOLTIP == true) {
 					$("img").qtip({
 						content : {
@@ -2650,7 +2697,39 @@ ximpia.common.PageAjax.doRender = function(xpForm) {
 	$('#' + formId).find("[data-xp-type='function.render']").xpRenderExt('render', xpForm);
 }
 /*
- * 
+ * Render list row components
+ */
+ximpia.common.PageAjax.doRenderListRows = function(xpForm) {
+	var formId = xpForm.split('.')[1];
+	// basic.text
+	$('#' + formId).find("[data-xp-type='field']").xpField('render', xpForm);
+	// field.datetime
+	$('#' + formId).find("[data-xp-type='field.datetime']").xpFieldDateTime('render', xpForm);
+	// field.number
+	$('#' + formId).find("[data-xp-type='field.number']").xpFieldNumber('render', xpForm);
+	// select.plus
+	$('#' + formId).find("[data-xp-type='select.plus']").xpSelectPlus('render', xpForm);
+	// select
+	$('#' + formId).find("[data-xp-type='select']").xpSelect('render', xpForm);
+	// check
+	$('#' + formId).find("[data-xp-type='check']").xpCheck('render', xpForm);
+	// button
+	$("[data-xp-type='button']").xpButton('render');
+	// link
+	$("[data-xp-type='link.popup']").xpLink('render');
+	$("[data-xp-type='link.url']").xpLink('render');
+	$("[data-xp-type='link.action']").xpLink('render');
+	$("[data-xp-type='link.view']").xpLink('render');
+	// Image
+	$('#' + formId).find("[data-xp-type='image']").xpImage('render', xpForm);
+	// Bind bubbles
+	oform = ximpia.common.Form();
+	oform.doBindBubbles();
+	// Content
+	$("[data-xp-type='content']").xpContent('render');	
+}
+/*
+ * Render all components except functions
  */
 ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	ximpia.console.log('xpForm: ' + xpForm);
@@ -2667,6 +2746,8 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 	ximpia.common.waitUntilListRenders(function() {		
 		// Paging More
 		$('#' + formId).find("[data-xp-type='paging.more']").xpPagingMore('render', xpForm);
+		// Paging Bullet
+		$('#' + formId).find("[data-xp-type='paging.bullet']").xpPagingBullet('render', xpForm);
 		// field.list
 		$('#' + formId).find("[data-xp-type='field.list']").xpFieldList('render', xpForm);
 		// basic.text

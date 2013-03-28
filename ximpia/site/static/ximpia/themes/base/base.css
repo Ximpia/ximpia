@@ -1871,9 +1871,76 @@ div[data-xp-type='field.check'] label {
 }
 
 .ui-list-content-paging:hover {
-	/*opacity: 80%;*/
 	cursor: pointer;
 	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e0e0e0), color-stop(100%, #eee));
 }
 
 
+
+
+
+
+
+
+/* Paging Bullet */
+.ui-list-paging-bullet {
+	position: relative;
+	text-align: center; 
+	height: 1px; 
+	bottom: 9px; 
+}
+
+.ui-list-paging-bullet:nth-child(1n) a.active {
+	background: #08C;
+	background: -webkit-gradient(linear,lefttop,leftbottom,color-stop(0%,#7EC6EA),color-stop(24%,#46B3EA),color-stop(100%,#0387C9));
+	background: -webkit-linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	background: -moz-linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	background: linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	-webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+	-moz-box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+	box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+}
+.ui-list-paging-bullet:nth-child(1n) a {
+	background: rgba(101, 101, 102, .2);
+	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+	-moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+}
+*.ui-list-paging-bullet:nth-child(1n) li a.active {
+	top: 0;
+	background: #08C;
+	background: -webkit-gradient(linear,lefttop,leftbottom,color-stop(0%,#7EC6EA),color-stop(24%,#46B3EA),color-stop(100%,#0387C9));
+	background: -webkit-linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	background: -moz-linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	background: linear-gradient(top,#7EC6EA0%,#46B3EA45%,#0387C9100%);
+	-webkit-box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+	-moz-box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+	box-shadow: inset 0 1px 0 rgba(0, 0, 0, .25);
+}
+.ui-list-paging-bullet:nth-child(1n) li a {
+	border-radius: 5px;
+	width: 10px;
+	height: 10px;
+	background: #E0E1E3;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .25);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .25);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, .25);
+}
+.ui-list-paging-bullet li a.active {
+	cursor: default;
+	top: -30px;
+}
+.ui-list-paging-bullet li a {
+	z-index: 1;
+	width: 13px;
+	height: 45px;
+	cursor: pointer;
+	text-indent: -1000em;
+}
+.ui-list-paging-bullet li {
+	margin-left: 12px;
+}
+.ui-list-paging-bullet li, .ui-list-paging-bullet li a {
+	display: -moz-inline-stack;
+	display: inline-block;
+}

@@ -3,7 +3,7 @@
 import httplib2
 import urlparse
 import oauth2
-import simplejson as json
+import json
 import types
 import traceback
 import os
