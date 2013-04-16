@@ -1996,7 +1996,7 @@ class Context ( object ):
 	application = property(getApplication, setApplication, delApplication, "Application's Docstring")
 	viewAuth = property(get_view_auth, set_view_auth, del_view_auth, "viewAuth's docstring")
 
-class ContextDecorator(object):
+class ctx(object):
 	_app = ''
 	def __init__(self, **args):
 		pass
@@ -2089,7 +2089,7 @@ class ContextDecorator(object):
 		return wrapped_f
 
 
-class ContextViewDecorator(object):
+class context_view(object):
 	_app = ''
 	__mode = ''
 	def __init__(self, *argList, **args):

@@ -810,7 +810,7 @@ class WorkFlowBusiness (object):
 		#self._dbWFViewParam = WFViewEntryParamDAO(ctx, relatedDepth=2)
 		self.__wfData = getBlankWfData({})
 	
-	def genUserId(self):
+	def gen_user_id(self):
 		"""Generate workflow user id.
 		@return: userId"""
 		userId = ''
@@ -823,7 +823,7 @@ class WorkFlowBusiness (object):
 		flow = self._dbWorkflow.get(code=flowCode)
 		return flow
 	
-	def resolveFlowDataForUser(self, wfUserId, flowCode):
+	def resolve_flow_data_for_user(self, wfUserId, flowCode):
 		"""Resolves flow for user and session key.
 		@param wfUserId: Workflow User Id
 		@param flowCode: Flow code
@@ -839,7 +839,7 @@ class WorkFlowBusiness (object):
 		logger.debug( 'resolvedFlow: %s' % (resolvedFlow) )
 		return resolvedFlow
 
-	def resolveView(self, wfUserId, appName, flowCode, viewNameSource, actionName):
+	def resolve_view(self, wfUserId, appName, flowCode, viewNameSource, actionName):
 		"""Search destiny views with origin viewSource and operation actionName
 		@param viewNameSource: Origin view
 		@param actionName: Action name
@@ -879,7 +879,7 @@ class WorkFlowBusiness (object):
 					break
 		return viewTarget
 		
-	def putParams(self, **argsDict):
+	def put_params(self, **argsDict):
 		"""Put list of workflow parameters in context
 		@param flowCode: Flow code
 		@param argsDict: Argument dictionary"""
@@ -941,7 +941,7 @@ class WorkFlowBusiness (object):
 		flow.save()
 		return flow
 	
-	def resetFlow(self, wfUserId, flowCode, viewName):
+	def reset_flow(self, wfUserId, flowCode, viewName):
 		"""Reset flow. It deletes all workflow variables and view name
 		@param wfUserId: Workflow User Id
 		@param flowCode: Flow code"""
@@ -966,25 +966,25 @@ class WorkFlowBusiness (object):
 			workflow = self._dbWorkflow.get(code=flowCode)
 			self._dbWFData.create(userId=wfUserId, flow=workflow, data = _jsf.encode64Dict(self.__wfData), view=view)
 
-	def setViewName(self, viewName):
+	def set_view_name(self, viewName):
 		"""Set view name in Workflow
 		@param viewName: View name"""
 		logger.debug( 'setViewName :: %s' % (self.__wfData) )
 		self.__wfData['viewName'] = viewName
 		logger.debug( self.__wfData )
 
-	def getViewName(self):
+	def get_view_name(self):
 		"""Get workflow view name.
 		@return: viewName"""
 		return self.__wfData['viewName']
 	
-	def getParam(self, name):
+	def get_param(self, name):
 		"""Get workflow parameter from context
 		@param name: Name
 		@return: Param Value"""
 		return self.__wfData['data'][name]
 	
-	def getParamFromCtx(self, name):
+	def get_param_from_ctx(self, name):
 		"""Get flow parameter from context.
 		@param name: Parameter name
 		@return: Parameter value"""
@@ -993,7 +993,7 @@ class WorkFlowBusiness (object):
 		logger.debug( 'wfData: %s' % (self.__wfData) )
 		return flowDataDict['data'][name]
 		
-	def buildFlowDataDict(self, flowData):
+	def build_flow_data_dict(self, flowData):
 		"""Build the flow data dictionary having the flowData instance.
 		@param flowData: Flow data
 		@return: flowDataDict"""
@@ -1001,7 +1001,7 @@ class WorkFlowBusiness (object):
 		logger.debug( 'build :: flowDataDict: %s' % (flowDataDict) )
 		return flowDataDict
 	
-	def getFlowDataDict(self, wfUserId, flowCode):
+	def get_flow_data_dict(self, wfUserId, flowCode):
 		"""Get flow data dictionary for user and flow code
 		@param user: User
 		@param flowCode: flowCode
@@ -1011,14 +1011,14 @@ class WorkFlowBusiness (object):
 		logger.debug( 'get :: flowDataDict: %s' % (flowDataDict) )
 		return flowDataDict
 	
-	def getFlowViewByAction(self, actionName):
+	def get_flow_view_by_action(self, actionName):
 		"""Get flow by action name. It queries the workflow data and returns flow associated with actionName
 		@param actionName: Action name
 		@return: flow: Workflow"""
 		flowView = self._dbWFView.get(action__name=actionName)
 		return flowView
 	
-	def getView(self, wfUserId, flowCode):
+	def get_view(self, wfUserId, flowCode):
 		"""Get view from flow
 		@param user: User
 		@param flowCode: Flow code
@@ -1027,7 +1027,7 @@ class WorkFlowBusiness (object):
 		viewName = flowDataDict['viewName']
 		return viewName
 	
-	def getViewParams(self, flowCode, viewName):
+	def get_view_params(self, flowCode, viewName):
 		"""Get view entry parameters for view and flow
 		@param flowCode: Flow code
 		@param viewName: View name
@@ -1039,7 +1039,7 @@ class WorkFlowBusiness (object):
 			paramDict[param.paramView.name] = param.paramView.value
 		return paramDict
 
-	def isLastView(self, viewNameSource, viewNameTarget, actionName):
+	def is_last_view(self, viewNameSource, viewNameTarget, actionName):
 		"""Checks if view is last in flow."""
 		flowsView = self._dbWFView.search(viewSource__name=viewNameSource, action__name=actionName).order_by('-order')
 		flowView = flowsView[0] if len(flowsView) != 0 else None
@@ -1048,7 +1048,7 @@ class WorkFlowBusiness (object):
 			isLastView = True
 		return isLastView
 	
-	def isFirstView(self, flowCode, viewName):
+	def is_first_view(self, flowCode, viewName):
 		"""Checks if view is first in flow. It uses field 'order' to determine if is first view."""
 		check = False
 		flowViewStart = self._dbWFView.get(flow__code=flowCode, order=10)		
@@ -1058,7 +1058,7 @@ class WorkFlowBusiness (object):
 			check = False
 		return check
 	
-	def removeData(self, wfUserId, flowCode):
+	def remove_data(self, wfUserId, flowCode):
 		"""Removes the workflow data for user or session."""
 		flowData = self.resolveFlowDataForUser(wfUserId, flowCode)
 		self._dbWFData.deleteById(flowData.id, real=True)

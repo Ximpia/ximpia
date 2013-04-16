@@ -1,6 +1,5 @@
 import re
 import json
-import types
 import os
 
 from django.core import serializers as _s
@@ -10,7 +9,6 @@ from django.utils.translation import ugettext as _
 
 from fields import HiddenField
 import messages as _m
-from ximpia.core.models import ContextDecorator as Ctx
 from ximpia.util.js import Form as _jsf
 
 # Settings
@@ -283,30 +281,30 @@ class XBaseForm( forms.Form ):
 		except AttributeError:
 			pass
 		return fieldName
-	def setViewMode(self, viewList):
+	def set_view_mode(self, viewList):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
 		paramDict['viewMode'] = viewList
 		self.fields['params'].initial = json.dumps(paramDict)
-	def setViewModeRead(self):
+	def set_view_mode_read(self):
 		"""Read only mode"""
 		paramDict = json.loads(self.fields['params'].initial)
 		paramDict['viewMode'] = ['read']
 		self.fields['params'].initial = json.dumps(paramDict)
-	def putParam(self, name, value):
+	def put_param(self, name, value):
 		"""Adds field to javascript array
 		@param name: 
 		@param value: """
 		paramDict = json.loads(self.fields['params'].initial)
 		paramDict[name] = value
 		self.fields['params'].initial = json.dumps(paramDict)
-	def putParamList(self, **argsDict):
+	def put_param_list(self, **argsDict):
 		"""Put list of parameters. attribute set, like putParamList(myKey='', myOtherKey='')"""
 		paramDict = json.loads(self.fields['params'].initial)
 		for key in argsDict:
 			paramDict[key] = argsDict[key]
 		self.fields['params'].initial = json.dumps(paramDict)
-	def getParam(self, name):
+	def get_param(self, name):
 		"""Get param value.
 		@param name: Param name
 		@return: value"""
@@ -316,14 +314,14 @@ class XBaseForm( forms.Form ):
 		else:
 			raise ValueError
 		return value
-	def getParamDict(self, paramList):
+	def get_param_dict(self, paramList):
 		"""Get dictionary of parameters for the list of parameters given"""
 		paramDict = json.loads(self.fields['params'].initial)
 		d = {}
 		for field in paramList: 
 			d[field] = paramDict[field]
 		return d
-	def getParamList(self, paramList):
+	def get_param_list(self, paramList):
 		"""Get list of values from list of names given.
 		@param paramList: List of fields (names)
 		@return: list of values"""
@@ -332,7 +330,7 @@ class XBaseForm( forms.Form ):
 		for field in paramList:
 			l.append(paramDict[field])
 		return l
-	def hasParam(self, name):
+	def has_param(self, name):
 		"""Checks if has key name
 		@param name: 
 		@return: boolean"""
@@ -369,7 +367,7 @@ class XBaseForm( forms.Form ):
 							self._ctx.meta['REMOTE_ADDR'])			
 			if captchaResponse.is_valid == False:
 				self.addInvalidError(_('Words introduced in Captcha do not correspond to image. You can reload for another image.'))
-	def addInvalidError(self, sError):
+	def add_invalid_error(self, sError):
 		"""Adds error to errors lists."""
 		if not self.errors.has_key(self.ERROR_INVALID):
 			self.errors[self.ERROR_INVALID] = []
@@ -377,16 +375,16 @@ class XBaseForm( forms.Form ):
 			self._errors[self.ERROR_INVALID] = []
 		self.errors[self.ERROR_INVALID].append(sError)	
 		self._errors[self.ERROR_INVALID].append(sError)
-	def serializeJSON(self):
+	def serialize_JSON(self):
 		"""Serialize the form into json. The form must be validated first."""
 		return json.dumps(self.cleaned_data)
-	def setErrorDict(self, errors):
+	def set_error_dict(self, errors):
 		"""Sets error dictionary"""
 		self.errors = errors	
-	def getErrorDict(self):
+	def get_error_dict(self):
 		"""Get error dictionary"""
 		return self.errors
-	def hasInvalidErrors(self):
+	def has_invalid_errors(self):
 		"""Has the form invalid errors?"""
 		bError = False
 		#logger.debug( 'XBaseForm :: hasIvalidErrors :: errors: ' + self.errors.keys() )
@@ -417,10 +415,10 @@ class XBaseForm( forms.Form ):
 			raise ValidationError('Form Clean Validation Error')
 		"""logger.debug( 'self.cleaned_data : ' + self.cleaned_data )
 		return self.cleaned_data"""
-	def getFormId(self):
+	def get_form_id(self):
 		"""Get form id"""
 		return self._XP_FORM_ID
-	def setApp(self, app):
+	def set_app(self, app):
 		"""Set application code to form."""
 		self.base_fields['app'].initial = app
 	def __buildForeignKey(self, jsData):
@@ -650,7 +648,7 @@ class XBaseForm( forms.Form ):
 		"""
 		pass
 	
-	def buildJsData(self, app, jsData):
+	def build_js_data(self, app, jsData):
 		"""Get javascript json data for this form"""
 		jsData['response']['form_' + self._XP_FORM_ID] = {}
 		#logger.debug( 'self.initial : ' + self.initial )
@@ -695,7 +693,7 @@ class XBaseForm( forms.Form ):
 		self.__buildManyToMany(jsData)
 		jsData['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
 	
-	def disableFields(self, fields):
+	def disable_fields(self, fields):
 		"""
 		Diable fields, will show them with ``readonly`` html attribute.
 		

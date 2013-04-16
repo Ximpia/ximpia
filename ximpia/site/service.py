@@ -10,8 +10,7 @@ from django.contrib.auth.models import User
 from ximpia.core.models import JsResultDict
 
 from ximpia.core.service import EmailService, CommonService
-from ximpia.core.service import ViewDecorator, ActionDecorator, ValidationDecorator, MenuActionDecorator, WorkflowViewDecorator,\
-		WorkflowActionDecorator
+from ximpia.core.service import view, action, validation, menu_action
 from ximpia.core.models import Context as CoreContext, XpMsgException
 from ximpia.core.data import CoreParameterDAO
 from ximpia.core.forms import DefaultForm
@@ -40,58 +39,58 @@ class SiteService ( CommonService ):
 	def __init__(self, ctx):
 		super(SiteService, self).__init__(ctx)
 	
-	@ValidationDecorator()
-	def _authenUser(self):
+	@validation()
+	def _authen_user(self):
 		if self._f()['authSource'] == K.FACEBOOK and self._f()['socialId'] != '':
-			self._ctx.user = self._authenticateUserSocNet(self._f()['socialId'], self._f()['socialToken'], self._f()['authSource'], 
-														'facebook', _m.ERR_wrongPassword)
+			self._ctx.user = self._authenticate_user_soc_net(self._f()['socialId'], self._f()['socialToken'], self._f()['authSource'], 
+														'facebook', _m.ERR_wrong_password)
 		else:
-			self._ctx.user = self._authenticateUser(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrongPassword)
+			self._ctx.user = self._authenticate_user(self._f()['username'], self._f()['password'], 'password', _m.ERR_wrong_password)
 		logger.debug('user: %s' % (self._ctx.user) )
 	
-	@ValidationDecorator()
-	def _validateUserNotSignedUp(self):
+	@validation()
+	def _validate_user_not_signed_up(self):
 		"""Validate user and email in system in case sign up with user/password. In case signup with social
 		networks, only validate that username does not exist."""
 		if self._f()['authSource'] == K.PASSWORD:
-			self._validateNotExists([
-						[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
+			self._validate_not_exists([
+						[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpia_id],
 						[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email]
 						])
 		else:
-			self._validateNotExists([
-				[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpiaId],
+			self._validate_not_exists([
+				[self._dbUser, {'username': self._f()['username']}, 'username', _m.ERR_ximpia_id],
 				[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email],
-				[self._dbSocialNetworkUser, {'socialId': self._f()['socialId']}, 'socialNet', _m.ERR_socialIdExists]
+				[self._dbSocialNetworkUser, {'socialId': self._f()['socialId']}, 'socialNet', _m.ERR_social_id_exists]
 				])
 	
-	@ValidationDecorator()
-	def _validateInvitationPending(self, invitationCode):
+	@validation()
+	def _validate_invitation_pending(self, invitationCode):
 		"""
 		Validates that invitation is pending
 		"""
-		setting = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
-		logger.debug('_validateInvitationPending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
+		setting = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
+		logger.debug('_validate_invitation_pending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
 		if setting.isChecked():
-			self._validateExists([
+			self._validate_exists([
 					[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.PENDING}, 
-							'invitationCode', _m.ERR_invitationNotValid]
+							'invitationCode', _m.ERR_invitation_not_valid]
 									])
 	
-	@ValidationDecorator()
-	def _validateInvitationNotUsed(self):
+	@validation()
+	def _validate_invitation_not_used(self):
 		"""
 		Validates that invitation is valid: Checks that invitation has not been used in case invitations defined in settings
 		"""
-		setting = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
+		setting = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
 		logger.debug('_validateInvitationNotUsed :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
 		if setting.isChecked():
-			self._validateNotExists([
+			self._validate_not_exists([
 					[self._dbInvitation, {'invitationCode': self._f()['invitationCode'], 'status': K.USED}, 
-							'invitationCode', _m.ERR_invitationNotValid]
+							'invitationCode', _m.ERR_invitation_not_valid]
 									])
 	
-	def _createUser(self):
+	def _create_user(self):
 		"""
 		Create user
 		
@@ -146,22 +145,22 @@ class SiteService ( CommonService ):
 			invitation.status = K.USED
 			invitation.save()
 	
-	@ValidationDecorator()
-	def _validateUser(self):
+	@validation()
+	def _validate_user(self):
 		"""Validate user: Check user password"""
-		self._ctx.user = self._authenticateUser(self._ctx.user, self._f()['password'], 'password', _m.ERR_wrongPassword)
+		self._ctx.user = self._authenticate_user(self._ctx.user, self._f()['password'], 'password', _m.ERR_wrong_password)
 	
-	@ValidationDecorator()
-	def _validateReminder(self, username, reminderId):
+	@validation()
+	def _validate_reminder(self, username, reminderId):
 		newDate = date.today()
 		logger.debug( '_validateReminder :: New Password Data : username: %s newDate: %s reminderId: %s' % (username, newDate, reminderId) )
 		# Show actual password, new password and confirm new password
 		# 'resetPasswordDate__lte' : newDate}, 'noField', _m.ERR_changePassword],
-		self._validateExists([
-					[self._dbUser, {'username': username}, 'username', _m.ERR_changePassword],
+		self._validate_exists([
+					[self._dbUser, {'username': username}, 'username', _m.ERR_change_password],
 					[self._dbUserMeta, {	'user__username': username,
 											'meta__name': K.META_REMINDER_ID,
-											'value': str(reminderId)}, 'noField', _m.ERR_changePassword],
+											'value': str(reminderId)}, 'noField', _m.ERR_change_password],
 					])
 		# Validate reset password date
 		logger.debug('_validateReminder :: validate reset date...')
@@ -172,17 +171,17 @@ class SiteService ( CommonService ):
 			logger.debug('_validateReminder :: today: %s resetDate: %s' % (date.today(), resetDate) )
 			if date.today() > resetDate:
 				# show error
-				self._addError('noField', _m.ERR_changePassword)
+				self._addError('noField', _m.ERR_change_password)
 		else:
-			self._addError('noField', _m.ERR_changePassword)
+			self._addError('noField', _m.ERR_change_password)
 	
-	@ValidationDecorator()
-	def _validateEmailExist(self):
-		self._validateExists([
-					[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_emailDoesNotExist]
+	@validation()
+	def _validate_email_exist(self):
+		self._validate_exists([
+					[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email_does_not_exist]
 				])
 	
-	def _doDbInstancesForUser(self):
+	def _do_db_instances_for_user(self):
 		"""
 		Instances for user creation
 		"""
@@ -203,38 +202,38 @@ class SiteService ( CommonService ):
 		self._dbCoreParam = CoreParameterDAO(self._ctx)
 		self._dbInvitation = InvitationDAO(self._ctx)
 	
-	@ViewDecorator(forms.LoginForm)
+	@view(forms.LoginForm)
 	def viewLogin(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@return: result"""
 		# Check if login:
 		logger.debug( 'login...' )
-		self._addAttr('isSocialLogged', False)
+		self._add_attr('isSocialLogged', False)
 		if not self._ctx.user.is_authenticated():
 			logger.debug('viewLogin :: User not authenticated...')
 			# no login: login form
-			self._setMainForm(forms.LoginForm())
+			self._set_main_form(forms.LoginForm())
 			# Popup - Password reminder
-			self._addForm(forms.PasswordReminderForm())
+			self._add_form(forms.PasswordReminderForm())
 		else:
 			# We must redirect to homeLogin or other views
 			if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT]) != 0:
 				# We redirect to cookie value
-				self._showView(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
+				self._show_view(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
 			else:
-				self._showView(K.Views.HOME_LOGIN)
+				self._show_view(K.Views.HOME_LOGIN)
 	
-	@ViewDecorator(DefaultForm)
+	@view(DefaultForm)
 	def viewLogout(self):
 		"""Show logout view"""
 		pass
 	
-	@ViewDecorator(DefaultForm)
+	@view(DefaultForm)
 	def viewHomeLogin(self):
 		"""Show home after login"""
 		pass
 	
-	@ActionDecorator(forms.LoginForm)
+	@action(forms.LoginForm)
 	def login(self):
 		"""
 		Performs the login action. Puts workflow parameter username, write context variables userChannel and session.
@@ -281,7 +280,7 @@ class SiteService ( CommonService ):
 		else:
 			self._showView(K.Views.HOME_LOGIN)
 	
-	@ActionDecorator(forms.UserSignupInvitationForm)
+	@action(forms.UserSignupInvitationForm)
 	def signup(self):
 		"""
 		Signup user
@@ -321,12 +320,12 @@ class SiteService ( CommonService ):
 			# set ok message
 			self._setOkMsg('OK_USER_SIGNUP')
 	
-	@ViewDecorator(forms.ActivateUserForm)
+	@view(forms.ActivateUserForm)
 	def viewActivationUser(self):
 		"""Confirmation message for user activation"""
 		pass
 	
-	@ViewDecorator(forms.ActivateUserForm)
+	@view(forms.ActivateUserForm)
 	def activateUser(self, username, activationCode):
 		"""Create user in system with validation link from email. Only used in case auth source is user/password."""
 		# Instances
@@ -345,14 +344,14 @@ class SiteService ( CommonService ):
 		# show view
 		self._showView(K.Views.ACTIVATION_USER) 
 	
-	@ViewDecorator(forms.UserSignupInvitationForm)
+	@view(forms.UserSignupInvitationForm)
 	def viewSignup(self, invitationCode=None):
 		"""Show signup form. Get get invitation code."""
 		self._dbInvitation = InvitationDAO(self._ctx)
 		logger.debug('viewSignup :: invitationCode: %s' % (invitationCode) )
-		self._addAttr('isSocialLogged', False)
-		setInvitation = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
-		self._validateInvitationPending(invitationCode)
+		self._add_attr('isSocialLogged', False)
+		setInvitation = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
+		self._validate_invitation_pending(invitationCode)
 		if invitationCode != None and setInvitation.isChecked():
 			# Add invitation code to form form_signup
 			invitation = self._dbInvitation.get(invitationCode=invitationCode, status=K.PENDING)
@@ -360,19 +359,19 @@ class SiteService ( CommonService ):
 			self._putFormValue('email', invitation.email)
 			self._f().disableFields(['invitationCode', 'email'])
 	
-	@MenuActionDecorator('logout')
+	@menu_action('logout')
 	def logout(self):
 		"""Logout user"""
 		logger.debug( 'doLogout...' )
 		self._logout()
 		logger.debug( 'doLogout :: did logout...' )
 		
-	@ViewDecorator(forms.UserChangePasswordForm)
+	@view(forms.UserChangePasswordForm)
 	def viewChangePassword(self):
 		"""Change password form with current password and new password"""
 		self._putFormValue('username', self._ctx.user.username)
 	
-	@ActionDecorator(forms.UserChangePasswordForm)
+	@action(forms.UserChangePasswordForm)
 	def changePassword(self):
 		"""Change password from user area"""
 		self._dbUser = UserDAO(self._ctx)
@@ -381,7 +380,7 @@ class SiteService ( CommonService ):
 		user.set_password(self._f()['newPassword'])
 		user.save()
 	
-	@ViewDecorator(forms.ChangePasswordForm)
+	@view(forms.ChangePasswordForm)
 	def viewReminderNewPassword(self, username=None, reminderId=None):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param username: username
@@ -392,7 +391,7 @@ class SiteService ( CommonService ):
 		self._putFormValue('username', username)
 		self._f().putParamList(username=username)
 	
-	@ActionDecorator(forms.PasswordReminderForm)
+	@action(forms.PasswordReminderForm)
 	def requestReminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
 		logger.debug('requestReminder...')
@@ -422,7 +421,7 @@ class SiteService ( CommonService ):
 		logger.debug( 'requestReminder :: sent Email' )
 		self._setOkMsg('OK_PASSWORD_REMINDER')
 	
-	@ActionDecorator(forms.ChangePasswordForm)
+	@action(forms.ChangePasswordForm)
 	def finalizeReminder(self):
 		"""Saves new password, it does authenticate and login user."""
 		self._dbUser = UserDAO(self._ctx)

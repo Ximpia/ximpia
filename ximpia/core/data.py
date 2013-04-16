@@ -34,7 +34,8 @@ class CommonDAO(object):
 		"""@param ctx: Context: 
 		@param relatedFields: tuple containing the fields to fetch data in the same query
 		@param relatedDepth: Number of depth relationships to follow. The higher the number, the bigger the query
-		@param numberMatches: Number of rows for queries that support paging"""
+		@param numberMatches: Number of rows for queries that support paging
+		"""
 		self._ctx = ctx
 		self._relatedFields = relatedFields
 		self._relatedDepth = relatedDepth
@@ -137,7 +138,7 @@ class CommonDAO(object):
 		setting = Setting.objects.get(name__name=settingName).value
 		return setting
 	
-	def getMap(self, idList):
+	def get_map(self, idList):
 		"""Get object map for a list of ids 
 		@param idList: 
 		@param bFull: boolean : Follows all foreign keys
@@ -150,7 +151,7 @@ class CommonDAO(object):
 				dd[obj.id] = obj
 		return dd
 	
-	def getById(self, fieldId, bFull=False):
+	def get_by_id(self, fieldId, bFull=False):
 		"""Get model object by id
 		@param id: Object id
 		@param bFull: boolean : Follows all foreign keys
@@ -219,7 +220,7 @@ class CommonDAO(object):
 								origin='data')
 		return data
 	
-	def getCreate(self, **qsArgs):
+	def get_create(self, **qsArgs):
 		"""Get or create object. If exists, gets the current value. If does not exist, creates data.
 		@param qsArgs: Query arguments
 		@return: tuple (Data Object, bCreated)"""
@@ -231,7 +232,7 @@ class CommonDAO(object):
 								origin='data')
 		return xpTuple
 	
-	def deleteById(self, pk, real=False):
+	def delete_by_id(self, pk, real=False):
 		"""Delete model object by id
 		@param id: Object id
 		@return: Model object"""
@@ -248,7 +249,7 @@ class CommonDAO(object):
 								origin='data')
 		return xpObject
 	
-	def deleteIfExists(self, real=False, **qsArgs):
+	def delete_if_exists(self, real=False, **qsArgs):
 		"""Delete row in case item exists.If does not exist, catches a DoesNotExist exception
 		@param qsArgs: query arguments"""
 		try:
@@ -283,7 +284,7 @@ class CommonDAO(object):
 			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model), 
 								origin='data')
 	
-	def filterData(self, **argsDict):
+	def filter_data(self, **argsDict):
 		"""Search a model table with ordering support and paging
 		@param xpNumberMatches: Number of matches
 		@param xpPage: Page
@@ -311,7 +312,7 @@ class CommonDAO(object):
 								origin='data')
 		return xpList
 		
-	def getAll(self):
+	def get_all(self):
 		"""Get all rows from table
 		@param bFull: boolean : Follows all foreign keys
 		@return: list"""
@@ -323,7 +324,7 @@ class CommonDAO(object):
 								origin='data')
 		return xpList
 	
-	def searchFields(self, fields, pageStart=1, pageEnd=None, numberResults=None, orderBy=[], **args):
+	def search_fields(self, fields, pageStart=1, pageEnd=None, numberResults=None, orderBy=[], **args):
 		"""
 		Search table with paging, ordering for set of fields. listMap allows mapping from keys to model fields.
 		
@@ -381,108 +382,108 @@ class CommonDAO(object):
 	ctx = property(_getCtx, None)
 
 class CoreParameterDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(CoreParameterDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(CoreParameterDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = CoreParam
 
 class ApplicationDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ApplicationDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ApplicationDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Application
 
 class ActionDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ActionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ActionDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Action
 
 class MenuDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(MenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(MenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Menu
 
 class ViewMenuDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ViewMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ViewMenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = ViewMenu
 
 class ServiceMenuDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ServiceMenuDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ServiceMenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = ServiceMenu
 
 class MenuParamDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(MenuParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(MenuParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = MenuParam
 
 class ViewDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ViewDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ViewDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = View
 
 class WorkflowDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WorkflowDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(WorkflowDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Workflow
 
 class WorkflowDataDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WorkflowDataDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(WorkflowDataDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = WorkflowData
 
 class ParamDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Param
 
 class WFParamValueDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WFParamValueDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(WFParamValueDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = WFParamValue
 
 class WorkflowViewDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WorkflowViewDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(WorkflowViewDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = WorkflowView
 
 class SearchIndexDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(SearchIndexDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SearchIndexDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = SearchIndex
 
 class SearchIndexParamDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(SearchIndexParamDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SearchIndexParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = SearchIndexParam
 
 class WordDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(WordDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(WordDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = Word
 
 class SearchIndexWordDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(SearchIndexWordDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(SearchIndexWordDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = SearchIndexWord
 
 class TemplateDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(TemplateDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(TemplateDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = XpTemplate
 
 class ViewTmplDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ViewTmplDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ViewTmplDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = ViewTmpl
 
 class ServiceMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ServiceMenuConditionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ServiceMenuConditionDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = ServiceMenuCondition
 
 class ViewMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *ArgsTuple, **ArgsDict):
-		super(ViewMenuConditionDAO, self).__init__(ctx, *ArgsTuple, **ArgsDict)
+	def __init__(self, ctx, *argsTuple, **argsDict):
+		super(ViewMenuConditionDAO, self).__init__(ctx, *argsTuple, **argsDict)
 		self._model = ViewMenuCondition
 
 

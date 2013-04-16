@@ -55,7 +55,7 @@ class LoginForm(XBaseForm):
 	socialToken = HiddenField()
 	authSource = HiddenField(initial=K.PASSWORD)
 	choices = HiddenField(initial=_jsf.encodeDict({'authSources': Choices.SOCIAL_NETS}))
-	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrong_password']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
@@ -75,7 +75,7 @@ class PasswordReminderForm(XBaseForm):
 	_XP_FORM_ID = 'passwordReminder'
 	_dbUser = User()
 	email = EmailField(_dbUser, 'email', label='Email', helpText= _('Email address you signed up with'))
-	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword','ERR_emailDoesNotExist']]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrong_password','ERR_email_does_not_exist']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_REMINDER']]))
 	def clean(self):
 		"""Clean form"""
@@ -89,7 +89,7 @@ class ChangePasswordForm(XBaseForm):
 	newPassword = PasswordField(_dbUser, 'password', minLength=6, label='Password', helpText = _('Your New Password'))
 	newPasswordConfirm = PasswordField(_dbUser, 'password', minLength=6, label='Confirm Password', 
 					helpText = _('Write again your password to make sure there are no errors'))
-	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_changePassword']]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_change_password']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 	def clean(self):
 		"""Clean form"""
@@ -105,7 +105,7 @@ class UserChangePasswordForm( XBaseForm ):
 	newPasswordConfirm = PasswordField(_dbUser, 'password', minLength=6, label='Confirm Password', 
 					helpText = _('Write again your password'))
 	password = PasswordField(_dbUser, 'password', minLength=6, label='Password', helpText = _('Current password'))
-	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_wrong_password']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
@@ -142,7 +142,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 									'affiliateId': -1}))
 	#choices = HiddenField(initial=_jsf.encodeDict( {'country': Choices.COUNTRY } ) )
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m,
-										['ERR_ximpiaId', 'ERR_email', 'ERR_socialIdExists']]))
+										['ERR_ximpia_id', 'ERR_email', 'ERR_social_id_exists']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))
 
 	def clean(self):
