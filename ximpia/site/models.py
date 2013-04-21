@@ -409,9 +409,9 @@ class Setting ( BaseModel ):
 	        verbose_name = _('Must Autoload?'), help_text = _('Must Autoload?'), db_column='MUST_AUTOLOAD')
 	def __unicode__(self):
 		return str(self.name)
-	def isChecked(self):
+	def is_checked(self):
 		"""
-		For check settings, resturns setting state, True/False. for rest, returns False.
+		For check settings, returns setting state, True/False. for rest, returns False.
 		
 		** Returns **
 		

@@ -10,8 +10,8 @@ from ximpia.core.fields import UserField, PasswordField, EmailField, CharField, 
 from ximpia.core.forms import XBaseForm
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -23,7 +23,7 @@ import constants as K
 from choices import Choices
 from models import Address, Invitation, UserChannel
 
-from ximpia.core.models import View, XpTemplate, Application
+from ximpia.core.models import View
 
 class HomeForm(XBaseForm):
 	_XP_FORM_ID = 'home'
@@ -135,7 +135,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 	authSource = HiddenField(initial=K.PASSWORD)
 	socialId = HiddenField()
 	socialToken = HiddenField()
-	# Navigation and Message Fields 
+	# Navigation and Message Fields
 	params = HiddenField(initial=_jsf.encodeDict({
 									'profiles': '', 
 									'userGroup': K.SIGNUP_USER_GROUP_ID,
@@ -148,8 +148,8 @@ class UserSignupInvitationForm ( XBaseForm ):
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
 		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._getFieldValue('authSource')) )
-		if self._getFieldValue('authSource') == K.PASSWORD:
-			self._validateSameFields([('password','passwordVerify')])
+		if self._get_field_value('authSource') == K.PASSWORD:
+			self._validate_same_fields([('password','passwordVerify')])
 		self._xpClean()
 		return self.cleaned_data
 

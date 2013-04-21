@@ -17,22 +17,22 @@ class Slugs:
 	ACTIVATE_USER = 'activate-user'
 
 class Views:
-	LOGIN = 'login'
-	LOGOUT = 'logout'
-	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
-	CHANGE_PASSWORD = 'changePassword'
-	SIGNUP = 'signup'
-	ACTIVATION_USER = 'activationUser'
-	HOME_LOGIN = 'homeLogin'
+	LOGIN = 'view_login'
+	LOGOUT = 'view_logout'
+	REMINDER_NEW_PASSWORD = 'view_reminder_new_password'
+	CHANGE_PASSWORD = 'view_change_password'
+	SIGNUP = 'view_signup'
+	ACTIVATION_USER = 'view_activation_user'
+	HOME_LOGIN = 'view_home_login'
 
 class Actions:
 	LOGIN = 'login'
-	REQUEST_REMINDER = 'requestReminder'
-	FINALIZE_REMINDER = 'finalizeReminder'
+	REQUEST_REMINDER = 'request_reminder'
+	FINALIZE_REMINDER = 'finalize_reminder'
 	LOGOUT = 'logout'
 	SIGNUP = 'signup'
-	CHANGE_PASSWORD = 'changePassword'
-	ACTIVATE_USER = 'activateUser'	
+	CHANGE_PASSWORD = 'change_password'
+	ACTIVATE_USER = 'activate_user'	
 
 class Menus:
 	SYS = 'sys'
@@ -44,13 +44,13 @@ class Menus:
 
 class Tmpls:
 	LOGIN = 'login'
-	PASSWORD_REMINDER = 'passwordReminder'
+	PASSWORD_REMINDER = 'password_reminder'
 	LOGOUT = 'logout'
-	CHANGE_PASSWORD = 'changePassword'
+	CHANGE_PASSWORD = 'change_password'
 	SIGNUP = 'signup'
-	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
-	ACTIVATION_USER = 'activationUser'
-	HOME_LOGIN = 'homeLogin'
+	REMINDER_NEW_PASSWORD = 'reminder_new_password'
+	ACTIVATION_USER = 'activation_user'
+	HOME_LOGIN = 'home_login'
 
 class Flows:
 	pass

@@ -11,8 +11,8 @@ from service import SiteService
 from constants import Services, Slugs, Views, Actions, Menus, Tmpls, Flows
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -39,27 +39,27 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 	def views(self):
 		# login
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.LOGIN, slug=Slugs.LOGIN, 
-							className=SiteService, method='viewLogin')
+							className=SiteService, method='view_login')
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.LOGOUT, slug=Slugs.LOGOUT, 
-							className=SiteService, method='viewLogout')
+							className=SiteService, method='view_logout')
 		# Password reminder
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.REMINDER_NEW_PASSWORD, slug=Slugs.REMINDER_NEW_PASSWORD, 
-							className=SiteService, method='viewReminderNewPassword')
+							className=SiteService, method='view_reminder_new_password')
 		# change password
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.CHANGE_PASSWORD, slug=Slugs.CHANGE_PASSWORD, 
-							className=SiteService, method='viewChangePassword', hasAuth=True)
+							className=SiteService, method='view_change_password', hasAuth=True)
 		# signup
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.SIGNUP, slug=Slugs.SIGNUP, 
-							className=SiteService, method='viewSignup')
+							className=SiteService, method='view_signup')
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.ACTIVATION_USER, slug=Slugs.ACTIVATION_USER, 
-							className=SiteService, method='viewActivationUser')
+							className=SiteService, method='view_activation_user')
 		# homeLogin
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.HOME_LOGIN, slug=Slugs.HOME_LOGIN, 
-							className=SiteService, method='viewHomeLogin', hasAuth=True)
+							className=SiteService, method='view_home_login', hasAuth=True)
 	def templates(self):
 		self._reg.registerTemplate(__name__, viewName=Views.LOGIN, name=Tmpls.LOGIN)
 		self._reg.registerTemplate(__name__, viewName=Views.LOGIN, name=Tmpls.PASSWORD_REMINDER, winType=_Ch.WIN_TYPE_POPUP, 
-						alias='passwordReminder')
+						alias='password_reminder')
 		self._reg.registerTemplate(__name__, viewName=Views.LOGOUT, name=Tmpls.LOGOUT)
 		# user
 		self._reg.registerTemplate(__name__, viewName=Views.CHANGE_PASSWORD, name=Tmpls.CHANGE_PASSWORD, winType=_Ch.WIN_TYPE_POPUP)
@@ -76,9 +76,9 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.LOGIN, slug=Slugs.LOGIN, 
 								className=SiteService, method='login')
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.REQUEST_REMINDER, slug=Slugs.REQUEST_REMINDER,
-								className=SiteService, method='requestReminder')
+								className=SiteService, method='request_reminder')
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.FINALIZE_REMINDER, slug=Slugs.FINALIZE_REMINDER,
-								className=SiteService, method='finalizeReminder')
+								className=SiteService, method='finalize_reminder')
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.LOGOUT, slug=Slugs.LOGOUT,
 								className=SiteService, method='logout',
 								hasAuth=True)
@@ -87,11 +87,11 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 								className=SiteService, method='signup')
 		# user
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.CHANGE_PASSWORD, slug=Slugs.CHANGE_PASSWORD,
-								className=SiteService, method='changePassword',
+								className=SiteService, method='change_password',
 								hasAuth=True)
 		# activateUser
 		self._reg.registerAction(__name__, serviceName=Services.USERS, actionName=Actions.ACTIVATE_USER, slug=Slugs.ACTIVATE_USER,
-								className=SiteService, method='activateUser')
+								className=SiteService, method='activate_user')
 
 	def flows(self):
 		# login

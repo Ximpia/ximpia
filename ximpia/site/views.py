@@ -2,20 +2,20 @@
 
 import os
 
-from ximpia.core.models import ContextViewDecorator
-from ximpia.core.service import ViewDecorator
+from ximpia.core.models import context_view
+from ximpia.core.service import view
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-@ContextViewDecorator()
-@ViewDecorator()
+@context_view()
+@view()
 def home(request, **args):
 	logger.debug( 'home....' )
 	#video = business.VideoBusiness(args['ctx'])

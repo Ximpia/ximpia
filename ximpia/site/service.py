@@ -11,13 +11,13 @@ from ximpia.core.models import JsResultDict
 
 from ximpia.core.service import EmailService, CommonService
 from ximpia.core.service import view, action, validation, menu_action
-from ximpia.core.models import Context as CoreContext, XpMsgException
+from ximpia.core.models import Context as CoreContext
 from ximpia.core.data import CoreParameterDAO
 from ximpia.core.forms import DefaultForm
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -31,7 +31,6 @@ import constants as K
 import forms
 from data import ParamDAO, UserChannelDAO, UserDAO, GroupDAO, SettingDAO, SignupDataDAO, SocialNetworkUserDAO, UserMetaDAO, UserProfileDAO
 from data import UserChannelGroupDAO, UserAddressDAO, AddressDAO, GroupSysDAO, MetaKeyDAO, InvitationDAO
-from forms import UserSignupInvitationForm
 import messages as _m
 
 class SiteService ( CommonService ):
@@ -65,7 +64,7 @@ class SiteService ( CommonService ):
 				])
 	
 	@validation()
-	def _validate_invitation_pending(self, invitationCode):
+	def _validate_invitation_pending(self, invitation_code):
 		"""
 		Validates that invitation is pending
 		"""
@@ -73,7 +72,7 @@ class SiteService ( CommonService ):
 		logger.debug('_validate_invitation_pending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
 		if setting.isChecked():
 			self._validate_exists([
-					[self._dbInvitation, {'invitationCode': invitationCode, 'status': K.PENDING}, 
+					[self._dbInvitation, {'invitationCode': invitation_code, 'status': K.PENDING}, 
 							'invitationCode', _m.ERR_invitation_not_valid]
 									])
 	
@@ -83,8 +82,8 @@ class SiteService ( CommonService ):
 		Validates that invitation is valid: Checks that invitation has not been used in case invitations defined in settings
 		"""
 		setting = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
-		logger.debug('_validateInvitationNotUsed :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
-		if setting.isChecked():
+		logger.debug('_validateInvitationNotUsed :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.is_checked()) )
+		if setting.is_checked():
 			self._validate_not_exists([
 					[self._dbInvitation, {'invitationCode': self._f()['invitationCode'], 'status': K.USED}, 
 							'invitationCode', _m.ERR_invitation_not_valid]
@@ -119,9 +118,9 @@ class SiteService ( CommonService ):
 		# Ximpia User
 		userChannel = self._dbUserChannel.create(user=user, name=K.USER, title=self._f()['firstName'], userCreateId=user.id)
 		# Profile (Address, UserProfile, UserAddress)
-		statusActive = self._dbParam.getUserStatusActive()
-		address, created = self._dbAddress.getCreate(city=self._f()['city'], country=self._f()['country'])
-		addressTypePersonal = self._dbParam.getAddressTypePersonal()
+		statusActive = self._dbParam.get_user_status_active()
+		address, created = self._dbAddress.get_create(city=self._f()['city'], country=self._f()['country'])
+		addressTypePersonal = self._dbParam.get_address_type_personal()
 		userProfile = self._dbUserProfile.create(user=user, status=statusActive)
 		userAddress = self._dbUserAddress.create(userProfile=userProfile, address=address, type=addressTypePersonal)
 		# User Meta
@@ -164,10 +163,10 @@ class SiteService ( CommonService ):
 					])
 		# Validate reset password date
 		logger.debug('_validateReminder :: validate reset date...')
-		resetDateStr = self._dbUserMeta.get(user__username=username, meta__name=K.META_RESET_PASSWORD_DATE).value
-		if resetDateStr != '':
-			resetDateFields = resetDateStr.split('-')
-			resetDate = date(year=int(resetDateFields[0]), month=int(resetDateFields[1]), day=int(resetDateFields[2]))
+		reset_date_str = self._dbUserMeta.get(user__username=username, meta__name=K.META_RESET_PASSWORD_DATE).value
+		if reset_date_str != '':
+			reset_date_fields = reset_date_str.split('-')
+			resetDate = date(year=int(reset_date_fields[0]), month=int(reset_date_fields[1]), day=int(reset_date_fields[2]))
 			logger.debug('_validateReminder :: today: %s resetDate: %s' % (date.today(), resetDate) )
 			if date.today() > resetDate:
 				# show error
@@ -203,7 +202,7 @@ class SiteService ( CommonService ):
 		self._dbInvitation = InvitationDAO(self._ctx)
 	
 	@view(forms.LoginForm)
-	def viewLogin(self):
+	def view_login(self):
 		"""Checks if user is logged in. If true, get login user information in the context
 		@return: result"""
 		# Check if login:
@@ -224,12 +223,12 @@ class SiteService ( CommonService ):
 				self._show_view(K.Views.HOME_LOGIN)
 	
 	@view(DefaultForm)
-	def viewLogout(self):
+	def view_logout(self):
 		"""Show logout view"""
 		pass
 	
 	@view(DefaultForm)
-	def viewHomeLogin(self):
+	def view_home_login(self):
 		"""Show home after login"""
 		pass
 	
@@ -266,19 +265,19 @@ class SiteService ( CommonService ):
 		logger.debug( 'login :: Session: %s' % (self._ctx.session) )
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		logger.debug( 'login :: cookies: %s' % (self._ctx.cookies) )
-		userChannelName = self._getUserChannelName()
-		logger.debug( 'login :: userChannelName: %s' % (userChannelName) )
+		user_channel_name = self._get_user_channel_name()
+		logger.debug( 'login :: userChannelName: %s' % (user_channel_name) )
 		self._dbUserChannel = UserChannelDAO(self._ctx)
-		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=userChannelName)
+		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=user_channel_name)
 		self._ctx.session['userChannel'] = self._ctx.userChannel
 		logger.debug( 'login :: userChannel: %s' % (self._ctx.userChannel) )
 		
 		# Redirect
 		if self._ctx.cookies.has_key(K.COOKIE_LOGIN_REDIRECT) and len(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT]) != 0:
-			self._showView(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
-			self._setCookie(K.COOKIE_LOGIN_REDIRECT, '')
+			self._show_view(self._ctx.cookies[K.COOKIE_LOGIN_REDIRECT])
+			self._set_cookie(K.COOKIE_LOGIN_REDIRECT, '')
 		else:
-			self._showView(K.Views.HOME_LOGIN)
+			self._show_view(K.Views.HOME_LOGIN)
 	
 	@action(forms.UserSignupInvitationForm)
 	def signup(self):
@@ -290,139 +289,139 @@ class SiteService ( CommonService ):
 		**Returns**
 		"""
 		# Instances
-		self._doDbInstancesForUser()
+		self._do_db_instances_for_user()
 		# Business Validation
-		self._validateUserNotSignedUp()
-		self._validateInvitationNotUsed()
+		self._validate_user_not_signed_up()
+		self._validate_invitation_not_used()
 		if self._f()['authSource'] != K.PASSWORD:
-			self._createUser()
+			self._create_user()
 			# set ok message
-			self._setOkMsg('OK_SOCIAL_SIGNUP')
+			self._set_ok_msg('OK_SOCIAL_SIGNUP')
 		else:
 			# user/password. Save in temp table user data
-			activationCode = random.randrange(10, 100)
-			logger.debug( 'doUser :: activationCode: %s' % (activationCode) )
-			formSerialized = base64.encodestring(self._f().serializeJSON())
-			self._dbSignupData.deleteIfExists(user=self._f()['username'], real=True)
-			self._dbSignupData.create(user=self._f()['username'], data=formSerialized, activationCode=activationCode)
+			activation_code = random.randrange(10, 100)
+			logger.debug( 'doUser :: activation_code: %s' % (activation_code) )
+			form_serialized = base64.encodestring(self._f().serialize_JSON())
+			self._dbSignupData.delete_if_exists(user=self._f()['username'], is_real=True)
+			self._dbSignupData.create(user=self._f()['username'], data=form_serialized, activationCode=activation_code)
 			# Send email to user to validate email
-			xmlMessage = self._dbSettings.get(name__name='Msg/Site/Signup/User/_en').value
-			logger.debug( xmlMessage )
+			xml_message = self._dbSettings.get(name__name='Msg/Site/Signup/User/_en').value
+			logger.debug( xml_message )
 			logger.debug('path: %s' % (self._ctx.path) )
-			EmailService.send(xmlMessage, {'scheme': settings.XIMPIA_SCHEME, 
+			EmailService.send(xml_message, {'scheme': settings.XIMPIA_SCHEME, 
 							'host': settings.XIMPIA_BACKEND_HOST,
 							'appSlug': K.Slugs.SITE,
 							'activate': K.Slugs.ACTIVATE_USER,
 							'firstName': self._f()['firstName'], 
 							'user': self._f()['username'],
-							'activationCode': activationCode}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
-			logger.debug( 'doUser :: sent Email' )
+							'activationCode': activation_code}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 			# set ok message
-			self._setOkMsg('OK_USER_SIGNUP')
+			self._set_ok_msg('OK_USER_SIGNUP')
 	
 	@view(forms.ActivateUserForm)
-	def viewActivationUser(self):
+	def view_activation_user(self):
 		"""Confirmation message for user activation"""
 		pass
 	
 	@view(forms.ActivateUserForm)
-	def activateUser(self, username, activationCode):
+	def activate_user(self, username, activation_code):
 		"""Create user in system with validation link from email. Only used in case auth source is user/password."""
 		# Instances
-		self._doDbInstancesForUser()
-		logger.debug('activateUser...')
+		self._do_db_instances_for_user()
+		logger.debug('activate_user...')
 		# Logic
-		formStr64 = self._dbSignupData.get(user=username).data
-		formDict = json.loads(base64.decodestring(formStr64))
-		form = forms.UserSignupInvitationForm(formDict, ctx=self._ctx)
+		form_str_64 = self._dbSignupData.get(user=username).data
+		form_dict = json.loads(base64.decodestring(form_str_64))
+		form = forms.UserSignupInvitationForm(form_dict, ctx=self._ctx)
 		self._setForm(form)
 		# validate form again
-		self._validateUserNotSignedUp()
+		self._validate_user_not_signed_up()
 		# Create user
-		self._createUser() 
-		self._dbSignupData.deleteIfExists(user=username, real=True)
+		self._create_user() 
+		self._dbSignupData.delete_if_exists(user=username, is_real=True)
 		# show view
-		self._showView(K.Views.ACTIVATION_USER) 
+		self._show_view(K.Views.ACTIVATION_USER) 
 	
 	@view(forms.UserSignupInvitationForm)
-	def viewSignup(self, invitationCode=None):
+	def view_signup(self, invitation_code=None):
 		"""Show signup form. Get get invitation code."""
 		self._dbInvitation = InvitationDAO(self._ctx)
-		logger.debug('viewSignup :: invitationCode: %s' % (invitationCode) )
+		logger.debug('viewSignup :: invitationCode: %s' % (invitation_code) )
 		self._add_attr('isSocialLogged', False)
-		setInvitation = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
-		self._validate_invitation_pending(invitationCode)
-		if invitationCode != None and setInvitation.isChecked():
+		set_invitation = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
+		self._validate_invitation_pending(invitation_code)
+		if invitation_code != None and set_invitation.is_checked():
 			# Add invitation code to form form_signup
-			invitation = self._dbInvitation.get(invitationCode=invitationCode, status=K.PENDING)
-			self._putFormValue('invitationCode', invitationCode)
-			self._putFormValue('email', invitation.email)
-			self._f().disableFields(['invitationCode', 'email'])
+			invitation = self._dbInvitation.get(invitationCode=invitation_code, status=K.PENDING)
+			self._put_form_value('invitationCode', invitation_code)
+			self._put_form_value('email', invitation.email)
+			self._f().disable_fields(['invitationCode', 'email'])
 	
 	@menu_action('logout')
 	def logout(self):
-		"""Logout user"""
-		logger.debug( 'doLogout...' )
+		"""Logout user
+		"""
 		self._logout()
-		logger.debug( 'doLogout :: did logout...' )
 		
 	@view(forms.UserChangePasswordForm)
-	def viewChangePassword(self):
-		"""Change password form with current password and new password"""
-		self._putFormValue('username', self._ctx.user.username)
+	def view_change_password(self):
+		"""Change password form with current password and new password
+		"""
+		self._put_form_value('username', self._ctx.user.username)
 	
 	@action(forms.UserChangePasswordForm)
-	def changePassword(self):
-		"""Change password from user area"""
+	def change_password(self):
+		"""Change password from user area
+		"""
 		self._dbUser = UserDAO(self._ctx)
-		self._validateUser()
+		self._validate_user()
 		user = self._dbUser.get(username= self._ctx.user)
 		user.set_password(self._f()['newPassword'])
 		user.save()
 	
 	@view(forms.ChangePasswordForm)
-	def viewReminderNewPassword(self, username=None, reminderId=None):
+	def view_reminder_new_password(self, username=None, reminder_id=None):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param username: username
 		@param reminderId: reminderId"""
 		self._dbUser = UserDAO(self._ctx)
 		self._dbUserMeta = UserMetaDAO(self._ctx)
-		self._validateReminder(username, reminderId)
-		self._putFormValue('username', username)
-		self._f().putParamList(username=username)
+		self._validate_reminder(username, reminder_id)
+		self._put_form_value('username', username)
+		self._f().put_param_list(username=username)
 	
 	@action(forms.PasswordReminderForm)
-	def requestReminder(self):
+	def request_reminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
 		logger.debug('requestReminder...')
 		self._dbUser = UserDAO(self._ctx)
 		self._dbSetting = SettingDAO(self._ctx)
 		self._dbUserMeta = UserMetaDAO(self._ctx)
 		self._dbMetaKey = MetaKeyDAO(self._ctx)
-		self._validateEmailExist()
+		self._validate_email_exist()
 		# Update User
 		user = self._dbUser.get(email = self._f()['email'])
-		days = self._getSetting(K.SET_REMINDER_DAYS).value
-		newDate = date.today() + timedelta(days=int(days))
+		days = self._get_setting(K.SET_REMINDER_DAYS).value
+		new_date = date.today() + timedelta(days=int(days))
 		# Write reminderId and resetPasswordDate
-		reminderId = str(random.randint(1, 999999))
+		reminder_id = str(random.randint(1, 999999))
 		metas = self._dbMetaKey.metas([K.META_REMINDER_ID, K.META_RESET_PASSWORD_DATE])
-		self._dbUserMeta.saveMeta(user, metas, {	
-										K.META_REMINDER_ID: reminderId, 
-										K.META_RESET_PASSWORD_DATE: str(newDate)})		
+		self._dbUserMeta.save_meta(user, metas, {	
+										K.META_REMINDER_ID: reminder_id, 
+										K.META_RESET_PASSWORD_DATE: str(new_date)})		
 		# Send email with link to reset password. Link has time validation
-		xmlMessage = self._dbSetting.get(name__name='Msg/Site/Login/PasswordReminder/_en').value
-		EmailService.send(xmlMessage, {	'home': settings.XIMPIA_HOME, 
+		xml_message = self._dbSetting.get(name__name='Msg/Site/Login/PasswordReminder/_en').value
+		EmailService.send(xml_message, {	'home': settings.XIMPIA_HOME, 
 										'appSlug': K.Slugs.SITE,
 										'viewSlug': K.Slugs.REMINDER_NEW_PASSWORD,
 										'firstName': user.first_name, 
 										'userAccount': user.username,
-										'reminderId': reminderId}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
+										'reminderId': reminder_id}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 		logger.debug( 'requestReminder :: sent Email' )
 		self._setOkMsg('OK_PASSWORD_REMINDER')
 	
 	@action(forms.ChangePasswordForm)
-	def finalizeReminder(self):
+	def finalize_reminder(self):
 		"""Saves new password, it does authenticate and login user."""
 		self._dbUser = UserDAO(self._ctx)
 		self._dbUserMeta = UserMetaDAO(self._ctx)

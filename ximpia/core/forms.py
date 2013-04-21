@@ -336,7 +336,7 @@ class XBaseForm(forms.Form):
 		@return: boolean"""
 		d = json.loads(self.fields['params'].initial)
 		return d.has_key(name)
-	def _getFieldValue(self, field_name):
+	def _get_field_value(self, field_name):
 		"""Get field value to be used in forms"""
 		#field = eval("self.fields['" + fieldName + "']")
 		value = self.data[field_name]
