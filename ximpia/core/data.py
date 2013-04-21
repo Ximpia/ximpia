@@ -14,8 +14,8 @@ from models import Context, JsResultDict
 from ximpia.site.models import Setting
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -30,17 +30,17 @@ class CommonDAO(object):
 	_relatedFields = ()
 	_relatedDepth = None
 
-	def __init__(self, ctx, relatedFields=(), relatedDepth=None, numberMatches=100):
+	def __init__(self, ctx, related_fields=(), related_depth=None, number_matches=100):
 		"""@param ctx: Context: 
-		@param relatedFields: tuple containing the fields to fetch data in the same query
-		@param relatedDepth: Number of depth relationships to follow. The higher the number, the bigger the query
-		@param numberMatches: Number of rows for queries that support paging
+		@param related_fields: tuple containing the fields to fetch data in the same query
+		@param related_depth: Number of depth relationships to follow. The higher the number, the bigger the query
+		@param number_matches: Number of rows for queries that support paging
 		"""
 		self._ctx = ctx
-		self._relatedFields = relatedFields
-		self._relatedDepth = relatedDepth
-		self._numberMatches = numberMatches
-		if relatedDepth != None and len(relatedFields) != 0:
+		self._relatedFields = related_fields
+		self._relatedDepth = related_depth
+		self._numberMatches = number_matches
+		if related_depth != None and len(related_fields) != 0:
 			raise XpMsgException(None, _('relatedFields and relatedDepth cannot be combined. One of them must only be informed.'))
 	
 	def _processRelated(self):
@@ -138,54 +138,53 @@ class CommonDAO(object):
 		setting = Setting.objects.get(name__name=settingName).value
 		return setting
 	
-	def get_map(self, idList):
+	def get_map(self, id_list):
 		"""Get object map for a list of ids 
 		@param idList: 
 		@param bFull: boolean : Follows all foreign keys
 		@return: Dict[id]: object"""
 		dd = {}
-		if len(idList) != 0:
+		if len(id_list) != 0:
 			dbObj = self._processRelated()
-			fields = dbObj.using(self._resolveDbName()).filter(id__in=idList)
+			fields = dbObj.using(self._resolveDbName()).filter(id__in=id_list)
 			for obj in fields:
 				dd[obj.id] = obj
 		return dd
 	
-	def get_by_id(self, fieldId, bFull=False):
+	def get_by_id(self, field_id):
 		"""Get model object by id
-		@param id: Object id
-		@param bFull: boolean : Follows all foreign keys
+		@param field_id: Object id
 		@return: Model object"""
 		try:
 			dbObj = self._processRelated()
-			obj = dbObj.using(self._resolveDbName()).get(id=fieldId)
+			obj = dbObj.using(self._resolveDbName()).get(id=field_id)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(fieldId) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get object by id ') + str(field_id) + _(' in model ') + str(self._model), 
 								origin='data')
 		return obj
 	
-	def check(self, **qsArgs):
+	def check(self, **qs_args):
 		"""Checks if object exists
-		@param qsArgs: query arguments
+		@param qs_args: query arguments
 		@return: Boolean"""
 		try:
 			dbObj = self._model.objects
-			exists = dbObj.using(self._resolveDbName()).filter(**qsArgs).exists()
+			exists = dbObj.using(self._resolveDbName()).filter(**qs_args).exists()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in check object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in check object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 		return exists
 	
-	def get(self, **qsArgs):
+	def get(self, **qs_args):
 		"""Get object
-		@param qsArgs: query arguments
+		@param qs_args: query arguments
 		@return: Model Object"""
 		try:
 			logger.debug('dbName:' + self._resolveDbName())
 			dbObj = self._processRelated()
-			data = dbObj.using(self._resolveDbName()).get(**qsArgs)
+			data = dbObj.using(self._resolveDbName()).get(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 		return data	
 
@@ -198,46 +197,46 @@ class CommonDAO(object):
 								origin='data')
 		return self._model
 	
-	def search(self, *qsTuple, **qsArgs):
+	def search(self, *qs_tuple, **qs_args):
 		"""Search model using filter. Support for related objects as FK to model"""
 		#try:
 		dbObj = self._processRelated()
-		filterList = dbObj.using(self._resolveDbName()).filter(*qsTuple, **qsArgs)
+		filterList = dbObj.using(self._resolveDbName()).filter(*qs_tuple, **qs_args)
 		"""except Exception as e:
-			raise XpMsgException(e, _('Error in search operation. qsTuple: ') + str(qsTuple) + ' . Args: ' + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in search operation. qs_tuple: ') + str(qs_tuple) + ' . Args: ' + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')"""
 		return filterList
 	
-	def create(self, **qsArgs):
+	def create(self, **qs_args):
 		"""Create object
-		@param qsArgs: Query arguments
+		@param qs_args: Query arguments
 		@return: Data Object"""
 		try:
 			dbObj = self._model.objects
-			data = dbObj.using(self._resolveDbName()).create(**qsArgs)
+			data = dbObj.using(self._resolveDbName()).create(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in create object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 		return data
 	
-	def get_create(self, **qsArgs):
+	def get_create(self, **qs_args):
 		"""Get or create object. If exists, gets the current value. If does not exist, creates data.
-		@param qsArgs: Query arguments
+		@param qs_args: Query arguments
 		@return: tuple (Data Object, bCreated)"""
 		try:
 			dbObj = self._model.objects
-			xpTuple = dbObj.using(self._resolveDbName()).get_or_create(**qsArgs)
+			xpTuple = dbObj.using(self._resolveDbName()).get_or_create(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 		return xpTuple
 	
-	def delete_by_id(self, pk, real=False):
+	def delete_by_id(self, pk, is_real=False):
 		"""Delete model object by id
 		@param id: Object id
 		@return: Model object"""
 		try:
-			if real == False:
+			if is_real == False:
 				xpObject = self._model.objects.using(self._resolveDbName()).get(id=pk)
 				xpObject.isDeleted = True
 				xpObject.save(using=self._resolveDbName())
@@ -249,42 +248,42 @@ class CommonDAO(object):
 								origin='data')
 		return xpObject
 	
-	def delete_if_exists(self, real=False, **qsArgs):
+	def delete_if_exists(self, is_real=False, **qs_args):
 		"""Delete row in case item exists.If does not exist, catches a DoesNotExist exception
-		@param qsArgs: query arguments"""
+		@param qs_args: query arguments"""
 		try:
 			dbObj = self._model.objects
 			try:
-				if real == False:
-					dbObj = self._model.objects.using(self._resolveDbName()).get(**qsArgs)
+				if is_real == False:
+					dbObj = self._model.objects.using(self._resolveDbName()).get(**qs_args)
 					dbObj.isDeleted = True
 					dbObj.save(using=self._resolveDbName())
 				else:
-					dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qsArgs)
+					dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qs_args)
 					dbObj.delete()
 			except self._model.DoesNotExist:
 				pass	
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 	
-	def delete(self, real=False, **qsArgs):
+	def delete(self, is_real=False, **qs_args):
 		"""Delete row. In case does not exist, throws model.DoesNotExist
-		@param qsArgs: query arguments"""
+		@param qs_args: query arguments"""
 		try:						
-			if real == False:
-				dbObj = self._model.objects.using(self._resolveDbName()).get(**qsArgs)
+			if is_real == False:
+				dbObj = self._model.objects.using(self._resolveDbName()).get(**qs_args)
 				dbObj.isDeleted = True
 				dbObj.save(using=self._resolveDbName())
 			else:
-				dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qsArgs)
+				dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qs_args)
 				dbObj.delete()
-			#dbObj.using(self._resolveDbName()).get(**qsArgs).delete()
+			#dbObj.using(self._resolveDbName()).get(**qs_args).delete()
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qsArgs) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self._model), 
 								origin='data')
 	
-	def filter_data(self, **argsDict):
+	def filter_data(self, **args_dict):
 		"""Search a model table with ordering support and paging
 		@param xpNumberMatches: Number of matches
 		@param xpPage: Page
@@ -292,16 +291,16 @@ class CommonDAO(object):
 		@return: list : List of model objects"""
 		try:
 			iNumberMatches = self._numberMatches
-			if argsDict.has_key('xpNumberMatches'):
-				iNumberMatches = argsDict['xpNumberMatches']
+			if args_dict.has_key('xpNumberMatches'):
+				iNumberMatches = args_dict['xpNumberMatches']
 			page = 1
-			if argsDict.has_key('xpPage'):
-				page = int(argsDict['xpPage'])
+			if args_dict.has_key('xpPage'):
+				page = int(args_dict['xpPage'])
 			iStart, iEnd = self._getPagingStartEnd(page, iNumberMatches)
 			orderByTuple = ()
-			if argsDict.has_key('xpOrderBy'):
-				orderByTuple = argsDict['xpOrderBy']
-			ArgsDict = self._cleanDict(argsDict)
+			if args_dict.has_key('xpOrderBy'):
+				orderByTuple = args_dict['xpOrderBy']
+			ArgsDict = self._cleanDict(args_dict)
 			dbObj = self._processRelated()
 			if len(orderByTuple) != 0:
 				dbObj = self._model.objects.order_by(*orderByTuple)
@@ -324,7 +323,7 @@ class CommonDAO(object):
 								origin='data')
 		return xpList
 	
-	def search_fields(self, fields, pageStart=1, pageEnd=None, numberResults=None, orderBy=[], **args):
+	def search_fields(self, fields, page_start=1, page_end=None, number_results=None, order_by=[], **args):
 		"""
 		Search table with paging, ordering for set of fields. listMap allows mapping from keys to model fields.
 		
@@ -343,14 +342,14 @@ class CommonDAO(object):
 		xpList:ValuesQueryset
 		"""
 		try:
-			logger.debug('CommonDAO.searchFields :: pageStart: %s pageEnd: %s' % (pageStart, pageEnd) )
-			logger.debug('CommonDAO.searchFields :: numberResults: %s disablePaging: %s' % (numberResults, args['disablePaging']) )
+			logger.debug('CommonDAO.searchFields :: pageStart: %s pageEnd: %s' % (page_start, page_end) )
+			logger.debug('CommonDAO.searchFields :: numberResults: %s disablePaging: %s' % (number_results, args['disablePaging']) )
 			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
-				iStart = (pageStart-1)*numberResults
-				if pageEnd is None:
-					iEnd = iStart+numberResults
+				iStart = (page_start-1)*number_results
+				if page_end is None:
+					iEnd = iStart+number_results
 				else:
-					iEnd = iStart + numberResults*(pageEnd-pageStart+1)
+					iEnd = iStart + number_results*(page_end-page_start+1)
 				logger.debug('CommonDAO.searchFields :: iStart: %s iEnd: %s' % (iStart, iEnd) )
 			dbObj = self._processRelated()
 			"""if len(orderBy) != 0:
@@ -361,18 +360,18 @@ class CommonDAO(object):
 				logger.debug('CommonDAO.searchField:: iStart: %s iEnd: %s' % (iStart, iEnd) )
 				if args.has_key('disablePaging'):
 					del args['disablePaging']
-				if len(orderBy) == 0:
+				if len(order_by) == 0:
 					xpList = dbObj.using(self._resolveDbName()).filter(**args)[iStart:iEnd].values_list(*fields)
 				else:
-					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*orderBy)[iStart:iEnd].values_list(*fields)
+					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*order_by)[iStart:iEnd].values_list(*fields)
 			else:
 				logger.debug('CommonDAO.searchField:: Have no paging, we get all the data...')
 				if args.has_key('disablePaging'):
 					del args['disablePaging']				
-				if len(orderBy) == 0:
+				if len(order_by) == 0:
 					xpList = dbObj.using(self._resolveDbName()).filter(**args).values_list(*fields)
 				else:
-					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*orderBy).values_list(*fields)
+					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*order_by).values_list(*fields)
 			"""if len(orderBy) != 0:
 				xpList.orderBy(*orderBy)"""
 			return xpList
@@ -382,108 +381,108 @@ class CommonDAO(object):
 	ctx = property(_getCtx, None)
 
 class CoreParameterDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(CoreParameterDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(CoreParameterDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = CoreParam
 
 class ApplicationDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ApplicationDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ApplicationDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Application
 
 class ActionDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ActionDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ActionDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Action
 
 class MenuDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(MenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(MenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Menu
 
 class ViewMenuDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ViewMenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ViewMenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = ViewMenu
 
 class ServiceMenuDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ServiceMenuDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ServiceMenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = ServiceMenu
 
 class MenuParamDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(MenuParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(MenuParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = MenuParam
 
 class ViewDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ViewDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ViewDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = View
 
 class WorkflowDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(WorkflowDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(WorkflowDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Workflow
 
 class WorkflowDataDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(WorkflowDataDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(WorkflowDataDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = WorkflowData
 
 class ParamDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Param
 
 class WFParamValueDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(WFParamValueDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(WFParamValueDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = WFParamValue
 
 class WorkflowViewDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(WorkflowViewDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(WorkflowViewDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = WorkflowView
 
 class SearchIndexDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(SearchIndexDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(SearchIndexDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = SearchIndex
 
 class SearchIndexParamDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(SearchIndexParamDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(SearchIndexParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = SearchIndexParam
 
 class WordDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(WordDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(WordDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Word
 
 class SearchIndexWordDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(SearchIndexWordDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(SearchIndexWordDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = SearchIndexWord
 
 class TemplateDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(TemplateDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(TemplateDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = XpTemplate
 
 class ViewTmplDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ViewTmplDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ViewTmplDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = ViewTmpl
 
 class ServiceMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ServiceMenuConditionDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ServiceMenuConditionDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = ServiceMenuCondition
 
 class ViewMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *argsTuple, **argsDict):
-		super(ViewMenuConditionDAO, self).__init__(ctx, *argsTuple, **argsDict)
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ViewMenuConditionDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = ViewMenuCondition
 
 

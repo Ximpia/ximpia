@@ -8,7 +8,6 @@ import types
 import traceback
 import os
 import datetime
-import time
 import copy
 
 from django.db import transaction
@@ -17,7 +16,7 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 from django.http import Http404
 
-from ximpia.core.util import getClass, AttrDict
+from ximpia.core.util import get_class, AttrDict
 from models import context, context_view, ctx, JsResultDict
 from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
@@ -25,7 +24,7 @@ from data import ViewDAO, ActionDAO, ApplicationDAO
 from ximpia.site import constants as KSite
 from ximpia.site.models import Setting
 
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -204,7 +203,7 @@ def jxSuggestList(request, **args):
         app = request.REQUEST['app']
         logger.debug('jxSuggestList :: search: %s' % (request.REQUEST['search']) )
         logger.debug('jxSuggestList :: path dbClass: %s' % (app + '.data.' + dbClass) )
-        cls = getClass( app + '.data.' + dbClass)
+        cls = get_class( app + '.data.' + dbClass)
         obj = cls(args['ctx']) #@UnusedVariable
         params = {}
         if request.REQUEST.has_key('params'):
@@ -331,7 +330,7 @@ def jxDataQuery(request, **args):
     application = dbApplication.get(name=app)
     # app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
     classPath = app + '.data.' + dbClass
-    cls = getClass( classPath )
+    cls = get_class( classPath )
     obj = cls(args['ctx']) #@UnusedVariable
     logger.debug('jxDataQuery :: obj: %s' % (obj) )
     # fields
@@ -528,7 +527,7 @@ def jxDataSwitchOrder(request, **args):
     application = dbApplication.get(name=app)
     # app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
     classPath = app + '.data.' + dbClass
-    cls = getClass( classPath )
+    cls = get_class( classPath )
     obj = cls(args['ctx']) #@UnusedVariable
     item = obj.get(pk=pk)
     logger.debug('jxDataSwitchOrder :: change order : %s -> %s' % (orderCurrent, orderNew) )
@@ -608,7 +607,7 @@ def jxService(request, **args):
         classPath = ".".join(implFields[:-1])
         logger.debug('classPath: %s' % (classPath) )
         if method.find('_') == -1 or method.find('__') == -1:
-            cls = getClass(classPath)
+            cls = get_class(classPath)
             obj = cls(args['ctx']) #@UnusedVariable
             if (len(viewAttrs) == 0):
                 result = eval('obj.' + method)()
@@ -668,7 +667,7 @@ def jxSave(request, **args):
             for key in dbObjects:
                 # Get instance model by pk
                 impl = dbObjects[key]['impl']
-                cls = getClass( impl )
+                cls = get_class( impl )
                 instances[key] = cls.objects.using('default').get(pk=dbObjects[key]['pk'])
             logger.debug('jxSave :: instances. %s' % (instances) )
             if len(instances) == 0:
@@ -789,7 +788,7 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
     classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])
     if method.find('_') == -1 or method.find('__') == -1:
         logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
-        cls = getClass( classPath )
+        cls = get_class( classPath )
         obj = cls(args['ctx']) #@UnusedVariable
         if (len(viewAttrTuple) == 0):
             result = eval('obj.' + method)()
@@ -826,7 +825,7 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
             actionAttrTuple = [actionAttrs]
     # Instance and call method for view, get result
     if method.find('_') == -1 or method.find('__') == -1:
-        cls = getClass( classPath )
+        cls = get_class( classPath )
         obj = cls(args['ctx']) #@UnusedVariable
         if (len(actionAttrTuple) == 0):
             result = eval('obj.' + method)()

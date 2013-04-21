@@ -22,15 +22,15 @@ from ximpia.util.js import Form as _jsf
 from util import AttrDict
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-def getBlankWfData( dd ):
+def get_blank_wf_data( dd ):
 	"""Get workflow data inside flowCode by default"""
 	dd['data'] = {}
 	dd['viewName'] = ''
@@ -1342,7 +1342,7 @@ class WorkflowData( BaseModel ):
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
 	view = models.ForeignKey(View, related_name='viewFlowData', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View in flow. View where users is in flow'))
-	data = models.TextField(default = _jsf.encode64Dict(getBlankWfData({})), db_column='DATA',
+	data = models.TextField(default = _jsf.encode64Dict(get_blank_wf_data({})), db_column='DATA',
 			verbose_name=_('Data'), help_text=_('Worflow data'))
 	def __unicode__(self):
 		return '%s - %s' % (self.userId, self.flow)
@@ -1492,7 +1492,7 @@ class XpRegisterException( Exception ):
 		#return repr(self.Msg)
 		return self.Msg
 
-def getDataDict(form):
+def get_data_dict(form):
 	"""Doc."""
 	try:
 		dd = form.cleaned_data
@@ -1504,7 +1504,7 @@ def getDataDict(form):
 		dd = form.data
 	return dd
 
-def getFormDataValue(form, keyName):
+def get_form_data_value(form, keyName):
 	"""Doc."""
 	try:
 		dd = form.cleaned_data
@@ -1521,25 +1521,25 @@ def getFormDataValue(form, keyName):
 		keyValue = ''
 	return keyValue
 
-def setIfNotBlank():
+def set_if_not_blank():
 	"""Doc."""
 	pass
 
-def getFromDict(key, dd):
+def get_from_dict(key, dd):
 	"""Get value from a dict for key. If not found, returns blank string."""
 	value = ''
 	if dd.has_key(key):
 		value = dd[key]
 	return value
 
-def getPagingStartEnd(page, numberMatches):
+def get_paging_start_end(page, numberMatches):
 	"""Get tuple (iStart, iEnd)"""
 	iStart = (page-1)*numberMatches
 	iEnd = iStart+numberMatches
 	fields = (iStart, iEnd)
 	return fields
 
-def parseText(content):
+def parse_text(content):
 	"""Parse text from content. Useful for indexing fields.
 	@param content: 
 	@return: parsed text"""
@@ -1547,7 +1547,7 @@ def parseText(content):
 	# TODO: Finish parse with code found in B+
 	return text
 
-def parseLinks(content):
+def parse_links(content):
 	"""Parse links from content
 	@param content: 
 	@return: linkList"""
@@ -2017,7 +2017,7 @@ class ctx(object):
 					lang = 'en'
 				# Instantiate app Context
 				try:
-					cls = getClass( self._app + '.service.Context' )
+					cls = get_class( self._app + '.service.Context' )
 					ctx = cls()
 				except AttributeError:
 					ctx = Context()
@@ -2143,7 +2143,7 @@ class context_view(object):
 					lang = 'en'
 				# Instantiate app Context
 				try:
-					cls = getClass( self._app + '.service.Context' )
+					cls = get_class( self._app + '.service.Context' )
 					ctx = cls()
 				except AttributeError:
 					ctx = Context()
@@ -2228,7 +2228,7 @@ class context_view(object):
 						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
 						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
 						# Build json response with error message
-						resultDict = getResultERROR([('id_pageError', e.msg, True)])
+						resultDict = get_result_ERROR([('id_pageError', e.msg, True)])
 						sResult = json.dumps(resultDict)
 						# We must mix with template the error, send error data in django context, only need error message
 						result = render_to_response( 'mainXpError.html', RequestContext(request, 
@@ -2370,7 +2370,7 @@ class JsResultDict(dict):
 		dict.__setitem__(self, self.ERRORS, errorList)
 		dict.__setitem__(self, self.RESPONSE, AttrDict())
 
-def getResultOK(dataDict, status='OK'):
+def get_result_OK(dataDict, status='OK'):
 	"""Build result dict for OK status. resultList is a list of objects or content to show in client"""
 	resultDict = {}
 	resultDict['status'] = status
@@ -2378,7 +2378,7 @@ def getResultOK(dataDict, status='OK'):
 	resultDict['errors'] = []
 	return resultDict
 
-def getResultERROR(errorList, response={}):
+def get_result_ERROR(errorList, response={}):
 	"""Build result dict for errors. status ir "ERROR" and response empty as default. "errors" has the errorList attribute"""
 	resultDict = {}
 	resultDict['status'] = 'ERROR'

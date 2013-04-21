@@ -12,8 +12,8 @@ import messages as _m
 from ximpia.util.js import Form as _jsf
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import constants as K
 
@@ -24,7 +24,7 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
-class XBaseForm( forms.Form ):
+class XBaseForm(forms.Form):
 	
 	"""
 	Core Form
@@ -53,9 +53,9 @@ class XBaseForm( forms.Form ):
 	result = HiddenField(initial=' ')
 	dbObjects = HiddenField(initial='{}')
 	#errors = {}
-	_argsDict = {}
+	_args_dict = {}
 	_instances = {}
-	def __init__(self, *argsTuple, **argsDict): 
+	def __init__(self, *args_tuple, **args_dict): 
 		"""
 		Constructor for base form container
 		
@@ -66,17 +66,17 @@ class XBaseForm( forms.Form ):
 		** Returns **
 		
 		"""
-		self._argsDict = argsDict
+		self._args_dict = args_dict
 		self._errors = {}
-		#logger.debug ( 'XBaseForm :: argsDict: ' + argsDict )
-		if argsDict.has_key('ctx'):
-			self._ctx = argsDict['ctx']
+		#logger.debug ( 'XBaseForm :: args_dict: ' + args_dict )
+		if args_dict.has_key('ctx'):
+			self._ctx = args_dict['ctx']
 		#self.errors = {}
 		#self.errors['invalid'] = []
-		#logger.debug( 'argsDict : ' + argsDict )
+		#logger.debug( 'args_dict : ' + args_dict )
 		# TODO: Init all database model instances
-		if argsDict.has_key('instances'):
-			d = argsDict['instances']
+		if args_dict.has_key('instances'):
+			d = args_dict['instances']
 			self._instances = d
 			fields = self.base_fields.keys()
 			for sField in fields:
@@ -133,22 +133,22 @@ class XBaseForm( forms.Form ):
 					raise
 			# Set instance too
 		self._buildObjects()
-		#self.app = argsDict['app'] if argsDict.has_key('app') else ''
-		if argsDict.has_key('ctx'):
-			del argsDict['ctx']
-		if argsDict.has_key('dbDict'):
-			del argsDict['dbDict']
-		if argsDict.has_key('instances'):
-			del argsDict['instances']
+		#self.app = args_dict['app'] if args_dict.has_key('app') else ''
+		if args_dict.has_key('ctx'):
+			del args_dict['ctx']
+		if args_dict.has_key('dbDict'):
+			del args_dict['dbDict']
+		if args_dict.has_key('instances'):
+			del args_dict['instances']
 		self._db = {}
-		super(XBaseForm, self).__init__(*argsTuple, **argsDict)
+		super(XBaseForm, self).__init__(*args_tuple, **args_dict)
 	def _buildObjects(self):
 		"""Build db instance json objects"""
-		if self._argsDict.has_key('instances'):
+		if self._args_dict.has_key('instances'):
 			d = {}
-			for key in self._argsDict['instances']:
+			for key in self._args_dict['instances']:
 				# Get json object, parse, serialize fields object
-				instance = self._argsDict['instances'][key]
+				instance = self._args_dict['instances'][key]
 				jsonObj = _s.serialize("json", [instance])
 				#logger.debug( 'XBaseForm._buildObjects :: jsonObj: %s' % (jsonObj) )
 				obj = json.loads(jsonObj)[0]
@@ -281,10 +281,10 @@ class XBaseForm( forms.Form ):
 		except AttributeError:
 			pass
 		return fieldName
-	def set_view_mode(self, viewList):
+	def set_view_mode(self, view_list):
 		"""Set view mode from ['update,'delete','read']. As CRUD. Save button will be create and update."""
 		paramDict = json.loads(self.fields['params'].initial)
-		paramDict['viewMode'] = viewList
+		paramDict['viewMode'] = view_list
 		self.fields['params'].initial = json.dumps(paramDict)
 	def set_view_mode_read(self):
 		"""Read only mode"""
@@ -298,11 +298,11 @@ class XBaseForm( forms.Form ):
 		paramDict = json.loads(self.fields['params'].initial)
 		paramDict[name] = value
 		self.fields['params'].initial = json.dumps(paramDict)
-	def put_param_list(self, **argsDict):
+	def put_param_list(self, **args_dict):
 		"""Put list of parameters. attribute set, like putParamList(myKey='', myOtherKey='')"""
 		paramDict = json.loads(self.fields['params'].initial)
-		for key in argsDict:
-			paramDict[key] = argsDict[key]
+		for key in args_dict:
+			paramDict[key] = args_dict[key]
 		self.fields['params'].initial = json.dumps(paramDict)
 	def get_param(self, name):
 		"""Get param value.
@@ -314,20 +314,20 @@ class XBaseForm( forms.Form ):
 		else:
 			raise ValueError
 		return value
-	def get_param_dict(self, paramList):
+	def get_param_dict(self, param_list):
 		"""Get dictionary of parameters for the list of parameters given"""
 		paramDict = json.loads(self.fields['params'].initial)
 		d = {}
-		for field in paramList: 
+		for field in param_list: 
 			d[field] = paramDict[field]
 		return d
-	def get_param_list(self, paramList):
+	def get_param_list(self, param_list):
 		"""Get list of values from list of names given.
 		@param paramList: List of fields (names)
 		@return: list of values"""
 		paramDict = json.loads(self.fields['params'].initial)
 		l = []
-		for field in paramList:
+		for field in param_list:
 			l.append(paramDict[field])
 		return l
 	def has_param(self, name):
@@ -336,15 +336,15 @@ class XBaseForm( forms.Form ):
 		@return: boolean"""
 		d = json.loads(self.fields['params'].initial)
 		return d.has_key(name)
-	def _getFieldValue(self, fieldName):
+	def _getFieldValue(self, field_name):
 		"""Get field value to be used in forms"""
 		#field = eval("self.fields['" + fieldName + "']")
-		value = self.data[fieldName]
+		value = self.data[field_name]
 		return value
-	def _validateSameFields(self, tupleList):
+	def _validate_same_fields(self, tuple_list):
 		"""Validate same fields for list of tuples in form
 		@param tupleList: Like ('password','passwordVerify')"""
-		for myTuple in tupleList:
+		for myTuple in tuple_list:
 			field1 = eval("self.fields['" + myTuple[0] + "']")
 			field2 = eval("self.fields['" + myTuple[1] + "']")
 			field1Value = self.data[myTuple[0]]
@@ -357,7 +357,7 @@ class XBaseForm( forms.Form ):
 				self.errors['id_' + myTuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
 				self._errors['id_' + myTuple[0]].append(field1.label + _(' must be the same as ') + field2.label)
 
-	def _validateCaptcha(self):
+	def _validate_captcha(self):
 		"""Validate captcha"""
 		if self._ctx.request.has_key('recaptcha_challenge_field'):
 			logger.debug( 'XBaseForm :: _validateCapctha() ...' )
@@ -367,14 +367,14 @@ class XBaseForm( forms.Form ):
 							self._ctx.meta['REMOTE_ADDR'])			
 			if captchaResponse.is_valid == False:
 				self.addInvalidError(_('Words introduced in Captcha do not correspond to image. You can reload for another image.'))
-	def add_invalid_error(self, sError):
+	def add_invalid_error(self, error):
 		"""Adds error to errors lists."""
 		if not self.errors.has_key(self.ERROR_INVALID):
 			self.errors[self.ERROR_INVALID] = []
 		if not self._errors.has_key(self.ERROR_INVALID):
 			self._errors[self.ERROR_INVALID] = []
-		self.errors[self.ERROR_INVALID].append(sError)	
-		self._errors[self.ERROR_INVALID].append(sError)
+		self.errors[self.ERROR_INVALID].append(error)	
+		self._errors[self.ERROR_INVALID].append(error)
 	def serialize_JSON(self):
 		"""Serialize the form into json. The form must be validated first."""
 		return json.dumps(self.cleaned_data)
@@ -421,7 +421,7 @@ class XBaseForm( forms.Form ):
 	def set_app(self, app):
 		"""Set application code to form."""
 		self.base_fields['app'].initial = app
-	def __buildForeignKey(self, jsData):
+	def __buildForeignKey(self, js_data):
 		"""
 		Build foreign key choices
 		
@@ -434,7 +434,7 @@ class XBaseForm( forms.Form ):
 		None
 		"""
 		# append choices into id_choices		
-		choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']['value']
+		choicesStr = js_data['response']['form_' + self._XP_FORM_ID]['choices']['value']
 		choices = _jsf.decodeArray(choicesStr)
 		# Get fields from this form		
 		for fieldName in self.fields:
@@ -443,8 +443,8 @@ class XBaseForm( forms.Form ):
 				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
-		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
-	def __buildManyToMany(self, jsData):
+		js_data['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
+	def __buildManyToMany(self, js_data):
 		"""
 		Build many to many choices
 		
@@ -457,7 +457,7 @@ class XBaseForm( forms.Form ):
 		None
 		"""
 		# append choices into id_choices		
-		choicesStr = jsData['response']['form_' + self._XP_FORM_ID]['choices']['value']
+		choicesStr = js_data['response']['form_' + self._XP_FORM_ID]['choices']['value']
 		choices = _jsf.decodeArray(choicesStr)
 		# Get fields from this form		
 		for fieldName in self.fields:
@@ -466,7 +466,7 @@ class XBaseForm( forms.Form ):
 				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
-		jsData['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
+		js_data['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
 
 	def save(self):
 		"""
@@ -640,7 +640,7 @@ class XBaseForm( forms.Form ):
 				delQuery.delete()
 				logger.debug('XBaseForm.save :: Deleted completed' )
 	
-	def delete(self, isReal=False):
+	def delete(self, is_real=False):
 		"""
 		Deletes the reference model instance defined in the form.
 		
@@ -648,9 +648,9 @@ class XBaseForm( forms.Form ):
 		"""
 		pass
 	
-	def build_js_data(self, app, jsData):
+	def build_js_data(self, app, js_data):
 		"""Get javascript json data for this form"""
-		jsData['response']['form_' + self._XP_FORM_ID] = {}
+		js_data['response']['form_' + self._XP_FORM_ID] = {}
 		#logger.debug( 'self.initial : ' + self.initial )
 		fieldsDict = self.fields
 		#logger.debug( 'base_fields: ' + self.base_fields )
@@ -687,11 +687,11 @@ class XBaseForm( forms.Form ):
 				attrs['helpText'] = attrs['helpText'].replace('"', '')
 			#logger.debug( 'XBaseForm.buildJsData :: field: %s' % (fieldName) )
 			#logger.debug( attrs )
-			jsData['response']['form_' + self._XP_FORM_ID][fieldName] = attrs
+			js_data['response']['form_' + self._XP_FORM_ID][fieldName] = attrs
 		# populate choices with foreign key fields: XpSelectField
-		self.__buildForeignKey(jsData)
-		self.__buildManyToMany(jsData)
-		jsData['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
+		self.__buildForeignKey(js_data)
+		self.__buildManyToMany(js_data)
+		js_data['response']['form_' + self._XP_FORM_ID]['app']['value'] = app
 	
 	def disable_fields(self, fields):
 		"""

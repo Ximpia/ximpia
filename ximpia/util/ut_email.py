@@ -19,7 +19,6 @@ from ximpia.core.util import getClass
 settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import xml_lib
-import content
 
 """Copyright (c) 2012 Ximpia Inc
 All rights reserved."""
@@ -163,19 +162,6 @@ class EmailAttach(EmailConnect):
 		messageStr = self.__oMIME.as_string()
 		oEmailConnect = EmailConnect()
 		oEmailConnect.send(self.__MeAddress, EmailAddressList, messageStr)
-
-def getMessageOld(messageId):
-	"""Get subject and message from xml files. -> Tuple (sSubject, sMessage)."""
-	sMessageId = str(messageId)
-	xmlStr = content.getXml('xml_web', 'messages.db', sMessageId)
-	oPageXML = xml_lib.PageXML()
-	oPageXML.parse(xmlStr)
-	xPath = 'PageXML/EmailContainer[@id="DICT_EMAIL"]/Subject'
-	subject = oPageXML.getKeySimple(xPath).getValue()
-	xPath = 'PageXML/EmailContainer[@id="DICT_EMAIL"]/Message'
-	message = oPageXML.getKeySimple(xPath).getValue()
-	Tuple = (subject, message)
-	return Tuple
 
 def getMessage(xmlStr):
 	oPageXML = xml_lib.PageXML()

@@ -21,7 +21,7 @@ from django.template import RequestContext
 from django.core.cache import cache
 
 from business import WorkFlowBusiness
-from models import getResultERROR, XpMsgException
+from models import get_result_ERROR, XpMsgException
 from util import TemplateParser, AppTemplateParser
 
 from models import SearchIndex, Context
@@ -39,9 +39,9 @@ from models import JsResultDict, ctx
 import constants as K
 
 # Settings
-from ximpia.core.util import getClass
+from ximpia.core.util import get_class
 from ximpia.site.data import SettingDAO
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -58,7 +58,7 @@ from ximpia.util.js import Form as _jsf
 class EmailService(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
 	@staticmethod
-	def send(xmlMessage, subsDict, fromAddr, recipientList):
+	def send(xml_message, subs_dict, from_addr, recipient_list):
 		"""Send email
 
 		@staticmethod
@@ -89,10 +89,10 @@ class EmailService(object):
 		None
 		"""
 		#logger.debug( 'subsDict: %s' % (subsDict) )
-		subject, message = ut_email.getMessage(xmlMessage)
-		message = string.Template(message).substitute(**subsDict)
+		subject, message = ut_email.getMessage(xml_message)
+		message = string.Template(message).substitute(**subs_dict)
 		#logger.debug( message )
-		send_mail(subject, message, fromAddr, recipientList)
+		send_mail(subject, message, from_addr, recipient_list)
 
 
 # ****************************************************
@@ -467,7 +467,7 @@ class wf_view( object ):
 				implFields = impl.split('.')
 				method = implFields[len(implFields)-1]
 				classPath = ".".join(implFields[:-1])
-				cls = getClass( classPath )
+				cls = get_class( classPath )
 				objView = cls(obj._ctx) #@UnusedVariable
 				obj._ctx.viewNameSource = viewName
 				if (len(viewAttrs) == 0) :
@@ -497,7 +497,7 @@ class menu_action(object):
 			implFields = impl.split('.')
 			method = implFields[len(implFields)-1]
 			classPath = ".".join(implFields[:-1])
-			cls = getClass( classPath )
+			cls = get_class( classPath )
 			objView = cls(obj._ctx) #@UnusedVariable
 			result = eval('objView.' + method)()
 			return result
@@ -560,7 +560,7 @@ class wf_action(object):
 				implFields = impl.split('.')
 				method = implFields[len(implFields)-1]
 				classPath = ".".join(implFields[:-1])
-				cls = getClass( classPath )
+				cls = get_class( classPath )
 				objView = cls(obj._ctx) #@UnusedVariable
 				if (len(viewAttrs) == 0) :
 					result = eval('objView.' + method)()
@@ -774,6 +774,11 @@ class workflow_action ( object ):
 			return result
 		return wrapped_f
 
+# ****************************************************
+# **                DECORATORS                      **
+# ****************************************************
+
+
 class MenuService( object ):
 	_ctx = None
 	def __init__(self, ctx):
@@ -896,13 +901,13 @@ class MenuService( object ):
 				parentMenuObj['items'].append(menuObj)
 		logger.debug( 'getMenus :: menuDict: %s' % (menuDict) )
 
-	def get_menus(self, viewName):
+	def get_menus(self, view_Name):
 		"""
 		Build menus in dictionary format
 
 		**Attributes**
 
-		* ``viewName`` : View name
+		* ``view_Name`` : View name
 
 		**Returns**
 
@@ -936,7 +941,7 @@ class MenuService( object ):
 
 		params have format key -> value as normal dictionaries.
 		"""
-		self.__viewName = viewName
+		self.__viewName = view_Name
 		# db instances
 		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
 		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
@@ -947,7 +952,7 @@ class MenuService( object ):
 		# logic
 		logger.debug( 'getMenus...' )
 		logger.debug( 'getMenus :: appName: %s' % (self._ctx.app) )
-		view = self._dbView.get(name=viewName, application__name=self._ctx.app)
+		view = self._dbView.get(name=view_Name, application__name=self._ctx.app)
 		logger.debug( 'getMenus :: view: %s' % (view) )
 
 		#viewMenus = self._dbViewMenu.search( view=view ).order_by('order')
@@ -1005,16 +1010,16 @@ class SearchService ( object ):
 		self._dbWord = WordDAO(self._ctx)
 		self._dbIndexParam = SearchIndexParamDAO(self._ctx, relatedDepth=3)
 		self._dbParam = ParamDAO(self._ctx)
-	def add_index(self, text, appCode, viewName=None, actionName=None, params={}):
+	def add_index(self, text, app_code, view_name=None, action_name=None, params={}):
 		"""Add data to search index"""
 		wordList = resources.Index.parseText(text)
-		view = self._dbView.get(name=viewName) if viewName != None else None
-		action = self._dbAction.get(name=actionName) if actionName != None else None
-		app = self._dbApp.get(code=appCode)
+		view = self._dbView.get(name=view_name) if view_name != None else None
+		action = self._dbAction.get(name=action_name) if action_name != None else None
+		app = self._dbApp.get(code=app_code)
 		# delete search index
 		try:
-			search = self._dbSearch.get(application=app, view=view) if viewName != '' else (None, None)
-			search = self._dbSearch.get(application=app, action=action) if actionName != '' else (None, None)
+			search = self._dbSearch.get(application=app, view=view) if view_name != '' else (None, None)
+			search = self._dbSearch.get(application=app, action=action) if action_name != '' else (None, None)
 			search.delete()
 		except SearchIndex.DoesNotExist:
 			pass
@@ -1181,7 +1186,7 @@ class TemplateService ( object ):
 		logger.debug('TemplateService.get :: app: %s' % app)
 		if settings.DEBUG == True:
 			package, module = app.split('.')
-			m = getClass(package + '.' + module)
+			m = get_class(package + '.' + module)
 			path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
 			if os.path.isfile(path):
 				with open(path) as f:
@@ -1193,7 +1198,7 @@ class TemplateService ( object ):
 			tmpl = cache.get('tmpl/' + app)
 			if not tmpl:
 				package, module = app.split('.')
-				m = getClass(package + '.' + module)
+				m = get_class(package + '.' + module)
 				path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
 				if os.path.isfile(path):
 					with open(path) as f:
@@ -1202,7 +1207,7 @@ class TemplateService ( object ):
 					raise XpMsgException(None, _('application template is not found.'))
 		return tmpl
 
-	def get(self, app, mode, tmplName):
+	def get(self, app, mode, tmpl_name):
 		"""
 		Get template
 
@@ -1217,18 +1222,18 @@ class TemplateService ( object ):
 		* ``tmpl``:String
 
 		"""
-		self.__app, self.__mode, self.__tmplName = app, mode, tmplName
+		self.__app, self.__mode, self.__tmplName = app, mode, tmpl_name
 
 		logger.debug('TemplateService.get :: app: %s' % app)
 
 		if settings.DEBUG == True:
 			package, module = app.split('.')
-			m = getClass(package + '.' + module)
+			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
 				appModulePath = settings.__file__.split('settings')[0]
 				pathSite = appModulePath + 'web/templates/site'
 				if os.path.exists(pathSite) and os.path.isdir(pathSite):
-					path = pathSite + '/' + mode + '/' + tmplName + '.html'
+					path = pathSite + '/' + mode + '/' + tmpl_name + '.html'
 				else:
 					raise XpMsgException(None, _('site directory inside templates does not exist'))
 			else:
@@ -1236,29 +1241,28 @@ class TemplateService ( object ):
 			logger.debug('TemplateService.get :: path: %s' % (path) )
 			with open(path) as f:
 				tmpl = f.read()
-			cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
+			cache.set('tmpl/' + app + '/' + mode + '/' + tmpl_name, tmpl)
 		else:
-			tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmplName)
+			tmpl = cache.get('tmpl/' + app + '/' + mode + '/' + tmpl_name)
 			if not tmpl:
 				package, module = app.split('.')
-				m = getClass(package + '.' + module)
+				m = get_class(package + '.' + module)
 				if app == 'ximpia.site':
 					appModulePath = settings.__file__.split('settings')[0]
 					pathSite = appModulePath + 'web/templates/site'
 					if os.path.exists(pathSite) and os.path.isdir(pathSite):
-						path = pathSite + '/' + mode + '/' + tmplName + '.html'
+						path = pathSite + '/' + mode + '/' + tmpl_name + '.html'
 					else:
 						raise XpMsgException(None, _('site directory inside templates does not exist'))
 				else:
 					path = self.__findTemplPath(m)
 				logger.debug('TemplateService.get :: path: %s' % (path) )
-				f = open(path)
-				tmpl = f.read()
-				f.close()
-				cache.set('tmpl/' + app + '/' + mode + '/' + tmplName, tmpl)
+				with open(path) as f:
+					tmpl = f.read()
+				cache.set('tmpl/' + app + '/' + mode + '/' + tmpl_name, tmpl)
 		return tmpl
 
-	def resolve(self, viewName):
+	def resolve(self, view_name):
 		"""Resolve template """
 		# Context: device, lang, country
 		#tmplName = ''
@@ -1274,7 +1278,7 @@ class TemplateService ( object ):
 				else:
 					pass"""
 		else:
-			tmplList = self._dbViewTmpl.search(view__name=viewName, template__language=self._ctx.lang)
+			tmplList = self._dbViewTmpl.search(view__name=view_name, template__language=self._ctx.lang)
 			for viewTmpl in tmplList:
 				tmpl = viewTmpl.template
 				templates[tmpl.alias] = tmpl.name
@@ -1310,7 +1314,7 @@ class CommonService( object ):
 	def __init__(self, ctx):
 		self._ctx = ctx
 		if False: self._ctx = ctx()
-		self._resultDict = getResultERROR([])
+		self._resultDict = get_result_ERROR([])
 		self._postDict = ctx.post
 		self._errorDict = {}
 		self._resultDict = {}
@@ -1319,24 +1323,24 @@ class CommonService( object ):
 		self._viewNameTarget = ''
 		self._wfUserId = ''
 
-	def _build_JSON_result(self, resultDict):
+	def _build_JSON_result(self, result_dict):
 		"""Builds json result
 		@param resultDict: dict : Dictionary with json data
 		@return: result : HttpResponse"""
 		#logger.debug( 'Dumping...' )
-		sResult = json.dumps(resultDict)
+		sResult = json.dumps(result_dict)
 		#logger.debug( 'sResult : %s' % (sResult) )
 		result = HttpResponse(sResult)
 		return result
 
-	def _add_error_fields(self, idError, form, errorField):
+	def _add_error_fields(self, id_error, form, error_field):
 		"""Add error
-		@param idError: String : Id of error
+		@param id_error: String : Id of error
 		@param form: Form
-		@param errorField: String : The field inside class form"""
-		if not self._errorDict.has_key(idError):
-			self._errorDict[idError] = {}
-		self._errorDict[idError] = form.fields[errorField].initial
+		@param error_field: String : The field inside class form"""
+		if not self._errorDict.has_key(id_error):
+			self._errorDict[id_error] = {}
+		self._errorDict[id_error] = form.fields[error_field].initial
 
 	def _put_flow_params(self, **args):
 		"""Put parameters into workflow or navigation system.
@@ -1364,29 +1368,29 @@ class CommonService( object ):
 		"""
 		self._ctx.jsData.addAttr(name, value)
 
-	def _set_target_view(self, viewName):
+	def _set_target_view(self, view_name):
 		"""Set the target view for navigation."""
-		self._viewNameTarget = viewName
-		self._ctx.viewNameTarget = viewName
+		self._viewNameTarget = view_name
+		self._ctx.viewNameTarget = view_name
 
-	def _show_view(self, viewName, viewAttrs={}):
+	def _show_view(self, view_name, view_attrs={}):
 		"""Show view.
-		@param viewName:
-		@param viewAttrs:
+		@param view_name:
+		@param view_attrs:
 		@return: result"""
-		self._setTargetView(viewName)
+		self._setTargetView(view_name)
 		db = ViewDAO(self._ctx)
-		viewTarget = db.get(name=viewName)
+		viewTarget = db.get(name=view_name)
 		impl = viewTarget.implementation
 		implFields = impl.split('.')
 		method = implFields[len(implFields)-1]
 		classPath = ".".join(implFields[:-1])
-		cls = getClass( classPath )
+		cls = get_class( classPath )
 		objView = cls(self._ctx) #@UnusedVariable
-		if (len(viewAttrs) == 0) :
+		if (len(view_attrs) == 0) :
 			result = eval('objView.' + method)()
 		else:
-			result = eval('objView.' + method)(**viewAttrs)
+			result = eval('objView.' + method)(**view_attrs)
 
 		return result
 
@@ -1394,9 +1398,9 @@ class CommonService( object ):
 		"""Get target view."""
 		return self._viewNameTarget
 
-	def _get_flow_params(self, *nameList):
+	def _get_flow_params(self, *name_list):
 		"""Get parameter for list given, either from workflow dictionary or parameter dictionary in view.
-		@param nameList: List of parameters to fetch"""
+		@param name_list: List of parameters to fetch"""
 		logger.debug( 'wfUserId: %s flowCode: %s' % (self._ctx.wfUserId, self._ctx.flowCode) )
 		valueDict = self._wf.getFlowDataDict(self._ctx.wfUserId, self._ctx.flowCode)['data']
 		logger.debug( 'valueDict: %s' % (valueDict) )
@@ -1429,17 +1433,17 @@ class CommonService( object ):
 		self._wfUserId = self._ctx.wfUserId
 		return self._wfUserId
 
-	def _get_error_result_dict(self, errorDict, pageError=False):
+	def _get_error_result_dict(self, error_dict, page_error=False):
 		"""Get sorted error list to show in pop-up window
-		@return: self._resultDict : ResultDict"""
+		@return: self._result_dict : ResultDict"""
 		#dict = self._errorDict
-		keyList = errorDict.keys()
+		keyList = error_dict.keys()
 		keyList.sort()
 		myList = []
 		for key in keyList:
-			message = errorDict[key]
+			message = error_dict[key]
 			index = key.find('id_')
-			if pageError == False:
+			if page_error == False:
 				if index == -1:
 					myList.append(('id_' + key, message, False))
 				else:
@@ -1449,10 +1453,10 @@ class CommonService( object ):
 					myList.append(('id_' + key, message, True))
 				else:
 					myList.append((key, message, True))
-		self._resultDict = getResultERROR(myList)
-		return self._resultDict
+		self._result_dict = get_result_ERROR(myList)
+		return self._result_dict
 
-	def _get_setting(self, settingName):
+	def _get_setting(self, setting_name):
 		"""
 		Get setting model instance.
 
@@ -1465,10 +1469,10 @@ class CommonService( object ):
 		models.site.Setting model instance
 		"""
 		self._dbSetting = SettingDAO(self._ctx, relatedDepth=2)
-		setting = self._dbSetting.get(name__name=settingName)
+		setting = self._dbSetting.get(name__name=setting_name)
 		return setting
 
-	def _do_validations(self, validationDict):
+	def _do_validations(self, validation_dict):
 		"""Do all validations defined in validation dictionary"""
 		bFormOK = self._ctx.form.is_valid()
 		if bFormOK:
@@ -1492,9 +1496,9 @@ class CommonService( object ):
 		#logger.debug( 'form: %s' % (self._ctx.form) )
 		return self._ctx.form
 
-	def _set_form(self, formInstance):
+	def _set_form(self, form_instance):
 		"""Sets the form instance"""
-		self._ctx.form = formInstance
+		self._ctx.form = form_instance
 		self._isFormOK = self._ctx.form.is_valid()
 
 	def _get_main_form_id(self):
@@ -1534,18 +1538,16 @@ class CommonService( object ):
 		"""Returns form from context"""
 		return self._ctx.form
 
-	def _add_error(self, fieldName, errMsg):
+	def _add_error(self, field_name, err_msg):
 		"""Add error
-		@param idError: String : Id of error
-		@param form: Form
-		@param errorField: String : The field inside class form"""
+		"""
 		#form = self._getForm()
 		#logger.debug( 'form: %s' % (form) )
 		#msgDict = _jsf.decodeArray(form.fields['errorMessages'].initial)
-		idError = 'id_' + fieldName
+		idError = 'id_' + field_name
 		if not self._errorDict.has_key(idError):
 			self._errorDict[idError] = {}
-		self._errorDict[idError] = errMsg
+		self._errorDict[idError] = err_msg
 		logger.debug( '_errorDict : %s' % (self._errorDict) )
 
 	def _get_errors(self):
@@ -1557,14 +1559,14 @@ class CommonService( object ):
 		"""Get post dictionary"""
 		return self._ctx.post
 
-	def _validate_exists(self, dbDataList):
+	def _validate_exists(self, db_data_list):
 		"""Validates that db data provided exists. Error is shown in case does not exist.
 		Db data contains data instance, query arguments in a dictionary
 		and errorName for error message display at the front
 		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
 		logger.debug( 'validateExists...' )
-		logger.debug( 'dbDataList : %s' % (dbDataList) )
-		for dbData in dbDataList:
+		logger.debug( 'dbDataList : %s' % (db_data_list) )
+		for dbData in db_data_list:
 			dbObj, qArgs, fieldName, errMsg = dbData
 			exists = dbObj.check(**qArgs)
 			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' %
@@ -1572,14 +1574,14 @@ class CommonService( object ):
 			if not exists:
 				self._addError(fieldName, errMsg)
 
-	def _validate_not_exists(self, dbDataList):
+	def _validate_not_exists(self, db_data_list):
 		"""Validates that db data provided does not exist. Error is shown in case exists.
 		Db data contains data instance, query arguments in a dictionary
 		and errorName for error message display at the front
 		@param dbDataList: [dbObj, queryArgs, fieldName, errMsg]"""
 		logger.debug( 'validateNotExists...' )
-		logger.debug( 'dbDataList : %s' % (dbDataList) )
-		for dbData in dbDataList:
+		logger.debug( 'dbDataList : %s' % (db_data_list) )
+		for dbData in db_data_list:
 			dbObj, qArgs, fieldName, errMsg = dbData
 			exists = dbObj.check(**qArgs)
 			logger.debug( 'Exists : %s' % (exists) )
@@ -1587,32 +1589,32 @@ class CommonService( object ):
 				logger.debug( 'I add error: %s %s' % (fieldName, errMsg) )
 				self._addError(fieldName, errMsg)
 
-	def _validate_context(self, ctxDataList):
+	def _validate_context(self, ctx_data_list):
 		"""Validates context variable. [[name, value, fieldName, errName],...]"""
-		for ctxData in ctxDataList:
+		for ctxData in ctx_data_list:
 			name, value, fieldName, errMsg = ctxData
 			if self._ctx[name] != value:
 				self._addError(fieldName, errMsg)
 
-	def _authenticate_user(self, ximpiaId, password, fieldName, errorMsg):
+	def _authenticate_user(self, ximpia_id, password, field_name, error_msg):
 		"""Authenticates user and password"""
-		qArgs = {'username': ximpiaId, 'password': password}
-		user = authenticate(**qArgs)
+		q_args = {'username': ximpia_id, 'password': password}
+		user = authenticate(**q_args)
 		if user:
 			pass
 		else:
-			self._addError(fieldName, errorMsg)
+			self._addError(field_name, error_msg)
 		return user
 
-	def _authenticate_user_soc_net(self, socialId, socialToken, authSource, fieldName, errorMsg):
+	def _authenticate_user_soc_net(self, social_id, social_token, auth_source, field_name, error_msg):
 		"""Authenticates user and password"""
-		qArgs = {'socialId': socialId, 'socialToken': socialToken}
-		logger.debug('_authenticateUsersocNet :: Arguments: %s' % (qArgs) )
-		user = authenticate(**qArgs)
+		q_args = {'socialId': social_id, 'socialToken': social_token}
+		logger.debug('_authenticateUsersocNet :: Arguments: %s' % (q_args) )
+		user = authenticate(**q_args)
 		if user:
 			pass
 		else:
-			self._addError(fieldName, errorMsg)
+			self._addError(field_name, error_msg)
 		return user
 
 	def _is_valid(self):
@@ -1647,18 +1649,18 @@ class CommonService( object ):
 		self._ctx.set_cookies.append({'key': key, 'value': value, 'domain': settings.SESSION_COOKIE_DOMAIN,
 										'expires': datetime.timedelta(days=365*5)+datetime.datetime.utcnow()})
 
-	def _set_main_form(self, formInstance):
+	def _set_main_form(self, form_instance):
 		"""Set form as main form: We set to context variable 'form' as add into form container 'forms'.
 		@param formInstance: Form instance"""
-		self._ctx.form = formInstance
-		self._ctx.forms[formInstance.get_form_id()] = formInstance
+		self._ctx.form = form_instance
+		self._ctx.forms[form_instance.get_form_id()] = form_instance
 
-	def _add_form(self, formInstance):
+	def _add_form(self, form_instance):
 		"""Set form as regular form. We add to form container 'forms'. Context variable form is not modified.
 		@param formInstance: Form instance"""
-		self._ctx.forms[formInstance.get_form_id()] = formInstance
+		self._ctx.forms[form_instance.get_form_id()] = form_instance
 
-	def _put_form_value(self, fieldName, fieldValue, formId=None):
+	def _put_form_value(self, field_name, field_value, form_id=None):
 		"""
 		Add form value to field already defined in the forms for the service
 
@@ -1676,9 +1678,9 @@ class CommonService( object ):
 
 		None
 		"""
-		if formId == None:
-			formId = self._getMainFormId()
-		self._ctx.forms[formId].fields[fieldName].initial = fieldValue
+		if form_id == None:
+			form_id = self._get_main_form_id()
+		self._ctx.forms[form_id].fields[field_name].initial = field_value
 
 	def _get_user_channel_name(self):
 		"""Get user social name"""
@@ -1741,7 +1743,7 @@ class CommonService( object ):
 		for key in dbObjects:
 			# Get instance model by pk
 			impl = dbObjects[key]['impl']
-			cls = getClass( impl )
+			cls = get_class( impl )
 			instances[key] = cls.objects.using('default').get(pk=dbObjects[key]['pk'])
 		logger.debug('CommonService.delete :: instances: %s' % (instances) )
 		if len(instances) == 1:
@@ -1752,8 +1754,8 @@ class CommonService( object ):
 			# TODO: Include support for deleting more than one instance for forms with multiple instances associated
 			pass
 
-	def _get_list_pk_values(self, fieldName):
-		pks = [int(x) for x in self._ctx.request.getlist(fieldName)]
+	def _get_list_pk_values(self, field_name):
+		pks = [int(x) for x in self._ctx.request.getlist(field_name)]
 		return pks
 
 class DefaultService ( CommonService ):

@@ -15,11 +15,11 @@ from django.utils.translation import ugettext_lazy as _
 import django.core.validators 
 
 from models import XpMsgException
-from validators import validateTxtField, validatePassword, validateUserId
+from validators import validate_txt_field, validate_password, validate_user_id
 
 # Settings
-from ximpia.core.util import getClass
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+from ximpia.core.util import get_class
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
 import logging.config
@@ -373,7 +373,7 @@ class CharField( Field ):
 		if minLength != None:
 			self.minLength = minLength
 		if len(self.defaultValidators) == 0:
-			self.defaultValidators = [validateTxtField]
+			self.defaultValidators = [validate_txt_field]
 		if self.minLength is not None:
 			self.validators.append(django.core.validators.MinLengthValidator(self.minLength))
 		if self.maxLength is not None:
@@ -1164,7 +1164,7 @@ class UserField( Field ):
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid user id.'),
 							}
-	defaultValidators = [validateUserId]
+	defaultValidators = [validate_user_id]
 	
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):
@@ -1256,7 +1256,7 @@ class PasswordField( CharField ):
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid password'),
 	}
-	defaultValidators = [validatePassword]
+	defaultValidators = [validate_password]
 	
 	def __init__(self, instance, insField, minLength=None, maxLength=None, required=None, initial='', jsRequired=None, 
 				label=None, helpText=None, jsVal=None):

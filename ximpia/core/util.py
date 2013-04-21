@@ -9,7 +9,7 @@ class AttrDict(dict):
 	def __setattr__(self, attr, value):
 		self[attr] = value
 
-def getClass( kls ):
+def get_class( kls ):
 	"""
 	
 	Get class
@@ -26,7 +26,7 @@ def getClass( kls ):
 
 
 # Import settings and logging
-settings = getClass(os.getenv("DJANGO_SETTINGS_MODULE"))
+settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
@@ -208,7 +208,7 @@ class AppTemplateParser(HTMLParser):
 	__scripts = ''
 	__styles = ''
 	__footer = ''
-	def feedApp(self, data, app):
+	def feed_app(self, data, app):
 		self.__app = app
 		self.feed(data)
 	def __searchId(self, attrs):
