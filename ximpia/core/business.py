@@ -801,13 +801,13 @@ class WorkFlowBusiness (object):
 	
 	def __init__(self, ctx):
 		self._ctx = ctx
-		self._dbWFData = WorkflowDataDAO(ctx, relatedDepth=2)
-		self._dbWorkflow = WorkflowDAO(ctx, relatedDepth=2)
-		self._dbWFView = WorkflowViewDAO(ctx, relatedDepth=2)
-		self._dbWFParams = WFParamValueDAO(ctx, relatedDepth=2)
+		self._dbWFData = WorkflowDataDAO(ctx, related_depth=2)
+		self._dbWorkflow = WorkflowDAO(ctx, related_depth=2)
+		self._dbWFView = WorkflowViewDAO(ctx, related_depth=2)
+		self._dbWFParams = WFParamValueDAO(ctx, related_depth=2)
 		self._dbView = ViewDAO(ctx)
 		self._dbParam = ParamDAO(ctx)
-		#self._dbWFViewParam = WFViewEntryParamDAO(ctx, relatedDepth=2)
+		#self._dbWFViewParam = WFViewEntryParamDAO(ctx, related_depth=2)
 		self.__wfData = get_blank_wf_data({})
 	
 	def gen_user_id(self):

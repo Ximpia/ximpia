@@ -8,7 +8,7 @@ from ximpia.core.business import AppCompRegCommonBusiness
 
 #import business
 from service import SiteService
-from constants import Services, Slugs, Views, Actions, Menus, Tmpls, Flows
+from constants import Services, Slugs, Views, Actions, Menus, Tmpls
 
 # Settings
 from ximpia.core.util import get_class
@@ -96,7 +96,7 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 	def flows(self):
 		# login
 		self._reg.registerFlow(__name__, flowCode='login')
-		self._reg.registerFlowView(__name__, flowCode='login', viewNameSource='login', viewNameTarget='homeLogin', 
+		self._reg.registerFlowView(__name__, flowCode='login', viewNameSource=Views.LOGIN, viewNameTarget=Views.HOME_LOGIN, 
 								actionName='login', order=10)
 
 	def menus(self):		

@@ -289,7 +289,7 @@ def jxAppTemplate(request, app):
     """
 
     service = TemplateService(None)
-    tmpl = service.getApp(app)
+    tmpl = service.get_app(app)
 
     return HttpResponse(tmpl)
 
@@ -340,21 +340,21 @@ def jxDataQuery(request, **args):
     dbArgs = {}
     meta = AttrDict()
     # disablePaging
-    dbArgs['disablePaging'] = False
+    dbArgs['disable_paging'] = False
     if request.REQUEST.has_key('disablePaging'):
-        dbArgs['disablePaging'] = json.loads(request.REQUEST['disablePaging'])
-    if not dbArgs['disablePaging']:
+        dbArgs['disable_paging'] = json.loads(request.REQUEST['disablePaging'])
+    if not dbArgs['disable_paging']:
         if request.REQUEST.has_key('pageStart'):
-            dbArgs['pageStart'] = int(request.REQUEST['pageStart'])
+            dbArgs['page_start'] = int(request.REQUEST['pageStart'])
         else:
-            dbArgs['pageStart'] = 1
-        logger.debug('jxDataQuery :: pageStart: %s' % (dbArgs['pageStart']) )
+            dbArgs['page_start'] = 1
+        logger.debug('jxDataQuery :: pageStart: %s' % (dbArgs['page_start']) )
     # pageEnd
-    if request.REQUEST.has_key('pageEnd') and not dbArgs['disablePaging']:
-        dbArgs['pageEnd'] = int(request.REQUEST['pageEnd'])
+    if request.REQUEST.has_key('pageEnd') and not dbArgs['disable_paging']:
+        dbArgs['page_end'] = int(request.REQUEST['pageEnd'])
     # orderBy
     if request.REQUEST.has_key('orderBy'):
-        dbArgs['orderBy'] = json.loads(request.REQUEST['orderBy'])
+        dbArgs['order_by'] = json.loads(request.REQUEST['orderBy'])
     # args
     if request.REQUEST.has_key('args'):
         requestArgs = json.loads(request.REQUEST['args'])
@@ -365,11 +365,11 @@ def jxDataQuery(request, **args):
                 dbArgs[requestArg] = requestArgs[requestArg]
     # numberResults
     if request.REQUEST.has_key('numberResults'):
-        dbArgs['numberResults'] = int(request.REQUEST['numberResults'])
+        dbArgs['number_results'] = int(request.REQUEST['numberResults'])
     else:
         # Get number results from settings
-        dbArgs['numberResults'] = int(Setting.objects.get(name__name=KSite.SET_NUMBER_RESULTS_LIST).value)
-    logger.debug('jxDataQuery :: numberResults: %s' % (dbArgs['numberResults']) )
+        dbArgs['number_results'] = int(Setting.objects.get(name__name=KSite.SET_NUMBER_RESULTS_LIST).value)
+    logger.debug('jxDataQuery :: numberResults: %s' % (dbArgs['number_results']) )
 
     # hasOrdering
     if request.REQUEST.has_key('hasOrdering') and request.REQUEST['hasOrdering'] == 'true':
@@ -397,35 +397,35 @@ def jxDataQuery(request, **args):
     else:
         dataListTmp = obj.search_fields(fields, **dbArgs)
     # numberPages
-    if dbArgs['disablePaging'] is not True:
+    if dbArgs['disable_paging'] is not True:
         dbArgsPages = copy.copy(dbArgs)
-        if dbArgsPages.has_key('pageStart'):
-            del dbArgsPages['pageStart']
-        if dbArgsPages.has_key('pageEnd'):
-            del dbArgsPages['pageEnd']
+        if dbArgsPages.has_key('page_start'):
+            del dbArgsPages['page_start']
+        if dbArgsPages.has_key('page_end'):
+            del dbArgsPages['page_end']
         if request.REQUEST.has_key('method'):
             """dataListTmp = eval('obj.' + request.REQUEST['method'])(fields, **dbArgsPages)
             logger.debug('jxDataQuery :: type dataListTmp: %s' % (type(dataListTmp)) )
             meta.numberPages = dataListTmp.count()/numberResults"""
             pass
         else:
-            if dbArgsPages.has_key('disablePaging'):
-                del dbArgsPages['disablePaging']
-            if dbArgsPages.has_key('numberResults'):
-                numberResults = dbArgsPages['numberResults']
-                del dbArgsPages['numberResults']
-            if dbArgsPages.has_key('pageStart'): del dbArgsPages['pageStart']
-            if dbArgsPages.has_key('pageEnd'): del dbArgsPages['pageEnd']
-            if dbArgsPages.has_key('orderBy'): del dbArgsPages['orderBy']
+            if dbArgsPages.has_key('disable_paging'):
+                del dbArgsPages['disable_paging']
+            if dbArgsPages.has_key('number_results'):
+                numberResults = dbArgsPages['number_results']
+                del dbArgsPages['number_results']
+            if dbArgsPages.has_key('page_start'): del dbArgsPages['page_start']
+            if dbArgsPages.has_key('page_end'): del dbArgsPages['page_end']
+            if dbArgsPages.has_key('order_by'): del dbArgsPages['order_by']
             meta.numberPages = int(round(float(obj._model.objects.filter(**dbArgsPages).count())/float(numberResults)))
     else:
         meta.numberPages = 1
 
     meta.pageStart = 1
-    if dbArgs.has_key('pageStart'):
-        meta.pageStart = dbArgs['pageStart']
-    if dbArgs.has_key('pageEnd'):
-        meta.pageEnd = dbArgs['pageEnd']
+    if dbArgs.has_key('page_start'):
+        meta.pageStart = dbArgs['page_start']
+    if dbArgs.has_key('page_end'):
+        meta.pageEnd = dbArgs['page_end']
     else:
         meta.pageEnd = meta.pageStart
     #logger.debug('jxDataQuery :: dataListTmp: %s' % (dataListTmp) )

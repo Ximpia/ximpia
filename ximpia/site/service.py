@@ -69,8 +69,8 @@ class SiteService ( CommonService ):
 		Validates that invitation is pending
 		"""
 		setting = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
-		logger.debug('_validate_invitation_pending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.isChecked()) )
-		if setting.isChecked():
+		logger.debug('_validate_invitation_pending :: setting: %s value: %s' % (K.SET_SITE_SIGNUP_INVITATION, setting.is_checked()) )
+		if setting.is_checked():
 			self._validate_exists([
 					[self._dbInvitation, {'invitationCode': invitation_code, 'status': K.PENDING}, 
 							'invitationCode', _m.ERR_invitation_not_valid]

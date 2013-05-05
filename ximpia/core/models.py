@@ -11,7 +11,7 @@ from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.utils import translation
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from filebrowser.fields import FileBrowseField
 
 from choices import Choices
@@ -1137,7 +1137,7 @@ class XpTemplate( BaseModel ):
 			verbose_name=_('Application'), help_text=_('Application for the template'))
 	name = models.CharField(max_length=50, db_column='NAME',
 			verbose_name=_('Name'), help_text=_('Name'))
-	alias = models.CharField(max_length=20, db_column='ALIAS',
+	alias = models.CharField(max_length=50, db_column='ALIAS',
 			verbose_name=_('Alias'), help_text=_('Alias'))
 	language = models.CharField(max_length=2, choices=Choices.LANG, default=Choices.LANG_ENGLISH, db_column='LANGUAGE', 
 			verbose_name=_('Language'), help_text=_('Language'))
@@ -2231,7 +2231,7 @@ class context_view(object):
 						resultDict = get_result_ERROR([('id_pageError', e.msg, True)])
 						sResult = json.dumps(resultDict)
 						# We must mix with template the error, send error data in django context, only need error message
-						result = render_to_response( 'mainXpError.html', RequestContext(request, 
+						result = render_to_response( 'xp-mainXpError.html', RequestContext(request, 
 													{	'error_msg': e.msg,
 														'settings': settings,
 														'result': sResult,

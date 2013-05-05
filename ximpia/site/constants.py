@@ -17,22 +17,22 @@ class Slugs:
 	ACTIVATE_USER = 'activate-user'
 
 class Views:
-	LOGIN = 'view_login'
-	LOGOUT = 'view_logout'
-	REMINDER_NEW_PASSWORD = 'view_reminder_new_password'
-	CHANGE_PASSWORD = 'view_change_password'
-	SIGNUP = 'view_signup'
-	ACTIVATION_USER = 'view_activation_user'
-	HOME_LOGIN = 'view_home_login'
+	LOGIN = 'login'
+	LOGOUT = 'logout'
+	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
+	CHANGE_PASSWORD = 'changePassword'
+	SIGNUP = 'signup'
+	ACTIVATION_USER = 'activationUser'
+	HOME_LOGIN = 'homeLogin'
 
 class Actions:
 	LOGIN = 'login'
-	REQUEST_REMINDER = 'request_reminder'
-	FINALIZE_REMINDER = 'finalize_reminder'
+	REQUEST_REMINDER = 'requestReminder'
+	FINALIZE_REMINDER = 'finalizeReminder'
 	LOGOUT = 'logout'
 	SIGNUP = 'signup'
-	CHANGE_PASSWORD = 'change_password'
-	ACTIVATE_USER = 'activate_user'	
+	CHANGE_PASSWORD = 'changePassword'
+	ACTIVATE_USER = 'activateUser'	
 
 class Menus:
 	SYS = 'sys'

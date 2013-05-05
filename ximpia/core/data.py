@@ -330,10 +330,10 @@ class CommonDAO(object):
 		** Attributes **
 		
 		* ``fields``:tuple<str>
-		* ``pageStart``:int [optional] [default:1]
-		* ``pageEnd``:int [optional]
-		* ``numberResults``:int [optional] [default:from settings]
-		* ``orderBy``:tuple<str> [optional] [default:[]]
+		* ``page_start``:int [optional] [default:1]
+		* ``page_end``:int [optional]
+		* ``number_results``:int [optional] [default:from settings]
+		* ``order_by``:tuple<str> [optional] [default:[]]
 		
 		** Returns **
 		
@@ -343,7 +343,7 @@ class CommonDAO(object):
 		"""
 		try:
 			logger.debug('CommonDAO.searchFields :: pageStart: %s pageEnd: %s' % (page_start, page_end) )
-			logger.debug('CommonDAO.searchFields :: numberResults: %s disablePaging: %s' % (number_results, args['disablePaging']) )
+			logger.debug('CommonDAO.searchFields :: numberResults: %s disablePaging: %s' % (number_results, args['disable_paging']) )
 			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
 				iStart = (page_start-1)*number_results
 				if page_end is None:
@@ -358,16 +358,16 @@ class CommonDAO(object):
 			logger.debug('CommonDAO.searchFields :: args: %s' % (args) )
 			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
 				logger.debug('CommonDAO.searchField:: iStart: %s iEnd: %s' % (iStart, iEnd) )
-				if args.has_key('disablePaging'):
-					del args['disablePaging']
+				if args.has_key('disable_paging'):
+					del args['disable_paging']
 				if len(order_by) == 0:
 					xpList = dbObj.using(self._resolveDbName()).filter(**args)[iStart:iEnd].values_list(*fields)
 				else:
 					xpList = dbObj.using(self._resolveDbName()).filter(**args).order_by(*order_by)[iStart:iEnd].values_list(*fields)
 			else:
 				logger.debug('CommonDAO.searchField:: Have no paging, we get all the data...')
-				if args.has_key('disablePaging'):
-					del args['disablePaging']				
+				if args.has_key('disable_paging'):
+					del args['disable_paging']				
 				if len(order_by) == 0:
 					xpList = dbObj.using(self._resolveDbName()).filter(**args).values_list(*fields)
 				else:

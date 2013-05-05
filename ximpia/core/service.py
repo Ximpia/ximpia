@@ -213,11 +213,11 @@ class service(object):
 					if not obj._ctx.jsData['response'].has_key('settings'):
 						obj._ctx.jsData['response']['settings'] = {}
 					# Get settings with mustAutoLoad=true for global and for this app
-					dbSetting = SettingDAO(obj._ctx, relatedDepth=1)
-					settingsApp = dbSetting.searchSettings(obj._ctx.app)
+					dbSetting = SettingDAO(obj._ctx, related_depth=1)
+					settingsApp = dbSetting.search_settings(obj._ctx.app)
 					for setting in settingsApp:
 						try:
-							value = setting.value
+							value = eval(setting.value)
 						except NameError:
 							value = setting.value
 						obj._ctx.jsData['response']['settings'][setting.name.name] = value
@@ -291,12 +291,12 @@ class service(object):
 				return result
 			except XpMsgException as e:
 				logger.debug( 'service :: ERROR!!!! service!!!!!' )
-				errorDict = obj._getErrors()
+				errorDict = obj._get_errors()
 				if len(errorDict) != 0:
 					if self._isServerTmpl == False:
-						result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
+						result = obj._buildJSONResult(obj._get_error_result_dict(errorDict, pageError=self._pageError))
 					else:
-						result = obj._getErrorResultDict(errorDict, pageError=self._pageError)
+						result = obj._get_error_result_dict(errorDict, pageError=self._pageError)
 					logger.debug( result )
 				else:
 					if settings.DEBUG == True:
@@ -650,7 +650,7 @@ class view_tmpl ( object ):
 				tmplApp = tmplService.get_app(self.__APP)
 				#logger.debug('view_tmpl :: tmplApp: %s' % (tmplApp) )
 				parserApp = AppTemplateParser()
-				parserApp.feedApp(tmplApp, self.__APP)
+				parserApp.feed_app(tmplApp, self.__APP)
 				logger.debug('view_tmpl :: styles: %s' % (parserApp.styles) )
 				#logger.debug('view_tmpl :: tmplData: %s' % (tmplData) )
 				parser = TemplateParser()
@@ -943,12 +943,12 @@ class MenuService( object ):
 		"""
 		self.__viewName = view_Name
 		# db instances
-		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
-		self._dbViewMenu = ViewMenuDAO(self._ctx, relatedDepth=3)
-		self._dbServiceMenu = ServiceMenuDAO(self._ctx, relatedDepth=3)
-		self._dbMenuParam = MenuParamDAO(self._ctx, relatedDepth=3)
-		self._dbViewMenuCondition = ViewMenuConditionDAO(self._ctx, relatedDepth=2)
-		self._dbServiceMenuCondition = ServiceMenuConditionDAO(self._ctx, relatedDepth=2)
+		self._dbView = ViewDAO(self._ctx, related_depth=2)
+		self._dbViewMenu = ViewMenuDAO(self._ctx, related_depth=3)
+		self._dbServiceMenu = ServiceMenuDAO(self._ctx, related_depth=3)
+		self._dbMenuParam = MenuParamDAO(self._ctx, related_depth=3)
+		self._dbViewMenuCondition = ViewMenuConditionDAO(self._ctx, related_depth=2)
+		self._dbServiceMenuCondition = ServiceMenuConditionDAO(self._ctx, related_depth=2)
 		# logic
 		logger.debug( 'getMenus...' )
 		logger.debug( 'getMenus :: appName: %s' % (self._ctx.app) )
@@ -1003,12 +1003,12 @@ class SearchService ( object ):
 		"""Search index operations"""
 		self._ctx = ctx
 		self._dbApp = ApplicationDAO(self._ctx)
-		self._dbView = ViewDAO(self._ctx, relatedDepth=2)
-		self._dbAction = ActionDAO(self._ctx, relatedDepth=2)
-		self._dbSearch = SearchIndexDAO(self._ctx, relatedDepth=3)
-		self._dbIndexWord = SearchIndexWordDAO(self._ctx, relatedDepth=2)
+		self._dbView = ViewDAO(self._ctx, related_depth=2)
+		self._dbAction = ActionDAO(self._ctx, related_depth=2)
+		self._dbSearch = SearchIndexDAO(self._ctx, related_depth=3)
+		self._dbIndexWord = SearchIndexWordDAO(self._ctx, related_depth=2)
 		self._dbWord = WordDAO(self._ctx)
-		self._dbIndexParam = SearchIndexParamDAO(self._ctx, relatedDepth=3)
+		self._dbIndexParam = SearchIndexParamDAO(self._ctx, related_depth=3)
 		self._dbParam = ParamDAO(self._ctx)
 	def add_index(self, text, app_code, view_name=None, action_name=None, params={}):
 		"""Add data to search index"""
@@ -1124,7 +1124,7 @@ class TemplateService ( object ):
 	def __init__(self, ctx):
 		"""Menu building and operations"""
 		self._ctx = ctx
-		self._dbViewTmpl = ViewTmplDAO(self._ctx, relatedDepth=2)
+		self._dbViewTmpl = ViewTmplDAO(self._ctx, related_depth=2)
 		self._dbTemplate = TemplateDAO(self._ctx)
 	def __findTemplPath(self, module):
 		"""
@@ -1183,11 +1183,17 @@ class TemplateService ( object ):
 		* ``tmpl``:string
 		"""
 		self.__app = app
-		logger.debug('TemplateService.get :: app: %s' % app)
+		logger.debug('TemplateService.get_app :: app: %s' % app)
 		if settings.DEBUG == True:
 			package, module = app.split('.')
 			m = get_class(package + '.' + module)
-			path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
+			if app == 'ximpia.site':
+				appModulePath = settings.__file__.split('settings')[0]
+				pathSite = appModulePath + 'web/templates/site'
+				if os.path.exists(pathSite) and os.path.isdir(pathSite):
+					path = pathSite + '/' + app.split('.')[1] + '.html'
+			else:
+				path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
 			if os.path.isfile(path):
 				with open(path) as f:
 					tmpl = f.read()
@@ -1279,8 +1285,10 @@ class TemplateService ( object ):
 					pass"""
 		else:
 			tmplList = self._dbViewTmpl.search(view__name=view_name, template__language=self._ctx.lang)
+			logger.debug('TemplateService.resolve :: tmplList: {}'.format(tmplList))
 			for viewTmpl in tmplList:
 				tmpl = viewTmpl.template
+				# alias? name?
 				templates[tmpl.alias] = tmpl.name
 			"""if len(tmplList) > 1:
 				#tmplName = tmplList.filter(template__winType=Choices.WIN_TYPE_WINDOW)[0].template.name
@@ -1291,7 +1299,7 @@ class TemplateService ( object ):
 					tmplName = tmplList[0].template.name
 				else:
 					pass"""
-		#logger.debug( 'templates: %s' % (templates) )
+		logger.debug( 'TemplateService.resolve :: templates: {}'.format(templates))
 		return templates
 
 
@@ -1378,7 +1386,7 @@ class CommonService( object ):
 		@param view_name:
 		@param view_attrs:
 		@return: result"""
-		self._setTargetView(view_name)
+		self._set_target_view(view_name)
 		db = ViewDAO(self._ctx)
 		viewTarget = db.get(name=view_name)
 		impl = viewTarget.implementation
@@ -1468,7 +1476,7 @@ class CommonService( object ):
 
 		models.site.Setting model instance
 		"""
-		self._dbSetting = SettingDAO(self._ctx, relatedDepth=2)
+		self._dbSetting = SettingDAO(self._ctx, related_depth=2)
 		setting = self._dbSetting.get(name__name=setting_name)
 		return setting
 
