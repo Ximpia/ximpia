@@ -405,13 +405,13 @@ class XBaseForm(forms.Form):
 		return value
 	def clean(self):
 		"""Common clean data."""
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
-	def _xpClean(self):
+	def _xp_clean(self):
 		"""Cleans form. Raises ValidationError in case errors found. Returns cleaned_data"""
 		#logger.debug( 'XBaseForm :: hasInvalidErrors(): ' + self.hasInvalidErrors() )
-		self._validateCaptcha()
-		if self.hasInvalidErrors():
+		self._validate_captcha()
+		if self.has_invalid_errors():
 			raise ValidationError('Form Clean Validation Error')
 		"""logger.debug( 'self.cleaned_data : ' + self.cleaned_data )
 		return self.cleaned_data"""

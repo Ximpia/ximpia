@@ -59,7 +59,7 @@ class LoginForm(XBaseForm):
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
 
 class HeaderForm(XBaseForm):
@@ -68,7 +68,7 @@ class HeaderForm(XBaseForm):
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
 
 class PasswordReminderForm(XBaseForm):
@@ -79,7 +79,7 @@ class PasswordReminderForm(XBaseForm):
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_REMINDER']]))
 	def clean(self):
 		"""Clean form"""
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
 
 class ChangePasswordForm(XBaseForm):
@@ -94,7 +94,7 @@ class ChangePasswordForm(XBaseForm):
 	def clean(self):
 		"""Clean form"""
 		self._validateSameFields([('newPassword','newPasswordConfirm')])
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
 
 class UserChangePasswordForm( XBaseForm ):
@@ -109,8 +109,8 @@ class UserChangePasswordForm( XBaseForm ):
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	def clean(self):
 		"""Clean form"""
-		self._validateSameFields([('newPassword','newPasswordConfirm')])
-		self._xpClean()
+		self._validate_same_fields([('newPassword','newPasswordConfirm')])
+		self._xp_clean()
 		return self.cleaned_data
 
 class UserSignupInvitationForm ( XBaseForm ):
@@ -150,7 +150,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._getFieldValue('authSource')) )
 		if self._get_field_value('authSource') == K.PASSWORD:
 			self._validate_same_fields([('password','passwordVerify')])
-		self._xpClean()
+		self._xp_clean()
 		return self.cleaned_data
 
 class ActivateUserForm ( XBaseForm ):

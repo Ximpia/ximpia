@@ -1423,7 +1423,7 @@ ximpia.common.Form = function() {
 											ximpia.console.log(obj.attrs);
 											var tmplPath = ximpia.common.PageAjax.getTemplatePath({
 												app : responseMap['response']['app'],
-												name : responseMap['response']['view'],
+												name : responseMap['response']['tmpl'][responseMap['response']['view']],
 												viewType : obj.attrs.viewType
 											});
 											ximpia.console.log('tmplPath: ' + tmplPath)

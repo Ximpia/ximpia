@@ -285,7 +285,7 @@ class service(object):
 				else:
 					logger.debug( 'service :: I skip building response, since I already did it!!!!!' )
 					if self._isServerTmpl == False:
-						result = obj._buildJSONResult(obj._ctx.jsData)
+						result = obj._build_JSON_result(obj._ctx.jsData)
 					else:
 						result = obj._ctx.jsData
 				return result
@@ -294,9 +294,9 @@ class service(object):
 				errorDict = obj._get_errors()
 				if len(errorDict) != 0:
 					if self._isServerTmpl == False:
-						result = obj._buildJSONResult(obj._get_error_result_dict(errorDict, pageError=self._pageError))
+						result = obj._build_JSON_result(obj._get_error_result_dict(errorDict, page_error=self._pageError))
 					else:
-						result = obj._get_error_result_dict(errorDict, pageError=self._pageError)
+						result = obj._get_error_result_dict(errorDict, page_error=self._pageError)
 					logger.debug( result )
 				else:
 					if settings.DEBUG == True:
@@ -351,13 +351,13 @@ class validate_form(object):
 			#obj._ctx.form = obj._f
 			#logger.debug( 'validate_form :: Form Validation: %s' % (bForm) )
 			if bForm == True:
-				obj._setMainForm(obj._ctx.form)
+				obj._set_main_form(obj._ctx.form)
 				result = f(*argsTuple, **argsDict)
 				return result
 				"""try:
 					f(*argsTuple, **argsDict)
 					obj._f.buildJsData(obj._ctx.jsData)
-					result = obj.buildJSONResult(obj._ctx.jsData)
+					result = obj.build_JSON_result(obj._ctx.jsData)
 					#logger.debug( result )
 					return result
 				except XpMsgException as e:
@@ -368,7 +368,7 @@ class validate_form(object):
 						logger.debug( e.myException )
 						traceback.printl_exc()
 					if len(errorDict) != 0:
-						result = obj.buildJSONResult(obj.getErrorResultDict(errorDict, pageError=self._pageError))
+						result = obj.build_JSON_result(obj.getErrorResultDict(errorDict, page_error=self._pageError))
 					else:
 						raise
 					return result"""
@@ -387,7 +387,7 @@ class validate_form(object):
 				if obj._ctx.form.errors.has_key('invalid'):
 					errorDict = {'': obj._ctx.form.errors['invalid'][0]}
 					logger.debug( 'errorDict: %s' % (errorDict) )
-					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+					result = obj._build_JSON_result(obj._getErrorResultDict(errorDict, page_error=True))
 				else:
 					#errorDict = {'': 'Error validating your data. Check it out and send again'}
 					# Build errordict
@@ -396,7 +396,7 @@ class validate_form(object):
 						if field != '__all__':
 							errorDict[field] = obj._ctx.form.errors[field][0]
 					logger.debug( 'errorDict: %s' % (errorDict) )
-					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=False))
+					result = obj._build_JSON_result(obj._getErrorResultDict(errorDict, page_error=False))
 				return result
 		return wrapped_f
 
@@ -426,7 +426,7 @@ class wf_view( object ):
 				logger.debug( 'wf_view :: COOKIE :: WF User Id: %s' % (obj._ctx.wfUserId) )
 			else:
 				obj._ctx.wfUserId = obj._wf.genUserId()
-				obj._setCookie('wfUserId', obj._ctx.wfUserId)
+				obj._set_cookie('wfUserId', obj._ctx.wfUserId)
 				logger.debug( 'wf_view :: WF UserId: %s' % (obj._ctx.wfUserId) )"""
 			obj._ctx.wfUserId = obj._getWFUser()
 			logger.debug( 'wf_view :: WF UserId: %s' % (obj._ctx.wfUserId) )
@@ -570,7 +570,7 @@ class wf_action(object):
 				logger.debug( 'ERROR!!!! wf_action!!!!!' )
 				errorDict = obj._getErrors()
 				if len(errorDict) != 0:
-					result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=True))
+					result = obj._build_JSON_result(obj._getErrorResultDict(errorDict, page_error=True))
 					logger.debug( result )
 				else:
 					if settings.DEBUG == True:
@@ -1230,7 +1230,7 @@ class TemplateService ( object ):
 		"""
 		self.__app, self.__mode, self.__tmplName = app, mode, tmpl_name
 
-		logger.debug('TemplateService.get :: app: %s' % app)
+		logger.debug('TemplateService.get :: app: %s tmpl_name: %s' % (app, tmpl_name))
 
 		if settings.DEBUG == True:
 			package, module = app.split('.')
@@ -1437,7 +1437,7 @@ class CommonService( object ):
 			self._ctx.wfUserId = self._ctx.cookies['XP_WFUID']
 		else:
 			self._ctx.wfUserId = self._wf.genUserId()
-			self._setCookie('XP_WFUID', self._ctx.wfUserId)
+			self._set_cookie('XP_WFUID', self._ctx.wfUserId)
 		self._wfUserId = self._ctx.wfUserId
 		return self._wfUserId
 
@@ -1496,7 +1496,7 @@ class CommonService( object ):
 			return wrapped_f
 		else:
 			# Errors
-			result = self._buildJSONResult(self._getErrorResultDict())
+			result = self._build_JSON_result(self._getErrorResultDict())
 			return result"""
 
 	def _get_form(self):
@@ -1580,7 +1580,7 @@ class CommonService( object ):
 			logger.debug( 'validate Exists Data: args: %s exists: %s fieldName: %s errMsg: %s' %
 						(qArgs, str(exists), str(fieldName), str(errMsg)) )
 			if not exists:
-				self._addError(fieldName, errMsg)
+				self._add_error(fieldName, errMsg)
 
 	def _validate_not_exists(self, db_data_list):
 		"""Validates that db data provided does not exist. Error is shown in case exists.
@@ -1595,14 +1595,14 @@ class CommonService( object ):
 			logger.debug( 'Exists : %s' % (exists) )
 			if exists:
 				logger.debug( 'I add error: %s %s' % (fieldName, errMsg) )
-				self._addError(fieldName, errMsg)
+				self._add_error(fieldName, errMsg)
 
 	def _validate_context(self, ctx_data_list):
 		"""Validates context variable. [[name, value, fieldName, errName],...]"""
 		for ctxData in ctx_data_list:
 			name, value, fieldName, errMsg = ctxData
 			if self._ctx[name] != value:
-				self._addError(fieldName, errMsg)
+				self._add_error(fieldName, errMsg)
 
 	def _authenticate_user(self, ximpia_id, password, field_name, error_msg):
 		"""Authenticates user and password"""
@@ -1611,7 +1611,7 @@ class CommonService( object ):
 		if user:
 			pass
 		else:
-			self._addError(field_name, error_msg)
+			self._add_error(field_name, error_msg)
 		return user
 
 	def _authenticate_user_soc_net(self, social_id, social_token, auth_source, field_name, error_msg):
@@ -1622,7 +1622,7 @@ class CommonService( object ):
 		if user:
 			pass
 		else:
-			self._addError(field_name, error_msg)
+			self._add_error(field_name, error_msg)
 		return user
 
 	def _is_valid(self):
@@ -1697,7 +1697,7 @@ class CommonService( object ):
 			logger.debug( 'COOKIE :: userChannelName: %s' % (userChannelName) )
 		else:
 			userChannelName = K.USER
-			self._setCookie('userChannelName', userChannelName)
+			self._set_cookie('userChannelName', userChannelName)
 		return userChannelName
 
 	def _login(self):

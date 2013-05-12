@@ -253,7 +253,7 @@ class SiteService ( CommonService ):
 		
 		logger.debug('login :: authSource: %s' % (self._f()['authSource']) )		
 		
-		self._authenUser()
+		self._authen_user()
 		logger.debug( 'login :: user: %s' % (self._ctx.user) )
 		self._login()
 		
@@ -418,7 +418,7 @@ class SiteService ( CommonService ):
 										'userAccount': user.username,
 										'reminderId': reminder_id}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 		logger.debug( 'requestReminder :: sent Email' )
-		self._setOkMsg('OK_PASSWORD_REMINDER')
+		self._set_ok_msg('OK_PASSWORD_REMINDER')
 	
 	@action(forms.ChangePasswordForm)
 	def finalize_reminder(self):

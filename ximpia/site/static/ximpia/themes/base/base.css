@@ -1550,7 +1550,8 @@ legend {
 .sys-selector img {
 	background: url(images/selector-arrow.png) no-repeat;
 	width: 9px;
-	height: 9px; 
+	height: 9px;
+	margin-top: 10px; 
 }
 
 /* Arrows */
