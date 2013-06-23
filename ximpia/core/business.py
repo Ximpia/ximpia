@@ -395,7 +395,8 @@ class ComponentRegisterBusiness ( object ):
 		* ``compName``
 		* ``serviceName``
 		* ``viewName``
-		* ``impl``
+		* ``className``
+		* ``method``
 		* ``winType``
 		* ``hasUrl``
 		* ``hasAuth``

@@ -2786,12 +2786,17 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 		// TODO: analyse the onSelect function
 		// TODO: Integrate header search with jxSuggestList
 		// TODO: Alternative for jsonSuggest due to license problems with GPL
-		$("#id_header_search").jsonSuggest({
-			url : '/jxSearchHeader',
-			maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
-			minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
-			onSelect : ximpia.common.Search.doClick
-		});
+		if ($('#id_header_extra').find('ul.jsonSuggest').length == 0) {
+			// For view display, only render first view, later views will not render header search...
+			$("#id_header_search").jsonSuggest({
+				url : '/jxSearchHeader',
+				maxHeight : ximpia.settings.COMPLETE_MAX_HEIGHT,
+				minCharacters : ximpia.settings.COMPLETE_MIN_CHARACTERS,
+				width: 300,
+				maxResults: 7,
+				onSelect : ximpia.common.Search.doClick
+			});			
+		}
 		// Bind bubbles
 		oform = ximpia.common.Form();
 		oform.doBindBubbles();
@@ -2964,20 +2969,19 @@ ximpia.common.Search.doClick = (function(item) {
 		ximpia.console.log('Search.doClick :: action!!!!');
 		var pageJx = ximpia.common.PageAjax();
 		pageJx.doAction({
+			app: attrs.app,
 			action : attrs.action
 		});
 	} else if (attrs.view != '') {
 		// show view
-		// popupNoView
-		// popupView
-		// view
 		ximpia.console.log('Search.doClick :: view!!!!');
 		ximpia.console.log('Search.doClick :: view: ' + attrs.view);
-		ximpia.common.PageAjax.doFadeIn();
 		var pageJx = ximpia.common.PageAjax();
-		pageJx.getView({
+		pageJx.getView({ 
+			app: attrs.app,
 			view : attrs.view,
-			params : JSON.stringify(attrs.params)
+			params : JSON.stringify(attrs.params),
+			winType: attrs.winType
 		});
 	}
 });

@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from models import XpMsgException, CoreParam, Application, Action
 from models import Menu, MenuParam, View, Workflow, Param, WFParamValue, WorkflowData, ServiceMenu
 from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, SearchIndexWord, XpTemplate, ViewTmpl, ServiceMenuCondition
-from models import ViewMenuCondition
+from models import ViewMenuCondition, ApplicationMedia
 from models import Context, JsResultDict
 
 from ximpia.site.models import Setting
@@ -389,6 +389,11 @@ class ApplicationDAO(CommonDAO):
 	def __init__(self, ctx, *args_tuple, **args_dict):
 		super(ApplicationDAO, self).__init__(ctx, *args_tuple, **args_dict)
 		self._model = Application
+
+class ApplicationMediaDAO(CommonDAO):
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(ApplicationMediaDAO, self).__init__(ctx, *args_tuple, **args_dict)
+		self._model = ApplicationMedia
 
 class ActionDAO(CommonDAO):
 	def __init__(self, ctx, *args_tuple, **args_dict):

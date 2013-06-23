@@ -214,11 +214,11 @@ class Field( DjField ):
 		"""Process required and javascript required"""
 		# True | None => True		
 		# False | None => False
-		logger.debug('Field._doRequired :: field: %s required: %s' % (self.instanceFieldName, required) )
+		#logger.debug('Field._doRequired :: field: %s required: %s' % (self.instanceFieldName, required) )
 		if required == None and self.instance != None:
 			required = not self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null
-			logger.debug('Field._doRequired :: field: %s model field null: %s required: %s' % 
-						(self.instanceFieldName, self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null, required) )
+			"""logger.debug('Field._doRequired :: field: %s model field null: %s required: %s' % 
+						(self.instanceFieldName, self.instance.__class__._meta.get_field_by_name(self.instanceFieldName)[0].null, required) )"""
 		if jsRequired == None:
 			jsRequired = required
 		fieldTypeFields = str(type(self)).split('.')

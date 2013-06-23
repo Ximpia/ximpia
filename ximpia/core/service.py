@@ -27,7 +27,7 @@ from util import TemplateParser, AppTemplateParser
 from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
-from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO
+from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO, ApplicationMediaDAO
 from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO, ViewMenuConditionDAO, ServiceMenuConditionDAO
 from ximpia.util import resources
 from choices import Choices
@@ -1011,7 +1011,20 @@ class SearchService ( object ):
 		self._dbIndexParam = SearchIndexParamDAO(self._ctx, related_depth=3)
 		self._dbParam = ParamDAO(self._ctx)
 	def add_index(self, text, app_code, view_name=None, action_name=None, params={}):
-		"""Add data to search index"""
+		"""Add data to search index
+		
+		** Required Attributes **
+		
+		* ``text``:str : Text to index
+		* ``app_code``:str : Application code
+		
+		** Optional Attributes **
+		* ``view_name``:str : View name
+		* ``action_name``:str : Action name. Either view name or action name must be called.
+		* ``params``:dict : Parameters associated with the search entry.
+		
+		** Returns**
+		None"""
 		wordList = resources.Index.parseText(text)
 		view = self._dbView.get(name=view_name) if view_name != None else None
 		action = self._dbAction.get(name=action_name) if action_name != None else None
@@ -1036,8 +1049,14 @@ class SearchService ( object ):
 								value=params[paramName])
 	def search(self, text):
 		"""Search for views and actions
-		@param text: text to search
-		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
+		
+		** Attributes **
+		
+		* ``text``:str : text to search
+		
+		** Returns**
+		
+		List of dictionaries with "id", "text", "image" and "extra" fields."""
 		# Search first 100 matches
 		# return best 15 matches with titile, link information and application icon
 		# return results in format needed by autocomplete plugin
@@ -1045,6 +1064,7 @@ class SearchService ( object ):
 		logger.debug( 'wordList: %s' % (wordList) )
 		#results = self._dbIndexWord.search(word__word__in=wordList)[:100]
 		# Build Q instance
+		# TODO: Get views / actions I have access and comply with states (logged in, etc...)
 		myQ = Q(word__word__startswith=wordList[0])
 		for word in wordList[1:]:
 			myQ = myQ | Q(word__word__startswith=word)
@@ -1054,15 +1074,17 @@ class SearchService ( object ):
 		logger.debug( results.query )
 		container = {}
 		containerData = {}
+		apps = []
 		for data in results:
 			logger.debug( 'data: %s' % (data) )
 			if not container.has_key(data.index.pk):
 				container[data.index.pk] = 0
 			container[data.index.pk] += 1
-			#container[data.index.pk] += 1 if container.has_key(data.index.pk) else 1
 			containerData[data.index.pk] = data
+			apps.append(data.index.application)
 		logger.debug( 'conatiner: %s' % (container) )
 		logger.debug( 'containerData: %s' % (containerData) )
+		logger.debug('apps: {}'.format(apps))
 		tupleList = []
 		for pk in container:
 			tupleList.append((container[pk], containerData[pk]))
@@ -1072,11 +1094,22 @@ class SearchService ( object ):
 		for theTuple in tupleListFinal:
 			data = theTuple[1]
 			myDict = {}
+			extraDict = {}
 			myDict['id'] = data.index.id
 			myDict['text'] = data.index.title
-			myDict['image'] = ''
-			extraDict = {}
+			# get full path for image version: static...
+			myDict['image'] = data.index.view.image.version_generate('thumbnail').url if data.index.view and data.index.view.image else ''
+			myDict['image'] = data.index.action.image.version_generate('thumbnail').url if data.index.action and  data.index.action.image else myDict['image']
+			# app image
+			if  myDict['image'] == '':
+				try: 
+					image = data.index.application.applicationmedia_set.get(type__name=K.PARAM_ICON).image
+					myDict['image'] = image.version_generate('thumbnail').url
+				except:
+					pass
 			extraDict['view'] = data.index.view.name if data.index.view != None else ''
+			if data.index.view:
+				extraDict['winType'] = data.index.view.winType
 			extraDict['action'] = data.index.action.name if data.index.action != None else ''
 			params = data.index.params.all()
 			paramDict = {}
@@ -1084,30 +1117,6 @@ class SearchService ( object ):
 				paramDict[param.name] = param.value
 			extraDict['params'] = paramDict
 			extraDict['app'] = data.index.application.name
-			myDict['extra'] = extraDict
-			resultsFinal.append(myDict)
-		return resultsFinal
-	def search_old(self, text):
-		"""Search for views and actions
-		@param text: text to search
-		@return: results : List of dictionaries with "id", "text", "image" and "extra" fields."""
-		results = self._dbSearch.search(title__icontains=text)[:15]
-		logger.debug( 'search :: results: %s' % (results) )
-		resultsFinal = []
-		for data in results:
-			myDict = {}
-			myDict['id'] = data.id
-			myDict['text'] = data.title
-			myDict['image'] = ''
-			extraDict = {}
-			extraDict['view'] = data.view.name if data.view != None else ''
-			extraDict['action'] = data.action.name if data.action != None else ''
-			params = data.params.all()
-			paramDict = {}
-			for param in params:
-				paramDict[param.name] = param.value
-			extraDict['params'] = paramDict
-			extraDict['app'] = data.application.name
 			myDict['extra'] = extraDict
 			resultsFinal.append(myDict)
 		return resultsFinal

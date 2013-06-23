@@ -122,7 +122,12 @@
 			*/
 			function selectResultItem(item) {
 				//obj.val(item.text);
-				$(results).html('').hide();
+				ximpia.console.log('ximpia.jsonSuggest :: results...')
+				ximpia.console.log(results)
+				ximpia.console.log(results.parent())
+				/*$(results).html('').hide();
+				$(results).html('').css('display', 'none');*/
+				$(results).remove();
 				if (typeof settings.onSelect === 'function') {
 					settings.onSelect(item);
 					obj.val('');
@@ -157,6 +162,7 @@
 					filterPatt = settings.caseSensitive ? new RegExp(filterTxt, 'g') : new RegExp(filterTxt, 'ig');
 					
 				$(results).html('').hide();
+				//$(results).remove();
 				
 				for (i = 0; i < resultObjects.length; i += 1) {
 					var item = $('<li />'),
@@ -168,8 +174,8 @@
 					
 					$(item).append('<a class="ui-corner-all">' + text + '</a>');
 					
-					if (typeof resultObjects[i].image === 'string') {
-						$('>a', item).prepend('<img src="' + resultObjects[i].image + '" />');
+					if (typeof resultObjects[i].image === 'string' && resultObjects[i].image) {
+						$('>a', item).prepend('<img src="' + resultObjects[i].image + '" style="vertical-align: bottom;width: 18px;margin-right: 2px;" />');
 					}
 					
 					if (typeof resultObjects[i].extra === 'string') {
@@ -239,6 +245,7 @@
 				
 				if (this.value.length < settings.minCharacters) {
 					$(results).html('').hide();
+					//$(results).remove();
 					return false;
 				}
 				
@@ -258,6 +265,7 @@
 							}
 							else {
 								$(results).html('').hide();
+								//$(results).remove();
 							}
 						});
 					}, 500);
@@ -310,11 +318,12 @@
 			// Prepare the input box to show suggest results by adding in the events
 			// that will initiate the search and placing the element on the page
 			// that will show the results.
+			// TODO: Place left and top into settings!!! so we can configure depending on locations: header search, completion, etc...
 			$(results).addClass('jsonSuggest ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all').
 				attr('data-suggest-role', 'listbox').
 				css({
-					'top': (obj.position().top + obj.outerHeight()) + 'px',
-					'left': obj.position().left + 'px',
+					'top': (obj.position().top + obj.outerHeight()) + 3 + 'px',
+					'left': obj.position().left + 5 + 'px',
 					'width': settings.width || (obj.outerWidth() + 'px'),
 					'z-index': 999
 				}).hide();
@@ -342,8 +351,8 @@
 				}).
 				focus(function(e) {
 					$(results).css({
-						'top': (obj.offset().top + obj.outerHeight()) + 'px',
-						'left': obj.position().left + 'px'
+						'top': (obj.offset().top + obj.outerHeight()) + 3 + 'px',
+						'left': obj.position().left + 5 + 'px'
 					});
 				
 					if ($('li', results).length > 0) {

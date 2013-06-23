@@ -361,7 +361,7 @@ class ApplicationMedia( BaseModel ):
 	menuOrder = models.PositiveSmallIntegerField(default=1,
 				verbose_name = _('Menu Order'), help_text = _('Menu Order'), db_column='MENU_ORDER')
 	def __unicode__(self):
-		return ''
+		return '{} : {}'.format(self.type, self.image)
 	class Meta:
 		db_table = 'CORE_APPLICATION_MEDIA'
 		verbose_name = _('Application Media')
@@ -2017,6 +2017,7 @@ class ctx(object):
 					lang = 'en'
 				# Instantiate app Context
 				try:
+					logger.debug('self._app: {}'.format(self._app))
 					cls = get_class( self._app + '.service.Context' )
 					ctx = cls()
 				except AttributeError:

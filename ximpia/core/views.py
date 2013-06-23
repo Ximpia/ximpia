@@ -237,7 +237,7 @@ def jxSuggestList(request, **args):
     return HttpResponse(json.dumps(resultList))
 
 @context
-def searchHeader(request, **args):
+def jxSearchHeader(request, **args):
     """Search ximpia for views and actions."""
     try:
         logger.debug( 'searchHeader...' )
