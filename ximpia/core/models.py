@@ -4,6 +4,7 @@ import types
 import traceback
 import json
 import os
+import cPickle
 
 from django.db import models
 from django.shortcuts import render_to_response
@@ -1588,7 +1589,6 @@ class Context ( object ):
 	application = None
 	user = None
 	lang = None
-	settings = None
 	session = None
 	cookies = None
 	meta = None
@@ -1600,7 +1600,6 @@ class Context ( object ):
 	form = None
 	forms = {}
 	captcha = None
-	rawRequest = None
 	ctx = None
 	jsData = None
 	viewNameSource = None
@@ -1634,7 +1633,6 @@ class Context ( object ):
 	* ``app``:String : Application name
 	* ``user``:User : User
 	* ``lang``:String : Language
-	* ``settings``:String : Django settings
 	* ``session``:String : Django session object
 	* ``cookies``:object : Django cookies
 	* ``meta``:object : Django META object
@@ -1646,7 +1644,6 @@ class Context ( object ):
 	* ``form``:object : Main form for view
 	* ``forms``:Dict : Forms container for view
 	* ``captcha``:String : Captcha text
-	* ``rawRequest``:object : Raw request
 	* ``ctx``:object : Context
 	* ``jsData``:JsResultDict : json data response object, JsResultDict()
 	* ``viewNameSource``:String : For workflows, source view name. In case we have no workflow, this value will be the requested view
@@ -1690,7 +1687,6 @@ class Context ( object ):
 		self.form = None
 		self.forms = {}
 		self.captcha = None
-		self.rawRequest = None
 		self.ctx = None
 		self.jsData = None
 		self.viewNameSource = None
@@ -1779,8 +1775,6 @@ class Context ( object ):
 		return self.__forms
 	def get_captcha(self):
 		return self.__captcha
-	def get_raw_request(self):
-		return self.__rawRequest
 	def get_ctx(self):
 		return self.__ctx
 	def get_js_data(self):
@@ -1847,8 +1841,6 @@ class Context ( object ):
 		self.__forms = value
 	def set_captcha(self, value):
 		self.__captcha = value
-	def set_raw_request(self, value):
-		self.__rawRequest = value
 	def set_ctx(self, value):
 		self.__ctx = value
 	def set_js_data(self, value):
@@ -1915,8 +1907,6 @@ class Context ( object ):
 		del self.__forms
 	def del_captcha(self):
 		del self.__captcha
-	def del_raw_request(self):
-		del self.__rawRequest
 	def del_ctx(self):
 		del self.__ctx
 	def del_js_data(self):
@@ -1970,7 +1960,6 @@ class Context ( object ):
 	form = property(get_form, set_form, del_form, "form's docstring")
 	forms = property(get_forms, set_forms, del_forms, "forms's docstring")
 	captcha = property(get_captcha, set_captcha, del_captcha, "captcha's docstring")
-	rawRequest = property(get_raw_request, set_raw_request, del_raw_request, "rawRequest's docstring")
 	ctx = property(get_ctx, set_ctx, del_ctx, "ctx's docstring")
 	jsData = property(get_js_data, set_js_data, del_js_data, "jsData's docstring")
 	viewNameSource = property(get_view_name_source, set_view_name_source, del_view_name_source, "viewNameSource's docstring")
@@ -2026,13 +2015,18 @@ class ctx(object):
 				ctx.app = self._app
 				ctx.user = request.user
 				ctx.lang = lang
-				ctx.settings = settings
 				ctx.session = request.session
 				ctx.cookies = request.COOKIES
-				ctx.meta = request.META
+				meta_dict = {}
+				for key in request.META:
+					try:
+						meta_key_str = cPickle.dumps(request.META[key])
+						meta_dict[key] = request.META[key]
+					except:
+						pass
+				ctx.meta = meta_dict
 				ctx.post = request.POST
 				ctx.request = REQ
-				ctx.rawRequest = request
 				ctx.get = request.GET
 				ctx.device = Choices.DEVICE_PC
 				ctx.country = ''
@@ -2152,13 +2146,18 @@ class context_view(object):
 				ctx.app = self._app
 				ctx.user = request.user
 				ctx.lang = lang
-				ctx.settings = settings
 				ctx.session = request.session
 				ctx.cookies = request.COOKIES
-				ctx.meta = request.META
+				meta_dict = {}
+				for key in request.META:
+					try:
+						meta_key_str = cPickle.dumps(request.META[key])
+						meta_dict[key] = request.META[key]
+					except:
+						pass
+				ctx.meta = meta_dict
 				ctx.post = request.POST
 				ctx.request = REQ
-				ctx.rawRequest = request
 				ctx.get = request.GET
 				ctx.device = Choices.DEVICE_PC
 				ctx.country = ''
@@ -2370,6 +2369,11 @@ class JsResultDict(dict):
 		dict.__setitem__(self, self.STATUS, self.ERROR)
 		dict.__setitem__(self, self.ERRORS, errorList)
 		dict.__setitem__(self, self.RESPONSE, AttrDict())
+	def __getstate__(self):
+		d = {}
+		for key in self.__dict__:
+			d[key] = self.__dict__[key]
+		return d
 
 def get_result_OK(dataDict, status='OK'):
 	"""Build result dict for OK status. resultList is a list of objects or content to show in client"""

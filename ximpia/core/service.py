@@ -8,6 +8,7 @@ import types
 import datetime
 import os
 import re
+import cPickle
 
 # django
 from django.http import HttpResponse, Http404
@@ -1327,6 +1328,7 @@ class CommonService( object ):
 	_actions = {}
 	_wf = None
 	_wfUserId = ''
+	request = None
 
 	def __init__(self, ctx):
 		self._ctx = ctx
@@ -1339,6 +1341,18 @@ class CommonService( object ):
 		self._wf = WorkFlowBusiness(self._ctx)
 		self._viewNameTarget = ''
 		self._wfUserId = ''
+
+	def get_request(self):
+		return self.__request
+
+
+	def set_request(self, value):
+		self.__request = value
+
+
+	def del_request(self):
+		del self.__request
+
 
 	def _build_JSON_result(self, result_dict):
 		"""Builds json result
@@ -1711,12 +1725,12 @@ class CommonService( object ):
 
 	def _login(self):
 		"""Do login"""
-		login(self._ctx.rawRequest, self._ctx.user)
+		login(self.request, self._ctx.user)
 		self._ctx.isLogin = True
 
 	def _logout(self):
 		"""Do logout"""
-		logout(self._ctx.rawRequest)
+		logout(self.request)
 		self._ctx.isLogin = False
 
 	def _add_list(self, name, values):
@@ -1774,6 +1788,7 @@ class CommonService( object ):
 	def _get_list_pk_values(self, field_name):
 		pks = [int(x) for x in self._ctx.request.getlist(field_name)]
 		return pks
+	request = property(get_request, set_request, del_request, "request's docstring")
 
 class DefaultService ( CommonService ):
 

@@ -8,6 +8,8 @@ class AttrDict(dict):
 		return self[attr]
 	def __setattr__(self, attr, value):
 		self[attr] = value
+	def __getstate__(self):
+		return self.__dict__
 
 def get_class( kls ):
 	"""

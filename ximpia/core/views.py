@@ -205,6 +205,7 @@ def jxSuggestList(request, **args):
         logger.debug('jxSuggestList :: path dbClass: %s' % (app + '.data.' + dbClass) )
         cls = get_class( app + '.data.' + dbClass)
         obj = cls(args['ctx']) #@UnusedVariable
+        obj.request = request
         params = {}
         if request.REQUEST.has_key('params'):
             params = json.loads(request.REQUEST['params']);
@@ -332,6 +333,7 @@ def jxDataQuery(request, **args):
     classPath = app + '.data.' + dbClass
     cls = get_class( classPath )
     obj = cls(args['ctx']) #@UnusedVariable
+    obj.request = request
     logger.debug('jxDataQuery :: obj: %s' % (obj) )
     # fields
     fields = []
@@ -528,7 +530,7 @@ def jxDataSwitchOrder(request, **args):
     # app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
     classPath = app + '.data.' + dbClass
     cls = get_class( classPath )
-    obj = cls(args['ctx']) #@UnusedVariable
+    obj = cls(args['ctx']) #@UnusedVariable 
     item = obj.get(pk=pk)
     logger.debug('jxDataSwitchOrder :: change order : %s -> %s' % (orderCurrent, orderNew) )
     item.__setattr__(orderField, orderNew)
@@ -609,6 +611,7 @@ def jxService(request, **args):
         if method.find('_') == -1 or method.find('__') == -1:
             cls = get_class(classPath)
             obj = cls(args['ctx']) #@UnusedVariable
+            obj.request = request
             if (len(viewAttrs) == 0):
                 result = eval('obj.' + method)()
             else:
@@ -680,6 +683,7 @@ def jxSave(request, **args):
             #isFormValid = False
             logger.debug('jxSave :: isFormValid: %s' % (isFormValid) )
             obj = CommonService(args['ctx'])
+            obj.request = request
             if isFormValid == True:
                 obj._setMainForm(args['ctx'].form)
                 result = obj.save()
@@ -757,6 +761,7 @@ def jxDelete(request, **args):
             # dbObjects : pk, model
             obj = CommonService(args['ctx'])
             obj._setMainForm(args['ctx'].form)
+            obj.request = request
             result = obj.delete()
         else:
             logger.debug( 'Invalid action name. Only save is allowed' )
@@ -790,6 +795,7 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
         logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
         cls = get_class( classPath )
         obj = cls(args['ctx']) #@UnusedVariable
+        obj.request = request
         if (len(viewAttrTuple) == 0):
             result = eval('obj.' + method)()
         else:
@@ -827,6 +833,7 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
     if method.find('_') == -1 or method.find('__') == -1:
         cls = get_class( classPath )
         obj = cls(args['ctx']) #@UnusedVariable
+        obj.request = request
         if (len(actionAttrTuple) == 0):
             result = eval('obj.' + method)()
         else:
