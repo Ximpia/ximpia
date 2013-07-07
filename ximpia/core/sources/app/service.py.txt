@@ -1,0 +1,19 @@
+# coding: utf-8
+
+# django
+from django.utils.translation import ugettext as _
+
+# ximpia
+from ximpia.core.service import CommonService
+
+# app
+import forms
+
+class SiteService(CommonService):
+
+	def __init__(self, ctx):
+		super(SiteService, self).__init__(ctx)
+
+	@view(forms.HomeForm)
+	def viewHome(self):
+		pass

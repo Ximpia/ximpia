@@ -1,0 +1,86 @@
+# coding: utf-8
+
+from models import Context, JsResultDict
+from django.contrib.auth.models import User
+
+# Settings
+import settings
+
+# Logging
+logger = logging.getLogger(__name__)
+
+
+'''class MyDAO(CommonDAO):
+	def __init__(self, ctx, *args_tuple, **args_dict):
+		super(MyDAO, self).__init__(ctx, *args_tuple, **args_dict)
+		self._model = MyModel'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =========================================
+# Eclipse Dumb Classes for code completion
+# =========================================
+
+class ContextDumbClass (object):
+	def __init__(self):
+		if False: self._ctx = Context()
+		if False: self._ctx.user = User()
+		if False: self._ctx.jsData = JsResultDict()

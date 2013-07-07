@@ -1,0 +1,50 @@
+from ximpia.core.choices import Choices as _Ch
+import ximpia.core.constants as _K
+from ximpia.core.business import AppCompRegCommonBusiness
+
+from service import SiteService
+from ximpia_site import settings
+from ximpia.core.service import DefaultService
+
+# Logging
+logger = logging.getLogger(__name__)
+
+
+#################### APPLICATION COMPONENTS : CLEAN AND MISC   ###################
+
+
+class AppReg ( AppCompRegCommonBusiness ):
+	def __init__(self):
+		super(AppReg, self).__init__(__name__)
+		# Application
+		self._reg.registerApp(__name__, title='', slug='')
+
+###################### SERVICE COMPONENT REGISTER ###########################
+
+
+class SiteServiceReg ( AppCompRegCommonBusiness ):
+	def __init__(self):
+		super(SiteServiceReg, self).__init__(__name__)
+
+	def views(self):
+		pass
+
+	def templates(self):
+		pass
+
+	def actions(self):
+		pass
+
+	def flows(self):
+		pass
+
+	def menus(self):
+		pass
+
+	def viewMenus(self):
+		# Service Menus
+		self._reg.registerServMenu(__name__, serviceName='Web', menus=[
+			])
+
+	def search(self):
+		pass

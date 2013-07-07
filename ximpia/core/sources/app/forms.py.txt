@@ -1,0 +1,16 @@
+# coding: utf-8
+
+from django.utils.translation import ugettext as _
+from ximpia.core.forms import XBaseForm
+
+from ximpia.core.fields import HiddenField
+from ximpia.util.js import Form as _jsf
+
+# app
+import messages as _m
+
+
+class HomeForm(XBaseForm):
+	_XP_FORM_ID = 'home_form'
+	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
+	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))

@@ -1,0 +1,34 @@
+"""
+admins
+database (ask for slaves???)
+logging????
+
+types
+- paths : local (dev, stage, live)
+- passwords / token secrets: Can ask : local 
+- key/value (both)
+- collections (key/value, etc...) (both)
+
+modules: You can create app with list of services, we would ask for settings for services
+- Facebook (*)
+- Recaptcha (*)
+- Oauth2
+- Oauth
+- Twitter
+- LinkedIn
+- Google
+- Memcache: In future releases, we will have config for memcache, override default django cache
+- Sentry (*) - Do last thing
+how I do this??? as xp.domainservice: We could create setting file settings_services.py which would place information for this
+manage.py xpsettings memcache: script will ask configuration, will update settings with information
+
+patterns for:
+- development
+- production / live
+This can be like: 1. create development settings, then modify development for live / production
+
+paths:
+- project
+- ximpia
+- other
+"""

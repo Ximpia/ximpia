@@ -1,0 +1,40 @@
+from django.conf.urls.defaults import patterns, include, url
+from filebrowser.sites import site
+import settings
+
+# Uncomment the next two lines to enable the admin:
+from django.contrib import admin
+admin.autodiscover()
+
+if settings.DEBUG:
+	urlpatterns = patterns('django.contrib.staticfiles.views',
+        	url(r'^static/(?P<path>.*)$', 'serve'),
+    )
+else:
+	urlpatterns = []
+
+# grappelli
+urlpatterns += patterns('',
+    (r'^grappelli/', include('grappelli.urls')),
+)
+
+# filebrowser
+urlpatterns += patterns('',
+   url(r'^admin/filebrowser/', include(site.urls)),
+)
+
+# admin
+urlpatterns += patterns('',
+	(r'^admin/doc/', include('django.contrib.admindocs.urls')),	
+	# Uncomment the next line to enable the admin:
+	(r'^admin/', include(admin.site.urls)),	
+)
+
+# core
+urlpatterns += patterns( '', 
+    url(r'^', include('ximpia.core.urls')),
+)
+
+# site
+urlpatterns += patterns('$project_name',
+)

@@ -1,0 +1,11 @@
+# coding: utf-8
+
+from django.utils.translation import ugettext as _
+
+
+'''class Choices(object):
+	NAME = 'name'
+	
+	COUNTRY = (
+		(NAME, _('My Value')),
+	)'''

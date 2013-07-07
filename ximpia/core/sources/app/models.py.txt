@@ -1,0 +1,15 @@
+# coding: utf-8
+
+from django.db import models
+from django.utils.translation import ugettext as _
+from filebrowser.fields import FileBrowseField
+
+from ximpia.core.models import BaseModel, MetaKey
+import ximpia.core.constants as CoreK
+from ximpia.core.choices import Choices as CoreChoices
+
+import constants as K
+from choices import Choices
+
+class MyModel (BaseModel):
+	pass
