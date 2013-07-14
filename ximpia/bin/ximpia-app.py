@@ -1,25 +1,25 @@
 import os
+import sys
+import shutil
 
 from string import Template
 from django.utils.crypto import get_random_string
+from distutils.sysconfig import get_python_lib
 
-from django.core.management.base import BaseCommand, CommandError
-from django.utils.translation import ugettext as _
+XIMPIA_CORE_PATH = get_python_lib() + '/ximpia/core'
 
-import ximpia.core
-
-class Command(BaseCommand):
+class Command(object):
+	db_engine = ''
 	args = '<full_app_name>'
 	help = """Creates ximpia app directories and files
 	Attributes
 	- full_app_name: project_name.app_name. Example my_project.my_app
+	
 	"""
 
 	"""
 	args
-	app: ximpia_site.web (project_name.app_name)
-	
-	1. Check if project exists. If not, create project structure 
+	app: ximpia_site.web (project_name.app_name)	
 
 	Directory structure:
 	- fixtures
@@ -47,12 +47,12 @@ class Command(BaseCommand):
 	- views.py
 	"""
 
-	def __create_project(self, project_name, app_name):
+	def create_project(self, project_name, app_name):
 		"""
 			my_project
 				manage.py
 				my_project
-					__init__.py
+					init__.py
 					settings.py
 					urls.py
 					wsgi.py
@@ -78,12 +78,14 @@ class Command(BaseCommand):
 		with open(self.core_src_path + '/project/' + 'settings_local.py.txt', 'r') as f:
 			settings_local = f.read()
 		# substitutions for settings local
+		db_engine = raw_input('Db Engine: <mysql> ') or 'mysql'
 		settings_local = Template(settings_local).substitute(project_name=project_name,
-															db_engine=raw_input('Db Engine: <mysql> ') or 'mysql',
+															db_engine=db_engine,
 															db_host=raw_input('Db Host: '),
 															db_name=raw_input('Db Name: '),
 															db_user=raw_input('Db User: '),
 															db_password=raw_input('Db Password: '))
+		self.db_engine = db_engine
 		with open(project_name + '/' + project_name + '/' + 'settings_local.py', 'w') as f:
 			f.write(settings_local)
 		# settings
@@ -92,13 +94,14 @@ class Command(BaseCommand):
 			settings = f.read()
 		# substitutions for settings
 		chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+		self.project_title = project_name.replace('_', ' ').capitalize()
 		settings = Template(settings).substitute(project_name=project_name,
 												app_name=app_name,
 												admin_name=raw_input('Admin Name: '),
 												admin_email=raw_input('Admin Email: '),
 												time_zone=raw_input('Timezone: <America/Chicago> ') or 'America/Chicago',
 												language_code=raw_input('Language code <en-us> : ') or 'en-us',
-												project_title=project_name.replace('_', ' ').capitalize(),
+												project_title=self.project_title,
 												project_path=self.project_path,
 												secret_key=get_random_string(50, chars))
 		with open(project_name + '/' + project_name + '/' + 'settings.py', 'w') as f:
@@ -115,9 +118,9 @@ class Command(BaseCommand):
 		wsgi = wsgi.replace('$project_name', project_name)
 		with open(project_name + '/' + project_name + '/' + 'wsgi.py', 'w') as f:
 			f.write(wsgi)
-		self.stdout.write(_('Created project {}'.format(project_name)))
+		print 'Created project {}'.format(project_name)
 
-	def __create_app_dirs(self, app_name):
+	def create_app_dirs(self, app_name):
 		"""
 			Create directories...
 			Directory structurefor app:
@@ -160,7 +163,7 @@ class Command(BaseCommand):
 		if not os.path.isdir(self.project_path + '/' + app_name + '/tests'):
 			os.mkdir(self.project_path + '/' + app_name + '/tests')
 
-	def __create_app_files(self, app_name):
+	def create_app_files(self, app_name):
 		"""
 			Create app files...
 			Files:
@@ -223,6 +226,43 @@ class Command(BaseCommand):
 			views = f.read()
 		with open(self.project_path + '/' + app_name + '/' + 'views.py', 'w') as f:
 			f.write(views)
+		# tests
+		with open(self.core_src_path + '/app/' + 'tests.py.txt', 'r') as f:
+			tests = f.read()
+		with open(self.project_path + '/' + app_name + '/' + 'tests/tests.py', 'w') as f:
+			f.write(tests)
+		# templates
+		if not os.path.isfile(self.project_path + '/' + app_name + '/' + 'templates/site/popup/change_password.html'):
+			# site
+			tmpl_src = self.core_src_path + '/app/templates/site/'
+			tmpl_dst = self.project_path + '/' + app_name + '/templates/site/'
+			shutil.copyfile(tmpl_src + 'popup/change_password.html', tmpl_dst + 'popup/change_password.html')
+			shutil.copyfile(tmpl_src + 'popup/password_reminder.html', tmpl_dst + 'popup/password_reminder.html')
+			shutil.copyfile(tmpl_src + 'window/activation_user.html', tmpl_dst + 'window/activation_user.html')
+			shutil.copyfile(tmpl_src + 'window/home_login.html', tmpl_dst + 'window/home_login.html')
+			shutil.copyfile(tmpl_src + 'window/login.html', tmpl_dst + 'window/login.html')
+			shutil.copyfile(tmpl_src + 'window/logout.html', tmpl_dst + 'window/logout.html')
+			shutil.copyfile(tmpl_src + 'window/reminder_new_password.html', tmpl_dst + 'window/reminder_new_password.html')
+			shutil.copyfile(tmpl_src + 'window/signup.html', tmpl_dst + 'window/signup.html')
+			shutil.copyfile(tmpl_src + 'site.html', tmpl_dst + 'site.html')
+			# app
+			tmpl_src = self.core_src_path + '/app/templates/app/'
+			tmpl_dst = self.project_path + '/' + app_name + '/templates/' + app_name + '/'
+			shutil.copyfile(tmpl_src + 'app.html', tmpl_dst + app_name + '.html')
+			# TODO: create home template with name of app in big grey letters
+			with open(self.core_src_path + '/app/' + 'templates/app/window/home.html', 'r') as f:
+				home = f.read()
+			with open(self.project_path + '/' + app_name + '/' + 'templates/' + app_name + '/window/home.html', 'w') as f:
+				f.write(Template(home).substitute(project_title=self.project_title))
+
+	def create_fixtures(self, app_name):
+		"""
+			Create fixtures initial_data.json and site_additional.json files
+		"""
+		with open(self.project_path + '/' + app_name + '/' + 'fixtures/initial_data.json', 'w') as f:
+			f.write('')
+		with open(self.project_path + '/' + app_name + '/' + 'fixtures/site_additional.json', 'w') as f:
+			f.write('')
 
 	def handle(self, *args, **options):
 		if len(args) != 1:
@@ -232,8 +272,32 @@ class Command(BaseCommand):
 		project_name, app_name = full_app_name.split('.')
 		self.project_name = project_name
 		self.project_path = os.getcwd() + '/' + project_name + '/' + project_name
-		self.core_src_path = ximpia.core.__path__[0] + '/sources'
+		self.core_src_path = XIMPIA_CORE_PATH + '/sources'
 		if not os.path.isdir(project_name):
-			self.__create_project(project_name, app_name)
-		self.__create_app_dirs(app_name)
-		self.__create_app_files(app_name)
+			self.create_project(project_name, app_name)
+		self.create_app_dirs(app_name)
+		self.create_app_files(app_name)
+		self.create_fixtures(app_name)
+		# create home template with name of app in big grey letters
+
+# python ../ximpia/ximpia/bin/ximpia-app.py myproject.myapp
+
+if __name__ == "__main__":
+	args = sys.argv[1:]
+	msg = ''
+	if len(args) != 1:
+		print 'You must inform full application name like ximpia-app my_project.my_app'
+		sys.exit()
+	full_app_name = args[0]
+	print 'This command will create project, app, directory structure, etc--- {}'.format(full_app_name)
+	project_name, app_name = full_app_name.split('.')
+	command = Command()
+	command.project_name = project_name
+	command.project_path = os.getcwd() + '/' + project_name + '/' + project_name
+	command.core_src_path = XIMPIA_CORE_PATH + '/sources'
+	if not os.path.isdir(project_name):
+		command.create_project(project_name, app_name)
+	command.create_app_dirs(app_name)
+	command.create_app_files(app_name)
+	command.create_fixtures(app_name)
+	# Create tables, first syncdb, migration, etc...

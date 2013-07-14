@@ -55,6 +55,11 @@ from forms import DefaultForm
 from ximpia.util.js import Form as _jsf
 
 
+class CommonWorker(object):
+	"""
+		Common worker class
+	"""
+	pass
 
 class EmailService(object):
 	#python -m smtpd -n -c DebuggingServer localhost:1025
