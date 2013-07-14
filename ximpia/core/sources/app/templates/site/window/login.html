@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Ximpia - Login</title>
+</head>
+
+<body>
+
+<div id="id_view_zone" >
+
+<!-- View Definition -->
+<div id="id_view" 
+		data-xp="{viewName: 'login'}"
+		data-xp-cond-rules="{
+								hasUserAuth: 'settings.SIGNUP_USER_PASSWORD == true', 
+								hasNetAuth: 'settings.SIGNUP_SOCIAL_NETWORK == true', 
+								isSocialLogged: 'isSocialLogged == true',
+								showUserPassword: 'isSocialLogged == false && settings.SIGNUP_USER_PASSWORD == true || 
+													(settings.SIGNUP_USER_PASSWORD == true && settings.SIGNUP_SOCIAL_NETWORK == false)',
+								showPaswordRemind: 'isSocialLogged == false && settings.SIGNUP_USER_PASSWORD == true || 
+													(settings.SIGNUP_USER_PASSWORD == true && settings.SIGNUP_SOCIAL_NETWORK == false)'
+							}" >
+</div>
+<!-- View Definition -->
+
+<!-- Title Bar -->
+<section id="id_sectionTitle" >
+<div id="id_titleBar" class="titleBar">
+<div style="float: left"><b>Login</b></div>
+</div>
+</section>
+<!-- Title Bar -->
+
+<!-- Content -->
+<section id="id_content" class="sectionContent">
+	
+<div id="id_login" class="sectionComp">
+	
+<form id="form_login" action="" method="post" data-xp="{}" >
+
+
+
+<fieldset>
+<legend>You</legend>
+
+<div id="id_userPassword" style="margin-top: 0px" 
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'showUserPassword', action: 'render', value: true}
+								]}" >
+<div id="id_username_comp" data-xp-type="field" data-xp="{tabindex: '1'}" ></div>
+<div id="id_password_comp" data-xp-type="field" data-xp="{type: 'password', tabindex: '2'}" ></div>
+
+</div>
+
+<!-- socialAuth -->
+<!--<div id="id_socialAuth" style="margin-top: 5px;" 
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'hasNetAuth', action: 'render', value: true}
+								]}" >
+
+<div id="id_facebookLogin_comp" data-xp-type="function.render" data-xp="{functionName: 'ximpia.external.Facebook.renderLogin'}" ></div>
+<div class="caption" ><span>You can also:</span><br/></div>
+<div class="fb-login-button" data-show-faces="true" data-width="200" data-max-rows="1" scope="email">Login with Facebook</div>
+
+</div>-->
+<!-- socialAuth -->
+
+</fieldset>
+
+
+<div id="id_passwordReminder" style="margin-top: 5px" 
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'showPaswordRemind', action: 'render', value: true}
+								]}" >
+								
+<!-- Link Component: Open new panel (task) or open in modal mode here -->
+<div id="id_passwordReminderLink_comp" data-xp-type="link.popup" style="margin-top: 20px; margin-left: 20px"  
+		data-xp="{	op: 'openPopup',  
+					name: 'passwordReminder',  
+					title: 'Remember Password', 
+					linkText: 'Remember your password', 
+					view: 'login',
+					tmplAlias: 'passwordReminder'}" ></div>
+
+</div>
+
+<br/>
+
+</form>
+
+</div>
+
+</section>
+<!-- Content -->
+
+<!-- Page Button Bar -->
+<section id="id_sectionButton" class="sectionButton">
+<div id="id_pageButton" class="btBar">
+<div id="id_doLogin_comp" data-xp-type="button" 
+		data-xp="{	form: 'form_login', 
+					align: 'left', 
+					text: 'Login', 
+					mode: 'action', 
+					type: 'color', 
+					action: 'login'}" ></div>
+</div>
+</section>
+<!-- Page Button Bar -->
+
+</div>
+
+</body>
+</html>

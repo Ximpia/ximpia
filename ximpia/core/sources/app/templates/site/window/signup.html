@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Ximpia - Signup</title>
+</head>
+
+<body>
+
+<div id="id_view_zone" > 
+
+<!-- View Definition -->
+
+<!--
+How to for conditions:
+
+string
+we need a separator for string
+how ¿? ¿? 
+
+-->
+
+<div 	id="id_view" 
+		data-xp="{viewName: 'signup'}" 
+		data-xp-cond-rules="{	hasUserAuth: 'settings.SIGNUP_USER_PASSWORD == true', 
+								hasNetAuth: 'settings.SIGNUP_SOCIAL_NETWORK == true', 
+								hasNotNetAuth: 'settings.SIGNUP_SOCIAL_NETWORK == false',
+								showCaptcha: '	(	isSocialLogged == false && form_signup.invitationCode.value == \'\' && 
+														settings.SITE_SIGNUP_INVITATION == true		) || 
+												(	isSocialLogged == false && settings.SITE_SIGNUP_INVITATION == false		)',
+								requiresInvitation: 'settings.SITE_SIGNUP_INVITATION == true'
+							}" >
+</div>
+
+<!-- View Definition -->
+
+<!-- Title Bar -->
+<section id="id_sectionTitle" >
+<div id="id_titleBar" class="titleBar">
+<div style="float: left"><b>User Signup</b></div>
+</div></section>
+<!-- Title Bar -->
+
+<!-- Content -->
+<section id="id_content" class="sectionContent">
+
+<div id="id_signup" class="sectionComp">
+
+<form id="form_signup" action="" method="post" data-xp="{}" >
+
+<!-- **********-->
+<!-- User Auth -->
+<!-- **********-->
+<div style="border: 0px solid">
+<fieldset>
+<legend>User</legend>
+
+<!-- ximpiaId -->
+<div id="id_username_comp" 
+		data-xp-type="field" 
+		data-xp="{info: true, tabindex: '1', label: 'XimpiaId'}" > </div>
+
+<div id="id_passwordAuth" 
+		data-xp-type="container" 
+		data-xp-cond="{conditions: [
+										{condition: 'hasUserAuth', action: 'render', value: true}
+									]}" >
+
+<!-- password -->
+<div id="id_password_comp" data-xp-type="field" 
+				data-xp="{	info: true, 
+							type: 'password', 
+							tabindex: '1', 
+							class: 'passwordStrength'}" > </div>
+<!-- passwordVerify -->
+<div id="id_passwordVerify_comp" data-xp-type="field" data-xp="{	type: 'password', tabindex: '1'}" > </div>
+</div>
+
+<div id="id_socialAuth" style="margin-top: 5px;" 
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'hasNetAuth', action: 'render', value: true}
+								]}" >
+
+<!--<div id="id_facebookSignup_comp" 
+		data-xp-type="function.render" 
+		data-xp="{functionName: 'ximpia.external.Facebook.renderSignup'}" > </div>
+
+	<div class="caption"><span>You can also:</span><br/></div>-->
+
+	<!-- Facebook Signup Button -->
+	<!--<div class="fb-login-button" 
+			data-show-faces="true" 
+			data-width="200" 
+			data-max-rows="1" 
+			scope="email">Signup with Facebook</div>
+</div>-->
+
+</fieldset>
+</div>
+
+<!-- ********* -->
+<!-- User Data -->
+<!-- ********* -->
+<div id="id_userData" style=" padding-top: 5px">
+<fieldset>
+<legend>User Detail</legend>
+
+<div id="id_invitation" style="margin-top: 5px" 
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'requiresInvitation', action: 'render', value: true}
+								]}" >
+<!-- invitationCode -->
+<div id="id_invitationCode_comp" style="margin-left: 3px; margin-bottom: 5px"
+			data-xp-type="field" data-xp="{tabindex: '5'}" > </div>
+</div>
+
+<table><tr><td>
+
+<!-- firstName -->
+<div id="id_firstName_comp" data-xp-type="field" data-xp="{tabindex: '10'}" > </div>
+
+<!-- email -->
+<div id="id_email_comp" data-xp-type="field" data-xp="{tabindex: '12'}" > </div>
+
+<!-- country -->
+<div id="id_country_comp" data-xp-type="select.plus" data-xp="{tabindex: '14', gmaps: 'country', class: 'gmaps'}" > </div>
+
+</td>
+<td valign="top">
+
+<!-- lastName -->
+<div id="id_lastName_comp" data-xp-type="field" data-xp="{tabindex: '11'}" ></div>
+
+<!-- city -->
+<div id="id_city_comp" data-xp-type="field" data-xp="{tabindex: '13', gmaps: 'city', class: 'gmaps'}" ></div>
+
+</td>
+</tr></table>
+
+<!--<div id="id_captcha_container"  
+	data-xp-type="container" 
+	data-xp-cond="{conditions: [ 
+									{condition: 'showCaptcha', action: 'render', value: true}
+								]}" >
+<!-- recaptcha -->
+<!--<div id="id_recaptcha_comp" style="margin-top: 5px" data-xp-type="function.render" 
+	data-xp="{functionName: 'ximpia.external.Captcha.renderCaptcha'}" ></div>
+</div>-->
+
+</fieldset>
+</div>
+
+</form>
+
+<br/>
+
+</div>
+
+</section>
+<!-- Content -->
+
+<!-- Page Button Bar -->
+<section id="id_sectionButton" class="sectionButton">
+<div id="id_pageButton" class="btBar">
+<div id="id_doSignup_comp" data-xp-type="button" 
+		data-xp="{	form: 'form_signup', 
+					align: 'left', 
+					text: 'Signup', 
+					mode: 'actionMsg', 
+					type: 'color', 
+					action: 'signup'}" > </div>
+
+</div>
+</section>
+<!-- Page Button Bar -->
+
+</div>
+
+</body>
+</html>
