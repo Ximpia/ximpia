@@ -3,9 +3,9 @@
 from django.utils.translation import ugettext as _
 
 
-'''class Choices(object):
+class Choices(object):
 	NAME = 'name'
-	
+
 	COUNTRY = (
 		(NAME, _('My Value')),
-	)'''
+	)

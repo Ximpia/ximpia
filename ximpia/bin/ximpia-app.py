@@ -72,6 +72,7 @@ class Command(object):
 		manage = manage.replace('$project_name', project_name)
 		with open(project_name + '/manage.py', 'w') as f:
 			f.write(manage)
+		os.chmod(project_name + '/manage.py', 0755)
 		with open(project_name + '/' + project_name + '/' + '__init__.py', 'w') as f:
 			f.write('')
 		# settings_local
@@ -259,10 +260,10 @@ class Command(object):
 		"""
 			Create fixtures initial_data.json and site_additional.json files
 		"""
-		with open(self.project_path + '/' + app_name + '/' + 'fixtures/initial_data.json', 'w') as f:
-			f.write('')
+		'''with open(self.project_path + '/' + app_name + '/' + 'fixtures/initial_data.json', 'w') as f:
+			f.write('')'''
 		with open(self.project_path + '/' + app_name + '/' + 'fixtures/site_additional.json', 'w') as f:
-			f.write('')
+			f.write('[]')
 
 	def handle(self, *args, **options):
 		if len(args) != 1:
@@ -301,3 +302,12 @@ if __name__ == "__main__":
 	command.create_app_files(app_name)
 	command.create_fixtures(app_name)
 	# Create tables, first syncdb, migration, etc...
+	# ./manage.py syncdb --noinput
+	# ./manage.py syncdb
+	print './{}/manage.py syncdb'.format(project_name)
+	os.system('./{}/manage.py syncdb'.format(project_name))
+	# ./manage.py schemamigration ximpia.core --initial???
+	# ./manage.py schemamigration ximpia.site --initial???
+	# ./manage.py migrate ximpia.core
+	# ./manage.py migrate ximpia.site
+	# create home view with template
