@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import getpass
 
 from string import Template
 from django.utils.crypto import get_random_string
@@ -47,6 +48,14 @@ class Command(object):
 	- views.py
 	"""
 
+	def __feed_password(self):
+		pprompt = lambda: (getpass.getpass(), getpass.getpass('Retype password: '))
+		p1, p2 = pprompt()
+		while p1 != p2:
+			print('Passwords do not match. Try again')
+			p1, p2 = pprompt()
+		return p1
+
 	def create_project(self, project_name, app_name):
 		"""
 			my_project
@@ -85,7 +94,7 @@ class Command(object):
 															db_host=raw_input('Db Host: '),
 															db_name=raw_input('Db Name: '),
 															db_user=raw_input('Db User: '),
-															db_password=raw_input('Db Password: '))
+															db_password=self.__feed_password())
 		self.db_engine = db_engine
 		with open(project_name + '/' + project_name + '/' + 'settings_local.py', 'w') as f:
 			f.write(settings_local)
@@ -111,6 +120,7 @@ class Command(object):
 		with open(self.core_src_path +  '/project' + '/' + 'urls.py.txt', 'r') as f:
 			urls = f.read()
 		urls = urls.replace('$project_name', project_name)
+		urls = urls.replace('$app_name', app_name)
 		with open(project_name + '/' + project_name + '/' + 'urls.py', 'w') as f:
 			f.write(urls)
 		# get wsgi file from core sources
@@ -147,6 +157,16 @@ class Command(object):
 			os.mkdir(self.project_path + '/' + app_name + '/migrations')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/static'):
 			os.mkdir(self.project_path + '/' + app_name + '/static')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/static/images'):
+			os.mkdir(self.project_path + '/' + app_name + '/static/images')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/static/' + app_name):
+			os.mkdir(self.project_path + '/' + app_name + '/static/' + app_name)
+		if not os.path.isdir(self.project_path + '/' + app_name + '/static/' + app_name+ '/css'):
+			os.mkdir(self.project_path + '/' + app_name + '/static/' + app_name + '/css')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/static/' + app_name + '/images'):
+			os.mkdir(self.project_path + '/' + app_name + '/static/' + app_name + '/images')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/static/' + app_name + '/scripts'):
+			os.mkdir(self.project_path + '/' + app_name + '/static/' + app_name + '/scripts')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/templates'):
 			os.mkdir(self.project_path + '/' + app_name + '/templates')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/site'):
@@ -188,7 +208,7 @@ class Command(object):
 		with open(self.core_src_path + '/app/' + 'components.py.txt', 'r') as f:
 			components = f.read()
 		with open(self.project_path + '/' + app_name + '/' + 'components.py', 'w') as f:
-			f.write(components)
+			f.write(Template(components).substitute(project_title=self.project_title, project_name=self.project_name))
 		# constants
 		with open(self.project_path + '/' + app_name + '/' + 'constants.py', 'w') as f:
 			f.write('')
@@ -226,7 +246,7 @@ class Command(object):
 		with open(self.core_src_path + '/app/' + 'views.py.txt', 'r') as f:
 			views = f.read()
 		with open(self.project_path + '/' + app_name + '/' + 'views.py', 'w') as f:
-			f.write(views)
+			f.write(Template(views).substitute(project_name=self.project_name))
 		# tests
 		with open(self.core_src_path + '/app/' + 'tests.py.txt', 'r') as f:
 			tests = f.read()
@@ -254,7 +274,12 @@ class Command(object):
 			with open(self.core_src_path + '/app/' + 'templates/app/window/home.html', 'r') as f:
 				home = f.read()
 			with open(self.project_path + '/' + app_name + '/' + 'templates/' + app_name + '/window/home.html', 'w') as f:
-				f.write(Template(home).substitute(project_title=self.project_title))
+				f.write(Template(home).substitute(app_name=app_name))
+		# images
+		img_src = self.core_src_path + '/images/'
+		img_dst = self.project_path + '/' + app_name + '/static/images/'
+		if os.path.isfile(img_src + 'logo.png'):
+			shutil.copyfile(img_src + 'logo.png', img_dst + 'logo.png')
 
 	def create_fixtures(self, app_name):
 		"""
@@ -264,6 +289,10 @@ class Command(object):
 			f.write('')'''
 		with open(self.project_path + '/' + app_name + '/' + 'fixtures/site_additional.json', 'w') as f:
 			f.write('[]')
+		# Home: Group, Application, Service, View, XpTemplate
+		# Write fixture based on data
+		# project_name, app_name, date_now, user_id, project_title, app_slug, group_id
+		# date: "2013-06-16T16:34:32"
 
 	def handle(self, *args, **options):
 		if len(args) != 1:
@@ -281,7 +310,7 @@ class Command(object):
 		self.create_fixtures(app_name)
 		# create home template with name of app in big grey letters
 
-# python ../ximpia/ximpia/bin/ximpia-app.py myproject.myapp
+#python ../ximpia/ximpia/bin/ximpia-app.py myproject.myapp
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
@@ -298,16 +327,22 @@ if __name__ == "__main__":
 	command.core_src_path = XIMPIA_CORE_PATH + '/sources'
 	if not os.path.isdir(project_name):
 		command.create_project(project_name, app_name)
+	else:
+		print 'Project already exists'
+		sys.exit()
 	command.create_app_dirs(app_name)
 	command.create_app_files(app_name)
 	command.create_fixtures(app_name)
 	# Create tables, first syncdb, migration, etc...
-	# ./manage.py syncdb --noinput
-	# ./manage.py syncdb
 	print './{}/manage.py syncdb'.format(project_name)
 	os.system('./{}/manage.py syncdb'.format(project_name))
-	# ./manage.py schemamigration ximpia.core --initial???
-	# ./manage.py schemamigration ximpia.site --initial???
-	# ./manage.py migrate ximpia.core
-	# ./manage.py migrate ximpia.site
-	# create home view with template
+	print './{}/manage.py migrate ximpia.core'.format(project_name)
+	os.system('./{}/manage.py migrate ximpia.core'.format(project_name))
+	print './{}/manage.py migrate ximpia.site'.format(project_name)
+	os.system('./{}/manage.py migrate ximpia.site'.format(project_name))
+	# Import site and app components
+	os.system('./{}/manage.py xpcomponents ximpia.site'.format(project_name))
+	os.system('./{}/manage.py xpcomponents myproject.myapp'.format(project_name))
+	os.system('./{}/manage.py customdashboard'.format(project_name))
+	if os.path.isfile('dashboard.py'):
+		shutil.move('dashboard.py', '{}/{}/dashboard.py'.format(project_name, project_name))

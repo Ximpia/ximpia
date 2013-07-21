@@ -1,9 +1,12 @@
 # coding: utf-8
 
+# python
+import logging
+
 from ximpia.core.models import context_view
 from ximpia.core.service import view_tmpl
 
-import settings
+from $project_name import settings
 
 # Logging
 logger = logging.getLogger(__name__)

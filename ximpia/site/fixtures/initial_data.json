@@ -331,5 +331,189 @@
             "paramType": "string",
             "isDeleted": false
         }
+    },
+{
+    "pk": 1, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "SIGNUP_USER_PASSWORD", 
+        "dateCreate": "2012-12-27T22:17:30", 
+        "dateModify": "2012-12-27T22:17:30", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
     }
+},
+{
+    "pk": 2, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "SIGNUP_SOCIAL_NETWORK", 
+        "dateCreate": "2012-12-27T22:17:38", 
+        "dateModify": "2012-12-27T22:17:38", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 3, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "HAS_VALIDATED_EMAIL", 
+        "dateCreate": "2012-12-28T23:27:20", 
+        "dateModify": "2012-12-28T23:27:20", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 1, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 4, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "SITE_SIGNUP_INVITATION", 
+        "dateCreate": "2013-01-14T19:46:08", 
+        "dateModify": "2013-01-14T19:47:02", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 5, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "REMINDER_DAYS", 
+        "dateCreate": "2013-01-24T14:38:17", 
+        "dateModify": "2013-01-24T14:38:17", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 6, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "REMINDER_ID", 
+        "dateCreate": "2013-01-24T14:38:41", 
+        "dateModify": "2013-01-24T14:38:41", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 1, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 7, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "RESET_PASSWORD_DATE", 
+        "dateCreate": "2013-01-24T14:38:58", 
+        "dateModify": "2013-01-24T14:38:58", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 1, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 8, 
+    "model": "site.metakey", 
+    "fields": {
+        "name": "NUMBER_RESULTS_LIST", 
+        "dateCreate": "2013-03-04T14:36:59", 
+        "dateModify": "2013-03-04T14:36:59", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 1, 
+    "model": "site.setting", 
+    "fields": {
+        "name": 2, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "value": "False", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": true, 
+        "isDeleted": false, 
+        "description": "Signup with social network"
+    }
+},
+{
+    "pk": 2, 
+    "model": "site.setting", 
+    "fields": {
+        "name": 1, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "value": "True", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": true, 
+        "isDeleted": false, 
+        "description": "Signup wih user / password"
+    }
+},
+{
+    "pk": 3, 
+    "model": "site.setting", 
+    "fields": {
+        "name": 4, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "value": "False", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": true, 
+        "isDeleted": false, 
+        "description": "Signup requires invitation code"
+    }
+},
+{
+    "pk": 4, 
+    "model": "site.setting", 
+    "fields": {
+        "name": 5, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "value": "2", 
+        "application": 2, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": true, 
+        "isDeleted": false, 
+        "description": "Number of days reset password data is valid"
+    }
+},
+{
+    "pk": 5, 
+    "model": "site.setting", 
+    "fields": {
+        "name": 8, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "value": "50", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": true, 
+        "isDeleted": false, 
+        "description": "Number of results for lists"
+    }
+}
 ]

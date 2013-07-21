@@ -1,9 +1,11 @@
+import logging
+
 from ximpia.core.choices import Choices as _Ch
 import ximpia.core.constants as _K
 from ximpia.core.business import AppCompRegCommonBusiness
 
 from service import SiteService
-from ximpia_site import settings
+from $project_name import settings
 from ximpia.core.service import DefaultService
 
 # Logging
@@ -16,8 +18,8 @@ logger = logging.getLogger(__name__)
 class AppReg ( AppCompRegCommonBusiness ):
 	def __init__(self):
 		super(AppReg, self).__init__(__name__)
-		# Application
-		self._reg.registerApp(__name__, title='', slug='')
+		self._reg.registerApp(__name__, title='$project_title', slug='$project_name')
+		self._reg.registerService(__name__, serviceName='$project_title', className=SiteService)
 
 ###################### SERVICE COMPONENT REGISTER ###########################
 
@@ -27,10 +29,11 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		super(SiteServiceReg, self).__init__(__name__)
 
 	def views(self):
-		pass
+		self._reg.registerView(__name__, serviceName='$project_title', viewName='home', slug='home', className=SiteService, 
+							method='viewHome')
 
 	def templates(self):
-		pass
+		self._reg.registerTemplate(__name__, viewName='home', name='home')
 
 	def actions(self):
 		pass
@@ -39,11 +42,13 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		pass
 
 	def menus(self):
-		pass
+		self._reg.registerMenu(__name__, name='home', title='Home', description='Home', 
+				iconName='iconHome', viewName='home')
 
 	def viewMenus(self):
 		# Service Menus
-		self._reg.registerServMenu(__name__, serviceName='Web', menus=[
+		self._reg.registerServMenu(__name__, serviceName='$project_title', menus=[
+			{_K.ZONE: _Ch.MENU_ZONE_SERVICE, _K.MENU_NAME: 'home'},
 			])
 
 	def search(self):

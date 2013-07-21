@@ -1162,7 +1162,7 @@ class TemplateService ( object ):
 		logger.debug('TemplateService.__findTemplPath :: fileList: %s' % (fileList) )
 		logger.debug('TemplateService.__findTemplPath :: tmplName: %s mode: %s' % (self.__tmplName, self.__mode) )
 		for item in fileList:
-			if item != 'site':
+			if item != 'site' and os.path.isdir(pathMain + '/' + item):
 				if item in self.__MODES:
 					fileList = os.listdir(pathMain + '/' + item)
 					for myFile in fileList:
@@ -1185,6 +1185,23 @@ class TemplateService ( object ):
 										 (self.__app, self.__mode, self.__tmplName) ))
 		return path
 
+	def __discover_site_path(self, app):
+		project_name, app_name = app.split('.')
+		site_path = cache.get('app_' + app_name + '_site_path')
+		if not site_path:
+			appModulePath = settings.__file__.split('settings')[0]
+			file_list = os.listdir(appModulePath)
+			site_path = ''
+			for app in file_list:
+				try:
+					if os.path.isdir(appModulePath + app) and 'site' in os.listdir(appModulePath + app + '/templates'):
+						site_path = appModulePath + app + '/templates/site'
+				except OSError:
+					# templates directory not found
+					pass
+			cache.set('app_' + app_name + '_site_path', site_path)
+		return site_path
+
 	def get_app(self, app):
 		"""
 		Get application template with styles, scripts and footer
@@ -1199,12 +1216,15 @@ class TemplateService ( object ):
 		"""
 		self.__app = app
 		logger.debug('TemplateService.get_app :: app: %s' % app)
+		# go to project. Search in all apps for site templates, write path into cache
 		if settings.DEBUG == True:
 			package, module = app.split('.')
 			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
-				appModulePath = settings.__file__.split('settings')[0]
-				pathSite = appModulePath + 'web/templates/site'
+				#appModulePath = settings.__file__.split('settings')[0]
+				# would get this from cache
+				pathSite = self.__discover_site_path(app)
+				#pathSite = appModulePath + 'web/templates/site'
 				if os.path.exists(pathSite) and os.path.isdir(pathSite):
 					path = pathSite + '/' + app.split('.')[1] + '.html'
 			else:
@@ -1252,7 +1272,8 @@ class TemplateService ( object ):
 			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
 				appModulePath = settings.__file__.split('settings')[0]
-				pathSite = appModulePath + 'web/templates/site'
+				#pathSite = appModulePath + 'site/templates/'
+				pathSite = self.__discover_site_path(app)
 				if os.path.exists(pathSite) and os.path.isdir(pathSite):
 					path = pathSite + '/' + mode + '/' + tmpl_name + '.html'
 				else:

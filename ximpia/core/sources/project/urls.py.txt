@@ -37,4 +37,5 @@ urlpatterns += patterns( '',
 
 # site
 urlpatterns += patterns('$project_name',
+	(r'^$', '$app_name.views.home'),
 )
