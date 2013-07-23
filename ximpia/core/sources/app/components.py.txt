@@ -47,8 +47,10 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 
 	def viewMenus(self):
 		# Service Menus
-		self._reg.registerServMenu(__name__, serviceName='$project_title', menus=[
+		self._reg.registerServMenu(__name__, serviceName='Myproject', menus=[
 			{_K.ZONE: _Ch.MENU_ZONE_SERVICE, _K.MENU_NAME: 'home'},
+			{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'login', _K.CONDITIONS: 'notLogin:render:True'},
+			{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'signup', _K.CONDITIONS: 'notLogin:render:True'}			
 			])
 
 	def search(self):

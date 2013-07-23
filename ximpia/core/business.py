@@ -10,7 +10,8 @@ from django.utils.translation import ugettext as _
 
 from models import XpMsgException, XpRegisterException, get_blank_wf_data
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
-	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service
+	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service, \
+	Condition, ViewMenuCondition, ServiceMenuCondition
 from ximpia.site.models import Category, Tag, Group
 from ximpia.util import resources
 from models import CoreParam
@@ -257,7 +258,6 @@ class ComponentRegisterBusiness ( object ):
 			try:
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				#logger.debug( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
 				logger.debug( 'counter: %s' % (counter) )
 				try:
 					serviceMenu = ServiceMenu.objects.get(service=service, menu=menu)
@@ -267,6 +267,14 @@ class ComponentRegisterBusiness ( object ):
 				serviceMenu.zone=dd[K.ZONE]
 				serviceMenu.order = counter
 				serviceMenu.save()
+				# conditions
+				if K.CONDITIONS in dd:
+					order = 10
+					for name, action, value in map(lambda x: x.split(':'), dd[K.CONDITIONS].split(',')):
+						condition = Condition.objects.get(name=name)
+						ServiceMenuCondition.objects.create(serviceMenu=serviceMenu, condition=condition, action=action, value=value, 
+														order=order)
+						order += 10
 				counterDict[dd[K.MENU_NAME]] = counter
 				counter += 100
 			except Menu.DoesNotExist:
@@ -293,9 +301,30 @@ class ComponentRegisterBusiness ( object ):
 				serviceMenu.order = counter
 				serviceMenu.parent = serviceMenuParent
 				serviceMenu.save()
+				# conditions
+				if K.CONDITIONS in dd:
+					order = 10
+					for name, action, value in map(lambda x: x.split(':'), dd[K.CONDITIONS].split(',')):
+						condition = Condition.objects.get(name=name)
+						ServiceMenuCondition.objects.create(serviceMenu=serviceMenu, condition=condition, action=action, value=value, 
+														order=order)
+						order += 10
 				counter += 10
 		logger.info( 'Registered menus for service %s' % (serviceName) )
-	
+
+	def registerCondition(self, compName, condition, rule):
+		"""
+		Register condition
+		
+		** Required Attributes **
+		
+		* ``compName``
+		* ``condition``
+		* ``rule``
+		"""
+		Condition.objects.get_or_create(name=condition, rule=rule)
+		logger.info( 'Registered condition {}'.format(condition))
+
 	def registerViewMenu(self, compName, viewName=None, menus=[]):
 		"""
 		
@@ -305,14 +334,14 @@ class ComponentRegisterBusiness ( object ):
 		
 		* ``compName``
 		* ``viewName``
-		* ``menus``
-		
+		* ``menus``: [zone, group, menu_name, conditions]
+
 		**Optional Attributes**
-		
+
 		**Returns**
-		
+
 		None
-		
+
 		"""
 		logger.info( 'register view Menus...' )
 		if viewName == None or len(menus) == 0:
@@ -351,6 +380,14 @@ class ComponentRegisterBusiness ( object ):
 				viewMenu.zone=dd[K.ZONE]
 				viewMenu.order = counter
 				viewMenu.save()
+				# conditions
+				if K.CONDITIONS in dd:
+					order = 10
+					for name, action, value in map(lambda x: x.split(':'), dd[K.CONDITIONS].split(',')):
+						condition = Condition.objects.get(name=name)
+						ViewMenuCondition.objects.create(viewMenu=viewMenu, condition=condition, action=action, value=value, 
+														order=order)
+						order += 10
 				counterDict[dd[K.MENU_NAME]] = counter
 				counter += 100
 			except Menu.DoesNotExist:
@@ -377,6 +414,14 @@ class ComponentRegisterBusiness ( object ):
 				viewMenu.order = counter
 				viewMenu.parent=viewMenuParent
 				viewMenu.save()
+				# conditions
+				if K.CONDITIONS in dd:
+					order = 10
+					for name, action, value in map(lambda x: x.split(':'), dd[K.CONDITIONS].split(',')):
+						condition = Condition.objects.get(name=name)
+						ViewMenuCondition.objects.create(viewMenu=viewMenu, condition=condition, action=action, value=value, 
+														order=order)
+						order += 10
 				counter += 10
 		logger.info( 'Registered menus for view %s' % (viewName) )
 	

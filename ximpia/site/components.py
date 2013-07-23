@@ -109,11 +109,15 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		# Login Home Menu
 		self._reg.registerMenu(__name__, name=Menus.HOME_LOGIN, title='', description='Home', iconName='iconHome', 
 							viewName=Views.HOME_LOGIN)
-		#self._reg.registerMenu(__name__, name=Menus.HOME, title='Home', description='Home', iconName='iconHome', viewName=Views.HOME_LOGIN)
+		self._reg.registerMenu(__name__, name=Menus.SIGNUP, title='Signup', description='Signup', iconName='iconSignup', 
+							viewName=Views.SIGNUP)
 		self._reg.registerMenu(__name__, name=Menus.LOGIN, title='Login', description='Login', iconName='iconUnlock',
 							viewName=Views.LOGIN)
 
 	def viewMenus(self):
+		# conditions
+		self._reg.registerCondition(__name__, 'notLogin', 'isLogin == false')
+		self._reg.registerCondition(__name__, 'login', 'isLogin == true')
 		self._reg.registerViewMenu(__name__, viewName=Views.HOME_LOGIN, menus=[
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.MENU_NAME: Menus.SYS},
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.HOME_LOGIN},
@@ -128,6 +132,10 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		self._reg.registerViewMenu(__name__, viewName=Views.SIGNUP, menus=[
 						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.HOME},
 						{_K.ZONE: _Ch.MENU_ZONE_VIEW, _K.MENU_NAME: Menus.LOGIN}
+					])
+		self._reg.registerServMenu(__name__, serviceName=Services.USERS, menus=[
+						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.LOGIN, _K.CONDITIONS: 'notLogin:render:True'},
+						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.SIGNUP, _K.CONDITIONS: 'notLogin:render:True'}
 					])
 	
 	def search(self):
