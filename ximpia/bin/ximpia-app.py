@@ -105,9 +105,10 @@ class Command(object):
 		# substitutions for settings
 		chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
 		self.project_title = project_name.replace('_', ' ').capitalize()
+		self.admin_name=raw_input('Admin Name: ')
 		settings = Template(settings).substitute(project_name=project_name,
 												app_name=app_name,
-												admin_name=raw_input('Admin Name: '),
+												admin_name=self.admin_name,
 												admin_email=raw_input('Admin Email: '),
 												time_zone=raw_input('Timezone: <America/Chicago> ') or 'America/Chicago',
 												language_code=raw_input('Language code <en-us> : ') or 'en-us',
@@ -287,8 +288,10 @@ class Command(object):
 		"""
 		'''with open(self.project_path + '/' + app_name + '/' + 'fixtures/initial_data.json', 'w') as f:
 			f.write('')'''
+		with open(self.core_src_path + '/app/' + 'site_additional.json', 'r') as f:
+			site_additional = f.read()
 		with open(self.project_path + '/' + app_name + '/' + 'fixtures/site_additional.json', 'w') as f:
-			f.write('[]')
+			f.write(Template(site_additional).substitute(user_firstname=self.admin_name))
 		# Home: Group, Application, Service, View, XpTemplate
 		# Write fixture based on data
 		# project_name, app_name, date_now, user_id, project_title, app_slug, group_id
@@ -346,3 +349,5 @@ if __name__ == "__main__":
 	os.system('./{}/manage.py customdashboard'.format(project_name))
 	if os.path.isfile('dashboard.py'):
 		shutil.move('dashboard.py', '{}/{}/dashboard.py'.format(project_name, project_name))
+	# load site_additonal.json
+	os.system('./{}/manage.py loaddata site_additional.json'.format(project_name))
