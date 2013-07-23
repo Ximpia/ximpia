@@ -136,7 +136,7 @@ class Condition( BaseModel ):
 		
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_CONDITION')
-	name = models.CharField(max_length=30, db_column='NAME',
+	name = models.CharField(max_length=30, db_column='NAME', unique=True, 
 			verbose_name=_('Condition Name'), help_text=_('Condition Name'))
 	rule = models.CharField(max_length=255, db_column='RULE',
 			verbose_name=_('Condition Rule'), help_text=_('Condition Rule'))
