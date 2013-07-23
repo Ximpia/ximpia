@@ -1,2 +1,17 @@
 [
+{
+    "pk": 1, 
+    "model": "site.userchannel", 
+    "fields": {
+        "name": "user", 
+        "title": "$user_firstname", 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "tag": null, 
+        "user": 1, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "isDeleted": false
+    }
+}
 ]
