@@ -610,7 +610,8 @@ def jxService(request, **args):
         logger.debug('classPath: %s' % (classPath) )
         if method.find('_') == -1 or method.find('__') == -1:
             cls = get_class(classPath)
-            obj = cls(args['ctx']) #@UnusedVariable
+            obj = cls(args['ctx'])
+            super(cls, obj).__init__(args['ctx'])
             obj.request = request
             if (len(viewAttrs) == 0):
                 result = eval('obj.' + method)()
@@ -793,8 +794,9 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
     classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])
     if method.find('_') == -1 or method.find('__') == -1:
         logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
-        cls = get_class( classPath )
-        obj = cls(args['ctx']) #@UnusedVariable
+        cls = get_class( classPath ) 
+        obj = cls(args['ctx'])
+        super(cls, obj).__init__(args['ctx'])
         obj.request = request
         if (len(viewAttrTuple) == 0):
             result = eval('obj.' + method)()
@@ -832,7 +834,8 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
     # Instance and call method for view, get result
     if method.find('_') == -1 or method.find('__') == -1:
         cls = get_class( classPath )
-        obj = cls(args['ctx']) #@UnusedVariable
+        obj = cls(args['ctx'])
+        super(cls, obj).__init__(args['ctx'])
         obj.request = request
         if (len(actionAttrTuple) == 0):
             result = eval('obj.' + method)()

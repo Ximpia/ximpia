@@ -35,8 +35,8 @@ import messages as _m
 
 class SiteService ( CommonService ):
 	
-	def __init__(self, ctx):
-		super(SiteService, self).__init__(ctx)
+	'''def __init__(self, ctx):
+		super(SiteService, self).__init__(ctx)'''
 	
 	@validation()
 	def _authen_user(self):
@@ -431,51 +431,7 @@ class SiteService ( CommonService ):
 		# Remove reminder data so that it is not used again
 		self._dbUserMeta.search(meta__name__in=[K.META_REMINDER_ID, K.META_RESET_PASSWORD_DATE]).update(value='')
 
-class Context ( CoreContext ):
+class Context(CoreContext):
 	
 	def __init__(self):
 		super(Context, self).__init__()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# =========================================
-# Eclipse Dumb Classes for code completion
-# =========================================
-
-class ContextDumbClass (object):
-	def __init__(self):
-		if False: self._ctx = Context()
-		if False: self._ctx.user = User()
-		if False: self._ctx.jsData = JsResultDict()
