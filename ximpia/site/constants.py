@@ -41,6 +41,7 @@ class Menus:
 	HOME_LOGIN = 'homeLogin'
 	HOME = 'home'
 	LOGIN = 'login'
+	SIGNUP = 'signup'
 
 class Tmpls:
 	LOGIN = 'login'
