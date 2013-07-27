@@ -11,9 +11,7 @@ from models import SocialNetworkUser, Tag, TagMode, UserAddress, UserChannel, Us
 import constants as K
 
 class UserDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = User
+	_model = User
 	
 	def get_invitation(self, invitation_code, status=None):
 		"""
@@ -33,34 +31,23 @@ class UserDAO(CommonDAO):
 		pass
 
 class GroupSysDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(GroupSysDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = GroupSys
+	_model = GroupSys	
 
 class GroupDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(GroupDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Group
+	_model = Group
 
 class GroupAccessDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(GroupAccessDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = GroupAccess
+	_model = GroupAccess
 
 class GroupTagDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(GroupTagDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = GroupTag
+	_model = GroupTag
 
 class InvitationMetaDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(InvitationMetaDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = InvitationMeta
+	_model = InvitationMeta
 
 class UserMetaDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserMetaDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = UserMeta
+	_model = UserMeta
+
 	def save_meta(self, user, metas, keys):
 		"""
 		Save user meta keys
@@ -81,29 +68,20 @@ class UserMetaDAO( CommonDAO ):
 				self.create(user=user, meta=meta, value=keys[key])
 
 class AddressDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(AddressDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Address
+	_model = Address
 
 class CategoryDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(CategoryDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Category
+	_model = Category
 
 class TagDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(TagDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Tag
+	_model = Tag
 
 class TagModeDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(TagModeDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = TagMode
+	_model = TagMode
 
-class MetaKeyDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(MetaKeyDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = MetaKey
+class MetaKeyDAO(CommonDAO):
+	_model = MetaKey
+
 	def metas(self, keys):
 		"""
 		Get meta keys as a dictionary
@@ -122,38 +100,28 @@ class MetaKeyDAO( CommonDAO ):
 		return metaDict
 
 class UserChannelDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserChannelDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = UserChannel
+	_model = UserChannel
 
 class InvitationDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(InvitationDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Invitation
+	_model = Invitation
 
 class ParamDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Param
+	_model = Param
+
 	def get_user_status_active(self):
 		return self.get(mode=K.PARAM_USER_STATUS, name=K.PARAM_USER_STATUS_ACTIVE)
 	def get_address_type_personal(self):
 		return self.get(mode=K.PARAM_ADDRESS_TYPE, name=K.PARAM_ADDRESS_TYPE_PERSONAL)
 
 class SignupDataDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SignupDataDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = SignupData
+	_model = SignupData
 
 class SocialNetworkUserDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SocialNetworkUserDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = SocialNetworkUser
+	_model = SocialNetworkUser
 
 class SettingDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SettingDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Setting
+	_model = Setting
+
 	def search_settings(self, app_name):
 		"""
 		Search settings with mustAutoLoad=True for global settings and settings linked to an application. Settings will be included
@@ -171,16 +139,10 @@ class SettingDAO(CommonDAO):
 		return settings 
 
 class UserAddressDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserAddressDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = UserAddress
+	_model = UserAddress
 
 class UserChannelGroupDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserChannelGroupDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = UserChannelGroup
+	_model = UserChannelGroup
 
 class UserProfileDAO( CommonDAO ):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(UserProfileDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = UserProfile
+	_model = UserProfile

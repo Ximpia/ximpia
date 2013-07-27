@@ -381,155 +381,67 @@ class CommonDAO(object):
 	ctx = property(_getCtx, None)
 
 class CoreParameterDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(CoreParameterDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = CoreParam
+	_model = CoreParam
 
 class ApplicationDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ApplicationDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Application
+	_model = Application
 
 class ApplicationMediaDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ApplicationMediaDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ApplicationMedia
+	_model = ApplicationMedia
 
 class ActionDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ActionDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Action
+	_model = Action
 
 class MenuDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(MenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Menu
+	_model = Menu
 
 class ViewMenuDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ViewMenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ViewMenu
+	_model = ViewMenu
 
 class ServiceMenuDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ServiceMenuDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ServiceMenu
+	_model = ServiceMenu
 
 class MenuParamDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(MenuParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = MenuParam
+	_model = MenuParam
 
 class ViewDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ViewDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = View
+	_model = View
 
 class WorkflowDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(WorkflowDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Workflow
+	_model = Workflow
 
 class WorkflowDataDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(WorkflowDataDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = WorkflowData
+	_model = WorkflowData
 
 class ParamDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Param
+	_model = Param
 
 class WFParamValueDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(WFParamValueDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = WFParamValue
+	_model = WFParamValue
 
 class WorkflowViewDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(WorkflowViewDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = WorkflowView
+	_model = WorkflowView
 
 class SearchIndexDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SearchIndexDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = SearchIndex
+	_model = SearchIndex
 
 class SearchIndexParamDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SearchIndexParamDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = SearchIndexParam
+	_model = SearchIndexParam
 
 class WordDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(WordDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = Word
+	_model = Word
 
 class SearchIndexWordDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(SearchIndexWordDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = SearchIndexWord
+	_model = SearchIndexWord
 
 class TemplateDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(TemplateDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = XpTemplate
+	_model = XpTemplate
 
 class ViewTmplDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ViewTmplDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ViewTmpl
+	_model = ViewTmpl
 
 class ServiceMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ServiceMenuConditionDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ServiceMenuCondition
+	_model = ServiceMenuCondition
 
 class ViewMenuConditionDAO(CommonDAO):
-	def __init__(self, ctx, *args_tuple, **args_dict):
-		super(ViewMenuConditionDAO, self).__init__(ctx, *args_tuple, **args_dict)
-		self._model = ViewMenuCondition
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# =========================================
-# Eclipse Dumb Classes for code completion
-# =========================================
-
-class ContextDumbClass (object):
-	def __init__(self):
-		if False: self._ctx = Context()
-		if False: self._ctx.user = User()
-		if False: self._ctx.jsData = JsResultDict()
+	_model = ViewMenuCondition
