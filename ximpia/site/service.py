@@ -35,9 +35,6 @@ import messages as _m
 
 class SiteService ( CommonService ):
 	
-	'''def __init__(self, ctx):
-		super(SiteService, self).__init__(ctx)'''
-	
 	@validation()
 	def _authen_user(self):
 		if self._f()['authSource'] == K.FACEBOOK and self._f()['socialId'] != '':
