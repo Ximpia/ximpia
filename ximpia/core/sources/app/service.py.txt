@@ -11,9 +11,6 @@ import forms
 
 class SiteService(CommonService):
 
-	def __init__(self, ctx):
-		super(SiteService, self).__init__(ctx)
-
 	@view(forms.HomeForm)
 	def viewHome(self):
 		pass
