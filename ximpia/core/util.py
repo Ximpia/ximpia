@@ -36,7 +36,6 @@ def get_project(app):
 def get_instances(args, ctx):
 	"""
 	We should inyect ctx into the parent of DAO or business, using super
-	TODO: Need to change all context assignment in the parent clases: DAO, business
 	"""
 	from models import XpMsgException
 	instances = []
@@ -46,7 +45,11 @@ def get_instances(args, ctx):
 		# get class in this application, path
 		if arg.find('.') != -1:
 			# we have path, just get class and instantiate with context
-			cls = get_class(arg)
+			# will do: project.app.data.MyDAO and data.MyDAO
+			try:
+				cls = get_class(arg)
+			except ImportError:
+				cls = get_class(ctx.app + '.' + arg) 
 			if arg.find('.data.') != -1 or arg.find('DAO') != -1:
 				instances.append(cls(ctx))
 			else:
