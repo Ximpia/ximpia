@@ -1,7 +1,11 @@
 # coding: utf-8
 
+# python
 import os
 from HTMLParser import HTMLParser
+
+# django
+from django.conf import settings
 
 class AttrDict(dict):
 	def __getattr__(self, attr):
@@ -11,21 +15,52 @@ class AttrDict(dict):
 	def __getstate__(self):
 		return self.__dict__
 
-def get_class( kls ):
-	"""
-	
+def get_class(kls_path):
+	"""	
 	Get class
-	
 	"""
-	#print 'class: ', kls
-	parts = kls.split('.')
+	parts = kls_path.split('.')
 	module = ".".join(parts[:-1])
-	#print 'module: ', module
 	m = __import__( module )
 	for comp in parts[1:]:
 		m = getattr(m, comp)            
 	return m
 
+def get_project(app):
+	dj_apps = settings.INSTALLED_APPS
+	for dj_app in dj_apps:
+		if dj_app.find('.' + app) != -1:
+			return dj_app.split('.')[0]
+	return None
+
+def get_instances(args, ctx):
+	"""
+	We should inyect ctx into the parent of DAO or business, using super
+	TODO: Need to change all context assignment in the parent clases: DAO, business
+	"""
+	from models import XpMsgException
+	instances = []
+	for arg in args:
+		if not isinstance(arg, str):
+			raise XpMsgException(AttributeError, _('List of instances must be string'))
+		# get class in this application, path
+		if arg.find('.') != -1:
+			# we have path, just get class and instantiate with context
+			cls = get_class(arg)
+			if arg.find('.data.') != -1 or arg.find('DAO') != -1:
+				instances.append(cls(ctx))
+			else:
+				instances.append(cls(ctx))
+		else:
+			if arg.find('DAO') != -1:
+				# data class name and no path, resolve as data class in this app
+				cls = get_class(ctx.app + '.data.' + arg)
+				instances.append(cls(ctx))
+			else:
+				# business class
+				cls = get_class(ctx.app + '.business.' + arg)
+				instances.append(cls(ctx))
+	return instances
 
 # Import settings and logging
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))

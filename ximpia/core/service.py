@@ -23,7 +23,7 @@ from django.core.cache import cache
 
 from business import WorkFlowBusiness
 from models import get_result_ERROR, XpMsgException
-from util import TemplateParser, AppTemplateParser
+from util import TemplateParser, AppTemplateParser, get_instances
 
 from models import SearchIndex, Context
 
@@ -1814,7 +1814,22 @@ class CommonService( object ):
 	def _get_list_pk_values(self, field_name):
 		pks = [int(x) for x in self._ctx.request.getlist(field_name)]
 		return pks
-	request = property(get_request, set_request, del_request, "request's docstring")
+	request = property(get_request, set_request, del_request, "service request object")
+
+	def _instances(self, *args):
+		"""
+		Builds instances list from list of classes. Inyects context.
+		
+		** Attributes **
+		
+		* ``*args``: List of class names or path to class names.
+		
+		** Returns **
+		
+		List of business, data instances with context inyected
+		"""
+		instances = get_instances(args, self._ctx)
+		return instances
 
 class DefaultService ( CommonService ):
 
@@ -1825,43 +1840,3 @@ class DefaultService ( CommonService ):
 	def show(self):
 		"""Method to execute for view with no business code, only showing a html template."""
 		pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# =========================================
-# Eclipse Dumb Classes for code completion
-# =========================================
-
-class ContextDumbClass (object):
-	def __init__(self):
-		if False: self._ctx = Context()
-		if False: self._ctx.user = User()
-		if False: self._ctx.jsData = JsResultDict()

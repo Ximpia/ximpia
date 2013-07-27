@@ -18,7 +18,7 @@ from models import CoreParam
 import constants as K
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.core.util import get_class, get_instances
 from ximpia.core.models import MetaKey, ServiceMenu
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
@@ -1125,47 +1125,17 @@ class CommonBusiness ( object ):
 	def __init__(self, ctx):
 		self._ctx = ctx
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# =========================================
-# Eclipse Dumb Classes for code completion
-# =========================================
-
-class ContextDumbClass (object):
-	def __init__(self):
-		if False: self._ctx = Context()
-		if False: self._ctx.user = User()
-		if False: self._ctx.jsData = JsResultDict()
+	def _instances(self, *args):
+		"""
+		Builds instances list from list of classes. Inyects context.
+		
+		** Attributes **
+		
+		* ``*args``: List of class names or path to class names.
+		
+		** Returns **
+		
+		List of business, data instances with context inyected
+		"""
+		instances = get_instances(args, self._ctx)
+		return instances
