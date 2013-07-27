@@ -2,5 +2,5 @@
 *.pyc
 *.pyo
 *Thumbs.db
-.settings*
-*.pydevproject
+.settings/*
+.pydevproject
