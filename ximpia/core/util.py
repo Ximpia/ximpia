@@ -23,8 +23,24 @@ def get_class(kls_path):
 	module = ".".join(parts[:-1])
 	m = __import__( module )
 	for comp in parts[1:]:
-		m = getattr(m, comp)            
+		m = getattr(m, comp)
 	return m
+
+def get_app_full_path(app_path):
+	"""
+	Import app views module and get path, app_path like module.module or module
+
+	** Returns **
+	application full path
+	"""
+	parts = app_path.split('.')
+	m = __import__(app_path)
+	for comp in parts[1:]:
+		m = getattr(m, comp)
+	if m.__file__.find('site-packages') != -1:
+		return m.__file__.split('site-packages/')[1].split('/__init__')[0].replace('/','.')
+	else:
+		return m.__file__.split('/__init__')[0].replace('/','.')
 
 def get_project(app):
 	dj_apps = settings.INSTALLED_APPS
@@ -32,6 +48,45 @@ def get_project(app):
 		if dj_app.find('.' + app) != -1:
 			return dj_app.split('.')[0]
 	return None
+
+
+def get_app_name(path):
+	"""
+	Get app name based on app path, like ximpia.site.
+
+	** Attributes **
+
+	* ``path`` (str): Path like 'ximpia.site'
+
+	** Returns **
+	The application name, get from settings
+	"""
+	app_path = path.split('.')[-1]
+	for app in settings.INSTALLED_APPS:
+		if app.split('.')[-1] == app_path:
+			return app
+
+
+def get_app_path(app_name):
+	"""
+	Get full path for application name.
+
+	Application name can be just app name like 'myapp' or app path like 'myproject.myapp'. We would return the 
+	full path for app.
+
+	This should get fs path, used to fetch templates, etc...
+
+	** Attributes **
+
+	* ``app_name`` (str)
+
+	** Returns **
+	Returns app full path in string type
+	"""
+	for app in settings.INSTALLED_APPS:
+		if app == app_name:
+			return get_app_full_path(app)
+
 
 def get_instances(args, ctx):
 	"""
@@ -65,11 +120,13 @@ def get_instances(args, ctx):
 				instances.append(cls(ctx))
 	return instances
 
+
 # Import settings and logging
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
+
 
 class TemplateParser(HTMLParser):
 	__startTitle = False
