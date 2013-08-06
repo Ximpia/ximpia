@@ -91,33 +91,44 @@ def get_app_path(app_name):
 def get_instances(args, ctx):
 	"""
 	We should inyect ctx into the parent of DAO or business, using super
+
+	** Attributes **
+
+	* ``args`` (tuple): tuple of classes, in string format or class. In case string, can be
+						full path like ``ximpia.core.data.ParamDAO', application path like
+						``data.ParamDAO' (will get application from context) or class name
+						like ``ParamDAO``. In this last case, will search for DAO and try to get
+						data class. If fails, will get business class instance.
+	* ``ctx`` (Context): Context with app attribute. Used when no full path.
+
+	** Returns **
+
+	List of instances with context inyected
 	"""
-	from models import XpMsgException
+	# TODO: Would be good if we have DAO names in a constant class to have autocompletion
 	instances = []
 	for arg in args:
-		if not isinstance(arg, str):
-			raise XpMsgException(AttributeError, _('List of instances must be string'))
-		# get class in this application, path
-		if arg.find('.') != -1:
-			# we have path, just get class and instantiate with context
-			# will do: project.app.data.MyDAO and data.MyDAO
-			try:
-				cls = get_class(arg)
-			except ImportError:
-				cls = get_class(ctx.app + '.' + arg) 
-			if arg.find('.data.') != -1 or arg.find('DAO') != -1:
+		# arg can be string or class
+		if isinstance(arg, str):
+			if arg.find('.') != -1:
+				# we have path, just get class and instantiate with context
+				# will do: project.app.data.MyDAO and data.MyDAO
+				try:
+					cls = get_class(arg)
+				except ImportError:
+					cls = get_class(ctx.app + '.' + arg)
 				instances.append(cls(ctx))
 			else:
-				instances.append(cls(ctx))
+				if arg.find('DAO') != -1:
+					# data class name and no path, resolve as data class in this app
+					cls = get_class(ctx.app + '.data.' + arg)
+					instances.append(cls(ctx))
+				else:
+					# business class
+					cls = get_class(ctx.app + '.business.' + arg)
+					instances.append(cls(ctx))
 		else:
-			if arg.find('DAO') != -1:
-				# data class name and no path, resolve as data class in this app
-				cls = get_class(ctx.app + '.data.' + arg)
-				instances.append(cls(ctx))
-			else:
-				# business class
-				cls = get_class(ctx.app + '.business.' + arg)
-				instances.append(cls(ctx))
+			instances.append(arg(ctx))
 	return instances
 
 
