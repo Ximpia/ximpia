@@ -18,7 +18,7 @@ from models import CoreParam
 import constants as K
 
 # Settings
-from ximpia.core.util import get_class, get_instances
+from ximpia.core.util import get_class, get_instances, get_app_name
 from ximpia.core.models import MetaKey, ServiceMenu
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
@@ -50,7 +50,7 @@ class AppCompRegCommonBusiness ( object ):
 		self.viewMenus()
 		self.search()
 	def __getAppName(self, compName):
-		return '.'.join(compName.split('.')[:2])
+		return get_app_name('.'.join(compName.split('.')[:2]))
 	def views(self):
 		"""Doc."""
 		pass
@@ -78,7 +78,7 @@ class ComponentRegisterBusiness ( object ):
 		pass
 	
 	def __getAppName(self, compName):
-		return '.'.join(compName.split('.')[:2])
+		return get_app_name('.'.join(compName.split('.')[:2]))
 	
 	def registerApp(self, compName, title=None, slug='', **args):
 		"""
@@ -237,7 +237,7 @@ class ComponentRegisterBusiness ( object ):
 			raise XpRegisterException(AttributeError, 'registerServMenu requires attributes serviceName and menus')
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
-		service = Service.objects.get(name=serviceName) #@UnusedVariable
+		service = Service.objects.get(name=serviceName, application=app) #@UnusedVariable
 		# Menu
 		#ServiceMenu.objects.filter(service=service).delete()
 		groupDict = {}
@@ -467,7 +467,7 @@ class ComponentRegisterBusiness ( object ):
 		# '.'.join(compName.split('.')[:2])
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
-		service = Service.objects.get(name=serviceName)
+		service = Service.objects.get(name=serviceName, application=app)
 		try:
 			view = View.objects.get(application=app, service=service, name=viewName)
 		except View.DoesNotExist:
@@ -517,7 +517,7 @@ class ComponentRegisterBusiness ( object ):
 		appName = self.__getAppName(compName)
 		classPath = str(className).split("'")[1]
 		app = Application.objects.get(name=appName)
-		service = Service.objects.get(name=serviceName)
+		service = Service.objects.get(name=serviceName, application=app)
 		try:
 			action = Action.objects.get(application=app, name=actionName, service=service)
 		except Action.DoesNotExist:

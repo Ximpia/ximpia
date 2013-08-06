@@ -23,7 +23,7 @@ from ximpia.util.js import Form as _jsf
 from util import AttrDict
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.core.util import get_class, get_app_name
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -2086,6 +2086,7 @@ class ctx(object):
 
 class context_view(object):
 	_app = ''
+	_package = ''
 	__mode = ''
 	def __init__(self, *argList, **args):
 		if args.has_key('mode'):
@@ -2093,8 +2094,10 @@ class context_view(object):
 		else:
 			self.__mode = 'view'
 		if len(argList) != 0:
-			logger.debug('argList: %s' % (argList) )
-			self._app = '.'.join(argList[0].split('.')[:2])
+			logger.debug('argList: {}'.format(argList))
+			#argList: ('ximpia_apps.ximpia_site.views',)
+			self._app = get_app_name('.'.join(argList[0].split('.')[:2]))
+			logger.debug('_app: {}'.format(self._app))
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
@@ -2108,7 +2111,7 @@ class context_view(object):
 					request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 8') != -1:
 					result = render_to_response( 'noHTML5.html', RequestContext(request) )
-					return result				
+					return result
 
 				if self.__mode == 'view':
 					if args.has_key('appSlug') and len(args['appSlug']) != 0:

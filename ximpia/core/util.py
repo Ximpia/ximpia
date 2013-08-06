@@ -105,7 +105,6 @@ def get_instances(args, ctx):
 
 	List of instances with context inyected
 	"""
-	# TODO: Would be good if we have DAO names in a constant class to have autocompletion
 	instances = []
 	for arg in args:
 		# arg can be string or class

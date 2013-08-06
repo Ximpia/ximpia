@@ -23,7 +23,7 @@ from django.core.cache import cache
 
 from business import WorkFlowBusiness
 from models import get_result_ERROR, XpMsgException
-from util import TemplateParser, AppTemplateParser, get_instances
+from util import TemplateParser, AppTemplateParser, get_instances, get_app_path
 
 from models import SearchIndex, Context
 
@@ -588,17 +588,20 @@ class wf_action(object):
 			return result
 		return wrapped_f
 
-class view_tmpl ( object ):
+class view_tmpl(object):
 	""""Decorator for django views in core module."""
 	__viewName = ''
 	__APP = ''
 	__APP_OBJ = None
 	__APP_SLUG = ''
+	__package = ''
 	_settings = {}
 	def __init__(self, *argsTuple, **argsDict):
 		if len(argsTuple) != 0:
 			logger.debug('view_tmpl :: argList: %s' % (argsTuple) )
-			self.__APP = '.'.join(argsTuple[0].split('.')[:2])
+			#self.__APP = '.'.join(argsTuple[0].split('.')[:2])
+			self.__package = argsTuple[0].split('.')[0]
+			self.__APP = argsTuple[0].split('.')[1]
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
@@ -662,7 +665,10 @@ class view_tmpl ( object ):
 				parser = TemplateParser()
 				parser.feed(tmplData)
 				try:
-					masterTmpl = self.__APP.split('.')[1] + '.html'
+					if self.__APP.find('.') != -1:
+						masterTmpl = self.__APP.split('.')[1] + '.html'
+					else:
+						masterTmpl = self.__APP + '.html'
 					logger.debug('view_tmpl :: masterTmpl: %s' % (masterTmpl) )
 					logger.debug('view_tmpl :: title: %s' % (parser.title) )
 					result = render_to_response( 'xp-base.html', RequestContext(request,
@@ -1218,7 +1224,7 @@ class TemplateService ( object ):
 		logger.debug('TemplateService.get_app :: app: %s' % app)
 		# go to project. Search in all apps for site templates, write path into cache
 		if settings.DEBUG == True:
-			package, module = app.split('.')
+			package, module = get_app_path(app).split('.')
 			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
 				#appModulePath = settings.__file__.split('settings')[0]
@@ -1229,6 +1235,7 @@ class TemplateService ( object ):
 					path = pathSite + '/' + app.split('.')[1] + '.html'
 			else:
 				path = m.__file__.split('__init__')[0] + 'templates/' + module + '/' + module + '.html'
+			logger.debug('path: {}'.format(path))
 			if os.path.isfile(path):
 				with open(path) as f:
 					tmpl = f.read()
@@ -1268,7 +1275,13 @@ class TemplateService ( object ):
 		logger.debug('TemplateService.get :: app: %s tmpl_name: %s' % (app, tmpl_name))
 
 		if settings.DEBUG == True:
-			package, module = app.split('.')
+			if app.find('.') != -1:
+				package, module = app.split('.')
+			else:
+				module = app
+				# we need to get package = projectname
+				# TODO: TEMP!!!!!!!!!!!!!!!!!!!!! REMOVE!!!!!!!!!!!!!!!!!!!!!!!!
+				package = 'ximpia_apps'
 			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
 				appModulePath = settings.__file__.split('settings')[0]
