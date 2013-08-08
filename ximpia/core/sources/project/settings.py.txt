@@ -148,7 +148,7 @@ INSTALLED_APPS = (
     'ximpia.core',
     'ximpia.site',
     # <APPS>
-    '$project_name.$app_name',
+    '$app_name',
     # </APPS>
 )
 
