@@ -135,7 +135,8 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 					])
 		self._reg.registerServMenu(__name__, serviceName=Services.USERS, menus=[
 						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.LOGIN, _K.CONDITIONS: 'notLogin:render:True'},
-						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.SIGNUP, _K.CONDITIONS: 'notLogin:render:True'}
+						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.SIGNUP, _K.CONDITIONS: 'notLogin:render:True'},
+						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.HOME_LOGIN, _K.CONDITIONS: 'login:render:True'}
 					])
 	
 	def search(self):
