@@ -406,7 +406,7 @@ ximpia.common.startBackendResponse = (function(op) {
 			$("#id_sect_loading").fadeOut(200);
 		}
 		waitCounter += 1;
-	}, 100);
+	}, 250);
 });
 
 /*
