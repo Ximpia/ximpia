@@ -1,125 +1,7 @@
 [
-    {
-        "pk": 1,
-        "model": "site.param",
-        "fields": {
-            "name": "META",
-            "dateCreate": "2012-12-12T13:53:52",
-            "dateModify": "2012-12-12T13:53:52",
-            "value": "META",
-            "mode": "META_TYPE",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 2,
-        "model": "site.param",
-        "fields": {
-            "name": "SETTINGS",
-            "dateCreate": "2012-12-12T13:54:04",
-            "dateModify": "2012-12-12T13:54:04",
-            "value": "SETTINGS",
-            "mode": "META_TYPE",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 3,
-        "model": "site.param",
-        "fields": {
-            "name": "PENDING",
-            "dateCreate": "2012-12-12T15:13:41",
-            "dateModify": "2012-12-12T15:13:41",
-            "value": "Pending",
-            "mode": "USER_STATUS",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 4, 
-        "model": "site.param", 
-        "fields": {
-            "name": "Default", 
-            "dateCreate": "2012-12-26T21:48:30", 
-            "dateModify": "2012-12-26T21:48:30", 
-            "value": "Default", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 6, 
-        "model": "site.param", 
-        "fields": {
-            "name": "Apps", 
-            "dateCreate": "2012-12-26T22:15:19", 
-            "dateModify": "2012-12-26T22:18:04", 
-            "value": "Apps", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 7, 
-        "model": "site.param", 
-        "fields": {
-            "name": "Views", 
-            "dateCreate": "2012-12-26T22:19:14", 
-            "dateModify": "2012-12-26T22:22:32", 
-            "value": "Views", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 8, 
-        "model": "site.param", 
-        "fields": {
-            "name": "Groups", 
-            "dateCreate": "2012-12-26T22:20:20", 
-            "dateModify": "2012-12-26T22:22:25", 
-            "value": "Groups", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 9, 
-        "model": "site.param", 
-        "fields": {
-            "name": "App Gallery", 
-            "dateCreate": "2012-12-26T22:24:36", 
-            "dateModify": "2012-12-26T22:24:36", 
-            "value": "App Galery", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
+
+
+{
         "pk": 1, 
         "model": "site.category", 
         "fields": {
@@ -161,21 +43,84 @@
             "description": ""
         }
     },
-  {
-    "model": "site.Group",
-    "pk": 1,
+ 
+
+{
+    "pk": 1, 
+    "model": "auth.group", 
     "fields": {
-      "group": 1,
-      "category": 2
+        "name": "Users", 
+        "permissions": []
     }
-  },
-  {
-    "model": "auth.Group",
-    "pk": 1,
+},
+{
+    "pk": 2, 
+    "model": "auth.group", 
     "fields": {
-      "name": "Users"
+        "name": "site", 
+        "permissions": []
     }
-  },
+},
+
+
+{
+    "pk": 1, 
+    "model": "site.group", 
+    "fields": {
+        "category": 2, 
+        "group": 1, 
+        "parent": null, 
+        "groupNameId": null, 
+        "dateCreate": null, 
+        "isPublic": true, 
+        "dateModify": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 2, 
+    "model": "site.group", 
+    "fields": {
+        "category": 1, 
+        "group": 2, 
+        "parent": null, 
+        "groupNameId": "site", 
+        "dateCreate": null, 
+        "isPublic": true, 
+        "dateModify": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "isDeleted": false
+    }
+},
+
+
+{
+    "pk": 1, 
+    "model": "core.application", 
+    "fields": {
+        "category": null, 
+        "name": "ximpia.site", 
+        "parent": null, 
+        "title": "Ximpia Site", 
+        "accessGroup": 2, 
+        "dateCreate": null, 
+        "dateModify": null, 
+        "isPrivate": false, 
+        "isAdmin": false, 
+        "developerOrg": null, 
+        "isSubscription": false, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "slug": "site", 
+        "isDeleted": false, 
+        "developer": null
+    }
+},
+
+
     {
         "pk": 1, 
         "model": "core.coreparam", 
@@ -332,6 +277,135 @@
             "isDeleted": false
         }
     },
+
+
+    {
+        "pk": 1,
+        "model": "site.param",
+        "fields": {
+            "name": "META",
+            "dateCreate": "2012-12-12T13:53:52",
+            "dateModify": "2012-12-12T13:53:52",
+            "value": "META",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 2,
+        "model": "site.param",
+        "fields": {
+            "name": "SETTINGS",
+            "dateCreate": "2012-12-12T13:54:04",
+            "dateModify": "2012-12-12T13:54:04",
+            "value": "SETTINGS",
+            "mode": "META_TYPE",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 3,
+        "model": "site.param",
+        "fields": {
+            "name": "PENDING",
+            "dateCreate": "2012-12-12T15:13:41",
+            "dateModify": "2012-12-12T15:13:41",
+            "value": "Pending",
+            "mode": "USER_STATUS",
+            "userCreateId": 1,
+            "userModifyId": 1,
+            "paramType": "string",
+            "isDeleted": false
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Default", 
+            "dateCreate": "2012-12-26T21:48:30", 
+            "dateModify": "2012-12-26T21:48:30", 
+            "value": "Default", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Apps", 
+            "dateCreate": "2012-12-26T22:15:19", 
+            "dateModify": "2012-12-26T22:18:04", 
+            "value": "Apps", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Views", 
+            "dateCreate": "2012-12-26T22:19:14", 
+            "dateModify": "2012-12-26T22:22:32", 
+            "value": "Views", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "site.param", 
+        "fields": {
+            "name": "Groups", 
+            "dateCreate": "2012-12-26T22:20:20", 
+            "dateModify": "2012-12-26T22:22:25", 
+            "value": "Groups", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "site.param", 
+        "fields": {
+            "name": "App Gallery", 
+            "dateCreate": "2012-12-26T22:24:36", 
+            "dateModify": "2012-12-26T22:24:36", 
+            "value": "App Galery", 
+            "mode": "CATEGORY_TYPE", 
+            "userCreateId": 1, 
+            "userModifyId": 1, 
+            "paramType": "string", 
+            "isDeleted": false
+        }
+    }, 
+     {
+    "model": "auth.Group",
+    "pk": 1,
+    "fields": {
+      "name": "Users"
+    }
+  },
 {
     "pk": 1, 
     "model": "site.metakey", 
@@ -492,7 +566,7 @@
         "dateCreate": null, 
         "dateModify": null, 
         "value": "2", 
-        "application": 2, 
+        "application": 1, 
         "userCreateId": 1, 
         "userModifyId": 1, 
         "mustAutoload": true, 
