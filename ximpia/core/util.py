@@ -37,10 +37,8 @@ def get_app_full_path(app_path):
 	m = __import__(app_path)
 	for comp in parts[1:]:
 		m = getattr(m, comp)
-	if m.__file__.find('site-packages') != -1:
-		return m.__file__.split('site-packages/')[1].split('/__init__')[0].replace('/','.')
-	else:
-		return m.__file__.split('/__init__')[0].replace('/','.')
+	return '.'.join(m.__file__.split('/__init__')[0].split('/')[-1-1:])
+
 
 def get_project(app):
 	dj_apps = settings.INSTALLED_APPS

@@ -1278,10 +1278,8 @@ class TemplateService ( object ):
 			if app.find('.') != -1:
 				package, module = app.split('.')
 			else:
-				module = app
-				# we need to get package = projectname
-				# TODO: TEMP!!!!!!!!!!!!!!!!!!!!! REMOVE!!!!!!!!!!!!!!!!!!!!!!!!
-				package = 'ximpia_apps'
+				logger.debug('path: {}'.format(get_app_path(app)))
+				package, module = get_app_path(app).split('.')
 			m = get_class(package + '.' + module)
 			if app == 'ximpia.site':
 				appModulePath = settings.__file__.split('settings')[0]
