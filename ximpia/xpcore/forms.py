@@ -12,7 +12,7 @@ import messages as _m
 from ximpia.util.js import Form as _jsf
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import constants as K

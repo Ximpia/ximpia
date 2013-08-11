@@ -16,13 +16,13 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 from django.http import Http404
 
-from ximpia.core.util import get_class, AttrDict
+from ximpia.xpcore.util import get_class, AttrDict
 from models import context, context_view, ctx, JsResultDict
 from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
 
-from ximpia.site import constants as KSite
-from ximpia.site.models import Setting
+from ximpia.xpsite import constants as KSite
+from ximpia.xpsite.models import Setting
 
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
@@ -785,7 +785,7 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
     **Returns**
 
     """
-    #logger.debug( 'core showView :: context: %s' % (json.dumps(args['ctx'])) )
+    #logger.debug( 'xpcore showView :: context: %s' % (json.dumps(args['ctx'])) )
     dbApplication = ApplicationDAO(args['ctx'])
     application = dbApplication.get(slug=appSlug)
     db = ViewDAO(args['ctx'])
@@ -803,7 +803,7 @@ def showView(request, appSlug, viewSlug, viewAttrs, **args):
         else:
             result = eval('obj.' + method)(*viewAttrTuple)
     else:
-        logger.debug( 'core :: showView :: private methods...' )
+        logger.debug( 'xpcore :: showView :: private methods...' )
         raise Http404
     return result
 
@@ -842,6 +842,6 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
         else:
             result = eval('obj.' + method)(*actionAttrTuple)
     else:
-        logger.debug( 'core :: execAction :: private methods...' )
+        logger.debug( 'xpcore :: execAction :: private methods...' )
         raise Http404
     return result

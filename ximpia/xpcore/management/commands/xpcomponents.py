@@ -4,7 +4,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 # ximpia
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 
 class Command(BaseCommand):
 	

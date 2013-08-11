@@ -11,10 +11,10 @@ from models import WorkflowView, ViewMenu, SearchIndex, SearchIndexParam, Word, 
 from models import ViewMenuCondition, ApplicationMedia
 from models import Context, JsResultDict
 
-from ximpia.site.models import Setting
+from ximpia.xpsite.models import Setting
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

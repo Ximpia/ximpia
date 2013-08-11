@@ -18,7 +18,7 @@ from models import XpMsgException
 from validators import validate_txt_field, validate_password, validate_user_id
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

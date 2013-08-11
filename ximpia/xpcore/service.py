@@ -40,8 +40,8 @@ from models import JsResultDict, ctx
 import constants as K
 
 # Settings
-from ximpia.core.util import get_class
-from ximpia.site.data import SettingDAO
+from ximpia.xpcore.util import get_class
+from ximpia.xpsite.data import SettingDAO
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

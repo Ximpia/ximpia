@@ -17,13 +17,13 @@ from filebrowser.fields import FileBrowseField
 
 from choices import Choices
 import constants as K
-from ximpia.site import constants as KSite
+from ximpia.xpsite import constants as KSite
 
 from ximpia.util.js import Form as _jsf
 from util import AttrDict
 
 # Settings
-from ximpia.core.util import get_class, get_app_name
+from ximpia.xpcore.util import get_class, get_app_name
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

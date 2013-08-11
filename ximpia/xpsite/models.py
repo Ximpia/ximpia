@@ -5,9 +5,9 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User, Group as GroupSys
 from filebrowser.fields import FileBrowseField
 
-from ximpia.core.models import BaseModel, MetaKey
-import ximpia.core.constants as CoreK
-from ximpia.core.choices import Choices as CoreChoices
+from ximpia.xpcore.models import BaseModel, MetaKey
+import ximpia.xpcore.constants as CoreK
+from ximpia.xpcore.choices import Choices as CoreChoices
 
 import constants as K
 from choices import Choices

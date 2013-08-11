@@ -12,14 +12,14 @@ from models import XpMsgException, XpRegisterException, get_blank_wf_data
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service, \
 	Condition, ViewMenuCondition, ServiceMenuCondition
-from ximpia.site.models import Category, Tag, Group
+from ximpia.xpsite.models import Category, Tag, Group
 from ximpia.util import resources
 from models import CoreParam
 import constants as K
 
 # Settings
-from ximpia.core.util import get_class, get_instances, get_app_name
-from ximpia.core.models import MetaKey, ServiceMenu
+from ximpia.xpcore.util import get_class, get_instances, get_app_name
+from ximpia.xpcore.models import MetaKey, ServiceMenu
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

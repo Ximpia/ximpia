@@ -2,10 +2,10 @@ import os
 
 # Import models
 from django.contrib.auth.models import User
-from ximpia.site.models import SocialNetworkUser
+from ximpia.xpsite.models import SocialNetworkUser
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
