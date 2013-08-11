@@ -1,8 +1,8 @@
 import logging
 
-from ximpia.core.choices import Choices as _Ch
-import ximpia.core.constants as _K
-from ximpia.core.business import AppCompRegCommonBusiness
+from ximpia.xpcore.choices import Choices as _Ch
+import ximpia.xpcore.constants as _K
+from ximpia.xpcore.business import AppCompRegCommonBusiness
 
 from service import SiteService
 from $project_name import settings

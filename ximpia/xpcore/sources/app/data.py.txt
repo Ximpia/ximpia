@@ -8,6 +8,7 @@ from django.conf import settings
 # Logging
 logger = logging.getLogger(__name__)
 
+from ximpia.xpcore.data import CommonDAO
 
 class MyDAO(CommonDAO):
 	_model = MyModel

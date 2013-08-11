@@ -30,9 +30,9 @@ urlpatterns += patterns('',
 	(r'^admin/', include(admin.site.urls)),	
 )
 
-# core
+# ximpia core
 urlpatterns += patterns( '', 
-    url(r'^', include('ximpia.core.urls')),
+    url(r'^', include('ximpia.xpcore.urls')),
 )
 
 # site

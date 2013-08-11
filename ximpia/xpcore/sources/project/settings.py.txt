@@ -145,8 +145,8 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.staticfiles',
     'south',
-    'ximpia.core',
-    'ximpia.site',
+    'ximpia.xpcore',
+    'ximpia.xpsite',
     # <APPS>
     '$app_name',
     # </APPS>

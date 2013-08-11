@@ -3,8 +3,8 @@
 # python
 import logging
 
-from ximpia.core.models import context_view
-from ximpia.core.service import view_tmpl
+from ximpia.xpcore.models import context_view
+from ximpia.xpcore.service import view_tmpl
 
 from $project_name import settings
 

@@ -4,7 +4,7 @@
 from django.utils.translation import ugettext as _
 
 # ximpia
-from ximpia.core.service import CommonService, view
+from ximpia.xpcore.service import CommonService, view
 
 # app
 import forms
