@@ -2,11 +2,11 @@
 
 import os
 
-from ximpia.core.models import context_view
-from ximpia.core.service import view
+from ximpia.xpcore.models import context_view
+from ximpia.xpcore.service import view
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -18,7 +18,5 @@ logger = logging.getLogger(__name__)
 @view()
 def home(request, **args):
 	logger.debug( 'home....' )
-	#video = business.VideoBusiness(args['ctx'])
-	#result = video.showHome()
 	result = None
 	return result

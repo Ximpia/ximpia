@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from ximpia.core.data import CommonDAO, XpMsgException
+from ximpia.xpcore.data import CommonDAO, XpMsgException
 
 from django.contrib.auth.models import User, Group as GroupSys
 from django.db.models import Q

@@ -6,7 +6,7 @@ from ximpia.xpcore.business import AppCompRegCommonBusiness
 
 from service import SiteService
 from $project_name import settings
-from ximpia.core.service import DefaultService
+from ximpia.xpcore.service import DefaultService
 
 # Logging
 logger = logging.getLogger(__name__)
@@ -48,6 +48,9 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 	def viewMenus(self):
 		# Service Menus
 		self._reg.registerServMenu(__name__, serviceName='Myproject', menus=[
+			{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'login', _K.CONDITIONS: 'notLogin:render:True'},
+			{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'signup', _K.CONDITIONS: 'notLogin:render:True'},
+			{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: 'homeLogin', _K.CONDITIONS: 'login:render:True'},
 			{_K.ZONE: _Ch.MENU_ZONE_SERVICE, _K.MENU_NAME: 'home'}
 			])
 

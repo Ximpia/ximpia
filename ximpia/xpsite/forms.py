@@ -6,11 +6,11 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
 from ximpia.util.js import Form as _jsf
-from ximpia.core.fields import UserField, PasswordField, EmailField, CharField, HiddenField, OneListField, ManyListField
-from ximpia.core.forms import XBaseForm
+from ximpia.xpcore.fields import UserField, PasswordField, EmailField, CharField, HiddenField, OneListField, ManyListField
+from ximpia.xpcore.forms import XBaseForm
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -23,7 +23,7 @@ import constants as K
 from choices import Choices
 from models import Address, Invitation, UserChannel
 
-from ximpia.core.models import View
+from ximpia.xpcore.models import View
 
 class HomeForm(XBaseForm):
 	_XP_FORM_ID = 'home'

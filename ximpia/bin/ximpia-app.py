@@ -7,7 +7,7 @@ from string import Template
 from django.utils.crypto import get_random_string
 from distutils.sysconfig import get_python_lib
 
-XIMPIA_CORE_PATH = get_python_lib() + '/ximpia/core'
+XIMPIA_CORE_PATH = get_python_lib() + '/ximpia/xpcore'
 
 class Command(object):
 	db_engine = ''
@@ -99,7 +99,7 @@ class Command(object):
 		with open(project_name + '/' + project_name + '/' + 'settings_local.py', 'w') as f:
 			f.write(settings_local)
 		# settings
-		# get settings and settings_local file from core sources
+		# get settings and settings_local file from xpcore sources
 		with open(self.core_src_path + '/project/' + 'settings.py.txt', 'r') as f:
 			settings = f.read()
 		# substitutions for settings
@@ -117,14 +117,14 @@ class Command(object):
 												secret_key=get_random_string(50, chars))
 		with open(project_name + '/' + project_name + '/' + 'settings.py', 'w') as f:
 			f.write(settings)
-		# get urls file from core sources
+		# get urls file from xpcore sources
 		with open(self.core_src_path +  '/project' + '/' + 'urls.py.txt', 'r') as f:
 			urls = f.read()
 		urls = urls.replace('$project_name', project_name)
 		urls = urls.replace('$app_name', app_name)
 		with open(project_name + '/' + project_name + '/' + 'urls.py', 'w') as f:
 			f.write(urls)
-		# get wsgi file from core sources
+		# get wsgi file from xpcore sources
 		with open(self.core_src_path +  '/project' + '/' + 'wsgi.py.txt', 'r') as f:
 			wsgi = f.read()
 		wsgi = wsgi.replace('$project_name', project_name)
@@ -339,12 +339,12 @@ if __name__ == "__main__":
 	# Create tables, first syncdb, migration, etc...
 	print './{}/manage.py syncdb'.format(project_name)
 	os.system('./{}/manage.py syncdb'.format(project_name))
-	print './{}/manage.py migrate ximpia.core'.format(project_name)
-	os.system('./{}/manage.py migrate ximpia.core'.format(project_name))
-	print './{}/manage.py migrate ximpia.site'.format(project_name)
-	os.system('./{}/manage.py migrate ximpia.site'.format(project_name))
+	print './{}/manage.py migrate ximpia.xpcore'.format(project_name)
+	os.system('./{}/manage.py migrate ximpia.xpcore'.format(project_name))
+	print './{}/manage.py migrate ximpia.xpsite'.format(project_name)
+	os.system('./{}/manage.py migrate ximpia.xpsite'.format(project_name))
 	# Import site and app components
-	os.system('./{}/manage.py xpcomponents ximpia.site'.format(project_name))
+	os.system('./{}/manage.py xpcomponents ximpia.xpsite'.format(project_name))
 	os.system('./{}/manage.py xpcomponents myproject.myapp'.format(project_name))
 	os.system('./{}/manage.py customdashboard'.format(project_name))
 	if os.path.isfile('dashboard.py'):

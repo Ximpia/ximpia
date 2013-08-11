@@ -1,9 +1,7 @@
 [
-
-
 {
         "pk": 1, 
-        "model": "site.category", 
+        "model": "xpsite.category", 
         "fields": {
             "popularity": 1, 
             "name": "Apps", 
@@ -24,7 +22,7 @@
     }, 
     {
         "pk": 2, 
-        "model": "site.category", 
+        "model": "xpsite.category", 
         "fields": {
             "popularity": 1, 
             "name": "Groups", 
@@ -57,7 +55,7 @@
     "pk": 2, 
     "model": "auth.group", 
     "fields": {
-        "name": "site", 
+        "name": "xpsite", 
         "permissions": []
     }
 },
@@ -65,7 +63,7 @@
 
 {
     "pk": 1, 
-    "model": "site.group", 
+    "model": "xpsite.group", 
     "fields": {
         "category": 2, 
         "group": 1, 
@@ -81,12 +79,12 @@
 },
 {
     "pk": 2, 
-    "model": "site.group", 
+    "model": "xpsite.group", 
     "fields": {
         "category": 1, 
         "group": 2, 
         "parent": null, 
-        "groupNameId": "site", 
+        "groupNameId": "xpsite", 
         "dateCreate": null, 
         "isPublic": true, 
         "dateModify": null, 
@@ -99,10 +97,10 @@
 
 {
     "pk": 1, 
-    "model": "core.application", 
+    "model": "xpcore.application", 
     "fields": {
         "category": null, 
-        "name": "ximpia.site", 
+        "name": "ximpia.xpsite", 
         "parent": null, 
         "title": "Ximpia Site", 
         "accessGroup": 2, 
@@ -119,11 +117,9 @@
         "developer": null
     }
 },
-
-
     {
         "pk": 1, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "twitter", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -137,7 +133,7 @@
     }, 
     {
         "pk": 2, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "facebook", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -151,7 +147,7 @@
     }, 
     {
         "pk": 3, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "linkedin", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -165,7 +161,7 @@
     }, 
     {
         "pk": 4, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "ok", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -179,7 +175,7 @@
     }, 
     {
         "pk": 5, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "blocked", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -193,7 +189,7 @@
     }, 
     {
         "pk": 6, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "unblocked", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -207,7 +203,7 @@
     }, 
     {
         "pk": 7, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "sms", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -221,7 +217,7 @@
     }, 
     {
         "pk": 8, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "email", 
             "dateCreate": "2012-04-11 11:49:54", 
@@ -235,7 +231,7 @@
     }, 
     {
         "pk": 9, 
-        "model": "core.coreparam", 
+        "model": "xpcore.coreparam", 
         "fields": { 
             "name": "web", 
             "dateCreate": "2012-04-16 12:17:57", 
@@ -249,7 +245,7 @@
     },
     {
         "pk": 10,
-        "model": "core.coreparam",
+        "model": "xpcore.coreparam",
         "fields": {
             "name": "META",
             "dateCreate": "2012-12-12T13:53:52",
@@ -264,7 +260,7 @@
     },
     {
         "pk": 11,
-        "model": "core.coreparam",
+        "model": "xpcore.coreparam",
         "fields": {
             "name": "SETTINGS",
             "dateCreate": "2012-12-12T13:54:04",
@@ -277,11 +273,9 @@
             "isDeleted": false
         }
     },
-
-
     {
         "pk": 1,
-        "model": "site.param",
+        "model": "xpsite.param",
         "fields": {
             "name": "META",
             "dateCreate": "2012-12-12T13:53:52",
@@ -296,7 +290,7 @@
     },
     {
         "pk": 2,
-        "model": "site.param",
+        "model": "xpsite.param",
         "fields": {
             "name": "SETTINGS",
             "dateCreate": "2012-12-12T13:54:04",
@@ -311,7 +305,7 @@
     },
     {
         "pk": 3,
-        "model": "site.param",
+        "model": "xpsite.param",
         "fields": {
             "name": "PENDING",
             "dateCreate": "2012-12-12T15:13:41",
@@ -326,7 +320,7 @@
     },
     {
         "pk": 4, 
-        "model": "site.param", 
+        "model": "xpsite.param", 
         "fields": {
             "name": "Default", 
             "dateCreate": "2012-12-26T21:48:30", 
@@ -341,7 +335,7 @@
     }, 
     {
         "pk": 6, 
-        "model": "site.param", 
+        "model": "xpsite.param", 
         "fields": {
             "name": "Apps", 
             "dateCreate": "2012-12-26T22:15:19", 
@@ -356,7 +350,7 @@
     }, 
     {
         "pk": 7, 
-        "model": "site.param", 
+        "model": "xpsite.param", 
         "fields": {
             "name": "Views", 
             "dateCreate": "2012-12-26T22:19:14", 
@@ -371,7 +365,7 @@
     }, 
     {
         "pk": 8, 
-        "model": "site.param", 
+        "model": "xpsite.param", 
         "fields": {
             "name": "Groups", 
             "dateCreate": "2012-12-26T22:20:20", 
@@ -386,7 +380,7 @@
     }, 
     {
         "pk": 9, 
-        "model": "site.param", 
+        "model": "xpsite.param", 
         "fields": {
             "name": "App Gallery", 
             "dateCreate": "2012-12-26T22:24:36", 
@@ -408,7 +402,7 @@
   },
 {
     "pk": 1, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "SIGNUP_USER_PASSWORD", 
         "dateCreate": "2012-12-27T22:17:30", 
@@ -421,7 +415,7 @@
 },
 {
     "pk": 2, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "SIGNUP_SOCIAL_NETWORK", 
         "dateCreate": "2012-12-27T22:17:38", 
@@ -434,7 +428,7 @@
 },
 {
     "pk": 3, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "HAS_VALIDATED_EMAIL", 
         "dateCreate": "2012-12-28T23:27:20", 
@@ -447,7 +441,7 @@
 },
 {
     "pk": 4, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "SITE_SIGNUP_INVITATION", 
         "dateCreate": "2013-01-14T19:46:08", 
@@ -460,7 +454,7 @@
 },
 {
     "pk": 5, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "REMINDER_DAYS", 
         "dateCreate": "2013-01-24T14:38:17", 
@@ -473,7 +467,7 @@
 },
 {
     "pk": 6, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "REMINDER_ID", 
         "dateCreate": "2013-01-24T14:38:41", 
@@ -486,7 +480,7 @@
 },
 {
     "pk": 7, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "RESET_PASSWORD_DATE", 
         "dateCreate": "2013-01-24T14:38:58", 
@@ -499,7 +493,7 @@
 },
 {
     "pk": 8, 
-    "model": "site.metakey", 
+    "model": "xpsite.metakey", 
     "fields": {
         "name": "NUMBER_RESULTS_LIST", 
         "dateCreate": "2013-03-04T14:36:59", 
@@ -512,7 +506,7 @@
 },
 {
     "pk": 1, 
-    "model": "site.setting", 
+    "model": "xpsite.setting", 
     "fields": {
         "name": 2, 
         "dateCreate": null, 
@@ -528,7 +522,7 @@
 },
 {
     "pk": 2, 
-    "model": "site.setting", 
+    "model": "xpsite.setting", 
     "fields": {
         "name": 1, 
         "dateCreate": null, 
@@ -544,7 +538,7 @@
 },
 {
     "pk": 3, 
-    "model": "site.setting", 
+    "model": "xpsite.setting", 
     "fields": {
         "name": 4, 
         "dateCreate": null, 
@@ -560,7 +554,7 @@
 },
 {
     "pk": 4, 
-    "model": "site.setting", 
+    "model": "xpsite.setting", 
     "fields": {
         "name": 5, 
         "dateCreate": null, 
@@ -576,7 +570,7 @@
 },
 {
     "pk": 5, 
-    "model": "site.setting", 
+    "model": "xpsite.setting", 
     "fields": {
         "name": 8, 
         "dateCreate": null, 

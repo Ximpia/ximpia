@@ -1,6 +1,6 @@
 
-__all__ = ['core','site','util']
+__all__ = ['xpcore','xpsite','util']
 
-import core
-import site
+import xpcore
+import xpsite
 import util

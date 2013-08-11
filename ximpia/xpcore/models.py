@@ -101,7 +101,7 @@ class Param( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_PARAM')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION', 
+	application = models.ForeignKey('xpcore.Application', db_column='ID_APPLICATION', 
 				verbose_name = _('Application'), help_text = _('Application'))
 	name = models.CharField(max_length=15, db_column='NAME',
 				verbose_name=_('Name'), help_text=_('Name'))
@@ -251,7 +251,7 @@ class Application( BaseModel ):
 	**Attributes**
 	
 	* ``id`` : Primary key
-	* ``name``:CharField(15) : Application path, like ximpia.site. Must contain package name and application name. Has format similar
+	* ``name``:CharField(15) : Application path, like ximpia.xpsite. Must contain package name and application name. Has format similar
 	to installed apps django setting.
 	* ``slug``:SlugField(30)
 	* ``title``:CharField(30)
@@ -262,9 +262,9 @@ class Application( BaseModel ):
 	**Relationships**
 	
 	* ``developer`` -> User
-	* ``developerOrg`` -> 'site.Group'
+	* ``developerOrg`` -> 'xpsite.Group'
 	* ``parent`` -> self
-	* ``accessGroup`` -> 'site.Group'
+	* ``accessGroup`` -> 'xpsite.Group'
 	* ``users`` <-> UserChannel through ApplicationAccess and related name 'app_access'
 	* ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
 	
@@ -273,16 +273,16 @@ class Application( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION')
 	name = models.CharField(max_length=100,
 		verbose_name = _('Application Name'), help_text = _('Application name. It must contain package and module for application with . as \
-			separator, like ximpia.site'))
+			separator, like ximpia.xpsite'))
 	slug = models.SlugField(max_length=30, unique=True,
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	title = models.CharField(max_length=30, db_column='TITLE',
 		verbose_name = _('Application Title'), help_text = _('Application title'))
 	developer = models.ForeignKey(User, null=True, blank=True, db_column='ID_DEVELOPER',
 		verbose_name = _('Developer'), help_text = _('Developer'))
-	accessGroup = models.ForeignKey('site.Group', db_column='ID_GROUP', related_name='app_access', 
+	accessGroup = models.ForeignKey('xpsite.Group', db_column='ID_GROUP', related_name='app_access', 
 		verbose_name = _('Access Group'), help_text = _('Application access group. Group created for application when registering app.') )
-	developerOrg = models.ForeignKey('site.Group', null=True, blank=True, db_column='ID_DEVELOPER_ORG', related_name='app_dev_org',
+	developerOrg = models.ForeignKey('xpsite.Group', null=True, blank=True, db_column='ID_DEVELOPER_ORG', related_name='app_dev_org',
 		verbose_name = _('Organization'), help_text = _('Developer organization'))
 	parent = models.ForeignKey('self', null=True, blank=True, db_column='ID_PARENT',
 		verbose_name = 'Parent Application', help_text = 'Used for application groups. Application which this app is related to')
@@ -292,11 +292,11 @@ class Application( BaseModel ):
 		verbose_name = _('Private'), help_text = _('Is this application private to a list of groups?'))
 	isAdmin = models.BooleanField(default=False, db_column='IS_ADMIN',
 		verbose_name = _('Is Admin?'), help_text = _('Is this application an admin backdoor?'))
-	category = models.ForeignKey('site.Category', null=True, blank=True, db_column='ID_CATEGORY',
+	category = models.ForeignKey('xpsite.Category', null=True, blank=True, db_column='ID_CATEGORY',
 				verbose_name=_('Category'), help_text=_('Category for group'))
-	tags = models.ManyToManyField('site.Tag', through='core.ApplicationTag', null=True, blank=True, related_name='application_tags',
+	tags = models.ManyToManyField('xpsite.Tag', through='xpcore.ApplicationTag', null=True, blank=True, related_name='application_tags',
 				verbose_name = _('Tags'), help_text = _('View Tags'))
-	meta = models.ManyToManyField(MetaKey, through='core.ApplicationMeta', related_name='app_meta',
+	meta = models.ManyToManyField(MetaKey, through='xpcore.ApplicationMeta', related_name='app_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for application') )
 	def __unicode__(self):
 		return self.title
@@ -324,7 +324,7 @@ class ApplicationTag ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_TAG')
 	application = models.ForeignKey(Application, db_column='ID_VIEW',
 					verbose_name=_('Application'), help_text=_('Application'))
-	tag = models.ForeignKey('site.Tag', db_column='ID_TAG',
+	tag = models.ForeignKey('xpsite.Tag', db_column='ID_TAG',
 					verbose_name=_('Tag'), help_text=_('Tag'))
 	
 	def __unicode__(self):
@@ -422,17 +422,17 @@ class SearchIndex( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_SEARCH_INDEX')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for seraching'))
-	view = models.ForeignKey('core.View', null=True, blank=True, related_name='index_view', db_column='ID_VIEW',
+	view = models.ForeignKey('xpcore.View', null=True, blank=True, related_name='index_view', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
-	action = models.ForeignKey('core.Action', null=True, blank=True, related_name='index_action', db_column='ID_ACTION',
+	action = models.ForeignKey('xpcore.Action', null=True, blank=True, related_name='index_action', db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action'))
 	title = models.CharField(max_length=70, db_column='TITLE',
 			verbose_name=_('Title'), help_text=_('Title'))
-	words = models.ManyToManyField('core.Word', through='core.SearchIndexWord', related_name='index_words', 
+	words = models.ManyToManyField('xpcore.Word', through='xpcore.SearchIndexWord', related_name='index_words', 
 			verbose_name=_('Index Parameters'), help_text=_('Parameters used in the search of content for views and actions'))
-	params = models.ManyToManyField('core.Param', through='core.SearchIndexParam', related_name='index_params', null=True, blank=True,
+	params = models.ManyToManyField('xpcore.Param', through='xpcore.SearchIndexParam', related_name='index_params', null=True, blank=True,
 			verbose_name=_('Index Parameters'), help_text=_('Parameters used in the search of content for views and actions'))
 	def __unicode__(self):
 		return self.title
@@ -595,12 +595,12 @@ class View( BaseModel ):
 	* ``parent`` -> self
 	* ``application`` -> Application
 	* ``service`` -> Service
-	* ``category`` -> site.Category
+	* ``category`` -> xpsite.Category
 	* ``templates`` <-> XpTemplate through ViewTmpl with related name `view_templates`
 	* ``params`` <-> Param through ViewParamValue with related nam 'view_params'
 	* ``menus`` <-> Menu through ViewMenu with related name 'view_menus'
-	* ``tags`` <-> site.Tag through ViewTag
-	* ``accessGroups`` <-> site.Group through ViewAccessGroup
+	* ``tags`` <-> xpsite.Tag through ViewTag
+	* ``accessGroups`` <-> xpsite.Group through ViewAccessGroup
 	
 	"""
 	# TODO: isPublished:bool
@@ -615,11 +615,11 @@ class View( BaseModel ):
 			verbose_name=_('View Name'), help_text=_('View Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
 			verbose_name=_('Implementation'), help_text=_('Service class and method that will show view'))
-	templates = models.ManyToManyField('core.XpTemplate', through='core.ViewTmpl', related_name='view_templates',
+	templates = models.ManyToManyField('xpcore.XpTemplate', through='xpcore.ViewTmpl', related_name='view_templates',
 			verbose_name=_('Templates'), help_text=_('Templates for view'))
-	menus = models.ManyToManyField('core.Menu', through='core.ViewMenu', related_name='view_menus',
+	menus = models.ManyToManyField('xpcore.Menu', through='xpcore.ViewMenu', related_name='view_menus',
 			verbose_name=_('Menus'), help_text=_('Menu items related to views'))
-	params = models.ManyToManyField('core.Param', through='core.ViewParamValue', related_name='view_params', null=True, blank=True,
+	params = models.ManyToManyField('xpcore.Param', through='xpcore.ViewParamValue', related_name='view_params', null=True, blank=True,
 			verbose_name=_('Parameters'), help_text=_('View entry parameters'))
 	winType = models.CharField(max_length=20, choices=Choices.WIN_TYPES, default=Choices.WIN_TYPE_WINDOW, db_column='WIN_TYPE',
 			verbose_name=_('Window Type'), help_text=_('Window type: Window, Popup'))
@@ -627,16 +627,16 @@ class View( BaseModel ):
 		verbose_name = _('Slug'), help_text = _('Slug'), db_column='SLUG')
 	hasAuth = models.BooleanField(default=False, db_column='HAS_AUTH',
 			verbose_name = _('Requires Auth?'), help_text = _('View requires that user is logged in'))
-	category = models.ForeignKey('site.Category', null=True, blank=True, db_column='ID_CATEGORY',
+	category = models.ForeignKey('xpsite.Category', null=True, blank=True, db_column='ID_CATEGORY',
 				verbose_name=_('Category'), help_text=_('Category for group'))
-	tags = models.ManyToManyField('site.Tag', through='core.ViewTag', null=True, blank=True, related_name='view_tags',
+	tags = models.ManyToManyField('xpsite.Tag', through='xpcore.ViewTag', null=True, blank=True, related_name='view_tags',
 				verbose_name = _('Tags'), help_text = _('View Tags'))
 	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
 		    verbose_name = _('Image'), help_text = _('View image'), 
 		    db_column='IMAGE')
-	meta = models.ManyToManyField(MetaKey, through='core.ViewMeta', related_name='view_meta',
+	meta = models.ManyToManyField(MetaKey, through='xpcore.ViewMeta', related_name='view_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for view') )
-	accessGroups = models.ManyToManyField('site.Group', through='core.ViewAccessGroup', related_name='view_access',
+	accessGroups = models.ManyToManyField('xpsite.Group', through='xpcore.ViewAccessGroup', related_name='view_access',
 			verbose_name=_('Access Groups'), help_text=_('View access groups'))
 	def __unicode__(self):
 		return self.name
@@ -666,7 +666,7 @@ class ViewAccessGroup ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
 	view = models.ForeignKey(View, db_column='ID_VIEW',
 					verbose_name=_('View'), help_text=_('View'))
-	group = models.ForeignKey('site.Group', db_column='ID_GROUP', 
+	group = models.ForeignKey('xpsite.Group', db_column='ID_GROUP', 
 		verbose_name = _('Access Group'), help_text = _('View access group.') )
 	
 	def __unicode__(self):
@@ -696,7 +696,7 @@ class ViewTag ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_TAG')
 	view = models.ForeignKey(View, db_column='ID_VIEW',
 					verbose_name=_('View'), help_text=_('View'))
-	tag = models.ForeignKey('site.Tag', db_column='ID_TAG',
+	tag = models.ForeignKey('xpsite.Tag', db_column='ID_TAG',
 					verbose_name=_('Tag'), help_text=_('Tag'))
 	
 	def __unicode__(self):
@@ -730,7 +730,7 @@ class Action( BaseModel ):
 	
 	* ``application`` -> Application
 	* ``service`` -> Service
-	* ``accessGroups`` <-> site.Group through ActionAccessGroup
+	* ``accessGroups`` <-> xpsite.Group through ActionAccessGroup
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_ACTION')
@@ -749,7 +749,7 @@ class Action( BaseModel ):
 	image = FileBrowseField(max_length=200, format='image', null=True, blank=True, 
 		    verbose_name = _('Image'), help_text = _('View image'), 
 		    db_column='IMAGE')
-	accessGroups = models.ManyToManyField('site.Group', through='core.ActionAccessGroup', related_name='action_access',
+	accessGroups = models.ManyToManyField('xpsite.Group', through='xpcore.ActionAccessGroup', related_name='action_access',
 			verbose_name=_('Access Groups'), help_text=_('Action access groups'))
 	def __unicode__(self):
 		return self.name
@@ -779,7 +779,7 @@ class ActionAccessGroup ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')
 	action = models.ForeignKey(Action, db_column='ID_ACTION',
 					verbose_name=_('Action'), help_text=_('Action'))
-	group = models.ForeignKey('site.Group', db_column='ID_GROUP', 
+	group = models.ForeignKey('xpsite.Group', db_column='ID_GROUP', 
 		verbose_name = _('Access Group'), help_text = _('Action access group.') )
 	
 	def __unicode__(self):
@@ -817,7 +817,7 @@ class Menu( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the menu'))
 	name = models.CharField(max_length=20, unique=True, db_column='NAME',
 			verbose_name=_('Menu Name'), help_text=_('Name for menu, used in json menu objects'))
@@ -841,7 +841,7 @@ class Menu( BaseModel ):
 			verbose_name=_('Country'), help_text=_('Country'))
 	device = models.CharField(max_length=10, choices=Choices.DEVICES, default=Choices.DEVICE_PC, db_column='DEVICE',
 			verbose_name=_('Device'), help_text=_('Device: Personal Computer, Tablet, Phone'))
-	params = models.ManyToManyField('core.Param', through='core.MenuParam', related_name='menu_params', null=True, blank=True,
+	params = models.ManyToManyField('xpcore.Param', through='xpcore.MenuParam', related_name='menu_params', null=True, blank=True,
 			verbose_name=_('Menu Parameters'), help_text=_('Menu parameters sent to views'))
 	def __unicode__(self):
 		return self.name
@@ -884,7 +884,7 @@ class ViewMenu( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
-	conditions = models.ManyToManyField(Condition, through='core.ViewMenuCondition', null=True, blank=True, related_name='viewmenu_conditions',
+	conditions = models.ManyToManyField(Condition, through='xpcore.ViewMenuCondition', null=True, blank=True, related_name='viewmenu_conditions',
 				verbose_name = _('Conditions'), help_text = _('Conditions'))
 	def __unicode__(self):
 		return '%s [%s]' % (self.menu, self.zone)
@@ -962,7 +962,7 @@ class ServiceMenu ( BaseModel ):
 			verbose_name=_('Menu Separator'), help_text=_('Separator for menu. Will show a gray line above menu item'))
 	zone = models.CharField(max_length=10, choices=Choices.MENU_ZONES, db_column='ZONE',
 				verbose_name=_('Menu Zone'), help_text=_('Menu Zone for menu item: sys, main and view zone'))
-	conditions = models.ManyToManyField(Condition, through='core.ServiceMenuCondition', null=True, blank=True, related_name='servicemenu_conditions',
+	conditions = models.ManyToManyField(Condition, through='xpcore.ServiceMenuCondition', null=True, blank=True, related_name='servicemenu_conditions',
 				verbose_name = _('Conditions'), help_text = _('Conditions'))
 	def __unicode__(self):
 		return '%s [%s]' % (self.menu, self.zone)
@@ -1029,9 +1029,9 @@ class MenuParam( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_MENU_PARAM')
-	menu = models.ForeignKey('core.Menu', db_column='ID_MENU',
+	menu = models.ForeignKey('xpcore.Menu', db_column='ID_MENU',
 			verbose_name=_('Menu'), help_text=_('Menu'))
-	name = models.ForeignKey('core.Param',db_column='ID_NAME',
+	name = models.ForeignKey('xpcore.Param',db_column='ID_NAME',
 			verbose_name=_('Parameter'), help_text=_('Parameter'))
 	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
 			verbose_name=_('Operator'), help_text=_('Operator'))
@@ -1090,9 +1090,9 @@ class ViewTmpl( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_TMPL')
-	view = models.ForeignKey('core.View', db_column='ID_VIEW',
+	view = models.ForeignKey('xpcore.View', db_column='ID_VIEW',
 			verbose_name=_('View'), help_text=_('View'))
-	template = models.ForeignKey('core.XpTemplate', db_column='ID_TEMPLATE',
+	template = models.ForeignKey('xpcore.XpTemplate', db_column='ID_TEMPLATE',
 			verbose_name=_('Template'), help_text=_('Template'))
 	def __unicode__(self):
 		return '%s - %s' % (self.view, self.template)
@@ -1134,7 +1134,7 @@ class XpTemplate( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_TEMPLATE')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', db_column='ID_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for the template'))
 	name = models.CharField(max_length=50, db_column='NAME',
 			verbose_name=_('Name'), help_text=_('Name'))
@@ -1190,7 +1190,7 @@ class Workflow( BaseModel ):
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW')
-	application = models.ForeignKey('core.Application', db_column='ID_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', db_column='ID_APPLICATION',
 			verbose_name = _('Application'), help_text = _('Application'))
 	code = models.CharField(max_length=15, db_index=True, unique=True, db_column='CODE',
 			verbose_name=_('Flow Code'), help_text=_('Flow Code. First window in a flow identified by a flow code will reset wf variables'))
@@ -1239,7 +1239,7 @@ class WorkflowView( BaseModel ):
 			verbose_name=_('target View'), help_text=_('View destiny for flow'))
 	action = models.ForeignKey(Action, related_name='wf_action', db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
-	params = models.ManyToManyField(Param, through='core.WFParamValue', related_name='flowView_params', null=True, blank=True,
+	params = models.ManyToManyField(Param, through='xpcore.WFParamValue', related_name='flowView_params', null=True, blank=True,
 			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
 	order = models.IntegerField(default=10, db_column='ORDER',
 			verbose_name=_('Order'), help_text=_('Order'))
@@ -1404,7 +1404,7 @@ class Setting ( BaseModel ):
 	"""
 	
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_SETTING')
-	application = models.ForeignKey('core.Application', null=True, blank=True, related_name='core_setting_app', db_column='ID_CORE_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', null=True, blank=True, related_name='xpcore.setting_app', db_column='ID_CORE_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for setting'))
 	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__name': K.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
@@ -2119,7 +2119,7 @@ class context_view(object):
 						self._app = Application.objects.get(slug=args['appSlug']).name
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						#self._app = 'ximpia.site'
+						#self._app = 'ximpia.xpsite.
 						self.__viewName = 'home'
 				else:
 					if args.has_key('appSlug') and len(args['appSlug']) != 0:
@@ -2127,7 +2127,7 @@ class context_view(object):
 						self._app = Application.objects.get(slug=args['appSlug']).name
 						#self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						#self._app = 'ximpia.site'
+						#self._app = 'ximpia.xpsite.
 						#self.__viewName = 'home'
 						pass
 				

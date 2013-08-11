@@ -2,16 +2,16 @@
 
 import os
 
-from ximpia.core.choices import Choices as _Ch
-import ximpia.core.constants as _K
-from ximpia.core.business import AppCompRegCommonBusiness
+from ximpia.xpcore.choices import Choices as _Ch
+import ximpia.xpcore.constants as _K
+from ximpia.xpcore.business import AppCompRegCommonBusiness
 
 #import business
 from service import SiteService
 from constants import Services, Slugs, Views, Actions, Menus, Tmpls
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging

@@ -21,7 +21,7 @@ class Migration(SchemaMigration):
             ('value', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, db_column='VALUE', blank=True)),
             ('paramType', self.gf('django.db.models.fields.CharField')(default='string', max_length=10, db_column='PARAM_TYPE')),
         ))
-        db.send_create_signal(u'site', ['Param'])
+        db.send_create_signal(u'xpsite', ['Param'])
 
         # Adding model 'MetaKey'
         db.create_table('SITE_META_KEY', (
@@ -32,9 +32,9 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_META_KEY')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=100, db_column='NAME')),
-            ('keyType', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Param'], db_column='ID_SITE_PARAMETER')),
+            ('keyType', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Param'], db_column='ID_SITE_PARAMETER')),
         ))
-        db.send_create_signal(u'site', ['MetaKey'])
+        db.send_create_signal(u'xpsite', ['MetaKey'])
 
         # Adding model 'TagMode'
         db.create_table('SITE_TAG_MODE', (
@@ -47,7 +47,7 @@ class Migration(SchemaMigration):
             ('mode', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='MODE')),
             ('isPublic', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='IS_PUBLIC')),
         ))
-        db.send_create_signal(u'site', ['TagMode'])
+        db.send_create_signal(u'xpsite', ['TagMode'])
 
         # Adding model 'Tag'
         db.create_table('SITE_TAG', (
@@ -58,11 +58,11 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_TAG')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='NAME')),
-            ('mode', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tag_mode', db_column='ID_MODE', to=orm['site.TagMode'])),
+            ('mode', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tag_mode', db_column='ID_MODE', to=orm['xpsite.TagMode'])),
             ('popularity', self.gf('django.db.models.fields.IntegerField')(default=1, null=True, db_column='POPULARITY', blank=True)),
             ('isPublic', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='IS_PUBLIC')),
         ))
-        db.send_create_signal(u'site', ['Tag'])
+        db.send_create_signal(u'xpsite', ['Tag'])
 
         # Adding model 'Address'
         db.create_table('SITE_ADDRESS', (
@@ -80,7 +80,7 @@ class Migration(SchemaMigration):
             ('long', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=18, decimal_places=12, blank=True)),
             ('lat', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=18, decimal_places=12, blank=True)),
         ))
-        db.send_create_signal(u'site', ['Address'])
+        db.send_create_signal(u'xpsite', ['Address'])
 
         # Adding model 'UserChannel'
         db.create_table('SITE_USER', (
@@ -93,9 +93,9 @@ class Migration(SchemaMigration):
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], db_column='ID_USER')),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='TITLE')),
             ('name', self.gf('django.db.models.fields.CharField')(default='user', max_length=20, db_column='NAME')),
-            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Tag'], null=True, db_column='ID_TAG', blank=True)),
+            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Tag'], null=True, db_column='ID_TAG', blank=True)),
         ))
-        db.send_create_signal(u'site', ['UserChannel'])
+        db.send_create_signal(u'xpsite', ['UserChannel'])
 
         # Adding unique constraint on 'UserChannel', fields ['user', 'name']
         db.create_unique('SITE_USER', ['ID_USER', 'NAME'])
@@ -111,15 +111,15 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=55, db_column='NAME')),
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=200, db_column='SLUG')),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, db_column='DESCRIPTION', blank=True)),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='category_parent', null=True, db_column='ID_PARENT', to=orm['site.Category'])),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='category_parent', null=True, db_column='ID_PARENT', to=orm['xpsite.Category'])),
             ('image', self.gf('filebrowser.fields.FileBrowseField')(max_length=200, null=True, db_column='IMAGE', blank=True)),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Param'], db_column='ID_SITE_PARAMETER')),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Param'], db_column='ID_SITE_PARAMETER')),
             ('isPublished', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_PUBLISHED')),
             ('isPublic', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='IS_PUBLIC')),
             ('popularity', self.gf('django.db.models.fields.IntegerField')(default=1, null=True, db_column='POPULARITY', blank=True)),
             ('menuOrder', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1, db_column='MENU_ORDER')),
         ))
-        db.send_create_signal(u'site', ['Category'])
+        db.send_create_signal(u'xpsite', ['Category'])
 
         # Adding model 'SocialNetworkUser'
         db.create_table('SITE_SOCIAL_NETWORK_USER', (
@@ -130,12 +130,12 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_SOCIAL_NETWORK_USER')),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], db_column='ID_USER')),
-            ('socialNetwork', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.CoreParam'], db_column='ID_CORE_PARAMETER')),
+            ('socialNetwork', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.CoreParam'], db_column='ID_CORE_PARAMETER')),
             ('socialId', self.gf('django.db.models.fields.BigIntegerField')(db_column='SOCIAL_ID')),
             ('token', self.gf('django.db.models.fields.CharField')(max_length=255, db_column='TOKEN')),
             ('tokenSecret', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, db_column='TOKEN_SECRET', blank=True)),
         ))
-        db.send_create_signal(u'site', ['SocialNetworkUser'])
+        db.send_create_signal(u'xpsite', ['SocialNetworkUser'])
 
         # Adding unique constraint on 'SocialNetworkUser', fields ['user', 'socialNetwork']
         db.create_unique('SITE_SOCIAL_NETWORK_USER', ['ID_USER', 'ID_CORE_PARAMETER'])
@@ -148,13 +148,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_SETTING')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='site_setting_app', null=True, db_column='ID_CORE_APPLICATION', to=orm['core.Application'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.MetaKey'], db_column='ID_META')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='site_setting_app', null=True, db_column='ID_CORE_APPLICATION', to=orm['xpcore.Application'])),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=255, db_column='DESCRIPTION')),
             ('mustAutoload', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='MUST_AUTOLOAD')),
         ))
-        db.send_create_signal(u'site', ['Setting'])
+        db.send_create_signal(u'xpsite', ['Setting'])
 
         # Adding model 'UserMeta'
         db.create_table('SITE_USER_META', (
@@ -165,10 +165,10 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_USER_PROFILE')),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], db_column='ID_USER')),
-            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.MetaKey'], db_column='ID_META')),
+            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
         ))
-        db.send_create_signal(u'site', ['UserMeta'])
+        db.send_create_signal(u'xpsite', ['UserMeta'])
 
         # Adding model 'UserProfile'
         db.create_table('SITE_USER_PROFILE', (
@@ -180,9 +180,9 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_USER_PROFILE')),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], db_column='ID_USER')),
             ('image', self.gf('filebrowser.fields.FileBrowseField')(max_length=200, null=True, db_column='IMAGE', blank=True)),
-            ('status', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Param'], db_column='ID_SITE_PARAMETER')),
+            ('status', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Param'], db_column='ID_SITE_PARAMETER')),
         ))
-        db.send_create_signal(u'site', ['UserProfile'])
+        db.send_create_signal(u'xpsite', ['UserProfile'])
 
         # Adding model 'UserAddress'
         db.create_table('SITE_USER_ADDRESS', (
@@ -192,11 +192,11 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_USER_ADDRESS')),
-            ('userProfile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.UserProfile'], db_column='ID_SITE_USER_PROFILE')),
-            ('address', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Address'], db_column='ID_ADDRESS')),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Param'], db_column='ID_SITE_PARAMETER')),
+            ('userProfile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.UserProfile'], db_column='ID_SITE_USER_PROFILE')),
+            ('address', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Address'], db_column='ID_ADDRESS')),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Param'], db_column='ID_SITE_PARAMETER')),
         ))
-        db.send_create_signal(u'site', ['UserAddress'])
+        db.send_create_signal(u'xpsite', ['UserAddress'])
 
         # Adding model 'Group'
         db.create_table('SITE_GROUP', (
@@ -207,12 +207,12 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_GROUP')),
             ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.Group'], unique=True, db_column='ID_GROUP_SYS')),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='groupchannel_parent', null=True, db_column='ID_PARENT', to=orm['site.Group'])),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='groupchannel_parent', null=True, db_column='ID_PARENT', to=orm['xpsite.Group'])),
             ('groupNameId', self.gf('django.db.models.fields.CharField')(max_length=20, null=True, db_column='GROUP_NAME_ID', blank=True)),
             ('isPublic', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='IS_PUBLIC')),
-            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Category'], db_column='ID_CATEGORY')),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Category'], db_column='ID_CATEGORY')),
         ))
-        db.send_create_signal(u'site', ['Group'])
+        db.send_create_signal(u'xpsite', ['Group'])
 
         # Adding model 'GroupAccess'
         db.create_table('SITE_GROUP_ACCESS', (
@@ -222,10 +222,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_GROUP_ACCESS')),
-            ('groupFrom', self.gf('django.db.models.fields.related.ForeignKey')(related_name='groupaccess_from', db_column='ID_GROUP_FROM', to=orm['site.Group'])),
-            ('groupTo', self.gf('django.db.models.fields.related.ForeignKey')(related_name='groupaccess_to', db_column='ID_GROUP_TO', to=orm['site.Group'])),
+            ('groupFrom', self.gf('django.db.models.fields.related.ForeignKey')(related_name='groupaccess_from', db_column='ID_GROUP_FROM', to=orm['xpsite.Group'])),
+            ('groupTo', self.gf('django.db.models.fields.related.ForeignKey')(related_name='groupaccess_to', db_column='ID_GROUP_TO', to=orm['xpsite.Group'])),
         ))
-        db.send_create_signal(u'site', ['GroupAccess'])
+        db.send_create_signal(u'xpsite', ['GroupAccess'])
 
         # Adding model 'UserChannelGroup'
         db.create_table('SITE_USER_GROUP', (
@@ -235,10 +235,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_USER_GROUP')),
-            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Group'], db_column='ID_GROUP')),
-            ('userChannel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.UserChannel'], db_column='ID_USER_CHANNEL')),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Group'], db_column='ID_GROUP')),
+            ('userChannel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.UserChannel'], db_column='ID_USER_CHANNEL')),
         ))
-        db.send_create_signal(u'site', ['UserChannelGroup'])
+        db.send_create_signal(u'xpsite', ['UserChannelGroup'])
 
         # Adding model 'GroupTag'
         db.create_table('SITE_GROUP_TAG', (
@@ -248,10 +248,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_GROUP_TAG')),
-            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Group'], db_column='ID_GROUP')),
-            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Tag'], db_column='ID_TAG')),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Group'], db_column='ID_GROUP')),
+            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Tag'], db_column='ID_TAG')),
         ))
-        db.send_create_signal(u'site', ['GroupTag'])
+        db.send_create_signal(u'xpsite', ['GroupTag'])
 
         # Adding model 'SignupData'
         db.create_table('SITE_SIGNUP_DATA', (
@@ -265,7 +265,7 @@ class Migration(SchemaMigration):
             ('activationCode', self.gf('django.db.models.fields.PositiveSmallIntegerField')(db_column='ACTIVATION_CODE')),
             ('data', self.gf('django.db.models.fields.TextField')(db_column='DATA')),
         ))
-        db.send_create_signal(u'site', ['SignupData'])
+        db.send_create_signal(u'xpsite', ['SignupData'])
 
         # Adding model 'Invitation'
         db.create_table('SITE_INVITATION', (
@@ -282,7 +282,7 @@ class Migration(SchemaMigration):
             ('number', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1, db_column='NUMBER')),
             ('message', self.gf('django.db.models.fields.TextField')(null=True, db_column='MESSAGE', blank=True)),
         ))
-        db.send_create_signal(u'site', ['Invitation'])
+        db.send_create_signal(u'xpsite', ['Invitation'])
 
         # Adding model 'InvitationMeta'
         db.create_table('SITE_INVITATION_META', (
@@ -292,11 +292,11 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_USER_PROFILE')),
-            ('invitation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Invitation'], db_column='ID_INVITATION')),
-            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.MetaKey'], db_column='ID_META')),
+            ('invitation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Invitation'], db_column='ID_INVITATION')),
+            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
         ))
-        db.send_create_signal(u'site', ['InvitationMeta'])
+        db.send_create_signal(u'xpsite', ['InvitationMeta'])
 
 
     def backwards(self, orm):
@@ -401,52 +401,52 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'core.application': {
+        u'xpcore.application': {
             'Meta': {'object_name': 'Application', 'db_table': "'CORE_APPLICATION'"},
-            'accessGroup': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'app_access'", 'db_column': "'ID_GROUP'", 'to': u"orm['site.Group']"}),
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
+            'accessGroup': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'app_access'", 'db_column': "'ID_GROUP'", 'to': u"orm['xpsite.Group']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'developer': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'db_column': "'ID_DEVELOPER'", 'blank': 'True'}),
-            'developerOrg': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'app_dev_org'", 'null': 'True', 'db_column': "'ID_DEVELOPER_ORG'", 'to': u"orm['site.Group']"}),
+            'developerOrg': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'app_dev_org'", 'null': 'True', 'db_column': "'ID_DEVELOPER_ORG'", 'to': u"orm['xpsite.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION'"}),
             'isAdmin': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_ADMIN'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPrivate': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_PRIVATE'"}),
             'isSubscription': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_SUBSCRIPTION'"}),
-            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'app_meta'", 'symmetrical': 'False', 'through': u"orm['core.ApplicationMeta']", 'to': u"orm['core.MetaKey']"}),
+            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'app_meta'", 'symmetrical': 'False', 'through': u"orm['xpcore.ApplicationMeta']", 'to': u"orm['xpcore.MetaKey']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
             'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '30', 'db_column': "'SLUG'"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'application_tags'", 'to': u"orm['site.Tag']", 'through': u"orm['core.ApplicationTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'application_tags'", 'to': u"orm['xpsite.Tag']", 'through': u"orm['xpcore.ApplicationTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'TITLE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.applicationmeta': {
+        u'xpcore.applicationmeta': {
             'Meta': {'object_name': 'ApplicationMeta', 'db_table': "'CORE_APPLICATION_META'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION_META'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.MetaKey']", 'db_column': "'ID_META'"}),
+            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'core.applicationtag': {
+        u'xpcore.applicationtag': {
             'Meta': {'object_name': 'ApplicationTag', 'db_table': "'CORE_APPLICATION_TAG'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_VIEW'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_VIEW'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'db_column': "'ID_TAG'"}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'db_column': "'ID_TAG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.coreparam': {
+        u'xpcore.coreparam': {
             'Meta': {'object_name': 'CoreParam', 'db_table': "'CORE_PARAMETER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -459,18 +459,18 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'db_column': "'VALUE'", 'blank': 'True'})
         },
-        u'core.metakey': {
+        u'xpcore.metakey': {
             'Meta': {'ordering': "['name']", 'object_name': 'MetaKey', 'db_table': "'CORE_META_KEY'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_META_KEY'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.CoreParam']", 'db_column': "'ID_META_TYPE'"}),
+            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.CoreParam']", 'db_column': "'ID_META_TYPE'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_column': "'NAME'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.address': {
+        u'xpsite.address': {
             'Meta': {'object_name': 'Address', 'db_table': "'SITE_ADDRESS'"},
             'city': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'CITY'"}),
             'country': ('django.db.models.fields.CharField', [], {'max_length': '2', 'db_column': "'COUNTRY'"}),
@@ -486,7 +486,7 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'zipCode': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'db_column': "'ZIP_CODE'", 'blank': 'True'})
         },
-        u'site.category': {
+        u'xpsite.category': {
             'Meta': {'object_name': 'Category', 'db_table': "'SITE_CATEGORY'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -498,17 +498,17 @@ class Migration(SchemaMigration):
             'isPublished': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_PUBLISHED'"}),
             'menuOrder': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1', 'db_column': "'MENU_ORDER'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '55', 'db_column': "'NAME'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'category_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['site.Category']"}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'category_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['xpsite.Category']"}),
             'popularity': ('django.db.models.fields.IntegerField', [], {'default': '1', 'null': 'True', 'db_column': "'POPULARITY'", 'blank': 'True'}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'db_column': "'SLUG'"}),
-            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.group': {
+        u'xpsite.group': {
             'Meta': {'object_name': 'Group', 'db_table': "'SITE_GROUP'"},
-            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'group_access'", 'symmetrical': 'False', 'through': u"orm['site.GroupAccess']", 'to': u"orm['site.Group']"}),
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Category']", 'db_column': "'ID_CATEGORY'"}),
+            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'group_access'", 'symmetrical': 'False', 'through': u"orm['xpsite.GroupAccess']", 'to': u"orm['xpsite.Group']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Category']", 'db_column': "'ID_CATEGORY'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'unique': 'True', 'db_column': "'ID_GROUP_SYS'"}),
@@ -516,34 +516,34 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPublic': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'IS_PUBLIC'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'groupchannel_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['site.Group']"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'groupchannel_tags'", 'to': u"orm['site.Tag']", 'through': u"orm['site.GroupTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'groupchannel_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['xpsite.Group']"}),
+            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'groupchannel_tags'", 'to': u"orm['xpsite.Tag']", 'through': u"orm['xpsite.GroupTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.groupaccess': {
+        u'xpsite.groupaccess': {
             'Meta': {'object_name': 'GroupAccess', 'db_table': "'SITE_GROUP_ACCESS'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'groupFrom': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_from'", 'db_column': "'ID_GROUP_FROM'", 'to': u"orm['site.Group']"}),
-            'groupTo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_to'", 'db_column': "'ID_GROUP_TO'", 'to': u"orm['site.Group']"}),
+            'groupFrom': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_from'", 'db_column': "'ID_GROUP_FROM'", 'to': u"orm['xpsite.Group']"}),
+            'groupTo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_to'", 'db_column': "'ID_GROUP_TO'", 'to': u"orm['xpsite.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_ACCESS'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.grouptag': {
+        u'xpsite.grouptag': {
             'Meta': {'object_name': 'GroupTag', 'db_table': "'SITE_GROUP_TAG'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Group']", 'db_column': "'ID_GROUP'"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Group']", 'db_column': "'ID_GROUP'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'db_column': "'ID_TAG'"}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'db_column': "'ID_TAG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.invitation': {
+        u'xpsite.invitation': {
             'Meta': {'object_name': 'Invitation', 'db_table': "'SITE_INVITATION'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -553,36 +553,36 @@ class Migration(SchemaMigration):
             'invitationCode': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '10', 'db_column': "'INVITATION_CODE'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'message': ('django.db.models.fields.TextField', [], {'null': 'True', 'db_column': "'MESSAGE'", 'blank': 'True'}),
-            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'invitation_meta'", 'symmetrical': 'False', 'through': u"orm['site.InvitationMeta']", 'to': u"orm['site.MetaKey']"}),
+            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'invitation_meta'", 'symmetrical': 'False', 'through': u"orm['xpsite.InvitationMeta']", 'to': u"orm['xpsite.MetaKey']"}),
             'number': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1', 'db_column': "'NUMBER'"}),
             'status': ('django.db.models.fields.CharField', [], {'default': "'pending'", 'max_length': '10', 'db_column': "'STATUS'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.invitationmeta': {
+        u'xpsite.invitationmeta': {
             'Meta': {'object_name': 'InvitationMeta', 'db_table': "'SITE_INVITATION_META'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER_PROFILE'"}),
-            'invitation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Invitation']", 'db_column': "'ID_INVITATION'"}),
+            'invitation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Invitation']", 'db_column': "'ID_INVITATION'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.MetaKey']", 'db_column': "'ID_META'"}),
+            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'site.metakey': {
+        u'xpsite.metakey': {
             'Meta': {'ordering': "['name']", 'object_name': 'MetaKey', 'db_table': "'SITE_META_KEY'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_META_KEY'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
+            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_column': "'NAME'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.param': {
+        u'xpsite.param': {
             'Meta': {'object_name': 'Param', 'db_table': "'SITE_PARAMETER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -595,21 +595,21 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'db_column': "'VALUE'", 'blank': 'True'})
         },
-        u'site.setting': {
+        u'xpsite.setting': {
             'Meta': {'object_name': 'Setting', 'db_table': "'SITE_SETTING'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'site_setting_app'", 'null': 'True', 'db_column': "'ID_CORE_APPLICATION'", 'to': u"orm['core.Application']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'site_setting_app'", 'null': 'True', 'db_column': "'ID_CORE_APPLICATION'", 'to': u"orm['xpcore.Application']"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_column': "'DESCRIPTION'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_SETTING'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'mustAutoload': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'MUST_AUTOLOAD'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.MetaKey']", 'db_column': "'ID_META'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'site.signupdata': {
+        u'xpsite.signupdata': {
             'Meta': {'object_name': 'SignupData', 'db_table': "'SITE_SIGNUP_DATA'"},
             'activationCode': ('django.db.models.fields.PositiveSmallIntegerField', [], {'db_column': "'ACTIVATION_CODE'"}),
             'data': ('django.db.models.fields.TextField', [], {'db_column': "'DATA'"}),
@@ -621,34 +621,34 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.socialnetworkuser': {
+        u'xpsite.socialnetworkuser': {
             'Meta': {'unique_together': "(('user', 'socialNetwork'),)", 'object_name': 'SocialNetworkUser', 'db_table': "'SITE_SOCIAL_NETWORK_USER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_SOCIAL_NETWORK_USER'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'socialId': ('django.db.models.fields.BigIntegerField', [], {'db_column': "'SOCIAL_ID'"}),
-            'socialNetwork': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.CoreParam']", 'db_column': "'ID_CORE_PARAMETER'"}),
+            'socialNetwork': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.CoreParam']", 'db_column': "'ID_CORE_PARAMETER'"}),
             'token': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_column': "'TOKEN'"}),
             'tokenSecret': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'db_column': "'TOKEN_SECRET'", 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'db_column': "'ID_USER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.tag': {
+        u'xpsite.tag': {
             'Meta': {'ordering': "['-popularity']", 'object_name': 'Tag', 'db_table': "'SITE_TAG'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPublic': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'IS_PUBLIC'"}),
-            'mode': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tag_mode'", 'db_column': "'ID_MODE'", 'to': u"orm['site.TagMode']"}),
+            'mode': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tag_mode'", 'db_column': "'ID_MODE'", 'to': u"orm['xpsite.TagMode']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'NAME'"}),
             'popularity': ('django.db.models.fields.IntegerField', [], {'default': '1', 'null': 'True', 'db_column': "'POPULARITY'", 'blank': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.tagmode': {
+        u'xpsite.tagmode': {
             'Meta': {'object_name': 'TagMode', 'db_table': "'SITE_TAG_MODE'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -659,68 +659,68 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.useraddress': {
+        u'xpsite.useraddress': {
             'Meta': {'object_name': 'UserAddress', 'db_table': "'SITE_USER_ADDRESS'"},
-            'address': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Address']", 'db_column': "'ID_ADDRESS'"}),
+            'address': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Address']", 'db_column': "'ID_ADDRESS'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER_ADDRESS'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'userProfile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.UserProfile']", 'db_column': "'ID_SITE_USER_PROFILE'"})
+            'userProfile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.UserProfile']", 'db_column': "'ID_SITE_USER_PROFILE'"})
         },
-        u'site.userchannel': {
+        u'xpsite.userchannel': {
             'Meta': {'unique_together': "(('user', 'name'),)", 'object_name': 'UserChannel', 'db_table': "'SITE_USER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'user_groups'", 'symmetrical': 'False', 'through': u"orm['site.UserChannelGroup']", 'to': u"orm['site.Group']"}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'user_groups'", 'symmetrical': 'False', 'through': u"orm['xpsite.UserChannelGroup']", 'to': u"orm['xpsite.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'name': ('django.db.models.fields.CharField', [], {'default': "'user'", 'max_length': '20', 'db_column': "'NAME'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'null': 'True', 'db_column': "'ID_TAG'", 'blank': 'True'}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'null': 'True', 'db_column': "'ID_TAG'", 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'TITLE'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'db_column': "'ID_USER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.userchannelgroup': {
+        u'xpsite.userchannelgroup': {
             'Meta': {'object_name': 'UserChannelGroup', 'db_table': "'SITE_USER_GROUP'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Group']", 'db_column': "'ID_GROUP'"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Group']", 'db_column': "'ID_GROUP'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER_GROUP'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'userChannel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.UserChannel']", 'db_column': "'ID_USER_CHANNEL'"}),
+            'userChannel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.UserChannel']", 'db_column': "'ID_USER_CHANNEL'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.usermeta': {
+        u'xpsite.usermeta': {
             'Meta': {'object_name': 'UserMeta', 'db_table': "'SITE_USER_META'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER_PROFILE'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.MetaKey']", 'db_column': "'ID_META'"}),
+            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.MetaKey']", 'db_column': "'ID_META'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'db_column': "'ID_USER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'site.userprofile': {
+        u'xpsite.userprofile': {
             'Meta': {'object_name': 'UserProfile', 'db_table': "'SITE_USER_PROFILE'"},
-            'addresses': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'userprofile_addresses'", 'symmetrical': 'False', 'through': u"orm['site.UserAddress']", 'to': u"orm['site.Address']"}),
+            'addresses': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'userprofile_addresses'", 'symmetrical': 'False', 'through': u"orm['xpsite.UserAddress']", 'to': u"orm['xpsite.Address']"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_USER_PROFILE'"}),
             'image': ('filebrowser.fields.FileBrowseField', [], {'max_length': '200', 'null': 'True', 'db_column': "'IMAGE'", 'blank': 'True'}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
+            'status': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'db_column': "'ID_USER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         }
     }
 
-    complete_apps = ['site']
+    complete_apps = ['xpsite']

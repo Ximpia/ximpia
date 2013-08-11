@@ -7,16 +7,16 @@ import os
 from datetime import date, timedelta
 
 from django.contrib.auth.models import User
-from ximpia.core.models import JsResultDict
+from ximpia.xpcore.models import JsResultDict
 
-from ximpia.core.service import EmailService, CommonService
-from ximpia.core.service import view, action, validation, menu_action
-from ximpia.core.models import Context as CoreContext
-from ximpia.core.data import CoreParameterDAO
-from ximpia.core.forms import DefaultForm
+from ximpia.xpcore.service import EmailService, CommonService
+from ximpia.xpcore.service import view, action, validation, menu_action
+from ximpia.xpcore.models import Context as CoreContext
+from ximpia.xpcore.data import CoreParameterDAO
+from ximpia.xpcore.forms import DefaultForm
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -25,7 +25,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 # Constants
-import ximpia.core.constants as CoreK
+import ximpia.xpcore.constants as CoreK
 import constants as K
 
 import forms

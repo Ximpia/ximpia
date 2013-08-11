@@ -15,7 +15,7 @@ from email.MIMEImage import MIMEImage
 from email.MIMEText import MIMEText
 
 # Settings
-from ximpia.core.util import get_class
+from ximpia.xpcore.util import get_class
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 import xml_lib

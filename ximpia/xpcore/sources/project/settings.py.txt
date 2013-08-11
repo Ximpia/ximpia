@@ -97,7 +97,7 @@ TEMPLATE_LOADERS = (
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'ximpia.core.backends.auth.SocialNetBackend'
+    'ximpia.xpcore.backends.auth.SocialNetBackend'
 )
 
 MIDDLEWARE_CLASSES = (

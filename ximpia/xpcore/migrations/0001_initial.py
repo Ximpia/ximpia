@@ -16,14 +16,14 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_PARAM')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=15, db_column='NAME')),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='TITLE')),
             ('paramType', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='PARAM_TYPE')),
             ('isView', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_VIEW')),
             ('isWorkflow', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_WORKFLOW')),
         ))
-        db.send_create_signal(u'core', ['Param'])
+        db.send_create_signal(u'xpcore', ['Param'])
 
         # Adding unique constraint on 'Param', fields ['application', 'name']
         db.create_unique('CORE_PARAM', ['ID_APPLICATION', 'NAME'])
@@ -36,10 +36,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_CONDITION')),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='NAME')),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=30, db_column='NAME')),
             ('rule', self.gf('django.db.models.fields.CharField')(max_length=255, db_column='RULE')),
         ))
-        db.send_create_signal(u'core', ['Condition'])
+        db.send_create_signal(u'xpcore', ['Condition'])
 
         # Adding model 'CoreParam'
         db.create_table('CORE_PARAMETER', (
@@ -54,7 +54,7 @@ class Migration(SchemaMigration):
             ('value', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, db_column='VALUE', blank=True)),
             ('paramType', self.gf('django.db.models.fields.CharField')(default='string', max_length=10, db_column='PARAM_TYPE')),
         ))
-        db.send_create_signal(u'core', ['CoreParam'])
+        db.send_create_signal(u'xpcore', ['CoreParam'])
 
         # Adding model 'MetaKey'
         db.create_table('CORE_META_KEY', (
@@ -65,9 +65,9 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_META_KEY')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=100, db_column='NAME')),
-            ('keyType', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.CoreParam'], db_column='ID_META_TYPE')),
+            ('keyType', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.CoreParam'], db_column='ID_META_TYPE')),
         ))
-        db.send_create_signal(u'core', ['MetaKey'])
+        db.send_create_signal(u'xpcore', ['MetaKey'])
 
         # Adding model 'Application'
         db.create_table('CORE_APPLICATION', (
@@ -81,15 +81,15 @@ class Migration(SchemaMigration):
             ('slug', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=30, db_column='SLUG')),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='TITLE')),
             ('developer', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, db_column='ID_DEVELOPER', blank=True)),
-            ('accessGroup', self.gf('django.db.models.fields.related.ForeignKey')(related_name='app_access', db_column='ID_GROUP', to=orm['site.Group'])),
-            ('developerOrg', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='app_dev_org', null=True, db_column='ID_DEVELOPER_ORG', to=orm['site.Group'])),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], null=True, db_column='ID_PARENT', blank=True)),
+            ('accessGroup', self.gf('django.db.models.fields.related.ForeignKey')(related_name='app_access', db_column='ID_GROUP', to=orm['xpsite.Group'])),
+            ('developerOrg', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='app_dev_org', null=True, db_column='ID_DEVELOPER_ORG', to=orm['xpsite.Group'])),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], null=True, db_column='ID_PARENT', blank=True)),
             ('isSubscription', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_SUBSCRIPTION')),
             ('isPrivate', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_PRIVATE')),
             ('isAdmin', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_ADMIN')),
-            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Category'], null=True, db_column='ID_CATEGORY', blank=True)),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Category'], null=True, db_column='ID_CATEGORY', blank=True)),
         ))
-        db.send_create_signal(u'core', ['Application'])
+        db.send_create_signal(u'xpcore', ['Application'])
 
         # Adding model 'ApplicationTag'
         db.create_table('CORE_APPLICATION_TAG', (
@@ -99,10 +99,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_APPLICATION_TAG')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_VIEW')),
-            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Tag'], db_column='ID_TAG')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_VIEW')),
+            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Tag'], db_column='ID_TAG')),
         ))
-        db.send_create_signal(u'core', ['ApplicationTag'])
+        db.send_create_signal(u'xpcore', ['ApplicationTag'])
 
         # Adding model 'ApplicationMedia'
         db.create_table('CORE_APPLICATION_MEDIA', (
@@ -112,12 +112,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_APPLICATION_MEDIA')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('image', self.gf('filebrowser.fields.FileBrowseField')(max_length=200, null=True, db_column='IMAGE', blank=True)),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.CoreParam'], db_column='ID_TYPE')),
+            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.CoreParam'], db_column='ID_TYPE')),
             ('menuOrder', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1, db_column='MENU_ORDER')),
         ))
-        db.send_create_signal(u'core', ['ApplicationMedia'])
+        db.send_create_signal(u'xpcore', ['ApplicationMedia'])
 
         # Adding model 'ApplicationMeta'
         db.create_table('CORE_APPLICATION_META', (
@@ -127,11 +127,11 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_APPLICATION_META')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
-            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.MetaKey'], db_column='ID_META')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
+            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['ApplicationMeta'])
+        db.send_create_signal(u'xpcore', ['ApplicationMeta'])
 
         # Adding model 'SearchIndex'
         db.create_table('CORE_SEARCH_INDEX', (
@@ -141,12 +141,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SEARCH_INDEX')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='index_view', null=True, db_column='ID_VIEW', to=orm['core.View'])),
-            ('action', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='index_action', null=True, db_column='ID_ACTION', to=orm['core.Action'])),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='index_view', null=True, db_column='ID_VIEW', to=orm['xpcore.View'])),
+            ('action', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='index_action', null=True, db_column='ID_ACTION', to=orm['xpcore.Action'])),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=70, db_column='TITLE')),
         ))
-        db.send_create_signal(u'core', ['SearchIndex'])
+        db.send_create_signal(u'xpcore', ['SearchIndex'])
 
         # Adding unique constraint on 'SearchIndex', fields ['view', 'action']
         db.create_unique('CORE_SEARCH_INDEX', ['ID_VIEW', 'ID_ACTION'])
@@ -161,7 +161,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_WORD')),
             ('word', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='WORD', db_index=True)),
         ))
-        db.send_create_signal(u'core', ['Word'])
+        db.send_create_signal(u'xpcore', ['Word'])
 
         # Adding model 'SearchIndexWord'
         db.create_table('CORE_SEARCH_INDEX_WORD', (
@@ -171,10 +171,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SEARCH_INDEX_WORD')),
-            ('index', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.SearchIndex'], db_column='ID_INDEX')),
-            ('word', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Word'], db_column='ID_WORD')),
+            ('index', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.SearchIndex'], db_column='ID_INDEX')),
+            ('word', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Word'], db_column='ID_WORD')),
         ))
-        db.send_create_signal(u'core', ['SearchIndexWord'])
+        db.send_create_signal(u'xpcore', ['SearchIndexWord'])
 
         # Adding model 'SearchIndexParam'
         db.create_table('CORE_INDEX_PARAM', (
@@ -184,12 +184,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_INDEX_PARAM')),
-            ('searchIndex', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.SearchIndex'], db_column='ID_SEARCH_INDEX')),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Param'], db_column='ID_NAME')),
+            ('searchIndex', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.SearchIndex'], db_column='ID_SEARCH_INDEX')),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Param'], db_column='ID_NAME')),
             ('operator', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='OPERATOR')),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['SearchIndexParam'])
+        db.send_create_signal(u'xpcore', ['SearchIndexParam'])
 
         # Adding model 'Service'
         db.create_table('CORE_SERVICE', (
@@ -199,11 +199,11 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SERVICE')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='NAME')),
             ('implementation', self.gf('django.db.models.fields.CharField')(max_length=100, db_column='IMPLEMENTATION')),
         ))
-        db.send_create_signal(u'core', ['Service'])
+        db.send_create_signal(u'xpcore', ['Service'])
 
         # Adding unique constraint on 'Service', fields ['application', 'name']
         db.create_unique('CORE_SERVICE', ['ID_APPLICATION', 'NAME'])
@@ -216,18 +216,18 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW')),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='view_parent', null=True, db_column='ID_PARENT', to=orm['core.View'])),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
-            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Service'], db_column='ID_SERVICE')),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='view_parent', null=True, db_column='ID_PARENT', to=orm['xpcore.View'])),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
+            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Service'], db_column='ID_SERVICE')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='NAME')),
             ('implementation', self.gf('django.db.models.fields.CharField')(max_length=100, db_column='IMPLEMENTATION')),
             ('winType', self.gf('django.db.models.fields.CharField')(default='window', max_length=20, db_column='WIN_TYPE')),
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50, db_column='SLUG')),
             ('hasAuth', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='HAS_AUTH')),
-            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Category'], null=True, db_column='ID_CATEGORY', blank=True)),
+            ('category', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Category'], null=True, db_column='ID_CATEGORY', blank=True)),
             ('image', self.gf('filebrowser.fields.FileBrowseField')(max_length=200, null=True, db_column='IMAGE', blank=True)),
         ))
-        db.send_create_signal(u'core', ['View'])
+        db.send_create_signal(u'xpcore', ['View'])
 
         # Adding unique constraint on 'View', fields ['application', 'name']
         db.create_unique('CORE_VIEW', ['ID_APPLICATION', 'NAME'])
@@ -240,10 +240,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.View'], db_column='ID_VIEW')),
-            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Group'], db_column='ID_GROUP')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.View'], db_column='ID_VIEW')),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Group'], db_column='ID_GROUP')),
         ))
-        db.send_create_signal(u'core', ['ViewAccessGroup'])
+        db.send_create_signal(u'xpcore', ['ViewAccessGroup'])
 
         # Adding model 'ViewTag'
         db.create_table('CORE_VIEW_TAG', (
@@ -253,10 +253,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_TAG')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.View'], db_column='ID_VIEW')),
-            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Tag'], db_column='ID_TAG')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.View'], db_column='ID_VIEW')),
+            ('tag', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Tag'], db_column='ID_TAG')),
         ))
-        db.send_create_signal(u'core', ['ViewTag'])
+        db.send_create_signal(u'xpcore', ['ViewTag'])
 
         # Adding model 'Action'
         db.create_table('CORE_ACTION', (
@@ -266,15 +266,15 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_ACTION')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
-            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Service'], db_column='ID_SERVICE')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
+            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Service'], db_column='ID_SERVICE')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=30, db_column='NAME')),
             ('implementation', self.gf('django.db.models.fields.CharField')(max_length=100, db_column='IMPLEMENTATION')),
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50, db_column='SLUG')),
             ('hasAuth', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='HAS_AUTH')),
             ('image', self.gf('filebrowser.fields.FileBrowseField')(max_length=200, null=True, db_column='IMAGE', blank=True)),
         ))
-        db.send_create_signal(u'core', ['Action'])
+        db.send_create_signal(u'xpcore', ['Action'])
 
         # Adding unique constraint on 'Action', fields ['application', 'name']
         db.create_unique('CORE_ACTION', ['ID_APPLICATION', 'NAME'])
@@ -287,10 +287,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_SITE_GROUP_CHANNEL_ACCESS')),
-            ('action', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Action'], db_column='ID_ACTION')),
-            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Group'], db_column='ID_GROUP')),
+            ('action', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Action'], db_column='ID_ACTION')),
+            ('group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpsite.Group'], db_column='ID_GROUP')),
         ))
-        db.send_create_signal(u'core', ['ActionAccessGroup'])
+        db.send_create_signal(u'xpcore', ['ActionAccessGroup'])
 
         # Adding model 'Menu'
         db.create_table('CORE_MENU', (
@@ -300,20 +300,20 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_MENU')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=20, db_column='NAME')),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=15, null=True, db_column='TITLE', blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=30, null=True, db_column='DESCRIPTION', blank=True)),
-            ('icon', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.CoreParam'], null=True, db_column='ID_ICON', blank=True)),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='menu_view', null=True, db_column='ID_VIEW', to=orm['core.View'])),
-            ('action', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='menu_action', null=True, db_column='ID_ACTION', to=orm['core.Action'])),
+            ('icon', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.CoreParam'], null=True, db_column='ID_ICON', blank=True)),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='menu_view', null=True, db_column='ID_VIEW', to=orm['xpcore.View'])),
+            ('action', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='menu_action', null=True, db_column='ID_ACTION', to=orm['xpcore.Action'])),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, db_column='URL', blank=True)),
             ('urlTarget', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, db_column='URL_TARGET', blank=True)),
             ('language', self.gf('django.db.models.fields.CharField')(default='en', max_length=2, db_column='LANGUAGE')),
             ('country', self.gf('django.db.models.fields.CharField')(max_length=2, null=True, db_column='COUNTRY', blank=True)),
             ('device', self.gf('django.db.models.fields.CharField')(default='PC', max_length=10, db_column='DEVICE')),
         ))
-        db.send_create_signal(u'core', ['Menu'])
+        db.send_create_signal(u'xpcore', ['Menu'])
 
         # Adding model 'ViewMenu'
         db.create_table('CORE_VIEW_MENU', (
@@ -323,14 +323,14 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_MENU')),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.ViewMenu'], null=True, db_column='ID_PARENT', blank=True)),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.View'], null=True, db_column='ID_VIEW', blank=True)),
-            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Menu'], db_column='ID_MENU')),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.ViewMenu'], null=True, db_column='ID_PARENT', blank=True)),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.View'], null=True, db_column='ID_VIEW', blank=True)),
+            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Menu'], db_column='ID_MENU')),
             ('order', self.gf('django.db.models.fields.IntegerField')(default=10, db_column='ORDER')),
             ('hasSeparator', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='HAS_SEPARATOR')),
             ('zone', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='ZONE')),
         ))
-        db.send_create_signal(u'core', ['ViewMenu'])
+        db.send_create_signal(u'xpcore', ['ViewMenu'])
 
         # Adding unique constraint on 'ViewMenu', fields ['menu', 'view']
         db.create_unique('CORE_VIEW_MENU', ['ID_MENU', 'ID_VIEW'])
@@ -343,13 +343,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_MENU_CONDITION')),
-            ('condition', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Condition'], null=True, db_column='ID_CORE_CONDITION', blank=True)),
-            ('viewMenu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.ViewMenu'], db_column='ID_CORE_VIEW_MENU')),
+            ('condition', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Condition'], null=True, db_column='ID_CORE_CONDITION', blank=True)),
+            ('viewMenu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.ViewMenu'], db_column='ID_CORE_VIEW_MENU')),
             ('action', self.gf('django.db.models.fields.CharField')(default='render', max_length=20, db_column='ACTION')),
             ('value', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='VALUE')),
             ('order', self.gf('django.db.models.fields.IntegerField')(default=10, db_column='ORDER')),
         ))
-        db.send_create_signal(u'core', ['ViewMenuCondition'])
+        db.send_create_signal(u'xpcore', ['ViewMenuCondition'])
 
         # Adding model 'ServiceMenu'
         db.create_table('CORE_SERVICE_MENU', (
@@ -359,14 +359,14 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SERVICE_MENU')),
-            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.ServiceMenu'], null=True, db_column='ID_PARENT', blank=True)),
-            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Service'], db_column='ID_SERVICE')),
-            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Menu'], db_column='ID_MENU')),
+            ('parent', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.ServiceMenu'], null=True, db_column='ID_PARENT', blank=True)),
+            ('service', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Service'], db_column='ID_SERVICE')),
+            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Menu'], db_column='ID_MENU')),
             ('order', self.gf('django.db.models.fields.IntegerField')(default=10, db_column='ORDER')),
             ('hasSeparator', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='HAS_SEPARATOR')),
             ('zone', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='ZONE')),
         ))
-        db.send_create_signal(u'core', ['ServiceMenu'])
+        db.send_create_signal(u'xpcore', ['ServiceMenu'])
 
         # Adding model 'ServiceMenuCondition'
         db.create_table('CORE_SERVICE_MENU_CONDITION', (
@@ -376,13 +376,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SERVICE_MENU_CONDITION')),
-            ('condition', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Condition'], null=True, db_column='ID_CORE_CONDITION', blank=True)),
-            ('serviceMenu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.ServiceMenu'], db_column='ID_CORE_SERVICE_MENU')),
+            ('condition', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Condition'], null=True, db_column='ID_CORE_CONDITION', blank=True)),
+            ('serviceMenu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.ServiceMenu'], db_column='ID_CORE_SERVICE_MENU')),
             ('action', self.gf('django.db.models.fields.CharField')(default='render', max_length=20, db_column='ACTION')),
             ('value', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='VALUE')),
             ('order', self.gf('django.db.models.fields.IntegerField')(default=10, db_column='ORDER')),
         ))
-        db.send_create_signal(u'core', ['ServiceMenuCondition'])
+        db.send_create_signal(u'xpcore', ['ServiceMenuCondition'])
 
         # Adding model 'MenuParam'
         db.create_table('CORE_MENU_PARAM', (
@@ -392,12 +392,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_MENU_PARAM')),
-            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Menu'], db_column='ID_MENU')),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Param'], db_column='ID_NAME')),
+            ('menu', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Menu'], db_column='ID_MENU')),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Param'], db_column='ID_NAME')),
             ('operator', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='OPERATOR')),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['MenuParam'])
+        db.send_create_signal(u'xpcore', ['MenuParam'])
 
         # Adding model 'ViewMeta'
         db.create_table('CORE_VIEW_META', (
@@ -407,11 +407,11 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_META')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.View'], db_column='ID_VIEW')),
-            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.MetaKey'], db_column='ID_META')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.View'], db_column='ID_VIEW')),
+            ('meta', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['ViewMeta'])
+        db.send_create_signal(u'xpcore', ['ViewMeta'])
 
         # Adding model 'ViewTmpl'
         db.create_table('CORE_VIEW_TMPL', (
@@ -421,10 +421,10 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_TMPL')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.View'], db_column='ID_VIEW')),
-            ('template', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.XpTemplate'], db_column='ID_TEMPLATE')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.View'], db_column='ID_VIEW')),
+            ('template', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.XpTemplate'], db_column='ID_TEMPLATE')),
         ))
-        db.send_create_signal(u'core', ['ViewTmpl'])
+        db.send_create_signal(u'xpcore', ['ViewTmpl'])
 
         # Adding model 'XpTemplate'
         db.create_table('CORE_TEMPLATE', (
@@ -434,15 +434,15 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_TEMPLATE')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=50, db_column='NAME')),
-            ('alias', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='ALIAS')),
+            ('alias', self.gf('django.db.models.fields.CharField')(max_length=50, db_column='ALIAS')),
             ('language', self.gf('django.db.models.fields.CharField')(default='en', max_length=2, db_column='LANGUAGE')),
             ('country', self.gf('django.db.models.fields.CharField')(max_length=2, null=True, db_column='COUNTRY', blank=True)),
             ('winType', self.gf('django.db.models.fields.CharField')(default='window', max_length=20, db_column='WIN_TYPE')),
             ('device', self.gf('django.db.models.fields.CharField')(default='PC', max_length=10, db_column='DEVICE')),
         ))
-        db.send_create_signal(u'core', ['XpTemplate'])
+        db.send_create_signal(u'xpcore', ['XpTemplate'])
 
         # Adding unique constraint on 'XpTemplate', fields ['application', 'name']
         db.create_unique('CORE_TEMPLATE', ['ID_APPLICATION', 'NAME'])
@@ -455,13 +455,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_WORKFLOW')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Application'], db_column='ID_APPLICATION')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Application'], db_column='ID_APPLICATION')),
             ('code', self.gf('django.db.models.fields.CharField')(unique=True, max_length=15, db_column='CODE', db_index=True)),
             ('resetStart', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='RESET_START')),
             ('deleteOnEnd', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='DELETE_ON_END')),
             ('jumpToView', self.gf('django.db.models.fields.BooleanField')(default=True, db_column='JUMP_TO_VIEW')),
         ))
-        db.send_create_signal(u'core', ['Workflow'])
+        db.send_create_signal(u'xpcore', ['Workflow'])
 
         # Adding model 'WorkflowView'
         db.create_table('CORE_WORKFLOW_VIEW', (
@@ -471,13 +471,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW')),
-            ('flow', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowView', db_column='ID_FLOW', to=orm['core.Workflow'])),
-            ('viewSource', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='flowViewSource', null=True, db_column='ID_VIEW_SOURCE', to=orm['core.View'])),
-            ('viewTarget', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowViewTarget', db_column='ID_VIEW_TARGET', to=orm['core.View'])),
-            ('action', self.gf('django.db.models.fields.related.ForeignKey')(related_name='wf_action', db_column='ID_ACTION', to=orm['core.Action'])),
+            ('flow', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowView', db_column='ID_FLOW', to=orm['xpcore.Workflow'])),
+            ('viewSource', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='flowViewSource', null=True, db_column='ID_VIEW_SOURCE', to=orm['xpcore.View'])),
+            ('viewTarget', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowViewTarget', db_column='ID_VIEW_TARGET', to=orm['xpcore.View'])),
+            ('action', self.gf('django.db.models.fields.related.ForeignKey')(related_name='wf_action', db_column='ID_ACTION', to=orm['xpcore.Action'])),
             ('order', self.gf('django.db.models.fields.IntegerField')(default=10, db_column='ORDER')),
         ))
-        db.send_create_signal(u'core', ['WorkflowView'])
+        db.send_create_signal(u'xpcore', ['WorkflowView'])
 
         # Adding model 'ViewParamValue'
         db.create_table('CORE_VIEW_PARAM_VALUE', (
@@ -487,12 +487,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(related_name='viewParam', db_column='ID_VIEW', to=orm['core.View'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Param'], db_column='ID_NAME')),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(related_name='viewParam', db_column='ID_VIEW', to=orm['xpcore.View'])),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Param'], db_column='ID_NAME')),
             ('operator', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='OPERATOR')),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['ViewParamValue'])
+        db.send_create_signal(u'xpcore', ['ViewParamValue'])
 
         # Adding model 'WorkflowData'
         db.create_table('CORE_WORKFLOW_DATA', (
@@ -503,11 +503,11 @@ class Migration(SchemaMigration):
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_WORKFLOW_DATA')),
             ('userId', self.gf('django.db.models.fields.CharField')(max_length=40, db_column='USER_ID')),
-            ('flow', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowData', db_column='ID_FLOW', to=orm['core.Workflow'])),
-            ('view', self.gf('django.db.models.fields.related.ForeignKey')(related_name='viewFlowData', db_column='ID_VIEW', to=orm['core.View'])),
+            ('flow', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowData', db_column='ID_FLOW', to=orm['xpcore.Workflow'])),
+            ('view', self.gf('django.db.models.fields.related.ForeignKey')(related_name='viewFlowData', db_column='ID_VIEW', to=orm['xpcore.View'])),
             ('data', self.gf('django.db.models.fields.TextField')(default='eyJkYXRhIjoge30sICJ2aWV3TmFtZSI6ICIifQ==\n', db_column='DATA')),
         ))
-        db.send_create_signal(u'core', ['WorkflowData'])
+        db.send_create_signal(u'xpcore', ['WorkflowData'])
 
         # Adding unique constraint on 'WorkflowData', fields ['userId', 'flow']
         db.create_unique('CORE_WORKFLOW_DATA', ['USER_ID', 'ID_FLOW'])
@@ -520,12 +520,12 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_WORKFLOW_PARAM_VALUE')),
-            ('flowView', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowViewParamValue', db_column='ID_FLOW_VIEW', to=orm['core.WorkflowView'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Param'], db_column='ID_NAME')),
+            ('flowView', self.gf('django.db.models.fields.related.ForeignKey')(related_name='flowViewParamValue', db_column='ID_FLOW_VIEW', to=orm['xpcore.WorkflowView'])),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.Param'], db_column='ID_NAME')),
             ('operator', self.gf('django.db.models.fields.CharField')(max_length=10, db_column='OPERATOR')),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=20, db_column='VALUE')),
         ))
-        db.send_create_signal(u'core', ['WFParamValue'])
+        db.send_create_signal(u'xpcore', ['WFParamValue'])
 
         # Adding model 'Setting'
         db.create_table('CORE_SETTING', (
@@ -535,13 +535,13 @@ class Migration(SchemaMigration):
             ('userModifyId', self.gf('django.db.models.fields.IntegerField')(null=True, db_column='USER_MODIFY_ID', blank=True)),
             ('isDeleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='IS_DELETED')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True, db_column='ID_CORE_SETTING')),
-            ('application', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='core_setting_app', null=True, db_column='ID_CORE_APPLICATION', to=orm['core.Application'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.MetaKey'], db_column='ID_META')),
+            ('application', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='xpcore.setting_app', null=True, db_column='ID_CORE_APPLICATION', to=orm['xpcore.Application'])),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['xpcore.MetaKey'], db_column='ID_META')),
             ('value', self.gf('django.db.models.fields.TextField')(db_column='VALUE')),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=255, db_column='DESCRIPTION')),
             ('mustAutoload', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='MUST_AUTOLOAD')),
         ))
-        db.send_create_signal(u'core', ['Setting'])
+        db.send_create_signal(u'xpcore', ['Setting'])
 
 
     def backwards(self, orm):
@@ -706,10 +706,10 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'core.action': {
+        u'xpcore.action': {
             'Meta': {'unique_together': "(('application', 'name'),)", 'object_name': 'Action', 'db_table': "'CORE_ACTION'"},
-            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'action_access'", 'symmetrical': 'False', 'through': u"orm['core.ActionAccessGroup']", 'to': u"orm['site.Group']"}),
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'action_access'", 'symmetrical': 'False', 'through': u"orm['xpcore.ActionAccessGroup']", 'to': u"orm['xpsite.Group']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'hasAuth': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'HAS_AUTH'"}),
@@ -718,92 +718,92 @@ class Migration(SchemaMigration):
             'implementation': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_column': "'IMPLEMENTATION'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'NAME'"}),
-            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Service']", 'db_column': "'ID_SERVICE'"}),
+            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Service']", 'db_column': "'ID_SERVICE'"}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_column': "'SLUG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.actionaccessgroup': {
+        u'xpcore.actionaccessgroup': {
             'Meta': {'object_name': 'ActionAccessGroup', 'db_table': "'CORE_ACTION_ACCESS_GROUP'"},
-            'action': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Action']", 'db_column': "'ID_ACTION'"}),
+            'action': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Action']", 'db_column': "'ID_ACTION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Group']", 'db_column': "'ID_GROUP'"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Group']", 'db_column': "'ID_GROUP'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_CHANNEL_ACCESS'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.application': {
+        u'xpcore.application': {
             'Meta': {'object_name': 'Application', 'db_table': "'CORE_APPLICATION'"},
-            'accessGroup': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'app_access'", 'db_column': "'ID_GROUP'", 'to': u"orm['site.Group']"}),
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
+            'accessGroup': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'app_access'", 'db_column': "'ID_GROUP'", 'to': u"orm['xpsite.Group']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'developer': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'db_column': "'ID_DEVELOPER'", 'blank': 'True'}),
-            'developerOrg': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'app_dev_org'", 'null': 'True', 'db_column': "'ID_DEVELOPER_ORG'", 'to': u"orm['site.Group']"}),
+            'developerOrg': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'app_dev_org'", 'null': 'True', 'db_column': "'ID_DEVELOPER_ORG'", 'to': u"orm['xpsite.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION'"}),
             'isAdmin': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_ADMIN'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPrivate': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_PRIVATE'"}),
             'isSubscription': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_SUBSCRIPTION'"}),
-            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'app_meta'", 'symmetrical': 'False', 'through': u"orm['core.ApplicationMeta']", 'to': u"orm['core.MetaKey']"}),
+            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'app_meta'", 'symmetrical': 'False', 'through': u"orm['xpcore.ApplicationMeta']", 'to': u"orm['xpcore.MetaKey']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
             'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '30', 'db_column': "'SLUG'"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'application_tags'", 'to': u"orm['site.Tag']", 'through': u"orm['core.ApplicationTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'application_tags'", 'to': u"orm['xpsite.Tag']", 'through': u"orm['xpcore.ApplicationTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'TITLE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.applicationmedia': {
+        u'xpcore.applicationmedia': {
             'Meta': {'object_name': 'ApplicationMedia', 'db_table': "'CORE_APPLICATION_MEDIA'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION_MEDIA'"}),
             'image': ('filebrowser.fields.FileBrowseField', [], {'max_length': '200', 'null': 'True', 'db_column': "'IMAGE'", 'blank': 'True'}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'menuOrder': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1', 'db_column': "'MENU_ORDER'"}),
-            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.CoreParam']", 'db_column': "'ID_TYPE'"}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.CoreParam']", 'db_column': "'ID_TYPE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.applicationmeta': {
+        u'xpcore.applicationmeta': {
             'Meta': {'object_name': 'ApplicationMeta', 'db_table': "'CORE_APPLICATION_META'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION_META'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.MetaKey']", 'db_column': "'ID_META'"}),
+            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'core.applicationtag': {
+        u'xpcore.applicationtag': {
             'Meta': {'object_name': 'ApplicationTag', 'db_table': "'CORE_APPLICATION_TAG'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_VIEW'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_VIEW'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_APPLICATION_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'db_column': "'ID_TAG'"}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'db_column': "'ID_TAG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.condition': {
+        u'xpcore.condition': {
             'Meta': {'object_name': 'Condition', 'db_table': "'CORE_CONDITION'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_CONDITION'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'NAME'"}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30', 'db_column': "'NAME'"}),
             'rule': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_column': "'RULE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.coreparam': {
+        u'xpcore.coreparam': {
             'Meta': {'object_name': 'CoreParam', 'db_table': "'CORE_PARAMETER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -816,55 +816,55 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'db_column': "'VALUE'", 'blank': 'True'})
         },
-        u'core.menu': {
+        u'xpcore.menu': {
             'Meta': {'object_name': 'Menu', 'db_table': "'CORE_MENU'"},
-            'action': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'menu_action'", 'null': 'True', 'db_column': "'ID_ACTION'", 'to': u"orm['core.Action']"}),
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'action': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'menu_action'", 'null': 'True', 'db_column': "'ID_ACTION'", 'to': u"orm['xpcore.Action']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'country': ('django.db.models.fields.CharField', [], {'max_length': '2', 'null': 'True', 'db_column': "'COUNTRY'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '30', 'null': 'True', 'db_column': "'DESCRIPTION'", 'blank': 'True'}),
             'device': ('django.db.models.fields.CharField', [], {'default': "'PC'", 'max_length': '10', 'db_column': "'DEVICE'"}),
-            'icon': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.CoreParam']", 'null': 'True', 'db_column': "'ID_ICON'", 'blank': 'True'}),
+            'icon': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.CoreParam']", 'null': 'True', 'db_column': "'ID_ICON'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_MENU'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'language': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '2', 'db_column': "'LANGUAGE'"}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '20', 'db_column': "'NAME'"}),
-            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'menu_params'", 'to': u"orm['core.Param']", 'through': u"orm['core.MenuParam']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'menu_params'", 'to': u"orm['xpcore.Param']", 'through': u"orm['xpcore.MenuParam']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True', 'db_column': "'TITLE'", 'blank': 'True'}),
             'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'db_column': "'URL'", 'blank': 'True'}),
             'urlTarget': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'db_column': "'URL_TARGET'", 'blank': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'menu_view'", 'null': 'True', 'db_column': "'ID_VIEW'", 'to': u"orm['core.View']"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'menu_view'", 'null': 'True', 'db_column': "'ID_VIEW'", 'to': u"orm['xpcore.View']"})
         },
-        u'core.menuparam': {
+        u'xpcore.menuparam': {
             'Meta': {'object_name': 'MenuParam', 'db_table': "'CORE_MENU_PARAM'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_MENU_PARAM'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Menu']", 'db_column': "'ID_MENU'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Param']", 'db_column': "'ID_NAME'"}),
+            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Menu']", 'db_column': "'ID_MENU'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Param']", 'db_column': "'ID_NAME'"}),
             'operator': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'OPERATOR'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'VALUE'"})
         },
-        u'core.metakey': {
+        u'xpcore.metakey': {
             'Meta': {'ordering': "['name']", 'object_name': 'MetaKey', 'db_table': "'CORE_META_KEY'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_META_KEY'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.CoreParam']", 'db_column': "'ID_META_TYPE'"}),
+            'keyType': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.CoreParam']", 'db_column': "'ID_META_TYPE'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_column': "'NAME'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.param': {
+        u'xpcore.param': {
             'Meta': {'unique_together': "(('application', 'name'),)", 'object_name': 'Param', 'db_table': "'CORE_PARAM'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_PARAM'"}),
@@ -877,48 +877,48 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.searchindex': {
+        u'xpcore.searchindex': {
             'Meta': {'unique_together': "(('view', 'action'),)", 'object_name': 'SearchIndex', 'db_table': "'CORE_SEARCH_INDEX'"},
-            'action': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'index_action'", 'null': 'True', 'db_column': "'ID_ACTION'", 'to': u"orm['core.Action']"}),
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'action': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'index_action'", 'null': 'True', 'db_column': "'ID_ACTION'", 'to': u"orm['xpcore.Action']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SEARCH_INDEX'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'index_params'", 'to': u"orm['core.Param']", 'through': u"orm['core.SearchIndexParam']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'index_params'", 'to': u"orm['xpcore.Param']", 'through': u"orm['xpcore.SearchIndexParam']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '70', 'db_column': "'TITLE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'index_view'", 'null': 'True', 'db_column': "'ID_VIEW'", 'to': u"orm['core.View']"}),
-            'words': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'index_words'", 'symmetrical': 'False', 'through': u"orm['core.SearchIndexWord']", 'to': u"orm['core.Word']"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'index_view'", 'null': 'True', 'db_column': "'ID_VIEW'", 'to': u"orm['xpcore.View']"}),
+            'words': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'index_words'", 'symmetrical': 'False', 'through': u"orm['xpcore.SearchIndexWord']", 'to': u"orm['xpcore.Word']"})
         },
-        u'core.searchindexparam': {
+        u'xpcore.searchindexparam': {
             'Meta': {'object_name': 'SearchIndexParam', 'db_table': "'CORE_INDEX_PARAM'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_INDEX_PARAM'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Param']", 'db_column': "'ID_NAME'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Param']", 'db_column': "'ID_NAME'"}),
             'operator': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'OPERATOR'"}),
-            'searchIndex': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.SearchIndex']", 'db_column': "'ID_SEARCH_INDEX'"}),
+            'searchIndex': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.SearchIndex']", 'db_column': "'ID_SEARCH_INDEX'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'VALUE'"})
         },
-        u'core.searchindexword': {
+        u'xpcore.searchindexword': {
             'Meta': {'object_name': 'SearchIndexWord', 'db_table': "'CORE_SEARCH_INDEX_WORD'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SEARCH_INDEX_WORD'"}),
-            'index': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.SearchIndex']", 'db_column': "'ID_INDEX'"}),
+            'index': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.SearchIndex']", 'db_column': "'ID_INDEX'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'word': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Word']", 'db_column': "'ID_WORD'"})
+            'word': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Word']", 'db_column': "'ID_WORD'"})
         },
-        u'core.service': {
+        u'xpcore.service': {
             'Meta': {'unique_together': "(('application', 'name'),)", 'object_name': 'Service', 'db_table': "'CORE_SERVICE'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SERVICE'"}),
@@ -928,55 +928,55 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.servicemenu': {
+        u'xpcore.servicemenu': {
             'Meta': {'object_name': 'ServiceMenu', 'db_table': "'CORE_SERVICE_MENU'"},
-            'conditions': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'servicemenu_conditions'", 'to': u"orm['core.Condition']", 'through': u"orm['core.ServiceMenuCondition']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'conditions': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'servicemenu_conditions'", 'to': u"orm['xpcore.Condition']", 'through': u"orm['xpcore.ServiceMenuCondition']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'hasSeparator': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'HAS_SEPARATOR'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SERVICE_MENU'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Menu']", 'db_column': "'ID_MENU'"}),
+            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Menu']", 'db_column': "'ID_MENU'"}),
             'order': ('django.db.models.fields.IntegerField', [], {'default': '10', 'db_column': "'ORDER'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.ServiceMenu']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
-            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Service']", 'db_column': "'ID_SERVICE'"}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.ServiceMenu']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
+            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Service']", 'db_column': "'ID_SERVICE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'zone': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'ZONE'"})
         },
-        u'core.servicemenucondition': {
+        u'xpcore.servicemenucondition': {
             'Meta': {'object_name': 'ServiceMenuCondition', 'db_table': "'CORE_SERVICE_MENU_CONDITION'"},
             'action': ('django.db.models.fields.CharField', [], {'default': "'render'", 'max_length': '20', 'db_column': "'ACTION'"}),
-            'condition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Condition']", 'null': 'True', 'db_column': "'ID_CORE_CONDITION'", 'blank': 'True'}),
+            'condition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Condition']", 'null': 'True', 'db_column': "'ID_CORE_CONDITION'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SERVICE_MENU_CONDITION'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'order': ('django.db.models.fields.IntegerField', [], {'default': '10', 'db_column': "'ORDER'"}),
-            'serviceMenu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.ServiceMenu']", 'db_column': "'ID_CORE_SERVICE_MENU'"}),
+            'serviceMenu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.ServiceMenu']", 'db_column': "'ID_CORE_SERVICE_MENU'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'VALUE'"})
         },
-        u'core.setting': {
+        u'xpcore.setting': {
             'Meta': {'object_name': 'Setting', 'db_table': "'CORE_SETTING'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'core_setting_app'", 'null': 'True', 'db_column': "'ID_CORE_APPLICATION'", 'to': u"orm['core.Application']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'xpcore.setting_app'", 'null': 'True', 'db_column': "'ID_CORE_APPLICATION'", 'to': u"orm['xpcore.Application']"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_column': "'DESCRIPTION'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_SETTING'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'mustAutoload': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'MUST_AUTOLOAD'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.MetaKey']", 'db_column': "'ID_META'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"})
         },
-        u'core.view': {
+        u'xpcore.view': {
             'Meta': {'unique_together': "(('application', 'name'),)", 'object_name': 'View', 'db_table': "'CORE_VIEW'"},
-            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_access'", 'symmetrical': 'False', 'through': u"orm['core.ViewAccessGroup']", 'to': u"orm['site.Group']"}),
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
+            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_access'", 'symmetrical': 'False', 'through': u"orm['xpcore.ViewAccessGroup']", 'to': u"orm['xpsite.Group']"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Category']", 'null': 'True', 'db_column': "'ID_CATEGORY'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'hasAuth': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'HAS_AUTH'"}),
@@ -984,50 +984,50 @@ class Migration(SchemaMigration):
             'image': ('filebrowser.fields.FileBrowseField', [], {'max_length': '200', 'null': 'True', 'db_column': "'IMAGE'", 'blank': 'True'}),
             'implementation': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_column': "'IMPLEMENTATION'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'menus': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_menus'", 'symmetrical': 'False', 'through': u"orm['core.ViewMenu']", 'to': u"orm['core.Menu']"}),
-            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_meta'", 'symmetrical': 'False', 'through': u"orm['core.ViewMeta']", 'to': u"orm['core.MetaKey']"}),
+            'menus': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_menus'", 'symmetrical': 'False', 'through': u"orm['xpcore.ViewMenu']", 'to': u"orm['xpcore.Menu']"}),
+            'meta': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_meta'", 'symmetrical': 'False', 'through': u"orm['xpcore.ViewMeta']", 'to': u"orm['xpcore.MetaKey']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'NAME'"}),
-            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_params'", 'to': u"orm['core.Param']", 'through': u"orm['core.ViewParamValue']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'view_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['core.View']"}),
-            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Service']", 'db_column': "'ID_SERVICE'"}),
+            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_params'", 'to': u"orm['xpcore.Param']", 'through': u"orm['xpcore.ViewParamValue']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'view_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['xpcore.View']"}),
+            'service': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Service']", 'db_column': "'ID_SERVICE'"}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_column': "'SLUG'"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_tags'", 'to': u"orm['site.Tag']", 'through': u"orm['core.ViewTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
-            'templates': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_templates'", 'symmetrical': 'False', 'through': u"orm['core.ViewTmpl']", 'to': u"orm['core.XpTemplate']"}),
+            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_tags'", 'to': u"orm['xpsite.Tag']", 'through': u"orm['xpcore.ViewTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'templates': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'view_templates'", 'symmetrical': 'False', 'through': u"orm['xpcore.ViewTmpl']", 'to': u"orm['xpcore.XpTemplate']"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'winType': ('django.db.models.fields.CharField', [], {'default': "'window'", 'max_length': '20', 'db_column': "'WIN_TYPE'"})
         },
-        u'core.viewaccessgroup': {
+        u'xpcore.viewaccessgroup': {
             'Meta': {'object_name': 'ViewAccessGroup', 'db_table': "'CORE_VIEW_ACCESS_GROUP'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Group']", 'db_column': "'ID_GROUP'"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Group']", 'db_column': "'ID_GROUP'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_CHANNEL_ACCESS'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.View']", 'db_column': "'ID_VIEW'"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.View']", 'db_column': "'ID_VIEW'"})
         },
-        u'core.viewmenu': {
+        u'xpcore.viewmenu': {
             'Meta': {'unique_together': "(('menu', 'view'),)", 'object_name': 'ViewMenu', 'db_table': "'CORE_VIEW_MENU'"},
-            'conditions': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'viewmenu_conditions'", 'to': u"orm['core.Condition']", 'through': u"orm['core.ViewMenuCondition']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'conditions': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'viewmenu_conditions'", 'to': u"orm['xpcore.Condition']", 'through': u"orm['xpcore.ViewMenuCondition']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'hasSeparator': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'HAS_SEPARATOR'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_MENU'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Menu']", 'db_column': "'ID_MENU'"}),
+            'menu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Menu']", 'db_column': "'ID_MENU'"}),
             'order': ('django.db.models.fields.IntegerField', [], {'default': '10', 'db_column': "'ORDER'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.ViewMenu']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.ViewMenu']", 'null': 'True', 'db_column': "'ID_PARENT'", 'blank': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.View']", 'null': 'True', 'db_column': "'ID_VIEW'", 'blank': 'True'}),
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.View']", 'null': 'True', 'db_column': "'ID_VIEW'", 'blank': 'True'}),
             'zone': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'ZONE'"})
         },
-        u'core.viewmenucondition': {
+        u'xpcore.viewmenucondition': {
             'Meta': {'object_name': 'ViewMenuCondition', 'db_table': "'CORE_VIEW_MENU_CONDITION'"},
             'action': ('django.db.models.fields.CharField', [], {'default': "'render'", 'max_length': '20', 'db_column': "'ACTION'"}),
-            'condition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Condition']", 'null': 'True', 'db_column': "'ID_CORE_CONDITION'", 'blank': 'True'}),
+            'condition': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Condition']", 'null': 'True', 'db_column': "'ID_CORE_CONDITION'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_MENU_CONDITION'"}),
@@ -1036,69 +1036,69 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'VALUE'"}),
-            'viewMenu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.ViewMenu']", 'db_column': "'ID_CORE_VIEW_MENU'"})
+            'viewMenu': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.ViewMenu']", 'db_column': "'ID_CORE_VIEW_MENU'"})
         },
-        u'core.viewmeta': {
+        u'xpcore.viewmeta': {
             'Meta': {'object_name': 'ViewMeta', 'db_table': "'CORE_VIEW_META'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_META'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.MetaKey']", 'db_column': "'ID_META'"}),
+            'meta': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.MetaKey']", 'db_column': "'ID_META'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'db_column': "'VALUE'"}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.View']", 'db_column': "'ID_VIEW'"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.View']", 'db_column': "'ID_VIEW'"})
         },
-        u'core.viewparamvalue': {
+        u'xpcore.viewparamvalue': {
             'Meta': {'object_name': 'ViewParamValue', 'db_table': "'CORE_VIEW_PARAM_VALUE'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_PARAM_VALUE'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Param']", 'db_column': "'ID_NAME'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Param']", 'db_column': "'ID_NAME'"}),
             'operator': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'OPERATOR'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'VALUE'"}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'viewParam'", 'db_column': "'ID_VIEW'", 'to': u"orm['core.View']"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'viewParam'", 'db_column': "'ID_VIEW'", 'to': u"orm['xpcore.View']"})
         },
-        u'core.viewtag': {
+        u'xpcore.viewtag': {
             'Meta': {'object_name': 'ViewTag', 'db_table': "'CORE_VIEW_TAG'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'db_column': "'ID_TAG'"}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'db_column': "'ID_TAG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.View']", 'db_column': "'ID_VIEW'"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.View']", 'db_column': "'ID_VIEW'"})
         },
-        u'core.viewtmpl': {
+        u'xpcore.viewtmpl': {
             'Meta': {'object_name': 'ViewTmpl', 'db_table': "'CORE_VIEW_TMPL'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_VIEW_TMPL'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'template': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.XpTemplate']", 'db_column': "'ID_TEMPLATE'"}),
+            'template': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.XpTemplate']", 'db_column': "'ID_TEMPLATE'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.View']", 'db_column': "'ID_VIEW'"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.View']", 'db_column': "'ID_VIEW'"})
         },
-        u'core.wfparamvalue': {
+        u'xpcore.wfparamvalue': {
             'Meta': {'object_name': 'WFParamValue', 'db_table': "'CORE_WORKFLOW_PARAM_VALUE'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'flowView': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowViewParamValue'", 'db_column': "'ID_FLOW_VIEW'", 'to': u"orm['core.WorkflowView']"}),
+            'flowView': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowViewParamValue'", 'db_column': "'ID_FLOW_VIEW'", 'to': u"orm['xpcore.WorkflowView']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_WORKFLOW_PARAM_VALUE'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Param']", 'db_column': "'ID_NAME'"}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Param']", 'db_column': "'ID_NAME'"}),
             'operator': ('django.db.models.fields.CharField', [], {'max_length': '10', 'db_column': "'OPERATOR'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'VALUE'"})
         },
-        u'core.word': {
+        u'xpcore.word': {
             'Meta': {'object_name': 'Word', 'db_table': "'CORE_WORD'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1108,9 +1108,9 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'word': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'WORD'", 'db_index': 'True'})
         },
-        u'core.workflow': {
+        u'xpcore.workflow': {
             'Meta': {'object_name': 'Workflow', 'db_table': "'CORE_WORKFLOW'"},
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'code': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '15', 'db_column': "'CODE'", 'db_index': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1122,38 +1122,38 @@ class Migration(SchemaMigration):
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'core.workflowdata': {
+        u'xpcore.workflowdata': {
             'Meta': {'unique_together': "(('userId', 'flow'),)", 'object_name': 'WorkflowData', 'db_table': "'CORE_WORKFLOW_DATA'"},
             'data': ('django.db.models.fields.TextField', [], {'default': "'eyJkYXRhIjoge30sICJ2aWV3TmFtZSI6ICIifQ==\\n'", 'db_column': "'DATA'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'flow': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowData'", 'db_column': "'ID_FLOW'", 'to': u"orm['core.Workflow']"}),
+            'flow': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowData'", 'db_column': "'ID_FLOW'", 'to': u"orm['xpcore.Workflow']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_WORKFLOW_DATA'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userId': ('django.db.models.fields.CharField', [], {'max_length': '40', 'db_column': "'USER_ID'"}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'view': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'viewFlowData'", 'db_column': "'ID_VIEW'", 'to': u"orm['core.View']"})
+            'view': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'viewFlowData'", 'db_column': "'ID_VIEW'", 'to': u"orm['xpcore.View']"})
         },
-        u'core.workflowview': {
+        u'xpcore.workflowview': {
             'Meta': {'object_name': 'WorkflowView', 'db_table': "'CORE_WORKFLOW_VIEW'"},
-            'action': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'wf_action'", 'db_column': "'ID_ACTION'", 'to': u"orm['core.Action']"}),
+            'action': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'wf_action'", 'db_column': "'ID_ACTION'", 'to': u"orm['xpcore.Action']"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'flow': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowView'", 'db_column': "'ID_FLOW'", 'to': u"orm['core.Workflow']"}),
+            'flow': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowView'", 'db_column': "'ID_FLOW'", 'to': u"orm['xpcore.Workflow']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_CORE_WORKFLOW_VIEW'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'order': ('django.db.models.fields.IntegerField', [], {'default': '10', 'db_column': "'ORDER'"}),
-            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'flowView_params'", 'to': u"orm['core.Param']", 'through': u"orm['core.WFParamValue']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'params': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'flowView_params'", 'to': u"orm['xpcore.Param']", 'through': u"orm['xpcore.WFParamValue']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
-            'viewSource': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'flowViewSource'", 'null': 'True', 'db_column': "'ID_VIEW_SOURCE'", 'to': u"orm['core.View']"}),
-            'viewTarget': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowViewTarget'", 'db_column': "'ID_VIEW_TARGET'", 'to': u"orm['core.View']"})
+            'viewSource': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'flowViewSource'", 'null': 'True', 'db_column': "'ID_VIEW_SOURCE'", 'to': u"orm['xpcore.View']"}),
+            'viewTarget': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'flowViewTarget'", 'db_column': "'ID_VIEW_TARGET'", 'to': u"orm['xpcore.View']"})
         },
-        u'core.xptemplate': {
+        u'xpcore.xptemplate': {
             'Meta': {'unique_together': "(('application', 'name'),)", 'object_name': 'XpTemplate', 'db_table': "'CORE_TEMPLATE'"},
-            'alias': ('django.db.models.fields.CharField', [], {'max_length': '20', 'db_column': "'ALIAS'"}),
-            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Application']", 'db_column': "'ID_APPLICATION'"}),
+            'alias': ('django.db.models.fields.CharField', [], {'max_length': '50', 'db_column': "'ALIAS'"}),
+            'application': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpcore.Application']", 'db_column': "'ID_APPLICATION'"}),
             'country': ('django.db.models.fields.CharField', [], {'max_length': '2', 'null': 'True', 'db_column': "'COUNTRY'", 'blank': 'True'}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1166,7 +1166,7 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'winType': ('django.db.models.fields.CharField', [], {'default': "'window'", 'max_length': '20', 'db_column': "'WIN_TYPE'"})
         },
-        u'site.category': {
+        u'xpsite.category': {
             'Meta': {'object_name': 'Category', 'db_table': "'SITE_CATEGORY'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1178,17 +1178,17 @@ class Migration(SchemaMigration):
             'isPublished': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_PUBLISHED'"}),
             'menuOrder': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1', 'db_column': "'MENU_ORDER'"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '55', 'db_column': "'NAME'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'category_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['site.Category']"}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'category_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['xpsite.Category']"}),
             'popularity': ('django.db.models.fields.IntegerField', [], {'default': '1', 'null': 'True', 'db_column': "'POPULARITY'", 'blank': 'True'}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'db_column': "'SLUG'"}),
-            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Param']", 'db_column': "'ID_SITE_PARAMETER'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.group': {
+        u'xpsite.group': {
             'Meta': {'object_name': 'Group', 'db_table': "'SITE_GROUP'"},
-            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'group_access'", 'symmetrical': 'False', 'through': u"orm['site.GroupAccess']", 'to': u"orm['site.Group']"}),
-            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Category']", 'db_column': "'ID_CATEGORY'"}),
+            'accessGroups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'group_access'", 'symmetrical': 'False', 'through': u"orm['xpsite.GroupAccess']", 'to': u"orm['xpsite.Group']"}),
+            'category': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Category']", 'db_column': "'ID_CATEGORY'"}),
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'unique': 'True', 'db_column': "'ID_GROUP_SYS'"}),
@@ -1196,34 +1196,34 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPublic': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'IS_PUBLIC'"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'groupchannel_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['site.Group']"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'groupchannel_tags'", 'to': u"orm['site.Tag']", 'through': u"orm['site.GroupTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
+            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'groupchannel_parent'", 'null': 'True', 'db_column': "'ID_PARENT'", 'to': u"orm['xpsite.Group']"}),
+            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'groupchannel_tags'", 'to': u"orm['xpsite.Tag']", 'through': u"orm['xpsite.GroupTag']", 'blank': 'True', 'symmetrical': 'False', 'null': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.groupaccess': {
+        u'xpsite.groupaccess': {
             'Meta': {'object_name': 'GroupAccess', 'db_table': "'SITE_GROUP_ACCESS'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'groupFrom': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_from'", 'db_column': "'ID_GROUP_FROM'", 'to': u"orm['site.Group']"}),
-            'groupTo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_to'", 'db_column': "'ID_GROUP_TO'", 'to': u"orm['site.Group']"}),
+            'groupFrom': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_from'", 'db_column': "'ID_GROUP_FROM'", 'to': u"orm['xpsite.Group']"}),
+            'groupTo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'groupaccess_to'", 'db_column': "'ID_GROUP_TO'", 'to': u"orm['xpsite.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_ACCESS'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.grouptag': {
+        u'xpsite.grouptag': {
             'Meta': {'object_name': 'GroupTag', 'db_table': "'SITE_GROUP_TAG'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Group']", 'db_column': "'ID_GROUP'"}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Group']", 'db_column': "'ID_GROUP'"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_GROUP_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
-            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['site.Tag']", 'db_column': "'ID_TAG'"}),
+            'tag': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['xpsite.Tag']", 'db_column': "'ID_TAG'"}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.param': {
+        u'xpsite.param': {
             'Meta': {'object_name': 'Param', 'db_table': "'SITE_PARAMETER'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1236,20 +1236,20 @@ class Migration(SchemaMigration):
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'db_column': "'VALUE'", 'blank': 'True'})
         },
-        u'site.tag': {
+        u'xpsite.tag': {
             'Meta': {'ordering': "['-popularity']", 'object_name': 'Tag', 'db_table': "'SITE_TAG'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True', 'db_column': "'ID_SITE_TAG'"}),
             'isDeleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'IS_DELETED'"}),
             'isPublic': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_column': "'IS_PUBLIC'"}),
-            'mode': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tag_mode'", 'db_column': "'ID_MODE'", 'to': u"orm['site.TagMode']"}),
+            'mode': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tag_mode'", 'db_column': "'ID_MODE'", 'to': u"orm['xpsite.TagMode']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'db_column': "'NAME'"}),
             'popularity': ('django.db.models.fields.IntegerField', [], {'default': '1', 'null': 'True', 'db_column': "'POPULARITY'", 'blank': 'True'}),
             'userCreateId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_CREATE_ID'", 'blank': 'True'}),
             'userModifyId': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'USER_MODIFY_ID'", 'blank': 'True'})
         },
-        u'site.tagmode': {
+        u'xpsite.tagmode': {
             'Meta': {'object_name': 'TagMode', 'db_table': "'SITE_TAG_MODE'"},
             'dateCreate': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_column': "'DATE_CREATE'", 'blank': 'True'}),
             'dateModify': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'db_column': "'DATE_MODIFY'", 'blank': 'True'}),
@@ -1262,4 +1262,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['core']
+    complete_apps = ['xpcore']

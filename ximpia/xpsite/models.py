@@ -219,7 +219,7 @@ class UserChannel ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	groups = models.ManyToManyField('site.Group', related_name='user_groups', through='UserChannelGroup',  
+	groups = models.ManyToManyField('xpsite.Group', related_name='user_groups', through='UserChannelGroup',  
 				verbose_name = _('Groups'), help_text = _('Groups'))
 	title = models.CharField(max_length=20, db_column='TITLE',
 				verbose_name = _('Title'), help_text=_('Title for the user channel'))
@@ -363,7 +363,7 @@ class SocialNetworkUser ( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_SOCIAL_NETWORK_USER')
 	user = models.ForeignKey(User, db_column='ID_USER',
 				verbose_name = _('User'), help_text = _('User'))
-	socialNetwork = models.ForeignKey('core.CoreParam', limit_choices_to={'mode': CoreK.NET}, db_column='ID_CORE_PARAMETER',
+	socialNetwork = models.ForeignKey('xpcore.CoreParam', limit_choices_to={'mode': CoreK.NET}, db_column='ID_CORE_PARAMETER',
 				verbose_name = _('Social Network'), help_text = _('Social network'))
 	socialId = models.BigIntegerField(db_column='SOCIAL_ID', verbose_name = _('Social ID'), help_text = _('Social network user id'))
 	token = models.CharField(max_length=255, db_column='TOKEN',
@@ -398,7 +398,7 @@ class Setting ( BaseModel ):
 	"""
 	
 	id = models.AutoField(primary_key=True, db_column='ID_SITE_SETTING')
-	application = models.ForeignKey('core.Application', null=True, blank=True, related_name='site_setting_app', db_column='ID_CORE_APPLICATION',
+	application = models.ForeignKey('xpcore.Application', null=True, blank=True, related_name='site_setting_app', db_column='ID_CORE_APPLICATION',
 			verbose_name=_('Application'), help_text=_('Application for setting'))
 	name = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': CoreK.PARAM_SETTINGS},
 				verbose_name=_('Name'), help_text=_('Settings name'))
@@ -481,7 +481,7 @@ class UserProfile ( BaseModel ):
 		    db_column='IMAGE')
 	status = models.ForeignKey(Param, limit_choices_to={'mode': K.PARAM_USER_STATUS}, db_column='ID_SITE_PARAMETER',
 			verbose_name=_('Status'), help_text=_('User Status') )
-	addresses = models.ManyToManyField(Address, through='site.UserAddress', related_name='userprofile_addresses',  
+	addresses = models.ManyToManyField(Address, through='xpsite.UserAddress', related_name='userprofile_addresses',  
 				verbose_name = _('Addresses'), help_text = _('User addresses'))
 	
 	def __unicode__(self):
@@ -552,9 +552,9 @@ class Group ( BaseModel ):
 				verbose_name = _('Group Name Id'), help_text = _('Identification for group'))
 	isPublic = models.BooleanField(default=True, db_column='IS_PUBLIC',
 				verbose_name = _('Public'), help_text = _('Group is public'))
-	accessGroups = models.ManyToManyField('self', through='site.GroupAccess', related_name='group_access', symmetrical=False, 
+	accessGroups = models.ManyToManyField('self', through='xpsite.GroupAccess', related_name='group_access', symmetrical=False, 
 				verbose_name = _('Access Groups'), help_text = _('Profiles that have access to this group'))
-	tags = models.ManyToManyField(Tag, through='site.GroupTag', null=True, blank=True, related_name='groupchannel_tags',
+	tags = models.ManyToManyField(Tag, through='xpsite.GroupTag', null=True, blank=True, related_name='groupchannel_tags',
 				verbose_name = _('Tags'), help_text = _('Tags'))
 	category = models.ForeignKey(Category, limit_choices_to={}, db_column='ID_CATEGORY',
 				verbose_name=_('Category'), help_text=_('Category for group'))
@@ -718,7 +718,7 @@ class Invitation ( BaseModel ):
 				verbose_name = _('Number'), help_text = _('Invitation Number'))
 	message = models.TextField(null=True, blank=True, db_column='MESSAGE',
 				verbose_name = _('Message'), help_text = _('Message'))
-	meta = models.ManyToManyField(MetaKey, through='site.InvitationMeta', related_name='invitation_meta',
+	meta = models.ManyToManyField(MetaKey, through='xpsite.InvitationMeta', related_name='invitation_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for invitation') )
 	def __unicode__(self):
 		return '%s %s' % (self.fromUser, self.invitationCode)
