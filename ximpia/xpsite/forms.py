@@ -147,7 +147,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 
 	def clean(self):
 		"""Clean form: validate same password and captcha when implemented"""
-		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._getFieldValue('authSource')) )
+		logger.debug( 'UserSignupInvitationForm :: authSource: %s' % (self._get_field_value('authSource')) )
 		if self._get_field_value('authSource') == K.PASSWORD:
 			self._validate_same_fields([('password','passwordVerify')])
 		self._xp_clean()

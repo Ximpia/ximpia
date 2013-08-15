@@ -135,8 +135,8 @@ class SiteService ( CommonService ):
 		group = self._dbGroup.get(group__group=groupSys)
 		self._dbUserChannelGroup.create(userChannel=userChannel, group=group)
 		# Invitation
-		setInvitation = self._getSetting(K.SET_SITE_SIGNUP_INVITATION)
-		if setInvitation.isChecked() and self._f()['invitationCode'] != '':
+		setInvitation = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
+		if setInvitation.is_checked() and self._f()['invitationCode'] != '':
 			invitation = self._dbInvitation.get(invitationCode=self._f()['invitationCode'])
 			invitation.status = K.USED
 			invitation.save()
@@ -320,7 +320,7 @@ class SiteService ( CommonService ):
 		"""Confirmation message for user activation"""
 		pass
 	
-	@view(forms.ActivateUserForm)
+	@action(forms.ActivateUserForm)
 	def activate_user(self, username, activation_code):
 		"""Create user in system with validation link from email. Only used in case auth source is user/password."""
 		# Instances
@@ -330,7 +330,7 @@ class SiteService ( CommonService ):
 		form_str_64 = self._dbSignupData.get(user=username).data
 		form_dict = json.loads(base64.decodestring(form_str_64))
 		form = forms.UserSignupInvitationForm(form_dict, ctx=self._ctx)
-		self._setForm(form)
+		self._set_form(form)
 		# validate form again
 		self._validate_user_not_signed_up()
 		# Create user
