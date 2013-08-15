@@ -21,9 +21,13 @@ def get_class(kls_path):
 	"""
 	parts = kls_path.split('.')
 	module = ".".join(parts[:-1])
-	m = __import__( module )
-	for comp in parts[1:]:
-		m = getattr(m, comp)
+	try:
+		m = __import__(module)
+		for comp in parts[1:]:
+			m = getattr(m, comp)
+	except ImportError:
+		from ximpia.xpcore.models import XpMsgException
+		raise XpMsgException(None, _('Could not import module {}'.format(module)))
 	return m
 
 def get_app_full_path(app_path):
