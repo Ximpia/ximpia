@@ -121,7 +121,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 	_dbAddress = Address()
 	_dbInvitation = Invitation()
 	# Fields
-	username = UserField(_dbUser, 'username', label='Username')
+	username = UserField(_dbUser, 'username', label='XimpiaId')
 	password = PasswordField(_dbUser, 'password', minLength=6, required=False, jsRequired=False,  
 		helpText = _('Must provide a good or strong password to signup. Allowed characters are letters, numbers and _ | . | $ | % | &'))
 	passwordVerify = PasswordField(_dbUser, 'password', minLength=6, required=False, jsVal=["{equalTo: '#id_password'}"], 
@@ -140,7 +140,7 @@ class UserSignupInvitationForm ( XBaseForm ):
 									'profiles': '', 
 									'userGroup': K.SIGNUP_USER_GROUP_ID,
 									'affiliateId': -1}))
-	#choices = HiddenField(initial=_jsf.encodeDict( {'country': Choices.COUNTRY } ) )
+	choices = HiddenField(initial=_jsf.encodeDict( {'country': Choices.COUNTRY } ) )
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m,
 										['ERR_ximpia_id', 'ERR_email', 'ERR_social_id_exists']]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_USER_SIGNUP','OK_SOCIAL_SIGNUP']]))

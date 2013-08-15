@@ -1994,9 +1994,11 @@
     			ximpia.console.log('setValue :: choicesId: ' + choicesId);
     			var controlList = ximpia.common.Choices.get(formId, choicesId);
     			ximpia.console.log('setValue :: controlList: ' + controlList);
-    			var value = ximpia.common.List.getValueFromList(code, controlList);
-    			$(id).val(code).removeClass('watermark');
-    			$(id + '_input').val(value).removeClass('watermark');
+    			if (controlList) {
+	    			var value = ximpia.common.List.getValueFromList(code, controlList);
+	    			$(id).val(code).removeClass('watermark');
+	    			$(id + '_input').val(value).removeClass('watermark');    				
+    			}
     		} else {
     			$(id).val(code).removeClass('watermark');
     			$(id + '_input').val(value).removeClass('watermark');

@@ -82,13 +82,9 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 			//TODO: Place waiting clock in case not displayed
 			ximpia.console.log('facebook API :: Have response...');
 			ximpia.console.log(response);
-			//$("#id_passwordAuth").css('display', 'none');
 			$("#id_passwordAuth").remove();
 			$("#id_socialAuth .caption").css('display', 'none');
-			$("input[name='authSource']").attr('value', 'facebook');
 			// A user has logged in, and a new cookie has been saved
-			$("input[name='socialId']").attr('value', response.authResponse.userID);
-			$("input[name='socialToken']").attr('value', response.authResponse.accessToken);
 			ximpia.console.log('facebook API :: accessToken: ' + response.authResponse.accessToken);
 			ximpia.console.log('facebook API :: id: ' + response.authResponse.userID);
 			// Get profile*/
@@ -98,16 +94,20 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				ximpia.console.log(responseProfile);
 				// Fillout fields in form
 				ximpia.common.Browser.putAttr('isSocialLogged', true);
-				ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_signup');
-				$("input[name='firstName']").attr('value', responseProfile.first_name);
-				$("input[name='lastName']").attr('value', responseProfile.last_name);
-				$("input[name='email']").attr('value', responseProfile.email);
-				// Disable controls when available : In future use disable conditions for components
-				$("input[name='firstName']").attr('readonly', 'readonly');
-				$("input[name='lastName']").attr('readonly', 'readonly');
-				$("input[name='email']").attr('readonly', 'readonly');
-				$("#id_country_input").attr('readonly', 'readonly');
-				$("input[name='city']").attr('readonly', 'readonly');
+				//ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_signup', function () {
+					$("input[name='firstName']").attr('value', responseProfile.first_name);
+					$("input[name='lastName']").attr('value', responseProfile.last_name);
+					$("input[name='email']").attr('value', responseProfile.email);
+					// Disable controls when available : In future use disable conditions for components
+					$("input[name='firstName']").attr('readonly', 'readonly');
+					$("input[name='lastName']").attr('readonly', 'readonly');
+					$("input[name='email']").attr('readonly', 'readonly');
+					$("#id_country_input").attr('readonly', 'readonly');
+					$("input[name='city']").attr('readonly', 'readonly');
+					$("input[name='authSource']").attr('value', 'facebook');
+					$("input[name='socialId']").attr('value', response.authResponse.userID);
+					$("input[name='socialToken']").attr('value', response.authResponse.accessToken);					
+				//});
 				var locationName = responseProfile.location.name;
 				var locationFields = locationName.split(',');
 				setTimeout(function() {
@@ -121,13 +121,10 @@ ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
 				eval('new callable(attrs)');
 				$('body').css('cursor', 'auto');
 			});
-			//callable();
-			//ximpia.common.PageAjax.positionBars();
 		} else {
 			ximpia.console.log('facebook API :: No response...');
 			eval('new callable(attrs)');
 			// The user has logged out, and the cookie has been cleared
-			//alert('Out....');
 			var oGoogleMaps = ximpia.common.GoogleMaps();
 			oGoogleMaps.insertCityCountry(ximpia.common.Browser.buildXpForm('signup', 'form_signup'), ["id_city"], ["id_country"]);
 			eval('new callable(attrs)');
@@ -2731,7 +2728,7 @@ ximpia.common.PageAjax.doRenderListRows = function(xpForm) {
 /*
  * Render all components except functions
  */
-ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
+ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm, callable) {
 	ximpia.console.log('xpForm: ' + xpForm);
 	var formId = xpForm.split('.')[1];
 	//ximpia.console.log('text: ' + $('#' + formId).find("[data-xp-type='basic.text']"));
@@ -2802,6 +2799,7 @@ ximpia.common.PageAjax.doRenderExceptFunctions = function(xpForm) {
 		oform.doBindBubbles();
 		// Content
 		$("[data-xp-type='content']").xpContent('render');
+		eval('new callable()');
 	});
 }
 /**
@@ -3026,7 +3024,7 @@ ximpia.common.GoogleMaps = function() {
 										countryCode = list[i].short_name.toLowerCase();
 										ximpia.console.log('country: ' + countryCode);
 										for (var k = 0; k < idCountryList.length; k++) {
-											$("#id_country_comp").xpListSelect('setValue', xpForm, countryCode);
+											$("#id_country_comp").xpSelectPlus('setValue', xpForm, countryCode);
 										}
 									}
 								}

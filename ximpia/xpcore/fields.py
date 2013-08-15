@@ -1170,7 +1170,7 @@ class UserField( Field ):
 				label=None, helpText=None, jsVal=None):
 		super(UserField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
-		self.attrs['data-xp-val'] = 'userid'
+		self._updateAttrs(self.attrs, 'data-xp-val', 'userid')
 
 class EmailField( CharField ):
 	"""
@@ -1262,7 +1262,7 @@ class PasswordField( CharField ):
 				label=None, helpText=None, jsVal=None):
 		super(PasswordField, self).__init__(instance, insField, required=required, jsRequired=jsRequired, label=label, 
 									initial=initial, helpText=helpText, jsVal=jsVal)
-		self.attrs['data-xp-val'] = 'password'
+		self._updateAttrs(self.attrs, 'data-xp-val', 'password')
 
 
 class FileBrowseField ( CharField ):
