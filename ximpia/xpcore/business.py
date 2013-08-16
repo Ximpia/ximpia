@@ -1,9 +1,11 @@
 # coding: utf-8
 
+# python
 import types
 import datetime
 import random
 import os
+import copy
 
 from django.contrib.auth.models import User, Group as GroupSys
 from django.utils.translation import ugettext as _
@@ -1124,6 +1126,8 @@ class CommonBusiness ( object ):
 	
 	def __init__(self, ctx):
 		self._ctx = ctx
+		self._ctx_min = copy.deepcopy(self._ctx)
+		self._ctx_min.to_min()
 
 	def _instances(self, *args):
 		"""
@@ -1137,5 +1141,5 @@ class CommonBusiness ( object ):
 		
 		List of business, data instances with context inyected
 		"""
-		instances = get_instances(args, self._ctx)
+		instances = get_instances(args, self._ctx_min)
 		return instances

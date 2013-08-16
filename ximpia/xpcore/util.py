@@ -90,7 +90,7 @@ def get_app_path(app_name):
 			return get_app_full_path(app)
 
 
-def get_instances(args, ctx):
+def get_instances(args, ctx_min):
 	"""
 	We should inyect ctx into the parent of DAO or business, using super
 
@@ -101,7 +101,7 @@ def get_instances(args, ctx):
 						``data.ParamDAO' (will get application from context) or class name
 						like ``ParamDAO``. In this last case, will search for DAO and try to get
 						data class. If fails, will get business class instance.
-	* ``ctx`` (Context): Context with app attribute. Used when no full path.
+	* ``ctx_min`` (Context): Minimized context without request, post, jsData and form data
 
 	** Returns **
 
@@ -117,19 +117,19 @@ def get_instances(args, ctx):
 				try:
 					cls = get_class(arg)
 				except ImportError:
-					cls = get_class(ctx.app + '.' + arg)
-				instances.append(cls(ctx))
+					cls = get_class(ctx_min.app + '.' + arg)
+				instances.append(cls(ctx_min))
 			else:
 				if arg.find('DAO') != -1:
 					# data class name and no path, resolve as data class in this app
-					cls = get_class(ctx.app + '.data.' + arg)
-					instances.append(cls(ctx))
+					cls = get_class(ctx_min.app + '.data.' + arg)
+					instances.append(cls(ctx_min))
 				else:
 					# business class
-					cls = get_class(ctx.app + '.business.' + arg)
-					instances.append(cls(ctx))
+					cls = get_class(ctx_min.app + '.business.' + arg)
+					instances.append(cls(ctx_min))
 		else:
-			instances.append(arg(ctx))
+			instances.append(arg(ctx_min))
 	return instances
 
 

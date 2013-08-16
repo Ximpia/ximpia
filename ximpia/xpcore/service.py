@@ -8,7 +8,7 @@ import types
 import datetime
 import os
 import re
-import cPickle
+import copy
 
 # django
 from django.http import HttpResponse, Http404
@@ -1368,6 +1368,8 @@ class CommonService( object ):
 
 	def __init__(self, ctx):
 		self._ctx = ctx
+		self._ctx_min = copy.deepcopy(self._ctx)
+		self._ctx_min.to_min()
 		if False: self._ctx = ctx()
 		self._resultDict = get_result_ERROR([])
 		self._postDict = ctx.post
@@ -1838,7 +1840,7 @@ class CommonService( object ):
 		
 		List of business, data instances with context inyected
 		"""
-		instances = get_instances(args, self._ctx)
+		instances = get_instances(args, self._ctx_min)
 		return instances
 
 class DefaultService ( CommonService ):

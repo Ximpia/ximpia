@@ -1583,7 +1583,7 @@ def context(f):
 		return resp
 	return new_f
 
-class Context ( object ):
+class Context (object):
 
 	app = None
 	application = None
@@ -1945,6 +1945,11 @@ class Context ( object ):
 		del self.__container
 	def del_done_result(self):
 		del self.__doneResult
+	def to_min(self):
+		self.form = None
+		self.forms = {}
+		self.jsData = None
+		self.request = None
 
 	app = property(get_app, set_app, del_app, "app's docstring")
 	user = property(get_user, set_user, del_user, "user's docstring")
