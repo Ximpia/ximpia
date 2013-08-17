@@ -47,7 +47,7 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 							className=SiteService, method='view_reminder_new_password')
 		# change password
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.CHANGE_PASSWORD, slug=Slugs.CHANGE_PASSWORD, 
-							className=SiteService, method='view_change_password', hasAuth=True)
+							className=SiteService, method='view_change_password', hasAuth=True, winType=_Ch.WIN_TYPE_POPUP)
 		# signup
 		self._reg.registerView(__name__, serviceName=Services.USERS, viewName=Views.SIGNUP, slug=Slugs.SIGNUP, 
 							className=SiteService, method='view_signup')
@@ -107,7 +107,7 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		self._reg.registerMenu(__name__, name=Menus.CHANGE_PASSWORD, title='New Password', description='Change Password', iconName='', 
 					viewName=Views.CHANGE_PASSWORD)
 		# Login Home Menu
-		self._reg.registerMenu(__name__, name=Menus.HOME_LOGIN, title='', description='Home', iconName='iconHome', 
+		self._reg.registerMenu(__name__, name=Menus.HOME_LOGIN, title='', description='Home', iconName='iconUser', 
 							viewName=Views.HOME_LOGIN)
 		self._reg.registerMenu(__name__, name=Menus.SIGNUP, title='Signup', description='Signup', iconName='iconSignup', 
 							viewName=Views.SIGNUP)
@@ -120,7 +120,6 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 		self._reg.registerCondition(__name__, 'login', 'isLogin == true')
 		self._reg.registerViewMenu(__name__, viewName=Views.HOME_LOGIN, menus=[
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.MENU_NAME: Menus.SYS},
-						#{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.HOME_LOGIN},
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.CHANGE_PASSWORD},
 						{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: Menus.SYS, _K.MENU_NAME: Menus.SIGN_OUT},
 						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.HOME_LOGIN}
@@ -138,6 +137,6 @@ class SiteServiceReg ( AppCompRegCommonBusiness ):
 						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.SIGNUP, _K.CONDITIONS: 'notLogin:render:True'},
 						{_K.ZONE: _Ch.MENU_ZONE_MAIN, _K.MENU_NAME: Menus.HOME_LOGIN, _K.CONDITIONS: 'login:render:True'}
 					])
-	
+
 	def search(self):
 		self._reg.registerSearch(__name__, text='Change Password', viewName=Views.CHANGE_PASSWORD)

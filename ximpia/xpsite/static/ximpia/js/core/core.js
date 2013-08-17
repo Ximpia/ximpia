@@ -1145,6 +1145,23 @@ ximpia.common.Browser.putAttr = (function(name, value) {
 	// Set new response
 	ximpia.common.Browser.setObject('xpData-view', viewObj);
 });
+
+/*
+ * Get response attribute
+ * 
+ * ** Attributes **
+ * 
+ * * ``name``:String
+ * 
+ * ** Returns **
+ * 
+ * Attribute
+ */
+ximpia.common.Browser.getAttr = (function(name) {
+	var viewObj = ximpia.common.Browser.getObject('xpData-view');
+	return viewObj.response[name];
+});
+
 /*
  * Get application from response object
  * 
@@ -1155,7 +1172,7 @@ ximpia.common.Browser.putAttr = (function(name, value) {
  */
 ximpia.common.Browser.getApp = (function() {
 	var response = ximpia.common.Browser.getResponse();
-	return response.app
+	return response.app;
 });
 
 ximpia.common.Session = {};

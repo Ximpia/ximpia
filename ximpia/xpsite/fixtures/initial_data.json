@@ -273,126 +273,156 @@
             "isDeleted": false
         }
     },
-    {
-        "pk": 1,
-        "model": "xpsite.param",
-        "fields": {
-            "name": "META",
-            "dateCreate": "2012-12-12T13:53:52",
-            "dateModify": "2012-12-12T13:53:52",
-            "value": "META",
-            "mode": "META_TYPE",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 2,
-        "model": "xpsite.param",
-        "fields": {
-            "name": "SETTINGS",
-            "dateCreate": "2012-12-12T13:54:04",
-            "dateModify": "2012-12-12T13:54:04",
-            "value": "SETTINGS",
-            "mode": "META_TYPE",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 3,
-        "model": "xpsite.param",
-        "fields": {
-            "name": "PENDING",
-            "dateCreate": "2012-12-12T15:13:41",
-            "dateModify": "2012-12-12T15:13:41",
-            "value": "Pending",
-            "mode": "USER_STATUS",
-            "userCreateId": 1,
-            "userModifyId": 1,
-            "paramType": "string",
-            "isDeleted": false
-        }
-    },
-    {
-        "pk": 4, 
-        "model": "xpsite.param", 
-        "fields": {
-            "name": "Default", 
-            "dateCreate": "2012-12-26T21:48:30", 
-            "dateModify": "2012-12-26T21:48:30", 
-            "value": "Default", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 6, 
-        "model": "xpsite.param", 
-        "fields": {
-            "name": "Apps", 
-            "dateCreate": "2012-12-26T22:15:19", 
-            "dateModify": "2012-12-26T22:18:04", 
-            "value": "Apps", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 7, 
-        "model": "xpsite.param", 
-        "fields": {
-            "name": "Views", 
-            "dateCreate": "2012-12-26T22:19:14", 
-            "dateModify": "2012-12-26T22:22:32", 
-            "value": "Views", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 8, 
-        "model": "xpsite.param", 
-        "fields": {
-            "name": "Groups", 
-            "dateCreate": "2012-12-26T22:20:20", 
-            "dateModify": "2012-12-26T22:22:25", 
-            "value": "Groups", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
-    {
-        "pk": 9, 
-        "model": "xpsite.param", 
-        "fields": {
-            "name": "App Gallery", 
-            "dateCreate": "2012-12-26T22:24:36", 
-            "dateModify": "2012-12-26T22:24:36", 
-            "value": "App Galery", 
-            "mode": "CATEGORY_TYPE", 
-            "userCreateId": 1, 
-            "userModifyId": 1, 
-            "paramType": "string", 
-            "isDeleted": false
-        }
-    }, 
+{
+    "pk": 1, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "META", 
+        "dateCreate": "2012-12-12T13:53:52", 
+        "dateModify": "2012-12-12T13:53:52", 
+        "value": "META", 
+        "mode": "META_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 2, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "SETTINGS", 
+        "dateCreate": "2012-12-12T13:54:04", 
+        "dateModify": "2012-12-12T13:54:04", 
+        "value": "SETTINGS", 
+        "mode": "META_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 3, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "PENDING", 
+        "dateCreate": "2012-12-12T15:13:41", 
+        "dateModify": "2012-12-12T15:13:41", 
+        "value": "Pending", 
+        "mode": "USER_STATUS", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 4, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "Default", 
+        "dateCreate": "2012-12-26T21:48:30", 
+        "dateModify": "2012-12-26T21:48:30", 
+        "value": "Default", 
+        "mode": "CATEGORY_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 6, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "Apps", 
+        "dateCreate": "2012-12-26T22:15:19", 
+        "dateModify": "2012-12-26T22:18:04", 
+        "value": "Apps", 
+        "mode": "CATEGORY_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 7, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "Views", 
+        "dateCreate": "2012-12-26T22:19:14", 
+        "dateModify": "2012-12-26T22:22:32", 
+        "value": "Views", 
+        "mode": "CATEGORY_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 8, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "Groups", 
+        "dateCreate": "2012-12-26T22:20:20", 
+        "dateModify": "2012-12-26T22:22:25", 
+        "value": "Groups", 
+        "mode": "CATEGORY_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 9, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "App Gallery", 
+        "dateCreate": "2012-12-26T22:24:36", 
+        "dateModify": "2012-12-26T22:24:36", 
+        "value": "App Galery", 
+        "mode": "CATEGORY_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 10, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "ACTIVE", 
+        "dateCreate": "2012-12-28T23:00:41", 
+        "dateModify": "2012-12-28T23:01:02", 
+        "value": "Active", 
+        "mode": "USER_STATUS", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 11, 
+    "model": "xpsite.param", 
+    "fields": {
+        "name": "PERSONAL", 
+        "dateCreate": "2012-12-28T23:16:00", 
+        "dateModify": "2012-12-28T23:16:57", 
+        "value": "Personal", 
+        "mode": "ADDRESS_TYPE", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "paramType": "string", 
+        "isDeleted": false
+    }
+},  
      {
     "model": "auth.Group",
     "pk": 1,
@@ -505,6 +535,32 @@
     }
 },
 {
+    "pk": 9, 
+    "model": "xpsite.metakey", 
+    "fields": {
+        "name": "Msg/Site/Login/PasswordReminder/_en", 
+        "dateCreate": "2012-12-12T21:39:10", 
+        "dateModify": "2012-12-12T21:41:22", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
+    "pk": 10, 
+    "model": "xpsite.metakey", 
+    "fields": {
+        "name": "Msg/Site/Signup/User/_en", 
+        "dateCreate": "2012-12-12T21:39:30", 
+        "dateModify": "2012-12-12T21:41:34", 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "keyType": 2, 
+        "isDeleted": false
+    }
+},
+{
     "pk": 1, 
     "model": "xpsite.setting", 
     "fields": {
@@ -582,6 +638,38 @@
         "mustAutoload": true, 
         "isDeleted": false, 
         "description": "Number of results for lists"
+    }
+},
+{
+    "pk": 6, 
+    "model": "xpsite.setting", 
+    "fields": {
+        "name": 9, 
+        "dateCreate": "2012-12-12T21:43:40", 
+        "dateModify": "2013-08-17T11:32:08", 
+        "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Password Reminder</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tYou requested to remember your password in Ximpia. You can change your password by clicking on:\t\t\r\n\t\t$home/$appSlug/$viewSlug/$userAccount/$reminderId\r\n\t\t\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\tximpia.home@gmail.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": false, 
+        "isDeleted": false, 
+        "description": "Password reminder message english language"
+    }
+},
+{
+    "pk": 7, 
+    "model": "xpsite.setting", 
+    "fields": {
+        "name": 10, 
+        "dateCreate": "2012-12-12T21:44:48", 
+        "dateModify": "2013-08-17T11:32:21", 
+        "value": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n<PageXML xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxsi:noNamespaceSchemaLocation=\"http://buscaplus-test.s3.amazonaws.com/schemas/1.4.3/email.xsd\">\r\n\t<Version>1.4.2</Version>\r\n\t<EmailContainer id=\"DICT_EMAIL\">\r\n\t\t<Subject>[Ximpia] Email Validation</Subject>\r\n\t\t<Message>\r\n\t\t$firstName,\r\n\t\t\r\n\t\tThanks for signing up in Ximpia.\r\n\t\t\r\n\t\tWe need to confirm your email address. Just click on the link:\t\t\r\n\t\t$scheme://$host/$appSlug/do/$activate/$user/$activationCode\r\n\t\t\r\n\t\tRegards\r\n\t\t--\r\n\t\tXimpia Team\r\n\t\tximpia.home@gmail.com\r\n\t\t</Message>\r\n\t</EmailContainer>\r\n</PageXML>", 
+        "application": null, 
+        "userCreateId": 1, 
+        "userModifyId": 1, 
+        "mustAutoload": false, 
+        "isDeleted": false, 
+        "description": "Signup user message english language"
     }
 }
 ]

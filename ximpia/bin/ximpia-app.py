@@ -27,7 +27,7 @@ class Command(object):
 	- migrations (package)
 	- static
 	- templates
-	   - site
+	   - xpsite
 			   - popup
 			   - window
 	   - myapp
@@ -140,7 +140,7 @@ class Command(object):
 			- migrations (package)
 			- static
 			- templates
-			   - site
+			   - xpsite
 					   - popup
 					   - window
 			   - myapp
@@ -170,12 +170,12 @@ class Command(object):
 			os.mkdir(self.project_path + '/' + app_name + '/static/' + app_name + '/scripts')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/templates'):
 			os.mkdir(self.project_path + '/' + app_name + '/templates')
-		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/site'):
-			os.mkdir(self.project_path + '/' + app_name + '/templates/site')
-		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/site/popup'):
-			os.mkdir(self.project_path + '/' + app_name + '/templates/site/popup')
-		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/site/window'):
-			os.mkdir(self.project_path + '/' + app_name + '/templates/site/window')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/xpsite'):
+			os.mkdir(self.project_path + '/' + app_name + '/templates/xpsite')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/xpsite/popup'):
+			os.mkdir(self.project_path + '/' + app_name + '/templates/xpsite/popup')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/xpsite/window'):
+			os.mkdir(self.project_path + '/' + app_name + '/templates/xpsite/window')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/' + app_name):
 			os.mkdir(self.project_path + '/' + app_name + '/templates/' + app_name)
 		if not os.path.isdir(self.project_path + '/' + app_name + '/templates/' + app_name + '/popup'):
@@ -254,10 +254,10 @@ class Command(object):
 		with open(self.project_path + '/' + app_name + '/' + 'tests/tests.py', 'w') as f:
 			f.write(tests)
 		# templates
-		if not os.path.isfile(self.project_path + '/' + app_name + '/' + 'templates/site/popup/change_password.html'):
-			# site
-			tmpl_src = self.core_src_path + '/app/templates/site/'
-			tmpl_dst = self.project_path + '/' + app_name + '/templates/site/'
+		if not os.path.isfile(self.project_path + '/' + app_name + '/' + 'templates/xpsite/popup/change_password.html'):
+			# xpsite
+			tmpl_src = self.core_src_path + '/app/templates/xpsite/'
+			tmpl_dst = self.project_path + '/' + app_name + '/templates/xpsite/'
 			shutil.copyfile(tmpl_src + 'popup/change_password.html', tmpl_dst + 'popup/change_password.html')
 			shutil.copyfile(tmpl_src + 'popup/password_reminder.html', tmpl_dst + 'popup/password_reminder.html')
 			shutil.copyfile(tmpl_src + 'window/activation_user.html', tmpl_dst + 'window/activation_user.html')
@@ -266,7 +266,7 @@ class Command(object):
 			shutil.copyfile(tmpl_src + 'window/logout.html', tmpl_dst + 'window/logout.html')
 			shutil.copyfile(tmpl_src + 'window/reminder_new_password.html', tmpl_dst + 'window/reminder_new_password.html')
 			shutil.copyfile(tmpl_src + 'window/signup.html', tmpl_dst + 'window/signup.html')
-			shutil.copyfile(tmpl_src + 'site.html', tmpl_dst + 'site.html')
+			shutil.copyfile(tmpl_src + 'xpsite.html', tmpl_dst + 'xpsite.html')
 			# app
 			tmpl_src = self.core_src_path + '/app/templates/app/'
 			tmpl_dst = self.project_path + '/' + app_name + '/templates/' + app_name + '/'
