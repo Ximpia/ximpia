@@ -677,6 +677,10 @@ div.infoMsg {
 	z-index: 9999;
 }
 
+div.infoMsg p {
+	line-height: 1.3em;
+}
+
 div.loadError div {
 	/*border: 1px solid;*/
 	/*height: 55px;*/

@@ -49,7 +49,7 @@ class JoinUsForm(XBaseForm):
 class LoginForm(XBaseForm):
 	_XP_FORM_ID = 'login' 
 	_dbUser = User()
-	username = UserField(_dbUser, 'username', label='Username', required=False, jsRequired=True, initial='')
+	username = UserField(_dbUser, 'username', label='XimpiaId', required=False, jsRequired=True, initial='')
 	password = PasswordField(_dbUser, 'password', minLength=6, required=False, jsRequired=True, initial='')
 	socialId = HiddenField()
 	socialToken = HiddenField()
@@ -93,7 +93,7 @@ class ChangePasswordForm(XBaseForm):
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 	def clean(self):
 		"""Clean form"""
-		self._validateSameFields([('newPassword','newPasswordConfirm')])
+		self._validate_same_fields([('newPassword','newPasswordConfirm')])
 		self._xp_clean()
 		return self.cleaned_data
 

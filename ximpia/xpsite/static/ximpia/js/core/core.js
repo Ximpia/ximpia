@@ -158,8 +158,9 @@ ximpia.external.Facebook.renderLogin = (function(attrs, callable) {
 			ximpia.console.log('facebook API :: Have response...');
 			ximpia.console.log(response);
 			ximpia.common.Browser.putAttr('isSocialLogged', true);
-			ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_login');
-			//$("#id_passwordAuth").remove();
+			//ximpia.common.PageAjax.doRenderExceptFunctions('xpData-view-signup.form_login');
+			$("#id_userPassword").remove();
+			$("#id_passwordReminder").remove();
 			$("#id_socialAuth .caption").css('display', 'none');
 			$("input[name='authSource']").attr('value', 'facebook');
 			// A user has logged in, and a new cookie has been saved
@@ -168,6 +169,7 @@ ximpia.external.Facebook.renderLogin = (function(attrs, callable) {
 			ximpia.console.log('facebook API :: accessToken: ' + response.authResponse.accessToken);
 			ximpia.console.log('facebook API :: id: ' + response.authResponse.userID);
 			//ximpia.common.PageAjax.positionBars( {'skipVisibility': true} );
+			$('#id_doLogin').click();
 			eval('new callable(attrs)');			
 		} else {
 			ximpia.console.log('facebook API :: No response...');

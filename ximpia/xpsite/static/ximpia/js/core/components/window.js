@@ -60,6 +60,7 @@
 			// Save the template in xpData-popup-tmpl sessionStorage variable
 			ximpia.common.Browser.setObject('xpData-popup-tmpl', data);
         	ximpia.console.log(data);
+        	ximpia.console.log('xpObjPopUp :: content: #id_' + obj.name);
         	var elemContent = $(data).find('#id_' + obj.name);
         	var popupData = $(data).filter('#id_popup').metadata();
         	var elementButtons = $(data).filter('#id_sectionButton');        	

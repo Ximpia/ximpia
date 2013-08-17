@@ -1368,7 +1368,7 @@ class CommonService( object ):
 
 	def __init__(self, ctx):
 		self._ctx = ctx
-		self._ctx_min = copy.deepcopy(self._ctx)
+		self._ctx_min = copy.copy(self._ctx)
 		self._ctx_min.to_min()
 		if False: self._ctx = ctx()
 		self._resultDict = get_result_ERROR([])

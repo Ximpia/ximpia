@@ -7,7 +7,9 @@ import os
 from datetime import date, timedelta
 
 from django.contrib.auth.models import User
-from ximpia.xpcore.models import JsResultDict
+from django.utils.translation import ugettext as _
+
+from ximpia.xpcore.models import JsResultDict, XpMsgException
 
 from ximpia.xpcore.service import EmailService, CommonService
 from ximpia.xpcore.service import view, action, validation, menu_action
@@ -176,28 +178,28 @@ class SiteService ( CommonService ):
 		self._validate_exists([
 					[self._dbUser, {'email': self._f()['email']}, 'email', _m.ERR_email_does_not_exist]
 				])
-	
+
 	def _do_db_instances_for_user(self):
 		"""
 		Instances for user creation
 		"""
-		self._dbSettings = SettingDAO(self._ctx)
-		self._dbSignupData = SignupDataDAO(self._ctx)
-		self._dbUser = UserDAO(self._ctx)
-		self._dbSocialNetworkUser = SocialNetworkUserDAO(self._ctx)
-		self._dbUserProfile = UserProfileDAO(self._ctx)
-		self._dbUserChannel = UserChannelDAO(self._ctx)
-		self._dbUserChannelGroup = UserChannelGroupDAO(self._ctx)
-		self._dbAddress = AddressDAO(self._ctx)
-		self._dbUserAddress = UserAddressDAO(self._ctx)
-		self._dbMetaKey= MetaKeyDAO(self._ctx)
-		self._dbUserMeta = UserMetaDAO(self._ctx)
-		self._dbGroup = GroupDAO(self._ctx)
-		self._dbGroupSys = GroupSysDAO(self._ctx)
-		self._dbParam = ParamDAO(self._ctx)
-		self._dbCoreParam = CoreParameterDAO(self._ctx)
-		self._dbInvitation = InvitationDAO(self._ctx)
-	
+		self._dbSettings = SettingDAO(self._ctx_min)
+		self._dbSignupData = SignupDataDAO(self._ctx_min)
+		self._dbUser = UserDAO(self._ctx_min)
+		self._dbSocialNetworkUser = SocialNetworkUserDAO(self._ctx_min)
+		self._dbUserProfile = UserProfileDAO(self._ctx_min)
+		self._dbUserChannel = UserChannelDAO(self._ctx_min)
+		self._dbUserChannelGroup = UserChannelGroupDAO(self._ctx_min)
+		self._dbAddress = AddressDAO(self._ctx_min)
+		self._dbUserAddress = UserAddressDAO(self._ctx_min)
+		self._dbMetaKey= MetaKeyDAO(self._ctx_min)
+		self._dbUserMeta = UserMetaDAO(self._ctx_min)
+		self._dbGroup = GroupDAO(self._ctx_min)
+		self._dbGroupSys = GroupSysDAO(self._ctx_min)
+		self._dbParam = ParamDAO(self._ctx_min)
+		self._dbCoreParam = CoreParameterDAO(self._ctx_min)
+		self._dbInvitation = InvitationDAO(self._ctx_min)
+
 	@view(forms.LoginForm)
 	def view_login(self):
 		"""Checks if user is logged in. If true, get login user information in the context
@@ -264,7 +266,7 @@ class SiteService ( CommonService ):
 		logger.debug( 'login :: cookies: %s' % (self._ctx.cookies) )
 		user_channel_name = self._get_user_channel_name()
 		logger.debug( 'login :: userChannelName: %s' % (user_channel_name) )
-		self._dbUserChannel = UserChannelDAO(self._ctx)
+		self._dbUserChannel = UserChannelDAO(self._ctx_min)
 		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=user_channel_name)
 		self._ctx.session['userChannel'] = self._ctx.userChannel
 		logger.debug( 'login :: userChannel: %s' % (self._ctx.userChannel) )
@@ -327,7 +329,10 @@ class SiteService ( CommonService ):
 		self._do_db_instances_for_user()
 		logger.debug('activate_user...')
 		# Logic
-		form_str_64 = self._dbSignupData.get(user=username).data
+		try:
+			form_str_64 = self._dbSignupData.get(user=username).data
+		except:
+			raise XpMsgException(None, _('User was already activated'))
 		form_dict = json.loads(base64.decodestring(form_str_64))
 		form = forms.UserSignupInvitationForm(form_dict, ctx=self._ctx)
 		self._set_form(form)
@@ -342,7 +347,7 @@ class SiteService ( CommonService ):
 	@view(forms.UserSignupInvitationForm)
 	def view_signup(self, invitation_code=None):
 		"""Show signup form. Get get invitation code."""
-		self._dbInvitation = InvitationDAO(self._ctx)
+		self._dbInvitation = self._instances(InvitationDAO)[0]
 		logger.debug('viewSignup :: invitationCode: %s' % (invitation_code) )
 		self._add_attr('isSocialLogged', False)
 		set_invitation = self._get_setting(K.SET_SITE_SIGNUP_INVITATION)
@@ -370,7 +375,7 @@ class SiteService ( CommonService ):
 	def change_password(self):
 		"""Change password from user area
 		"""
-		self._dbUser = UserDAO(self._ctx)
+		self._dbUser = self._instances(UserDAO)[0]
 		self._validate_user()
 		user = self._dbUser.get(username= self._ctx.user)
 		user.set_password(self._f()['newPassword'])
@@ -381,8 +386,7 @@ class SiteService ( CommonService ):
 		"""Shows form to enter new password and confirm new password. Save button will call doNewPassword.
 		@param username: username
 		@param reminderId: reminderId"""
-		self._dbUser = UserDAO(self._ctx)
-		self._dbUserMeta = UserMetaDAO(self._ctx)
+		self._dbUser, self._dbUserMeta = self._instances(UserDAO, UserMetaDAO)
 		self._validate_reminder(username, reminder_id)
 		self._put_form_value('username', username)
 		self._f().put_param_list(username=username)
@@ -391,10 +395,7 @@ class SiteService ( CommonService ):
 	def request_reminder(self):
 		"""Checks that email exists, then send email to user with reset link"""
 		logger.debug('requestReminder...')
-		self._dbUser = UserDAO(self._ctx)
-		self._dbSetting = SettingDAO(self._ctx)
-		self._dbUserMeta = UserMetaDAO(self._ctx)
-		self._dbMetaKey = MetaKeyDAO(self._ctx)
+		self._dbUser, self._dbSetting, self._dbUserMeta, self._dbMetaKey = self._instances(UserDAO, SettingDAO, UserMetaDAO, MetaKeyDAO)
 		self._validate_email_exist()
 		# Update User
 		user = self._dbUser.get(email = self._f()['email'])
@@ -416,13 +417,12 @@ class SiteService ( CommonService ):
 										'reminderId': reminder_id}, settings.XIMPIA_WEBMASTER_EMAIL, [self._f()['email']])
 		logger.debug( 'requestReminder :: sent Email' )
 		self._set_ok_msg('OK_PASSWORD_REMINDER')
-	
+
 	@action(forms.ChangePasswordForm)
 	def finalize_reminder(self):
 		"""Saves new password, it does authenticate and login user."""
-		self._dbUser = UserDAO(self._ctx)
-		self._dbUserMeta = UserMetaDAO(self._ctx)
-		user = self._dbUser.get(username= self._f().getParam('username'))
+		self._dbUser, self._dbUserMeta = self._instances(UserDAO, UserMetaDAO)
+		user = self._dbUser.get(username= self._f().get_param('username'))
 		user.set_password(self._f()['newPassword'])
 		user.save()
 		# Remove reminder data so that it is not used again
