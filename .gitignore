@@ -5,6 +5,5 @@
 .settings/*
 .pydevproject
 .project
-docs/conf.py
 docs/Makefile
 docs/_build
