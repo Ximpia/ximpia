@@ -19,6 +19,8 @@ def get_class(kls_path):
 	"""	
 	Get class
 	"""
+	if not kls_path:
+		return None
 	parts = kls_path.split('.')
 	module = ".".join(parts[:-1])
 	try:
@@ -134,7 +136,7 @@ def get_instances(args, ctx_min):
 
 
 # Import settings and logging
-settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
+from django.conf import settings
 import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
