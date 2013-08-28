@@ -2,23 +2,52 @@
    sphinx-quickstart on Tue Jan 29 00:12:11 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+.. |ximpia| replace:: Ximpia
 
-Welcome to Ximpia's documentation!
-==================================
+Ximpia
+======
 
-Contents:
+What is Ximpia?
+---------------
+
+.. toctree::
+   :maxdepth: 2
+   
+   about
+   example
+
+Installation & Setup
+--------------------
+
+.. toctree::
+   :maxdepth: 2
+   
+   quickstart
+
+Contributing
+------------
 
 .. toctree::
    :maxdepth: 2
 
+Code
+----
 
-.. automodule:: ximpia.xpcore.business
-   :members:
+https://github.com/Ximpia/ximpia/
+
+Website
+-------
+
+https://ximpia.com
+
+Support & Learning
+------------------
+
+**Support**
+
+https://ximpia.com/support
 
 
-Indices and tables
-==================
+**Learning**
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+https://ximpia.com/learning
