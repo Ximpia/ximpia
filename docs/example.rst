@@ -7,11 +7,16 @@ I will show how easy is to develop apps in Ximpia.
 Here goes the example for a change password popup. When user clicks on menu icon, a change password popup 
 shows with current password and new password. The popup has button send to send new password to server.
 
-First you start by defining your visual components and creating template `xp_templates/popup/changePassword.html` in site application::
+First you start by defining your visual components and creating template `xp_templates/popup/changePassword.html` in site application:
 
-	<div id="id_password_comp" data-xp-type="basic.text" data-xp="{type: 'password', info: true}" ></div><br />
-	<div id="id_newPassword_comp" data-xp-type="basic.text" data-xp="{type: 'password', info: true}" ></div><br />
-	<div id="id_newPasswordConfirm_comp" data-xp-type="basic.text" data-xp="{type: 'password', info: true}" ></div>
+.. code-block:: html
+
+	<div id="id_password_comp" data-xp-type="basic.text" 
+		data-xp="{type: 'password', info: true}" ></div><br />
+	<div id="id_newPassword_comp" data-xp-type="basic.text" 
+		data-xp="{type: 'password', info: true}" ></div><br />
+	<div id="id_newPasswordConfirm_comp" data-xp-type="basic.text" 
+		data-xp="{type: 'password', info: true}" ></div>
 
 I use the visual component `basic.text` for the input fields. Then we create the form with fields::
 
