@@ -41,6 +41,8 @@ Think of Apps as collections of services, and services collections of views and 
 
 .. code-block:: python
 
+	import messages as _m
+
 	class SiteService(CommonService):
 
 		@validation()
@@ -52,9 +54,10 @@ Think of Apps as collections of services, and services collections of views and 
 			(K.SET_SITE_SIGNUP_INVITATION, setting.is_checked()) )
 			if setting.is_checked():
 				self._validate_exists([
-						[self._dbInvitation, {'invitationCode': invitation_code, 'status': K.PENDING}, 
-								'invitationCode', _m.ERR_invitation_not_valid]
-										])
+						[self._dbInvitation, 
+						{'invitationCode': invitation_code, 
+						'status': K.PENDING}, 
+						'invitationCode', _m.ERR_invitation_not_valid] ])
 
 		@view(forms.HomeForm)
 		def viewHome(self):
@@ -66,6 +69,8 @@ Think of Apps as collections of services, and services collections of views and 
 			"""Activate group"""
 			groups = self._get_list_pk_values('groups')
 
+
+In case vaidation is not checked, user will see message ``ERR_invitation_not_valid``
 
 In case you have use cases with a set of operations, you can choose to materialize those
 into a service class or have n services with ``do``operation or similar.
@@ -120,10 +125,10 @@ Ximpia forms are a bit different from django forms since they keep database fiel
 	class LoginForm(XBaseForm):
 		_XP_FORM_ID = 'login' 
 		_dbUser = User()
-		username = UserField(_dbUser, 'username', label='XimpiaId', required=False, jsRequired=True, 
-		initial='')
-		password = PasswordField(_dbUser, 'password', minLength=6, required=False, jsRequired=True, 
-		initial='')
+		username = UserField(_dbUser, 'username', label='XimpiaId', required=False, 
+			jsRequired=True, initial='')
+		password = PasswordField(_dbUser, 'password', minLength=6, required=False, 
+			jsRequired=True, initial='')
 		socialId = HiddenField()
 		socialToken = HiddenField()
 		authSource = HiddenField(initial=K.PASSWORD)
@@ -139,19 +144,18 @@ in the form class as well.
 Workflow
 --------
 
-It allows you to glue together your views (navigation) without writing code, just defining your flow with views and actions.
-Depending on flow parameters you map flow to certain view. Your layers may write parameters to flow as you do with sessions. Session
-data starts when user starts flow and end when flow ends. There is a set of parameters that control the way flows behave to adapt to
-your needs.
+It allows you to glue together your views (navigation) without writing code, just defining your flow with views and actions. You define
+views, actions associated to views and flow variables that must met in order to satisfy flow. These variables will behave like conditions
+for your application flow. 
 
-In case you need it, you may also redirect to views from code inside your services. The drawback of this is that when you insert a new
-view in a flow you need to modify code and test it. With built workflow, you simply plug view in the flow.
+Your layers may write parameters to flow as you do with sessions. Session data starts when user starts flow and end when flow ends. 
+There is a set of parameters that control the way flows behave to adapt to your needs.
 
 You would register flow parameters through components.py file::
 
 	self._reg.registerFlow(__name__, flowCode='login')
-	self._reg.registerFlowView(__name__, flowCode='login', viewNameSource='login', viewNameTarget='homeLogin', 
-							actionName='login', order=10)
+	self._reg.registerFlowView(__name__, flowCode='login', viewNameSource='login', 
+		viewNameTarget='homeLogin', actionName='login', order=10)
 
 Actions
 -------
@@ -166,11 +170,12 @@ Action operations may be mapped to your services. Each action would have an impl
 	@validation()
 	def _authen_user(self):
 		if self._f()['authSource'] == K.FACEBOOK and self._f()['socialId'] != '':
-			self._ctx.user = self._authenticate_user_soc_net(self._f()['socialId'], self._f()['socialToken'], 
-			self._f()['authSource'], 'facebook', _m.ERR_wrong_password)
+			self._ctx.user = self._authenticate_user_soc_net(self._f()['socialId'], 
+				self._f()['socialToken'], self._f()['authSource'], 'facebook', 
+				_m.ERR_wrong_password)
 		else:
-			self._ctx.user = self._authenticate_user(self._f()['username'], self._f()['password'], 
-			'password', _m.ERR_wrong_password)
+			self._ctx.user = self._authenticate_user(self._f()['username'], 
+				self._f()['password'], 'password', _m.ERR_wrong_password)
 
 	@action(forms.LoginForm)
 	def login(self):
@@ -182,24 +187,144 @@ Action operations may be mapped to your services. Each action would have an impl
 		self._login()
 		user_channel_name = self._get_user_channel_name()
 		self._dbUserChannel = UserChannelDAO(self._ctx_min)
-		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, name=user_channel_name)
+		self._ctx.userChannel = self._dbUserChannel.get(user=self._ctx.user, 
+			name=user_channel_name)
 		self._ctx.session['userChannel'] = self._ctx.userChannel
 
-You need to map form associated with the action. Form is validated prior to process form. You don't need any code for that, when
-form is not validated, then ``@action`` would send right JSON data to front-end to send messages to user.
+You need to map form associated with the action using ``action``decorator. Form is validated prior to processing action in decorator logic.
 
-You can implement validation operations that need to pass in order to execute your actions. You call them inside your action method (like
-``self._authen_user()). You can think of this as service-level validaations or business validations.
+You can implement validation operations that need to be checked in order to execute your actions. You call them inside your action method 
+(like ``self._authen_user()``). You can think of this as service-level validaations or business validations.
 
 You would register them like::
 
 	self._reg.registerAction(__name__, serviceName='Users', actionName='login', slug='login', 
-	className=SiteService, method='login')
+		className=SiteService, method='login')
 
 Templates
 ---------
 
+Ximpia templates are plain HTML5 files. You will find them at::
+
+	myproject/myapp/templates
+
+You will find directories for templates. By default, you will find your app directory which
+would keep ``window`` and ``popup`` directories. You can define templates for other apps within
+your application extending their templates, like you would do for our ``xpsite`` app.
+
+You will also find blank templates at your project path, built by ximpia ``ximpia-app`` script. You
+would copy those blank templates and rename them in order to start with your own templates.
+
+Here goes an example for change password popup:
+
+.. code-block:: html
+
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Ximpia - Change Password</title>
+	</head>
+	<body>
+	<div id="id_popup" 
+			data-xp="{title: 'Change Password'}" ></div>
+	<!-- Content -->
+	<section id="id_content" class="sectionContent">
+	<div id="id_changePassword">
+	<form id="form_userChangePassword" action="" method="post" data-xp="{}">
+	<!-- ximpiaId -->
+	<div id="id_username_comp" 
+			data-xp-type="field" 
+			data-xp="{tabindex: '1', label: 'XimpiaId', 'readonly': 'readonly'}" > </div>
+	<!-- password -->
+	<div id="id_password_comp" data-xp-type="field"  style="margin-top: 10px"
+			data-xp="{type: 'password', info: true}" ></div>
+	<!-- newPassword -->
+	<div id="id_newPassword_comp" data-xp-type="field" style="margin-top: 10px" 
+			data-xp="{type: 'password', info: true, class: 'passwordStrength'}" ></div>
+	<!-- newPasswordConfirm -->
+	<div id="id_newPasswordConfirm_comp" data-xp-type="field" style="margin-top: 10px"
+			data-xp="{type: 'password', info: true}" ></div>
+	</form>
+	</div>
+	<br/>
+	</section>
+	<!-- Content -->
+	<!-- Page Button Bar -->
+	<section id="id_sectionButton" class="sectionButton">
+	<div id="id_popupButton" class="btBar">
+	<div id="id_doChangePassword_comp" data-xp-type="button" 
+					data-xp="{	form: 'form_userChangePassword', 
+								align: 'right', 
+								text: 'Save', 
+								type: 'iconPopup', 
+								mode: 'actionMsg', 
+								action: 'changePassword', 
+								clickStatus: 'disable', 
+								icon: 'save'}" ></div>
+	</div>
+	</section>
+	<!-- Page Button Bar -->
+	</body>
+	</html>
+
+
+``div`` elements with ``_comp`` ending in ``id`` hold the visual components. These visual
+components will be parsed by our js rendering engine, build html5 and mix server data with
+visual data.
+
+You have base template code for your application at ``myproject/myapp/templates/dir/myapp.html``:
+
+.. code-block:: html
+
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<!-- Place style sheets here ... -->	
+	</head>
+	<body>
+	<footer>
+	</footer>
+	<!-- Your javascript here ... -->
+	</body>
+	</html>
+
+You can link your visual components and apply style themes.
 
 Visual Components
 -----------------
 
+Visuals for your application are built using what we call visual components. They are ``jQuery``
+plugins that mix server data in JSON format with parametrized data in HTML5 from your templates.
+
+We provide a set of visual components tailored for most needs and you only need to parametrize
+them in HTML5 templates. You app would not need to develop js code, simply configure the
+components with HTML5 ``data-`` attributes.
+
+In case this is not enough for you, you can write your own components. We also provide a js
+rendering component: you define the js function to do render logic. This is useful for
+integrating external js code into your application.
+
+Example for list component:
+
+.. code-block:: html
+
+	<div id="id_groups_comp" data-xp-type="list.data" style="margin-left: 10px" 
+		data-xp="{	app: 'ximpia.xpsite', 
+			dbClass: 'GroupDAO', 
+			disablePaging: true, 
+			fields: [	'id',
+						'group__name',
+						'category__name',
+						'groupNameId', 
+						'parent', 
+						'isPublic',
+						'isDeleted', 
+						'dateCreate',
+						'dateModify',
+						'userCreateId']
+		}" > </div> 
+
+Will render as tabular data:
+
+.. image:: images/data-list-low.png

@@ -2,88 +2,134 @@
 Example
 =======
 
-I will show how easy is to develop apps in Ximpia.
-
 Here goes the example for a change password popup. When user clicks on menu icon, a change password popup 
 shows with current password and new password. The popup has button send to send new password to server.
 
-First you start by defining your visual components and creating template `xp_templates/popup/changePassword.html` in site application:
+Model
+-----
+
+Since change password uses django User model, you have no changes in model for this example
+
+Visual Components
+-----------------
+
+Define components in template ``myproject/myapp/templates/xpsite/popup/change_password.html``:
 
 .. code-block:: html
 
-	<div id="id_password_comp" data-xp-type="basic.text" 
-		data-xp="{type: 'password', info: true}" ></div><br />
-	<div id="id_newPassword_comp" data-xp-type="basic.text" 
-		data-xp="{type: 'password', info: true}" ></div><br />
-	<div id="id_newPasswordConfirm_comp" data-xp-type="basic.text" 
-		data-xp="{type: 'password', info: true}" ></div>
+	<div id="id_changePassword">
+	<form id="form_userChangePassword" action="" method="post" data-xp="{}">
+	<!-- ximpiaId -->
+	<div id="id_username_comp" 
+			data-xp-type="field" 
+			data-xp="{tabindex: '1', label: 'XimpiaId', 'readonly': 'readonly'}" >
+	</div>
+	<!-- password -->
+	<div id="id_password_comp" data-xp-type="field"  style="margin-top: 10px"
+			data-xp="{type: 'password', info: true}" >
+	</div>
+	<!-- newPassword -->
+	<div id="id_newPassword_comp" data-xp-type="field" style="margin-top: 10px" 
+			data-xp="{type: 'password', info: true, class: 'passwordStrength'}" >
+	</div>
+	<!-- newPasswordConfirm -->
+	<div id="id_newPasswordConfirm_comp" data-xp-type="field" style="margin-top: 10px"
+			data-xp="{type: 'password', info: true}" >
+	</div>
+	</form>
+	</div>
 
-I use the visual component `basic.text` for the input fields. Then we create the form with fields::
+All components are ``field`` type. You include attributes in ``data-`` html5 attrs. 
 
-	class UserChangePasswordForm( XBaseForm ):
-		_XP_FORM_ID = 'userChangePassword'
+Form would need to have ``_XP_FORM_ID`` equal to ``changePassword``, the id for the ``div`` element.
+
+Form
+----
+
+.. code-block:: python
+
+	class ChangePasswordForm(XBaseForm):
+		_XP_FORM_ID = 'changePassword'
 		_dbUser = User()
-		newPassword = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='New Password', help_text = _('Your New Password'))
-		newPasswordConfirm = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Confirm Password', 
-						help_text = _('Write again your password'))
-		password = XpPasswordField(_dbUser, '_dbUser.password', minValue=6, label='Password', help_text = _('Current password'))
-		errorMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, ['ERR_wrongPassword']]))
-		okMessages = forms.CharField(widget=XpHiddenWidget, initial=_jsf.buildMsgArray([_m, []]))
+		username = UserField(_dbUser, 'username', label='Username')
+		newPassword = PasswordField(_dbUser, 'password', minLength=6, 
+			label='Password', helpText = _('Your New Password'))
+		newPasswordConfirm = PasswordField(_dbUser, 'password', minLength=6, 
+			label='Confirm Password', 
+			helpText = _('Write again your password to make sure there are no errors'))
+		errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['ERR_change_password']]))
+		okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, ['OK_PASSWORD_CHANGE']]))
 		def clean(self):
-			'Clean form'
-			self._validateSameFields([('newPassword','newPasswordConfirm')])
-			self._xpClean()
+			"""Clean form"""
+			self._validate_same_fields([('newPassword','newPasswordConfirm')])
+			self._xp_clean()
 			return self.cleaned_data
 
+The form has cross validation for new password and confirmation for password. Template must reference ``_XP_FORM_ID``.
 
-The form has cross validation for new password and the confirmation of new password.
+Next step would be implement view for popup.
 
-Then implement the view inside business class `UserBusiness`:
+View
+----
 
-```
-@DoBusinessDecorator(form = forms.UserChangePasswordForm, pageError=True)
-def showChangePassword(self):
-	"""Change password form with current password and new password"""
-	pass
-```
+.. code-block:: python
 
-We include `pageError=True` because we want error message to show in a bar above the button and no popup with error messages.
+	@view(forms.UserChangePasswordForm)
+	def view_change_password(self):
+		"""Change password form with current password and new password
+		"""
+		self._put_form_value('username', self._ctx.user.username)
 
-Register view and template:
 
-```
-ComponentRegister.registerView(appCode=K.APP, viewName='changePassword', myClass=business.UserBusiness, method='showChangePassword', winType=_Ch.WIN_TYPE_POPUP)
-ComponentRegister.registerTemplate(appCode=K.APP, viewName='changePassword', name='changePassword', winType=_Ch.WIN_TYPE_POPUP)
-```
+We need to insert user from context. In this case we have no database value since we have user
+in context. Otherwise, we would not need to call ``_put_form_value`` and method would only have
+``pass`` command.
 
-Implement action to change password:
+For database fields cases, form would populate your field data from database without need to code
+inside view.
 
-```
-@ValidationDecorator()
-def _validateUser(self):
-	'Validate user: Check user password'
-	self._ctx[Ctx.USER] = self._authenticateUser(self._ctx[Ctx.USER], self._f()['password'], 'password', _m.ERR_wrongPassword)
-@ValidateFormDecorator(forms.UserChangePasswordForm)
-@DoBusinessDecorator(pageError=True)
-def doChangePassword(self):
-	'Change password from user area'
-	self._validateUser()
-	user = self._dbUserSys.get(username= self._ctx[Ctx.USER])
-	user.set_password(self._f()['newPassword'])
-	user.save()
-```
+Action
+------
 
-Register action:
+Code to run when Save button is clicked by user:
 
-```
-ComponentRegister.registerAction(appCode=K.APP, actionName='doChangePassword', myClass=business.UserBusiness, method='doChangePassword')
-```
+.. code-block:: python
 
-Finally you link the view in the menu system to show in a popup bellow the logo:
+	@validation()
+	def _validate_user(self):
+		"""Validate user: Check user password"""
+		self._ctx.user = self._authenticate_user(self._ctx.user, 
+			self._f()['password'], 'password', _m.ERR_wrong_password)
 
-```
-ComponentRegister.registerMenu(appCode=K.APP, name='changePassword', titleShort='New Password', title='Change Password', iconName='', viewName='changePassword')
-ComponentRegister.registerViewMenu(appCode=K.APP, viewName='homeLogin', menus=[
-				{_K.ZONE: _Ch.MENU_ZONE_SYS, _K.GROUP: 'sys', _K.MENU_NAME: 'changePassword'},
-			])
-```
+	@action(forms.UserChangePasswordForm)
+	def change_password(self):
+		"""Change password from user area
+		"""
+		self._dbUser = self._instances(UserDAO)[0]
+		self._validate_user()
+		user = self._dbUser.get(username= self._ctx.user)
+		user.set_password(self._f()['newPassword'])
+		user.save()
+
+1. Get user data instance with context inyected
+2. Validate user: Will show message ``ERR_wrong_password`` in case user does not authenticate.
+3. Call ``set_password``django method with new password and save changes
+
+Registering
+-----------
+
+.. code-block:: python
+
+	# view
+	self._reg.registerView(__name__, serviceName='Users', viewName='changePassword', 
+		slug='change-password', className=SiteService, method='view_change_password', 
+		hasAuth=True, winType='popup')
+	# template
+	self._reg.registerTemplate(__name__, viewName='changePassword', name='changePassword', 
+		winType='popup')
+	# action
+	self._reg.registerAction(__name__, serviceName='Users', actionName='changePassword', 
+		slug='change-password', className=SiteService, method='change_password', 
+		hasAuth=True)
+	# search
+	self._reg.registerSearch(__name__, text='Change Password', viewName='changePassword')
