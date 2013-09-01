@@ -295,10 +295,10 @@ Visual Components
 -----------------
 
 Visuals for your application are built using what we call visual components. They are ``jQuery``
-plugins that mix server data in JSON format with parametrized data in HTML5 from your templates.
+plugins that mix server data with parametrized data in HTML5 templates.
 
 We provide a set of visual components tailored for most needs and you only need to parametrize
-them in HTML5 templates. You app would not need to develop js code, simply configure the
+them in HTML5 templates. Most of the time, you will not need to develop js code, simply configure the
 components with HTML5 ``data-`` attributes.
 
 In case this is not enough for you, you can write your own components. We also provide a js
