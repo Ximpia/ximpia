@@ -2112,10 +2112,15 @@ class context_view(object):
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
 				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
 								
-				if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
+				# Include this when we support IE > 8
+				'''if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 8') != -1:
-					result = render_to_response( 'noHTML5.html', RequestContext(request) )
+					result = render_to_response( 'xp-noHTML5.html', RequestContext(request) )
+					return result'''
+
+				if request.META['HTTP_USER_AGENT'].find('MSIE') != -1:
+					result = render_to_response( 'xp-IE.html', RequestContext(request) )
 					return result
 
 				if self.__mode == 'view':
