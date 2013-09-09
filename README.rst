@@ -1,4 +1,3 @@
-
 ==================
 Ximpia Environment
 ==================
@@ -33,8 +32,6 @@ This will install ximpia and required packages:
 * Filebrowser
 * South
 
-Go to https://github.com/Ximpia/ximpia/ if you need to download a package or clone the repo.
-
 Setup Application
 -----------------
 
@@ -57,7 +54,9 @@ For further details, visit project documentation.
 
 License
 -------
- 
+
+::
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
