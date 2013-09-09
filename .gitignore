@@ -7,3 +7,6 @@
 .project
 docs/Makefile
 docs/_build
+build
+dist
+ximpia.egg-info
