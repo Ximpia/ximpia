@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import shutil
@@ -317,7 +320,7 @@ class Command(object):
 		self.create_fixtures(app_name)
 		# create home template with name of app in big grey letters
 
-#python ../ximpia/ximpia/bin/ximpia-app.py myproject.myapp
+#python ../ximpia/ximpia/bin/ximpia-app myproject.myapp
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
