@@ -268,6 +268,10 @@ class Command(object):
 			shutil.copyfile(tmpl_src + 'window/signup.html', tmpl_dst + 'window/signup.html')
 			shutil.copyfile(tmpl_src + 'xpsite.html', tmpl_dst + 'xpsite.html')
 			# app
+			shutil.copyfile(self.core_src_path + '/app/templates/window-blank.html', self.project_path + '/' + 
+						app_name + '/templates/' + 'window-blank.html')
+			shutil.copyfile(self.core_src_path + '/app/templates/popup-blank.html', self.project_path + '/' + 
+						app_name + '/templates/' + 'popup-blank.html')
 			tmpl_src = self.core_src_path + '/app/templates/app/'
 			tmpl_dst = self.project_path + '/' + app_name + '/templates/' + app_name + '/'
 			shutil.copyfile(tmpl_src + 'app.html', tmpl_dst + app_name + '.html')
