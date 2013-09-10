@@ -10,7 +10,9 @@ from string import Template
 from django.utils.crypto import get_random_string
 from distutils.sysconfig import get_python_lib
 
-XIMPIA_CORE_PATH = get_python_lib() + '/ximpia/xpcore'
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ximpia.settings")
+import ximpia
+XIMPIA_CORE_PATH = os.path.dirname(ximpia.__file__) + '/xpcore'
 
 class Command(object):
 	db_engine = ''
@@ -92,13 +94,16 @@ class Command(object):
 			settings_local = f.read()
 		# substitutions for settings local
 		db_engine = raw_input('Db Engine: <mysql> ') or 'mysql'
+		db_host=raw_input('Db Host: ')
+		db_name=raw_input('Db Name: ')
+		db_user=raw_input('Db User: ')
 		settings_local = Template(settings_local).substitute(project_name=project_name,
 															db_engine=db_engine,
-															db_host=raw_input('Db Host: '),
-															db_name=raw_input('Db Name: '),
-															db_user=raw_input('Db User: '),
+															db_host=db_host,
+															db_name=db_name,
+															db_user=db_user,
 															db_password=self.__feed_password())
-		self.db_engine = db_engine
+		self.db_engine, self.db_name = db_engine, db_name
 		with open(project_name + '/' + project_name + '/' + 'settings_local.py', 'w') as f:
 			f.write(settings_local)
 		# settings
@@ -343,18 +348,20 @@ if __name__ == "__main__":
 	command.create_app_dirs(app_name)
 	command.create_app_files(app_name)
 	command.create_fixtures(app_name)
+	os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{}.settings".format(project_name))
+	os.environ['DJANGO_SETTINGS_MODULE'] = "{}.settings".format(project_name)
 	# Create tables, first syncdb, migration, etc...
 	print './{}/manage.py syncdb'.format(project_name)
-	os.system('./{}/manage.py syncdb'.format(project_name))
+	os.system('./{}/manage.py syncdb --traceback'.format(project_name))
 	print './{}/manage.py migrate ximpia.xpcore'.format(project_name)
-	os.system('./{}/manage.py migrate ximpia.xpcore'.format(project_name))
+	os.system('./{}/manage.py migrate ximpia.xpcore --traceback'.format(project_name))
 	print './{}/manage.py migrate ximpia.xpsite'.format(project_name)
-	os.system('./{}/manage.py migrate ximpia.xpsite'.format(project_name))
+	os.system('./{}/manage.py migrate ximpia.xpsite --traceback'.format(project_name))
 	# Import site and app components
-	os.system('./{}/manage.py xpcomponents ximpia.xpsite'.format(project_name))
-	os.system('./{}/manage.py xpcomponents myproject.myapp'.format(project_name))
-	os.system('./{}/manage.py customdashboard'.format(project_name))
+	os.system('./{}/manage.py xpcomponents ximpia.xpsite --traceback'.format(project_name))
+	os.system('./{}/manage.py xpcomponents {}.{} --traceback'.format(project_name, project_name, app_name))
+	os.system('./{}/manage.py customdashboard --traceback'.format(project_name))
 	if os.path.isfile('dashboard.py'):
 		shutil.move('dashboard.py', '{}/{}/dashboard.py'.format(project_name, project_name))
 	# load site_additonal.json
-	os.system('./{}/manage.py loaddata site_additional.json'.format(project_name))
+	os.system('./{}/manage.py loaddata site_additional.json --traceback'.format(project_name))
