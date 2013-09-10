@@ -5,7 +5,7 @@ import codecs
 from setuptools import setup, find_packages
 
 setup(
-    name='ximpia',
+    name='Ximpia',
     version='0.2.0',
     description='Web development environment to speed up your web projects',
     long_description = codecs.open('README.rst', 'r', 'utf-8').read(),

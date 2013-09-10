@@ -1,0 +1,8 @@
+include README.rst
+include LICENSE
+recursive-include docs *
+recursive-include ximpia/xpcore/fixtures *
+recursive-include ximpia/xpcore/sources *
+recursive-include ximpia/xpsite/fixtures *
+recursive-include ximpia/xpsite/static *
+recursive-include ximpia/xpsite/templates *
