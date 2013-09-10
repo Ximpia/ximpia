@@ -11,6 +11,6 @@ import messages as _m
 
 
 class HomeForm(XBaseForm):
-	_XP_FORM_ID = 'home_form'
+	_XP_FORM_ID = 'home'
 	errorMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
 	okMessages = HiddenField(initial=_jsf.buildMsgArray([_m, []]))
