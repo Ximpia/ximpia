@@ -1,7 +1,7 @@
 *.class
 *.pyc
 *.pyo
-*Thumbs.db
+Thumbs.db
 .settings/*
 .pydevproject
 .project
@@ -9,4 +9,5 @@ docs/Makefile
 docs/_build
 build
 dist
+Ximpia.egg-info
 ximpia.egg-info
