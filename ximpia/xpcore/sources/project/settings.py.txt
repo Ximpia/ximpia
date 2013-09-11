@@ -54,7 +54,6 @@ GRAPPELLI_INDEX_DASHBOARD = '$project_name.dashboard.CustomIndexDashboard'
 GRAPPELLI_ADMIN_TITLE = '$project_title'
 
 # FileBrowser
-FILEBROWSER_MEDIA_ROOT = '$project_path/static/media'
 FILEBROWSER_MEDIA_URL = '/static/media/'
 FILEBROWSER_DIRECTORY = ''
 FILEBROWSER_SHOW_PLACEHOLDER = True
@@ -75,7 +74,6 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # <STATIC>
 STATIC_URL = '/static/'
-STATIC_ROOT = '$project_path/static'
 STATICFILES_FINDERS = (
                        "django.contrib.staticfiles.finders.FileSystemFinder",
                        "django.contrib.staticfiles.finders.AppDirectoriesFinder"
