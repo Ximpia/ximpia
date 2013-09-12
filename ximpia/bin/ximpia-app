@@ -159,6 +159,8 @@ class Command(object):
 		"""
 		if not os.path.isdir(self.project_path + '/static/media'):
 			os.makedirs(self.project_path + '/static/media')
+		if not os.path.isdir(self.project_path + '/deploy'):
+			os.mkdir(self.project_path + '/deploy')
 		if not os.path.isdir(self.project_path + '/' + app_name):
 			os.mkdir(self.project_path + '/' + app_name)
 		if not os.path.isdir(self.project_path + '/' + app_name + '/fixtures'):
@@ -193,8 +195,6 @@ class Command(object):
 			os.mkdir(self.project_path + '/' + app_name + '/templates/' + app_name + '/window')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/tests'):
 			os.mkdir(self.project_path + '/' + app_name + '/tests')
-		if not os.path.isdir(self.project_path + '/' + app_name + '/deploy'):
-			os.mkdir(self.project_path + '/' + app_name + '/deploy')
 
 	def create_app_files(self, app_name):
 		"""
