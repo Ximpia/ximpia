@@ -161,6 +161,10 @@ class Command(object):
 			os.makedirs(self.project_path + '/static/media')
 		if not os.path.isdir(self.project_path + '/deploy'):
 			os.mkdir(self.project_path + '/deploy')
+		if not os.path.isdir(self.project_path + '/conf'):
+			os.mkdir(self.project_path + '/conf')
+		if not os.path.isdir(self.project_path + '/log'):
+			os.mkdir(self.project_path + '/log')
 		if not os.path.isdir(self.project_path + '/' + app_name):
 			os.mkdir(self.project_path + '/' + app_name)
 		if not os.path.isdir(self.project_path + '/' + app_name + '/fixtures'):
@@ -296,10 +300,16 @@ class Command(object):
 		if os.path.isfile(img_src + 'logo.png'):
 			shutil.copyfile(img_src + 'logo.png', img_dst + 'logo.png')
 		# deploy
-		deploy_dst = self.project_path + '/' + app_name + '/deploy'
-		js_settings = XIMPIA_SITE_PATH + '/static/ximpia/js/core/settings.js'
+		deploy_dst = self.project_path + '/deploy'
 		shutil.copyfile(self.project_path + '/settings_local.py', deploy_dst + '/settings_local.py')
+		js_settings = XIMPIA_SITE_PATH + '/static/ximpia/js/core/settings.js'
 		shutil.copyfile(js_settings, deploy_dst + '/settings.js')
+		# conf
+		conf_dst = self.project_path + '/conf'
+		with open(self.core_src_path + '/project/gunicorn.conf.py.txt') as f:
+			gunicorn = f.read()
+		with open(conf_dst + '/gunicorn.conf.py', 'w') as f:
+			f.write(Template(gunicorn).substitute(project_path=self.project_path))
 
 	def create_fixtures(self, app_name):
 		"""

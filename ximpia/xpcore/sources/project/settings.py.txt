@@ -144,6 +144,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.staticfiles',
     'south',
+    'gunicorn',
     'ximpia.xpcore',
     'ximpia.xpsite',
     # <APPS>

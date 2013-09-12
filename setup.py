@@ -21,7 +21,8 @@ setup(
 		'Django >= 1.4',
         'django-grappelli >= 2.4.4',
         'django-filebrowser >= 3.5.2',
-        'South >= 0.7.6'
+        'South >= 0.7.6',
+        'gunicorn == 18.0'
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
