@@ -13,6 +13,7 @@ from distutils.sysconfig import get_python_lib
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ximpia.settings")
 import ximpia
 XIMPIA_CORE_PATH = os.path.dirname(ximpia.__file__) + '/xpcore'
+XIMPIA_SITE_PATH = os.path.dirname(ximpia.__file__) + '/xpsite'
 
 class Command(object):
 	db_engine = ''
@@ -98,6 +99,7 @@ class Command(object):
 		db_name=raw_input('Db Name: ')
 		db_user=raw_input('Db User: ')
 		settings_local = Template(settings_local).substitute(project_name=project_name,
+															project_path=self.project_path,
 															db_engine=db_engine,
 															db_host=db_host,
 															db_name=db_name,
@@ -121,7 +123,6 @@ class Command(object):
 												time_zone=raw_input('Timezone: <America/Chicago> ') or 'America/Chicago',
 												language_code=raw_input('Language code <en-us> : ') or 'en-us',
 												project_title=self.project_title,
-												project_path=self.project_path,
 												secret_key=get_random_string(50, chars))
 		with open(project_name + '/' + project_name + '/' + 'settings.py', 'w') as f:
 			f.write(settings)
@@ -192,6 +193,8 @@ class Command(object):
 			os.mkdir(self.project_path + '/' + app_name + '/templates/' + app_name + '/window')
 		if not os.path.isdir(self.project_path + '/' + app_name + '/tests'):
 			os.mkdir(self.project_path + '/' + app_name + '/tests')
+		if not os.path.isdir(self.project_path + '/' + app_name + '/deploy'):
+			os.mkdir(self.project_path + '/' + app_name + '/deploy')
 
 	def create_app_files(self, app_name):
 		"""
@@ -283,7 +286,6 @@ class Command(object):
 			tmpl_src = self.core_src_path + '/app/templates/app/'
 			tmpl_dst = self.project_path + '/' + app_name + '/templates/' + app_name + '/'
 			shutil.copyfile(tmpl_src + 'app.html', tmpl_dst + app_name + '.html')
-			# TODO: create home template with name of app in big grey letters
 			with open(self.core_src_path + '/app/' + 'templates/app/window/home.html', 'r') as f:
 				home = f.read()
 			with open(self.project_path + '/' + app_name + '/' + 'templates/' + app_name + '/window/home.html', 'w') as f:
@@ -293,6 +295,11 @@ class Command(object):
 		img_dst = self.project_path + '/' + app_name + '/static/images/'
 		if os.path.isfile(img_src + 'logo.png'):
 			shutil.copyfile(img_src + 'logo.png', img_dst + 'logo.png')
+		# deploy
+		deploy_dst = self.project_path + '/' + app_name + '/deploy'
+		js_settings = XIMPIA_SITE_PATH + '/static/ximpia/js/core/settings.js'
+		shutil.copyfile(self.project_path + '/settings_local.py', deploy_dst + '/settings_local.py')
+		shutil.copyfile(js_settings, deploy_dst + '/settings.js')
 
 	def create_fixtures(self, app_name):
 		"""
