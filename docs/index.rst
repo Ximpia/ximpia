@@ -53,15 +53,3 @@ Website
 -------
 
 https://ximpia.com
-
-Support & Learning
-------------------
-
-**Support**
-
-https://ximpia.com/support
-
-
-**Learning**
-
-https://ximpia.com/learning
