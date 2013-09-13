@@ -657,7 +657,12 @@
 		if (obj.isCurrent == true && obj.zone == 'service') {
 			classPlus = ' iconMenuCurrent';
 		}
-		var path = '/' + obj.appSlug + '/' + obj.viewSlug + '/';
+		var path = '';
+		if (obj.isDefaultApp) {
+			path = '/' + obj.viewSlug + '/';
+		} else {
+			path = '/' + obj.appSlug + '/' + obj.viewSlug + '/';
+		}
 		if (obj.view == 'home') {
 			path = '/';
 		}

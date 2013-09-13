@@ -2523,7 +2523,12 @@ ximpia.common.PageAjax = function() {
 							var viewSlug = responseMap['response']['viewSlug'];
 							$('title').text(title);
 							// params
-							var location = '/' + appSlug + '/' + viewSlug + '/';
+							var location = '';
+							if (responseMap['response']['isDefaultApp']) {
+								location = '/' + viewSlug + '/';
+							} else {
+								location = '/' + appSlug + '/' + viewSlug + '/';
+							}
 							if (obj.hasOwnProperty('params')) {
 								var params = JSON.parse(obj.params);
 								var paramList = Object.keys(params);
