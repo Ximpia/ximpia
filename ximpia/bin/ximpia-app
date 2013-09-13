@@ -99,7 +99,7 @@ class Command(object):
 		db_name=raw_input('Db Name: ')
 		db_user=raw_input('Db User: ')
 		settings_local = Template(settings_local).substitute(project_name=project_name,
-															project_path=self.project_path,
+															sys_project_path=self.sys_project_path,
 															db_engine=db_engine,
 															db_host=db_host,
 															db_name=db_name,
@@ -157,14 +157,14 @@ class Command(object):
 					   - window
 			- tests
 		"""
-		if not os.path.isdir(self.project_path + '/static/media'):
-			os.makedirs(self.project_path + '/static/media')
+		if not os.path.isdir(self.sys_project_path + '/static/media'):
+			os.makedirs(self.sys_project_path + '/static/media')
+		if not os.path.isdir(self.sys_project_path + '/conf'):
+			os.mkdir(self.sys_project_path + '/conf')
+		if not os.path.isdir(self.sys_project_path + '/log'):
+			os.mkdir(self.sys_project_path + '/log')
 		if not os.path.isdir(self.project_path + '/deploy'):
 			os.mkdir(self.project_path + '/deploy')
-		if not os.path.isdir(self.project_path + '/conf'):
-			os.mkdir(self.project_path + '/conf')
-		if not os.path.isdir(self.project_path + '/log'):
-			os.mkdir(self.project_path + '/log')
 		if not os.path.isdir(self.project_path + '/' + app_name):
 			os.mkdir(self.project_path + '/' + app_name)
 		if not os.path.isdir(self.project_path + '/' + app_name + '/fixtures'):
@@ -305,7 +305,7 @@ class Command(object):
 		js_settings = XIMPIA_SITE_PATH + '/static/ximpia/js/core/settings.js'
 		shutil.copyfile(js_settings, deploy_dst + '/settings.js')
 		# conf
-		conf_dst = self.project_path + '/conf'
+		conf_dst = self.sys_project_path + '/conf'
 		with open(self.core_src_path + '/project/gunicorn.conf.py.txt') as f:
 			gunicorn = f.read()
 		with open(conf_dst + '/gunicorn.conf.py', 'w') as f:
@@ -334,6 +334,7 @@ class Command(object):
 		project_name, app_name = full_app_name.split('.')
 		self.project_name = project_name
 		self.project_path = os.getcwd() + '/' + project_name + '/' + project_name
+		self.sys_project_path = os.getcwd() + '/' + project_name
 		self.core_src_path = XIMPIA_CORE_PATH + '/sources'
 		if not os.path.isdir(project_name):
 			self.create_project(project_name, app_name)
@@ -356,6 +357,7 @@ if __name__ == "__main__":
 	command = Command()
 	command.project_name = project_name
 	command.project_path = os.getcwd() + '/' + project_name + '/' + project_name
+	command.sys_project_path = os.getcwd() + '/' + project_name
 	command.core_src_path = XIMPIA_CORE_PATH + '/sources'
 	if not os.path.isdir(project_name):
 		command.create_project(project_name, app_name)
