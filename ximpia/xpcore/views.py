@@ -14,7 +14,7 @@ from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
-from django.http import Http404
+from django.http import Http404 
 
 from ximpia.xpcore.util import get_class, AttrDict
 from models import context, context_view, ctx, JsResultDict

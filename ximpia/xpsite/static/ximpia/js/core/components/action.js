@@ -642,7 +642,7 @@
  */
 
 (function($) {	
-	$.fn.xpIcon = function( method ) {  
+	$.fn.xpMenuIcon = function( method ) {  
         // Settings		
         var settings = {
         };

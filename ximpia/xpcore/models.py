@@ -12,7 +12,7 @@ from django.template import RequestContext
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.utils import translation
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from filebrowser.fields import FileBrowseField
 
 from choices import Choices
@@ -2100,14 +2100,15 @@ class context_view(object):
 			self.__mode = 'view'
 		if len(argList) != 0:
 			logger.debug('argList: {}'.format(argList))
-			#argList: ('ximpia_apps.ximpia_site.views',)
-			self._app = get_app_name('.'.join(argList[0].split('.')[:2]))
+			if argList[0]:
+				self._app = get_app_name('.'.join(argList[0].split('.')[:2]))
+			else:
+				self._app = settings.XIMPIA_DEFAULT_APP
 			logger.debug('_app: {}'.format(self._app))
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
 			try: 
-				
 				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
 				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
@@ -2122,25 +2123,32 @@ class context_view(object):
 				if request.META['HTTP_USER_AGENT'].find('MSIE') != -1:
 					result = render_to_response( 'xp-IE.html', RequestContext(request) )
 					return result
-
-				if self.__mode == 'view':
+				
+				if 'appSlug' in args and args['appSlug'] == settings.XIMPIA_DEFAULT_APP:
+					raise Http404 
+				
+				if self.__mode == 'view' and 'appSlug' in args:
 					if args.has_key('appSlug') and len(args['appSlug']) != 0:
-						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
 						self._app = Application.objects.get(slug=args['appSlug']).name
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						#self._app = 'ximpia.xpsite.
 						self.__viewName = 'home'
+				elif self.__mode == 'view' and 'appSlug' not in args and 'viewSlug' in args:
+					app_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
+					self._app = settings.XIMPIA_DEFAULT_APP
+					args['appSlug'] = app_obj.slug
+					self.__viewName = args['viewName'] if args.has_key('viewName') else ''
+					# we must check that view exists for default app. If not, show 404
+					try:
+						view = View.objects.get(slug=args['viewSlug'])
+					except View.DoesNotExist:
+						raise Http404
 				else:
 					if args.has_key('appSlug') and len(args['appSlug']) != 0:
-						# TODO: We must go to django install apps to get full app name. args['app'] has only app name, not path
 						self._app = Application.objects.get(slug=args['appSlug']).name
-						#self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
-						#self._app = 'ximpia.xpsite.
-						#self.__viewName = 'home'
 						pass
-				
+
 				logger.debug( 'ContectViewDecorator :: app: %s' % (self._app) )
 				
 				REQ = request.REQUEST 

@@ -1,11 +1,16 @@
 # coding: utf-8
 
 # python
-import os
 from HTMLParser import HTMLParser
 
 # django
 from django.conf import settings
+
+# Import settings and logging
+import logging.config
+logging.config.dictConfig(settings.LOGGING)
+logger = logging.getLogger(__name__)
+
 
 class AttrDict(dict):
 	def __getattr__(self, attr):
@@ -60,7 +65,7 @@ def get_app_name(path):
 
 	** Attributes **
 
-	* ``path`` (str): Path like 'ximpia.site'
+	* ``path`` (str): Path like 'ximpia.xpsite'
 
 	** Returns **
 	The application name, get from settings
@@ -133,13 +138,6 @@ def get_instances(args, ctx_min):
 		else:
 			instances.append(arg(ctx_min))
 	return instances
-
-
-# Import settings and logging
-from django.conf import settings
-import logging.config
-logging.config.dictConfig(settings.LOGGING)
-logger = logging.getLogger(__name__)
 
 
 class TemplateParser(HTMLParser):

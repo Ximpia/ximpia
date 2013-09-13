@@ -2957,7 +2957,7 @@ ximpia.common.PageAjax.processMenus = (function(responseMap) {
 		delete menuSessObj['sys']
 	}*/
 	ximpia.common.Browser.setObject('menus', menuSessObj);
-	$("[data-xp-type='icon']").xpIcon('renderMenu');
+	$("[data-xp-type='icon']").xpMenuIcon('renderMenu');
 });
 /**
  * Process login and session information

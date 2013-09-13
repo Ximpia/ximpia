@@ -50,7 +50,7 @@ logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 from data import ViewDAO
-from forms import DefaultForm
+from forms import DefaultForm 
 
 from ximpia.util.js import Form as _jsf
 
@@ -158,6 +158,7 @@ class service(object):
 					# App
 					obj._ctx.jsData['response']['app'] = obj._ctx.app
 					obj._ctx.jsData['response']['appSlug'] = dbApp.get(name=obj._ctx.app).slug
+					obj._ctx.jsData['response']['isDefaultApp'] = obj._ctx.app == settings.XIMPIA_DEFAULT_APP
 					# winType
 					if len(obj._ctx.jsData['response']['view'].strip()) != 0:
 						dbView = ViewDAO(obj._ctx)
@@ -893,6 +894,8 @@ class MenuService( object ):
 				if param.operator == Choices.OP_EQ:
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
+			if menuItem.menu.view.application.name == settings.XIMPIA_DEFAULT_APP:
+				menuObj['isDefaultApp'] = True
 			container[menuItem.menu.name] = menuObj
 			if menuItem.menu.view != None:
 				menuObj['isCurrent'] = True if menuItem.menu.view.name == self.__viewName else False
@@ -943,7 +946,8 @@ class MenuService( object ):
 								'app' : StringType,
 								'params' : DictType,
 								'items' : ListType<DictType>,
-								'isCurrent' : BooleanType
+								'isCurrent' : BooleanType,
+								'isDefaultApp' : BooleanType
 							}
 			],
 			'view': [...]
