@@ -5,7 +5,7 @@ import ximpia.xpcore.constants as _K
 from ximpia.xpcore.business import AppCompRegCommonBusiness
 
 from service import SiteService
-from $project_name import settings
+from django.conf import settings
 from ximpia.xpcore.service import DefaultService
 
 # Logging
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class AppReg ( AppCompRegCommonBusiness ):
 	def __init__(self):
 		super(AppReg, self).__init__(__name__)
-		self._reg.registerApp(__name__, title='$project_title', slug='$project_name')
+		self._reg.registerApp(__name__, title='$app_name', slug='$app_name')
 		self._reg.registerService(__name__, serviceName='Web', className=SiteService)
 
 ###################### SERVICE COMPONENT REGISTER ###########################

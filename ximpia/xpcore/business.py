@@ -113,7 +113,9 @@ class ComponentRegisterBusiness ( object ):
 		"""
 		if title == None or slug == '':
 			raise XpRegisterException(AttributeError, 'registerApp requires title and slug attributes')
+		logger.debug('compName: {}'.format(compName))
 		name = self.__getAppName(compName)
+		logger.debug('name: {}'.format(name))
 		# Create group application if not exists
 		logger.debug('registerApp :: slug: %s' % (slug) )
 		category = Category.objects.get(name='Apps')
