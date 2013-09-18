@@ -381,10 +381,10 @@ if __name__ == "__main__":
 	command.create_app_files(app_name)	
 	os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{}.settings".format(project_name))
 	os.environ['DJANGO_SETTINGS_MODULE'] = "{}.settings".format(project_name)
-	# Create tables, first syncdb, migration, etc...
-	print './{}/manage.py syncdb'.format(project_name)
-	os.system('./{}/manage.py syncdb --traceback'.format(project_name))
 	if is_new_project:
+		# Create tables, first syncdb, migration, etc...
+		print './{}/manage.py syncdb'.format(project_name)
+		os.system('./{}/manage.py syncdb --traceback'.format(project_name))
 		command.create_fixtures(app_name)
 		print './{}/manage.py migrate ximpia.xpcore'.format(project_name)
 		os.system('./{}/manage.py migrate ximpia.xpcore --traceback'.format(project_name))
