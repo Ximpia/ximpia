@@ -774,9 +774,10 @@ def jxDelete(request, **args):
 
 @context_view()
 @view_tmpl()
-def showView(request, appSlug, viewSlug, viewAttrs, **args):
+def showView(request, appSlug='', viewSlug='', viewAttrs='', **args):
     """
     Show url view. Application code and view name are parsed from the url.
+    urls not following /appSlug/viewSlug mapped into urls???? appSlug would be default app from settings
 
     **Required Attributes**
 

@@ -2109,9 +2109,15 @@ class context_view(object):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
 			try: 
+				
 				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
 				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
+				
+				try:
+					app_default_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
+				except Application.DoesNotExist:
+					app_default_obj = None
 								
 				# Include this when we support IE > 8
 				'''if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
@@ -2124,19 +2130,18 @@ class context_view(object):
 					result = render_to_response( 'xp-IE.html', RequestContext(request) )
 					return result
 				
-				if 'appSlug' in args and args['appSlug'] == settings.XIMPIA_DEFAULT_APP:
+				if 'appSlug' in args and app_default_obj and args['appSlug'] == app_default_obj.slug:
 					raise Http404 
 				
 				if self.__mode == 'view' and 'appSlug' in args:
-					if args.has_key('appSlug') and len(args['appSlug']) != 0:
+					if args['appSlug']:
 						self._app = Application.objects.get(slug=args['appSlug']).name
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
 						self.__viewName = 'home'
-				elif self.__mode == 'view' and 'appSlug' not in args and 'viewSlug' in args:
-					app_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
+				elif self.__mode == 'view' and 'appSlug' not in args and 'viewSlug' in args and app_default_obj:
 					self._app = settings.XIMPIA_DEFAULT_APP
-					args['appSlug'] = app_obj.slug
+					args['appSlug'] = app_default_obj.slug
 					self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					# we must check that view exists for default app. If not, show 404
 					try:
@@ -2144,7 +2149,7 @@ class context_view(object):
 					except View.DoesNotExist:
 						raise Http404
 				else:
-					if args.has_key('appSlug') and len(args['appSlug']) != 0:
+					if 'appSlug' in args and args['appSlug']:
 						self._app = Application.objects.get(slug=args['appSlug']).name
 					else:
 						pass

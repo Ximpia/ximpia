@@ -5,7 +5,7 @@ ximpia.settings = ximpia.settings || {};
  * Settings => Move this later to settings.js file on production files, having settings for the frontend
  */
 ximpia.settings.THEME = 'base';
-ximpia.settings.HOST = 'http://localhost:8000';
+ximpia.settings.HOST = 'http://localhost:8001';
 ximpia.settings.SITE_MEDIA_URL = ximpia.settings.HOST + '/static/';
 ximpia.settings.STATIC_URL = ximpia.settings.HOST + '/static/';
 //ximpia.settings.SITE_MEDIA_URL = 'https://ximpia.s3.amazonaws.com/';

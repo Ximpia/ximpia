@@ -622,7 +622,7 @@ class view_tmpl(object):
 				if args.has_key('viewSlug'):
 					logger.debug( 'view_tmpl :: set from args view name' )
 					try:
-						view = dbView.get(slug=args['viewSlug'])
+						view = dbView.get(slug=args['viewSlug'], application__name = self.__APP)
 						args['ctx'].viewAuth = view.hasAuth
 					except XpMsgException as e:
 						raise Http404
