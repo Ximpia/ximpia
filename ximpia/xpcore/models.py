@@ -2118,6 +2118,12 @@ class context_view(object):
 					app_default_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
 				except Application.DoesNotExist:
 					app_default_obj = None
+				
+				if 'viewSlug' in args and args['viewSlug'] == 'home':
+					raise Http404
+				
+				if 'viewSlug' not in args:
+					args['viewSlug'] = 'home'
 								
 				# Include this when we support IE > 8
 				'''if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
