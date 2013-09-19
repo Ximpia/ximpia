@@ -86,7 +86,7 @@ class XBaseForm(forms.Form):
 					# resolve instance in form related to instance in field by type
 					if field.instance:
 						dbResolved = self._resolveDbInstance(field) #@UnusedVariable
-						logger.debug('XBaseForm :: resolved instance: %s db: %s' % (dbResolved, dbResolved._state.db) )
+						logger.debug('XBaseForm :: resolved instance: %s' % (dbResolved) )
 						# check if foreign key, should place pk as initial instead of model instance
 						isFK = self._isForeignKey(dbResolved, instanceFieldName)
 						isManyToMany = self._isManyToMany(dbResolved, instanceFieldName)
