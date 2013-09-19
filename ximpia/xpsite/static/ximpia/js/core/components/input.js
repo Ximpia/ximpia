@@ -29,7 +29,10 @@
  *
  * 
  * ** Attributes **
- * 
+ *
+ * * ``label``
+ * * ``size``
+ * * ``helpText`` 
  * 
  * ** Attributes for Autocompletion Choices (data-xp-complete) **
  *
