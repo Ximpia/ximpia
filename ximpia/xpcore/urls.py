@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     # Exec Server action
     (r'^(?P<appSlug>[a-zA-Z0-9-]+)/do/(?P<actionSlug>[a-zA-Z0-9-]+)/(?P<actionAttrs>.*)$', 'ximpia.xpcore.views.execActionMsg'),
     # Show Server View.
+    (r'^(?P<appSlug>[a-zA-Z0-9-]+)/$', 'ximpia.xpcore.views.showView'),
     (r'^(?P<appSlug>[a-zA-Z0-9-]+)/(?P<viewSlug>[a-zA-Z0-9-]+)/(?P<viewAttrs>.*)$', 'ximpia.xpcore.views.showView'),
     # Ajax Urls
     (r'^jxSuggestList$', 'ximpia.xpcore.views.jxSuggestList'),
