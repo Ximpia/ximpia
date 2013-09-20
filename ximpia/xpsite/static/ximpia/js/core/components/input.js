@@ -2292,11 +2292,18 @@
 					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
 					if (attrs['labelPosition'] == 'top') {
 						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div>";
-						htmlContent += "<textarea id=\"" + idInput + "\" " + areaAttrs + " name=\"" + nameInput + "\"/>";
+						htmlContent += "<textarea id=\"" + idInput + "\" " + areaAttrs + " name=\"" + nameInput + "\">";
 					} else {
 						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += "<textarea id=\"" + idInput + "\" " + areaAttrs + " name=\"" + nameInput + "\"";
-						htmlContent += " style=\"margin-top: 5px\" /> <div style=\"clear:both\"> </div>";
+						htmlContent += " style=\"margin-top: 5px\" >";
+					}
+					if (dataAttrs.hasOwnProperty('value') && dataAttrs['value']) {
+					    htmlContent += dataAttrs['value'];
+					}
+					htmlContent += "</textarea>";
+					if (attrs['labelPosition'] != 'top') {
+					   htmlContent += "<div style=\"clear:both\"> </div>";
 					}
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
