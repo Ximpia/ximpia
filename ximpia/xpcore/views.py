@@ -16,7 +16,7 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 from django.http import Http404 
 
-from ximpia.xpcore.util import get_class, AttrDict
+from ximpia.xpcore.util import get_class, AttrDict, get_app_full_path
 from models import context, context_view, ctx, JsResultDict
 from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
@@ -648,8 +648,11 @@ def jxSave(request, **args):
             # resolve form, set to args['ctx'].form
             logger.debug('jxSave :: form: %s' % (request.REQUEST['form']) )
             formId = request.REQUEST['form']
-            app = request.REQUEST['app']
-            formModule = getattr(getattr(__import__(app.split('.')[0]), app.split('.')[1]), 'forms')
+            app = request.REQUEST['app']            
+            app_path = get_app_full_path(app)
+            logger.debug('formId: {} app: {} app_path: {}'.format(formId, app, app_path))
+            formModule = getattr(getattr(__import__(app_path + '.forms'), app_path.split('.')[1]), 'forms')
+            logger.debug('formModule: {}'.format(formModule))
             classes = dir(formModule)
             resolvedForm = None
             for myClass in classes:
@@ -686,7 +689,8 @@ def jxSave(request, **args):
             obj = CommonService(args['ctx'])
             obj.request = request
             if isFormValid == True:
-                obj._setMainForm(args['ctx'].form)
+            	logger.debug('jxSave :: Form is valid!!!')
+                obj._set_main_form(args['ctx'].form)
                 result = obj.save()
             else:
                 if settings.DEBUG == True:
