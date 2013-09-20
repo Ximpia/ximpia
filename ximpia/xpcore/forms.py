@@ -439,8 +439,8 @@ class XBaseForm(forms.Form):
 		# Get fields from this form		
 		for fieldName in self.fields:
 			field = self.fields[fieldName]
-			if str(type(field)) == "<class 'ximpia.core.fields.OneListField'>":
-				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
+			if str(type(field)).find('fields.OneListField') != -1:
+				logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
 		js_data['response']['form_' + self._XP_FORM_ID]['choices']['value'] = _jsf.encodeDict(choices)
@@ -471,8 +471,7 @@ class XBaseForm(forms.Form):
 	def save(self):
 		"""
 		Saves the form.
-		"""
-		
+		"""		
 		logger.debug('XBaseForm.save ...')
 		logger.debug('XBaseForm.save :: form cleaned data: %s' % (self.cleaned_data) )
 		fieldList = self.fields.keys()
