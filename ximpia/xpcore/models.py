@@ -2114,10 +2114,12 @@ class context_view(object):
 				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
 				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
 				
-				try:
-					app_default_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
-				except Application.DoesNotExist:
-					app_default_obj = None
+				app_default_obj = None
+				if settings.XIMPIA_DEFAULT_APP:
+					try:
+						app_default_obj = Application.objects.get(name=settings.XIMPIA_DEFAULT_APP)
+					except Application.DoesNotExist:
+						pass
 				
 				if 'viewSlug' in args and args['viewSlug'] == 'home':
 					raise Http404
@@ -2140,12 +2142,14 @@ class context_view(object):
 					raise Http404 
 				
 				if self.__mode == 'view' and 'appSlug' in args:
+					# request view like /appSlug/viewSlug
 					if args['appSlug']:
 						self._app = Application.objects.get(slug=args['appSlug']).name
 						self.__viewName = args['viewName'] if args.has_key('viewName') else ''
 					else:
 						self.__viewName = 'home'
 				elif self.__mode == 'view' and 'appSlug' not in args and 'viewSlug' in args and app_default_obj:
+					# request view like /viewSlug having default app. We get default app from settings
 					self._app = settings.XIMPIA_DEFAULT_APP
 					args['appSlug'] = app_default_obj.slug
 					self.__viewName = args['viewName'] if args.has_key('viewName') else ''
@@ -2155,6 +2159,7 @@ class context_view(object):
 					except View.DoesNotExist:
 						raise Http404
 				else:
+					# Other options, like /appSlug and /
 					if 'appSlug' in args and args['appSlug']:
 						self._app = Application.objects.get(slug=args['appSlug']).name
 					else:
