@@ -23,6 +23,14 @@ class AttrDict(dict):
 def get_class(kls_path):
 	"""	
 	Get class
+
+	** Attributes **
+
+	* ``kls_path`` (str): Class path
+
+	** Returns **
+
+	Returns python Class, ready to instantiate
 	"""
 	if not kls_path:
 		return None
@@ -41,8 +49,12 @@ def get_app_full_path(app_path):
 	"""
 	Import app views module and get path, app_path like module.module or module
 
+	** Attributes **
+
+	* ``app_path`` (str): Module path: ``module.module``or ``module``
+
 	** Returns **
-	application full path
+	application full path: like ximpia.xpsite
 	"""
 	parts = app_path.split('.')
 	m = __import__(app_path)
@@ -52,6 +64,17 @@ def get_app_full_path(app_path):
 
 
 def get_project(app):
+	"""
+	Get project from settings
+
+	** Attributes **
+
+	* ``app`` (str): App like ``xpsite``
+
+	** Returns **
+
+	Project, like ``ximpia``, field entry in path ``myproject.myapp``
+	"""
 	dj_apps = settings.INSTALLED_APPS
 	for dj_app in dj_apps:
 		if dj_app.find('.' + app) != -1:
