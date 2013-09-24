@@ -16,7 +16,7 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 from django.http import Http404 
 
-from ximpia.xpcore.util import get_class, AttrDict, get_app_full_path
+from ximpia.xpcore.util import get_class, AttrDict, get_app_full_path, get_app_path
 from models import context, context_view, ctx, JsResultDict
 from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService
 from data import ViewDAO, ActionDAO, ApplicationDAO
@@ -327,7 +327,8 @@ def jxDataQuery(request, **args):
         raise XpMsgException(AttributeError, _('app and dbClass must be defined.'))
     dbClass = request.REQUEST['dbClass']
     dbApplication = ApplicationDAO(args['ctx'])
-    app = request.REQUEST['app']
+    #logger.debug('jxDataQuery :: app: {}'.format(request.REQUEST['app'], get_app_full_path(request.REQUEST['app'])))
+    app = get_app_full_path(request.REQUEST['app'])
     application = dbApplication.get(name=app)
     # app: ximpia_site.web, MyDAO => ximpia_site.web.data.MyDAO
     classPath = app + '.data.' + dbClass
