@@ -462,7 +462,7 @@ class XBaseForm(forms.Form):
 		# Get fields from this form		
 		for fieldName in self.fields:
 			field = self.fields[fieldName]
-			if str(type(field)) == "<class 'ximpia.core.fields.ManyListField'>":
+			if str(type(field)).find('fields.ManyListField') != -1:
 				#logger.debug('__buildForeignKey :: field: %s' % (fieldName) ) 
 				choices[field.choicesId] = field.buildList()
 		# Update new choices
