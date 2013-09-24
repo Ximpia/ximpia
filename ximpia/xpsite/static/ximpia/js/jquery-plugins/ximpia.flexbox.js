@@ -147,7 +147,7 @@
             top += inputPad;
         }
         
-        top += 6;
+        //top += 6;
 		
         var $ctr = $('<div></div>')
             .attr('id', $div.attr('id') + '_ctr')
