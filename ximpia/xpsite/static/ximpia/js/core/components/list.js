@@ -462,7 +462,7 @@ ximpia.constants.list.APPEND = 'append';
 				}
 				var pathFields = detailView.split('.');
 				var detailView = pathFields[pathFields.length-1];
-				var app = pathFields.slice(0,2).join('.');
+				var app = pathFields.slice(0,pathFields.length-1).join('.');
 				ximpia.console.log('xpListData :: view: ' + detailView + ' params: ' + JSON.stringify(params) 
 						+ ' app: ' + app);
 				if (detailType == 'window') {
