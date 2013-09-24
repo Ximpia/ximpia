@@ -23,7 +23,7 @@ from ximpia.util.js import Form as _jsf
 from util import AttrDict
 
 # Settings
-from ximpia.xpcore.util import get_class, get_app_name
+from ximpia.xpcore.util import get_class, get_app_name, get_app_full_path
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
@@ -2004,15 +2004,17 @@ class ctx(object):
 				for key in request.REQUEST:
 					logger.debug('ContextDecorator :: REQUEST:: %s = %s' % (key, request.REQUEST[key]) )
 				self._app = request.REQUEST['app'] if request.REQUEST.has_key('app') else ''
+				#self._app = get_app_full_path(self._app)
+				#logger.debug('ContextDecorator :: app test: {}'.format(get_app_full_path(self._app)))
 				langs = ('en')
 				lang = translation.get_language()
-				logger.debug( 'lang django: ' + lang )
+				logger.debug( 'ContextDecorator :: lang django: ' + lang )
 				if lang not in langs:
 					lang = 'en'
 				# Instantiate app Context
 				try:
-					logger.debug('self._app: {}'.format(self._app))
-					cls = get_class( self._app + '.service.Context' )
+					logger.debug('ContextDecorator :: self._app: {}'.format(self._app))
+					cls = get_class( get_app_full_path(self._app) + '.service.Context' )
 					ctx = cls()
 				except AttributeError:
 					ctx = Context()
@@ -2081,7 +2083,7 @@ class ctx(object):
 					logger.debug( 'ContextDecorator :: Did set cookie into resp... %s' % (cookie) )
 				return resp
 			except Exception as e: #@UnusedVariable
-				logger.debug( 'Context :: Exception...' )
+				logger.debug( 'ContextDecorator :: Exception...' )
 				if settings.DEBUG == True:
 					traceback.print_exc()
 					#logger.debug( e.myException )

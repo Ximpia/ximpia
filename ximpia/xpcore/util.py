@@ -5,6 +5,7 @@ from HTMLParser import HTMLParser
 
 # django
 from django.conf import settings
+from django.utils.translation import ugettext as _
 
 # Import settings and logging
 import logging.config
@@ -57,9 +58,14 @@ def get_app_full_path(app_path):
 	application full path: like ximpia.xpsite
 	"""
 	parts = app_path.split('.')
-	m = __import__(app_path)
-	for comp in parts[1:]:
-		m = getattr(m, comp)
+	try:
+		m = __import__(app_path)
+		for comp in parts[1:]:
+			m = getattr(m, comp)
+	except ImportError:
+		m = __import__('ximpia.' + app_path)
+		for comp in parts:
+			m = getattr(m, comp)
 	return '.'.join(m.__file__.split('/__init__')[0].split('/')[-1-1:])
 
 
