@@ -2359,8 +2359,10 @@
 	        				// Make sure all the content in the textarea is visible
 	        				//alert(textarea.width());
 	        				setCSS(textarea);
-	        				copyContent(textarea);
-							textarea.height($("#" + id).height());		
+	        				var timeout = setInterval(function() {
+	        				     copyContent(textarea);
+							     textarea.height($("#" + id).height());
+							}, 100 );
 					//};									
 					}
 				}	
