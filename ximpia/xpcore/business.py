@@ -6,6 +6,7 @@ import datetime
 import random
 import os
 import copy
+import re
 
 from django.contrib.auth.models import User, Group as GroupSys
 from django.utils.translation import ugettext as _
@@ -13,7 +14,7 @@ from django.utils.translation import ugettext as _
 from models import XpMsgException, XpRegisterException, get_blank_wf_data
 from models import View, Action, Application, ViewParamValue, Param, Workflow, WFParamValue, WorkflowView, ViewMenu, Menu, MenuParam, \
 	SearchIndex, SearchIndexParam, SearchIndexWord, Word, XpTemplate, ViewTmpl, WorkflowData, ApplicationMeta, ApplicationTag, Service, \
-	Condition, ViewMenuCondition, ServiceMenuCondition
+	Condition, ViewMenuCondition, ServiceMenuCondition, WorkflowMeta
 from ximpia.xpsite.models import Category, Tag, Group
 from ximpia.util import resources
 from models import CoreParam
@@ -573,7 +574,7 @@ class ComponentRegisterBusiness ( object ):
 		WorkflowData.objects.filter(flow__application__name=appName).update(isDeleted=True)
 		logger.info( 'deleted all flows for %s' % appName )
 	
-	def registerFlow(self, compName, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=True):
+	def registerFlow(self, compName, flowCode=None, resetStart=False, deleteOnEnd=False, jumpToView=False):
 		"""
 		Reister flow
 		
@@ -583,9 +584,9 @@ class ComponentRegisterBusiness ( object ):
 		
 		**Optional Attributes**
 		
-		* ``resetStart``
-		* ``deleteOnEnd``
-		* ``jumoToView``
+		* ``resetStart`` (bool)
+		* ``deleteOnEnd` (bool)
+		* ``jumoToView`` (bool)
 		
 		**Returns**
 		
@@ -600,58 +601,86 @@ class ComponentRegisterBusiness ( object ):
 			flow = Workflow.objects.get(application=app, code=flowCode)
 		except Workflow.DoesNotExist:
 			flow = Workflow(application=app, code=flowCode)		
-		flow.resetStart = resetStart
-		flow.deleteOnEnd = deleteOnEnd
-		flow.jumpToView = jumpToView
 		flow.save()
+		# meta
+		WorkflowMeta.objects.filter(workflow=flow).delete()
+		WorkflowMeta.objects.create(workflow=flow, meta=MetaKey.objects.get(name='RESET_START'), value=str(resetStart))
+		WorkflowMeta.objects.create(workflow=flow, meta=MetaKey.objects.get(name='DELETE_ON_END'), value=str(deleteOnEnd))
+		WorkflowMeta.objects.create(workflow=flow, meta=MetaKey.objects.get(name='JUMP_TO_VIEW'), value=str(jumpToView))
+		logger.info('Registered flow {}'.format(flowCode))
 		
-	def registerFlowView(self, compName, flowCode=None, viewNameTarget=None, actionName=None, order=10, **args):
+	def registerFlowView(self, compName, flowCode=None, **args):
 		"""
-		Reister flow
-		
+		Register flow views
+
 		**Required Attributes**
-		
-		* ``flowCode``
-		* ``viewNameTarget``
-		* ``actionName``
-		* ``order`` : Order to evaluate view target resolution
-		
+
+		* ``flowCode`` (str) : Flow code
+
 		**Optional Attributes**
-		
-		* ``params`` : Workflow parameters. Dictionary that contains the parameters to resolve views. Has the format name => (operator, value)
-		* ``viewParams`` : View entry parameters
-		* ``viewNameSource`` 
-		
+
+		* ``viewNameSource`` (str) : Source view name
+		* ``viewNameTarget`` (str) : Target view name
+		* ``actionName`` (str) : Action name
+		* ``condition``(str) : Condition with params in string:
+								status='OK' mode='special' -> Would mean both parameters must match. We convert that into params
+								dictionary.
+			{'status': ('eq', 'OK')}
+		* ``hasEvent`` (bool) : Flow link is attached to an event (user clicking on link, button, etc...)
+		* ``order`` (int) : Order to evaluate view target resolution
+
+		In case no action, viewNameSource and viewNameTarget needs to be informed. In case action, only viewNameTarget must
+		be informed, since actions can omit source view. hasEvent is True by default. 
+
 		**Returns**
-		
+
 		None
-		
+
 		"""
-		if flowCode == None or viewNameTarget == None or actionName == None:
-			raise XpRegisterException(AttributeError, """registerFlowView requires attributes flowCode, viewNameTarget,
-															and actionName""")
+		if flowCode == None:
+			raise XpRegisterException(AttributeError, """registerFlowView requires attribute flowCode""")
+		if 'actionName' not in args and ('viewNameSource' not in args or 'viewNameTarget' not in args):
+			raise XpRegisterException(AttributeError, """registerFlowView without action needs source and target views""")
+		if 'actionName' in args and 'viewNameTarget' not in args:
+			raise XpRegisterException(AttributeError, """registerFlowView with action needs target view""")
 		appName = self.__getAppName(compName)
 		app = Application.objects.get(name=appName)
-		
-		viewTarget = View.objects.get(application=app, name=viewNameTarget)
-		action = Action.objects.get(application=app, name=actionName)
 		flow = Workflow.objects.get(code=flowCode)
-		try:
-			flow = WorkflowView.objects.get(flow=flow, viewTarget=viewTarget, action=action)
-		except WorkflowView.DoesNotExist:
-			flow = WorkflowView(flow=flow, viewTarget=viewTarget, action=action)
-		if args.has_key('viewNameSource'):
+		if 'viewNameTarget' in args:
+			viewTarget = View.objects.get(application=app, name=args['viewNameTarget'])
+		if 'viewNameSource' in args:
 			viewSource = View.objects.get(application=app, name=args['viewNameSource'])
-			flow.viewSource = viewSource
-		flow.order = order
-		flow.save()		
+		hasEvent = lambda x: 'hasEvent' in x and not args['hasEvent']
+		number_flows = WorkflowView.objects.filter(flow__code=flowCode).count()
+		defaults = {'order': (number_flows+1)*10,
+					'hasEvent': False if hasEvent(args) else True}
+		if 'actionName' in args:
+			action = Action.objects.get(application=app, name=args['actionName'])
+			if args.has_key('viewNameSource'):
+				defaults['viewSource'] = viewSource
+			flow_view, created = WorkflowView.objects.get_or_create(flow=flow, 
+																	viewTarget=viewTarget, 
+																	action=action,
+																	defaults=defaults) 
+		else:
+			flow_view, created = WorkflowView.objects.get_or_create(flow=flow, 
+																	viewSource=viewSource,
+																	viewTarget=viewTarget,
+																	defaults=defaults)
 		# Parameters
-		if args.has_key('params'):
-			for name in args['params']:
-				operator, value = args['params'][name]
-				wfParamValue, created = WFParamValue.objects.get_or_create(flow=flow, name=name, operator=operator, value=value) #@UnusedVariable
-		# Entry View parameters
-		# TODO: Complete entry view parameters
+		if 'condition' in args:
+			WFParamValue.objects.filter(flowView=flow_view).delete()
+			ops = {	'=': Choices.OP_EQ, '!=': Choices.OP_NE, '>': Choices.OP_GT, '<': Choices.OP_LT, '<=': Choices.OP_LTE, 
+					'>=': Choices.OP_GTE}
+			for field in args['condition'].split():
+				fields = re.split('(\w+)([!]{0,1}[=<>]{1,2})[\'\"]{0,1}(\w+)[\'\"]{0,1}', field)
+				name, operator, value = fields[1], ops[fields[2]], fields[3]
+				name_db = Param.objects.get(name=name)
+				wfParamValue, created = WFParamValue.objects.get_or_create(flowView=flow_view, name=name_db, operator=operator, value=value) #@UnusedVariable
+		logger.info('Registered flow view [{}] {} <{}> -> {} ({} params) event:{}'.format(flowCode, args.get('viewNameSource', ''), args.get('actionName', ''),
+																			args.get('viewNameTarget', ''), 
+																			len(args['condition'].split()) if 'condition' in args else 0,
+																			False if hasEvent(args) else True))
 	
 	def cleanMenu(self, compName):
 		"""
@@ -857,12 +886,14 @@ class WorkFlowBusiness (object):
 		self._dbWFParams = WFParamValueDAO(ctx, related_depth=2)
 		self._dbView = ViewDAO(ctx)
 		self._dbParam = ParamDAO(ctx)
-		#self._dbWFViewParam = WFViewEntryParamDAO(ctx, related_depth=2)
 		self.__wfData = get_blank_wf_data({})
 	
 	def gen_user_id(self):
 		"""Generate workflow user id.
-		@return: user_id"""
+		
+		** Returns **
+		user_id
+		"""
 		user_id = ''
 		while len(user_id) < 40:
 			user_id += random.choice('0123456789abcde')
@@ -880,59 +911,81 @@ class WorkFlowBusiness (object):
 		@return: resolved_flow : Resolved flow for flow code , login user or session"""
 		resolvedFlow = None
 		flows = self._dbWFData.search(flow__code=flow_code, userId=wf_user_id)
-		logger.debug( 'flows: %s' % (flows) )
-		logger.debug( 'All: %s' % (self._dbWFData.getAll()) )
+		logger.debug('wf.resolve_flow_data_for_user :: flows: %s' % (flows))
+		logger.debug('wf.resolve_flow_data_for_user :: All: %s' % (self._dbWFData.get_all()))
 		if len(flows) > 0:
 			resolvedFlow = flows[0]
 		else:
 			raise XpMsgException(None, _('Error in resolving workflow for user'))
-		logger.debug( 'resolvedFlow: %s' % (resolvedFlow) )
+		logger.debug('wf.resolve_flow_data_for_user :: resolvedFlow: %s' % (resolvedFlow))
 		return resolvedFlow
 
-	def resolve_view(self, wf_user_id, app_name, flow_code, view_name_source, action_name):
-		"""Search destiny views with origin viewSource and operation actionName
-		@param view_name_source: Origin view
-		@param action_name: Action name
-		@return: view_target"""
-		viewTarget = ''
-		flowViews = self._dbWFView.search(flow__application__name=app_name, flow__code=flow_code,
-					viewSource__name=view_name_source, action__name=action_name).order_by('order')
+	def resolve_view(self, wf_user_id, app_name, flow_code, view_name_source, action_name, flow_views=None):
+		"""
+		Search destiny views with origin viewSource and operation actionName
+
+		** Attributes **
+
+		* ``wf_user_id`` : Workflow user id
+		* ``app_name`` : App name
+		* ``flow_code`` : Flow code
+		* ``view_name_source`` : Origin view
+		* ``action_name`` : Action name
+
+		** Optional Attributes **
+
+		* ``flow_views`` (list<WorkflowView>) : List of flow views to check flow links from. No need to query for flow links.
+
+		** Returns **
+		flowView resolved, which represent flow link data
+		"""
+		flowView = None
+		if not flow_views:
+			flowViews = self._dbWFView.search(flow__application__name=app_name, flow__code=flow_code,
+					viewSource__name=view_name_source or None, action__name=action_name).order_by('order')
+		else:
+			flowViews = flow_views
 		params = self._dbWFParams.search(flowView__in=flowViews)
 		paramFlowDict = {}
 		for param in params:
-			if not paramFlowDict.has_key(param.flowView.flow.code):
-				paramFlowDict[param.flowView.flow.code] = []
-			paramFlowDict[param.flowView.flow.code].append(param)
-		wfDict = self.getFlowDataDict(wf_user_id, flow_code)
-		logger.debug( 'wfDict: %s' % (wfDict) )
-		if len(flowViews) == 1:
-			viewTarget = flowViews[0].viewTarget
-		else:
-			for flowCode in paramFlowDict:
-				params = paramFlowDict[flowCode]
-				check = True
-				numberEval = 0
-				for param in params:
-					if wfDict['data'].has_key(param.name):
-						if param.operator == Choices.OP_EQ:
-							check = wfDict['data'][param.name] == param.value
-						elif param.operator == Choices.OP_LT:
-							check = wfDict['data'][param.name] < param.value
-						elif param.operator == Choices.OP_GT:
-							check = wfDict['data'][param.name] > param.value
-						elif param.operator == Choices.OP_NE:
-							check = wfDict['data'][param.name] != param.value
-						if check == True:
-							numberEval += 1
-				if check == True and numberEval > 0:					
-					viewTarget = flowViews.filter(flowView__code=flowCode).viewTarget
-					break
-		return viewTarget
+			if not paramFlowDict.has_key(param.flowView.id):
+				paramFlowDict[param.flowView.id] = []
+			paramFlowDict[param.flowView.id].append(param)
+		wfDict = self.get_flow_data_dict(wf_user_id, flow_code)
+		logger.debug('wf.resolve_view :: wfDict: {}'.format(wfDict))
+		logger.debug('wf.resolve_view :: flowViews: {}'.format(flowViews))
+		logger.debug('wf.resolve_view :: paramFlowDict: {}'.format(paramFlowDict))
+		if len(flowViews) == 1 and not params:
+			return flowViews[0]
+		for flowViewId in paramFlowDict:
+			params = paramFlowDict[flowViewId]
+			check = True
+			numberEval = 0
+			for param in params:
+				logger.debug('wf.resolve_view :: param: {} -> {}'.format(param.name.name, param.value))
+				if wfDict['data'].has_key(param.name.name):
+					logger.debug('wf.resolve_view :: get into checks...')
+					if param.operator == Choices.OP_EQ:
+						check = wfDict['data'][param.name.name] == param.value
+					elif param.operator == Choices.OP_LT:
+						check = wfDict['data'][param.name.name] < param.value
+					elif param.operator == Choices.OP_GT:
+						check = wfDict['data'][param.name.name] > param.value
+					elif param.operator == Choices.OP_NE:
+						check = wfDict['data'][param.name.name] != param.value
+					if check == True:
+						numberEval += 1
+					else:
+						break
+			if check == True and numberEval > 0:
+				return flowViews.filter(id=flowViewId)[0]
+		return flowView
 		
 	def put_params(self, **argsDict):
 		"""Put list of workflow parameters in context
 		@param argsDict: Argument dictionary"""
 		flowCode = self._ctx.flowCode
+		logger.debug('wf.put_params :: flowCode: {}'.format(flowCode))
 		flow = self._dbWorkflow.get(code=flowCode) #@UnusedVariable
 		if not self.__wfData:
 			self.__wfData = get_blank_wf_data({})
@@ -961,10 +1014,13 @@ class WorkFlowBusiness (object):
 				elif paramDbType == Choices.BASIC_TYPE_TIME:
 					checkType = paramType is datetime.time
 				#paramValue, created = self._dbWFParams.getCreate()
+				logger.debug('wf.put_params :: checkType: {}'.format(checkType))
 				if checkType == True:
+					logger.debug('wf.put_params :: name: {} value: {}'.format(name, argsDict[name]))
 					self.__wfData['data'][name] = argsDict[name]
 				else:
 					raise XpMsgException(None, _('Error in parameter type. "') + str(paramDbType) + _('" was expected and "') + str(paramType) + _('" was provided for parameter "') + str(name) + '"')
+			#self.save(self._ctx.wfUserId, flowCode)
 		else:
 			raise XpMsgException(None, _('Parameters "') + ''.join(nameList) + _('" have not been registered'))
 	
@@ -972,7 +1028,7 @@ class WorkFlowBusiness (object):
 		"""Saves the workflow into database for user
 		@param user: User
 		@param flowCode: Flow code"""
-		logger.debug( '__wfData: %s' % (self.__wfData) )
+		logger.debug( 'wf.save :: __wfData: %s' % (self.__wfData) )
 		flows = self._dbWFData.search(userId=wf_user_id, flow__code=flow_code)
 		flow = flows[0]
 		if flows > 0:
@@ -981,11 +1037,10 @@ class WorkFlowBusiness (object):
 				flowData['data'][name] = self.__wfData['data'][name]
 		else:
 			raise XpMsgException(None, _('Flow data not found'))
-		#if self.__wfData['viewName'] != '':
 		flowData['viewName'] = self.__wfData['viewName']
-		view = self._dbView.get(name=self.__wfData['viewName'])
-		flow.view = view
-		logger.debug( 'save :: flowData: %s' % (flowData) )
+		if self.__wfData['viewName']:
+			flow.view = self._dbView.get(name=self.__wfData['viewName'])
+		logger.debug( 'wf.save :: flowData: %s' % (flowData) )
 		flow.data = _jsf.encode64Dict(flowData)
 		flow.save()
 		return flow
@@ -995,30 +1050,34 @@ class WorkFlowBusiness (object):
 		@param wf_user_id: Workflow User Id
 		@param flow_code: Flow code"""
 		try:
-			flowData = self.resolveFlowDataForUser(wf_user_id, flow_code)
-			logger.debug( 'resetFlow :: flowData: %s' % (flowData) )
+			flowData = self.resolve_flow_data_for_user(wf_user_id, flow_code)
+			logger.debug('wf.resetFlow :: flowData: %s' % (flowData))
 			self.__wfData = get_blank_wf_data({})
-			self.__wfData['viewName'] = view_name
-			logger.debug( '__wfData: %s' % (self.__wfData) )
+			logger.debug('wf.resetFlow :: __wfData: %s' % (self.__wfData))
 			# Update flow data
-			view = self._dbView.get(name=view_name)
 			flowData.data = _jsf.encode64Dict(self.__wfData)
-			flowData.view = view
+			if view_name != '':
+				self.__wfData['viewName'] = view_name
+				view = self._dbView.get(name=view_name)
+				flowData.view = view
 			flowData.save()
 		except XpMsgException:
 			# Create flow data
-			logger.debug( 'create flow... %s' % (wf_user_id) )
+			logger.debug('wf.resetFlow :: create flow... %s' % (wf_user_id))
 			self.__wfData = get_blank_wf_data({})
-			self.__wfData['viewName'] = view_name
-			logger.debug( '__wfData: %s' % (self.__wfData) )
-			view = self._dbView.get(name=view_name)
+			logger.debug('wf.resetFlow :: __wfData: %s' % (self.__wfData))
 			workflow = self._dbWorkflow.get(code=flow_code)
-			self._dbWFData.create(userId=wf_user_id, flow=workflow, data = _jsf.encode64Dict(self.__wfData), view=view)
+			if view_name != '':
+				self.__wfData['viewName'] = view_name
+				view = self._dbView.get(name=view_name)
+				self._dbWFData.create(userId=wf_user_id, flow=workflow, data = _jsf.encode64Dict(self.__wfData), view=view)
+			else:
+				self._dbWFData.create(userId=wf_user_id, flow=workflow, data = _jsf.encode64Dict(self.__wfData))
 
 	def set_view_name(self, view_name):
 		"""Set view name in Workflow
 		@param view_name: View name"""
-		logger.debug( 'setViewName :: %s' % (self.__wfData) )
+		logger.debug( 'wf.set_view_name :: %s' % (self.__wfData) )
 		self.__wfData['viewName'] = view_name
 		logger.debug( self.__wfData )
 
@@ -1047,7 +1106,7 @@ class WorkFlowBusiness (object):
 		@param flowData: Flow data
 		@return: flow_data_dict"""
 		flowDataDict = _jsf.decode64dict(flow_data.data)
-		logger.debug( 'build :: flowDataDict: %s' % (flowDataDict) )
+		logger.debug('wf.build_flow_data_dict :: flowDataDict: %s' % (flowDataDict))
 		return flowDataDict
 	
 	def get_flow_data_dict(self, wf_user_id, flow_code):
@@ -1055,16 +1114,20 @@ class WorkFlowBusiness (object):
 		@param wf_user_id: Workflow user id
 		@param flow_code: flowCode
 		@return: flow_data_dict : Dictionary"""
-		flowData = self.resolveFlowDataForUser(wf_user_id, flow_code)
+		flowData = self.resolve_flow_data_for_user(wf_user_id, flow_code)
 		flowDataDict = _jsf.decode64dict(flowData.data)
-		logger.debug( 'get :: flowDataDict: %s' % (flowDataDict) )
+		logger.debug('wf.get_flow_data_dict :: __wfData: {}'.format(self.__wfData))
+		if self.__wfData['data']:
+			flowDataDict['data'] = self.__wfData['data']
+		logger.debug('wf.get_flow_data_dict :: flowDataDict: %s' % (flowDataDict))
 		return flowDataDict
 	
 	def get_flow_view_by_action(self, action_name):
 		"""Get flow by action name. It queries the workflow data and returns flow associated with actionName
 		@param action_name: Action name
 		@return: flow_view: Workflow view"""
-		flowView = self._dbWFView.get(action__name=action_name)
+		flowViews = self._dbWFView.search(action__name=action_name)
+		flowView = flowViews[0] if len(flowViews)>0 else None
 		return flowView
 	
 	def get_view(self, wf_user_id, flow_code):
@@ -1072,7 +1135,7 @@ class WorkFlowBusiness (object):
 		@param wf_user_id: User
 		@param flow_code: Flow code
 		@return: view_name"""
-		flowDataDict = self.getFlowDataDict(wf_user_id, flow_code)
+		flowDataDict = self.get_flow_data_dict(wf_user_id, flow_code)
 		viewName = flowDataDict['viewName']
 		return viewName
 	
@@ -1082,10 +1145,10 @@ class WorkFlowBusiness (object):
 		@param view_name: View name
 		@return: param_dict"""
 		params = self._dbWFParams.search(flowView__flow__code=flow_code, flowView__viewTarget__name=view_name)
-		logger.debug( 'params: %s' % (params) )
+		logger.debug('wf.get_view_params :: params: {}'.format(params))
 		paramDict = {}
 		for param in params:
-			paramDict[param.paramView.name] = param.paramView.value
+			paramDict[param.name.name] = param.value
 		return paramDict
 
 	def is_last_view(self, view_name_source, view_name_target, action_name):
@@ -1109,8 +1172,8 @@ class WorkFlowBusiness (object):
 	
 	def remove_data(self, wf_user_id, flow_code):
 		"""Removes the workflow data for user or session."""
-		flowData = self.resolveFlowDataForUser(wf_user_id, flow_code)
-		self._dbWFData.deleteById(flowData.id, real=True)
+		flowData = self.resolve_flow_data_for_user(wf_user_id, flow_code)
+		self._dbWFData.delete_by_id(flowData.id, is_real=True)
 
 class CommonBusiness ( object ):
 	
