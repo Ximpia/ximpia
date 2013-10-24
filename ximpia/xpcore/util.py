@@ -169,6 +169,24 @@ def get_instances(args, ctx_min):
 	return instances
 
 
+def parse_impl(impl, ctx):
+	"""
+	Parse iplementation from views, actions and return object and method.
+
+	** Attributes **
+
+	* ``impl`` (str) : Implementation path
+	* ``ctx`` (Context) : Context
+
+	** Returns **
+	obj, method corresponding to implementation. obj is service class instance and method
+	operation holding logic for views or actions.
+	"""
+	implFields = impl.split('.')
+	method = implFields[len(implFields)-1]  
+	obj = get_class(".".join(implFields[:-1]))(ctx) #@UnusedVariable
+	return obj, method
+
 class TemplateParser(HTMLParser):
 	__startTitle = False
 	__startTitleBar = False
