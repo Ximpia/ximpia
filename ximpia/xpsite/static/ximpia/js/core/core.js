@@ -1458,6 +1458,28 @@ ximpia.common.Form = function() {
 												// Update session data into SessionStorage
 												// Process login and logout layout changes
 												ximpia.common.PageAjax.processLogin(responseMap);
+												var appSlug = responseMap['response']['appSlug'];
+												var viewSlug = responseMap['response']['viewSlug'];
+                                                var stateData = {
+                                                    appSlug: appSlug,
+                                                    viewSlug: viewSlug,
+                                                    app: responseMap['response']['app'],
+                                                    view: responseMap['response']['view']
+                                                };
+                                                var location = '';
+                                                if (responseMap['response']['isDefaultApp']) {
+                                                    location = '/' + viewSlug + '/';
+                                                } else {
+                                                    location = '/' + appSlug + '/' + viewSlug + '/';
+                                                }
+                                                var title = $(data).filter('title').text();
+                                                if (responseMap['response']['defaultApp'] != appSlug) {
+                                                    if (responseMap['response']['view'] != 'home') {
+                                                        window.history.pushState(stateData, title, location);
+                                                    } else {
+                                                        window.history.pushState(stateData, title, '/');
+                                                    }
+                                                }
 											}).error(function(jqXHR, textStatus, errorThrown) {
 												ximpia.console.log('bindAction :: get html template ERROR!!!! : ' + textStatus + ' ' + errorThrown);
 											});
@@ -2453,12 +2475,31 @@ ximpia.common.PageAjax = function() {
 					// Do menus
 					responseMap = dataObj;
 					ximpia.common.PageAjax.processMenus(responseMap);
+					//alert(window.location);
+					//alert(responseMap['response']['appSlug'] + '/' + responseMap['response']['viewSlug']);
+					//alert(window.location.pathname.indexOf(responseMap['response']['appSlug'] + '/' + responseMap['response']['viewSlug']));
+					//alert(window.location.pathname);
 					ximpia.common.timeOutCounter(function() {
-						ximpia.common.PageAjax.positionBars();						
+						ximpia.common.PageAjax.positionBars();
 						ximpia.common.PageAjax.doRender(xpForm);
 						ximpia.common.PageAjax.doFade();
 						var oForm = ximpia.common.Form();
 						oForm.doBindBubbles();
+						// Change only when window.location has /do/
+						// Escape when /
+						// /front/contact-us
+						var appSlug = responseMap['response']['appSlug'];
+						var viewSlug = responseMap['response']['viewSlug'];
+                        if (window.location.pathname.indexOf(responseMap['response']['appSlug'] + '/' + responseMap['response']['viewSlug']) == -1 && window.location.pathname != '/' && viewSlug != 'home' && appSlug != responseMap['response']['defaultApp']) {
+                                var location = '/' + appSlug + '/' + viewSlug + '/';
+                                var stateData = {
+                                                    appSlug: appSlug,
+                                                    viewSlug: viewSlug,
+                                                    app: responseMap['response']['app'],
+                                                    view: responseMap['response']['view']
+                                }
+                                window.history.pushState(stateData, '', location);
+                        }
 					});
 				} else {
 					errorMsg = dataObj.errors[0][1];
@@ -2549,10 +2590,12 @@ ximpia.common.PageAjax = function() {
 												app: responseMap['response']['app'],
 												view: responseMap['response']['view']
 							}
-							if (viewName != 'home') {
-								window.history.pushState(stateData, title, location);
-							} else {
-								window.history.pushState(stateData, title, '/');
+							if (appSlug != responseMap['response']['defaultApp']) {
+                                if (viewName != 'home') {
+                                    window.history.pushState(stateData, title, location);
+                                } else {
+                                    window.history.pushState(stateData, title, '/');
+                                }
 							}
 						}
 					}).error(function(jqXHR, textStatus, errorThrown) {
