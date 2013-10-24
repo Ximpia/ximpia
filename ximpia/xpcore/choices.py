@@ -74,12 +74,16 @@ class Choices(object):
 	# OPERATOR
 	OP_EQ = 'eq'
 	OP_LT = 'lt'
+	OP_GTE = 'gte'
+	OP_LTE = 'lte'
 	OP_GT = 'gt'
 	OP_NE = 'ne'
 	OP = (
 		('eq', _('Equal')),
 		('lt', _('Less Than')),
 		('gt', _('Greater Than')),
+		('gte', _('Greater or Equal Than')),
+		('lte', _('Greater or Equal Than')),
 		('ne', _('Not Equal')))
 
 	# BASIC_TYPES
