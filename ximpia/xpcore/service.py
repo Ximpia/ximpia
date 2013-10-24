@@ -9,6 +9,7 @@ import datetime
 import os
 import re
 import copy
+import time
 
 # django
 from django.http import HttpResponse, Http404
@@ -23,13 +24,15 @@ from django.core.cache import cache
 
 from business import WorkFlowBusiness
 from models import get_result_ERROR, XpMsgException
+import util
 from util import TemplateParser, AppTemplateParser, get_instances, get_app_path
 
 from models import SearchIndex, Context
 
 from data import ParamDAO, ApplicationDAO, TemplateDAO, ViewTmplDAO
 from data import MenuParamDAO, ViewMenuDAO, ActionDAO, ServiceMenuDAO, ApplicationMediaDAO
-from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO, ViewMenuConditionDAO, ServiceMenuConditionDAO
+from data import SearchIndexDAO, SearchIndexParamDAO, WordDAO, SearchIndexWordDAO, ViewMenuConditionDAO, ServiceMenuConditionDAO,\
+					WorkflowViewDAO, WorkflowDAO
 from ximpia.util import resources
 from choices import Choices
 
@@ -118,7 +121,7 @@ class service(object):
 		form: Form class attached to the view
 		isServerTmpl: True | False : If result is jsData or Http json representation
 		"""
-		#logger.debug( 'service :: argsDict: %s argsTuple: %s' % (argsDict, argsTuple) )
+		#logger.debug('service :: argsDict: %s argsTuple: %s' % (argsDict, argsTuple))
 		if argsDict.has_key('pageError'):
 			self._pageError = argsDict['pageError']
 		else:
@@ -127,15 +130,17 @@ class service(object):
 			self._form = argsDict['form']
 		"""if argsDict.has_key('isServerTmpl'):
 			self._isServerTmpl = argsDict['isServerTmpl']"""
+
 	def __call__(self, f):
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
 			logger.debug( 'service :: data: %s %s' % (argsTuple, argsDict) )
 			try:
-				doRedirect = False
-				redirectUrl = ''
+				dbView = obj._instances(WorkflowViewDAO, ViewDAO)[0]
+				'''doRedirect = False
+				redirectUrl = '''''
 				self._isServerTmpl = obj._ctx.isServerTmpl
-				logger.debug('service :: isServerTmpl: %s' % (self._isServerTmpl) )
+				logger.debug('service :: isServerTmpl: %s' % (self._isServerTmpl))
 				#logger.debug( 'service :: ctx: %s' % (obj._ctx.keys()) )
 				obj._ctx.jsData = JsResultDict()
 				if self._form != None:
@@ -145,25 +150,26 @@ class service(object):
 					# Instances
 					dbApp = ApplicationDAO(obj._ctx)
 					# View
-					logger.debug( 'service :: viewNameTarget: %s' % (str(obj._ctx.viewNameTarget)) )
-					logger.debug( 'service :: viewNameSource: %s' % (str(obj._ctx.viewNameSource)) )
+					logger.debug('service :: viewNameTarget: {} ({})'.format(str(obj._ctx.viewNameTarget), type(obj._ctx.viewNameTarget)))
+					logger.debug('service :: viewNameSource: {} ({})'.format(str(obj._ctx.viewNameSource), type(obj._ctx.viewNameSource)))
 					if len(obj._ctx.viewNameTarget) > 1:
 						viewName = obj._ctx.viewNameTarget
 					else:
 						viewName = obj._ctx.viewNameSource
-					logger.debug( 'service :: viewName: %s' % (viewName) )
+					logger.debug('service :: viewName: %s' % (viewName))
 					# Views
 					obj._ctx.jsData['response']['view'] = viewName
-					logger.debug( 'service :: view: %s' % ('*' + str(obj._ctx.jsData['response']['view']) + '*') )
+					logger.debug('service :: view: %s' % ('*' + str(obj._ctx.jsData['response']['view']) + '*'))
 					# App
 					obj._ctx.jsData['response']['app'] = obj._ctx.app
 					obj._ctx.jsData['response']['appSlug'] = dbApp.get(name=obj._ctx.app).slug
 					obj._ctx.jsData['response']['isDefaultApp'] = obj._ctx.app == settings.XIMPIA_DEFAULT_APP
+					obj._ctx.jsData['response']['defaultApp'] = settings.XIMPIA_DEFAULT_APP
 					# winType
 					if len(obj._ctx.jsData['response']['view'].strip()) != 0:
 						dbView = ViewDAO(obj._ctx)
 						view = dbView.get(application__name=obj._ctx.app, name=obj._ctx.jsData['response']['view'])
-						logger.debug( 'service :: winType: %s' % (str(view.winType)) )
+						logger.debug('service :: winType: %s' % (str(view.winType)))
 						obj._ctx.jsData['response']['winType'] = view.winType
 						obj._ctx.jsData['response']['viewSlug'] = view.slug
 					# User authenticate and session
@@ -198,13 +204,13 @@ class service(object):
 						if templates.has_key(obj._ctx.jsData['response']['view']):
 							tmplName = templates[obj._ctx.jsData['response']['view']] #@UnusedVariable
 							#tmplName = tmpl.resolve(obj._ctx.jsData['response']['view'])
-							logger.debug( 'service :: tmplName: %s' % (tmplName) )
+							logger.debug('service :: tmplName: %s' % (tmplName))
 						else:
 							raise XpMsgException(None, _('Error in resolving template for view'))
 						obj._ctx.jsData['response']['tmpl'] = templates
 					else:
 						# In case we show only msg with no view, no template
-						logger.debug( 'service :: no View, no template...' )
+						logger.debug('service :: no View, no template...')
 						obj._ctx.jsData['response']['tmpl'] = ''
 					# Forms
 					logger.debug( 'service :: forms: %s' % (obj._ctx.forms) )
@@ -212,7 +218,7 @@ class service(object):
 						form = obj._ctx.forms[formId]
 						if not obj._ctx.jsData.has_key(formId):
 							form.build_js_data(obj._ctx.app, obj._ctx.jsData)
-						logger.debug( 'service :: form: %s app: %s' % (formId, form.base_fields['app'].initial) )
+						logger.debug('service :: form: %s app: %s' % (formId, form.base_fields['app'].initial))
 					#logger.debug( 'service :: response keys : %s' % (obj._ctx.jsData['response'].keys()) )
 					# Result
 					#logger.debug( 'service :: isServerTmpl: %s' % (self._isServerTmpl) )
@@ -237,74 +243,74 @@ class service(object):
 						#logger.debug( obj._ctx.jsData )
 						################# Print response
 						logger.debug('')
-						logger.debug( 'service :: #################### RESPONSE ##################' )
+						logger.debug('service :: #################### RESPONSE ##################')
 						#logger.debug( 'service :: response keys: %s' % (obj._ctx.jsData['response'].keys()) )
 						keys = obj._ctx.jsData['response'].keys()
 						for key in keys:
 							keyValue = obj._ctx.jsData['response'][key]
 							#logger.debug( 'key: %s' % (key, type(keyValue)) )
 							if type(keyValue) == types.DictType and keyValue.has_key('value'):
-								logger.debug( 'service :: response %s : %s' % (key, str(keyValue['value'])) )
+								logger.debug('service :: response %s : %s' % (key, str(keyValue['value'])))
 							elif type(keyValue) != types.DictType:
-								logger.debug( 'service :: response %s: %s' % (key, str(keyValue)) )
+								logger.debug('service :: response %s: %s' % (key, str(keyValue)))
 							else:
 								for newKey in keyValue:
 									#logger.debug( 'newKey: ', newKey )
 									#logger.debug( keyValue[newKey] )
 									if type(keyValue[newKey]) == types.DictType and keyValue[newKey].has_key('value'):
-										logger.debug( 'service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])) )
+										logger.debug('service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])))
 									elif type(keyValue[newKey]) != types.DictType:
-										logger.debug( 'service :: response %s %s: %s' %  (key, newKey, str(keyValue[newKey])) )
+										logger.debug('service :: response %s %s: %s' %  (key, newKey, str(keyValue[newKey])))
 
 						################# Print response
-						logger.debug( 'service :: #################### RESPONSE ##################' )
-						logger.debug( '' )
+						logger.debug('service :: #################### RESPONSE ##################')
+						logger.debug('')
 					else:
 						result = obj._ctx.jsData
 						#logger.debug( result )
 						################# Print response
-						logger.debug( '' )
-						logger.debug( 'service :: #################### RESPONSE ##################' )
-						#logger.debug( 'service :: response keys: %s' % (obj._ctx.jsData['response'].keys()) )
+						logger.debug('')
+						logger.debug('service :: #################### RESPONSE ##################')
+						#logger.debug('service :: response keys: %s' % (obj._ctx.jsData['response'].keys()))
 						keys = obj._ctx.jsData['response'].keys()
 						for key in keys:
 							keyValue = obj._ctx.jsData['response'][key]
-							#logger.debug( 'key: ', key, type(keyValue) )
+							#logger.debug('key: ', key, type(keyValue))
 							if type(keyValue) == types.DictType and keyValue.has_key('value'):
-								logger.debug( 'service :: response %s: %s' % (key, str(keyValue['value'])) )
+								logger.debug('service :: response %s: %s' % (key, str(keyValue['value'])))
 							elif type(keyValue) != types.DictType:
-								logger.debug( 'service :: response %s: %s' % (key, str(keyValue)) )
+								logger.debug('service :: response %s: %s' % (key, str(keyValue)))
 							else:
 								for newKey in keyValue:
-									#logger.debug( 'newKey: %s' % (newKey) )
-									#logger.debug( keyValue[newKey] )
+									#logger.debug('newKey: %s' % (newKey))
+									#logger.debug(keyValue[newKey])
 									if type(keyValue[newKey]) == types.DictType and keyValue[newKey].has_key('value'):
-										logger.debug( 'service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])) )
+										logger.debug('service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey]['value'])))
 									elif type(keyValue[newKey]) != types.DictType:
-										logger.debug( 'service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey])) )
+										logger.debug('service :: response %s %s: %s' % (key, newKey, str(keyValue[newKey])))
 
 						################# Print response
-						logger.debug( 'service :: #################### RESPONSE ##################' )
-						logger.debug( '' )
-						logger.debug( obj._ctx.jsData['response'].keys() )
+						logger.debug('service :: #################### RESPONSE ##################')
+						logger.debug('')
+						logger.debug(obj._ctx.jsData['response'].keys())
 					#obj._ctx['_doneResult'] = True
 					obj._ctx.doneResult = True
 				else:
-					logger.debug( 'service :: I skip building response, since I already did it!!!!!' )
+					logger.debug('service :: I skip building response, since I already did it!!!!!')
 					if self._isServerTmpl == False:
 						result = obj._build_JSON_result(obj._ctx.jsData)
 					else:
 						result = obj._ctx.jsData
 				return result
 			except XpMsgException as e:
-				logger.debug( 'service :: ERROR!!!! service!!!!!' )
+				logger.debug('service :: ERROR!!!! service!!!!!')
 				errorDict = obj._get_errors()
 				if len(errorDict) != 0:
 					if self._isServerTmpl == False:
 						result = obj._build_JSON_result(obj._get_error_result_dict(errorDict, page_error=self._pageError))
 					else:
 						result = obj._get_error_result_dict(errorDict, page_error=self._pageError)
-					logger.debug( result )
+					logger.debug(result)
 				else:
 					if settings.DEBUG == True:
 						logger.debug( errorDict )
@@ -407,68 +413,110 @@ class validate_form(object):
 				return result
 		return wrapped_f
 
-class wf_view( object ):
+
+class wf_view(object):
 
 	__flowCode = ''
+	FLOW_TIMEOUT = 5
+	FLOW_MAX_INTERACTIONS = 25
 
 	def __init__(self, *argsTuple, **argsDict):
-		"""resetStart, jumpToView"""
-		self.__flowCode = argsTuple[0]
+		pass
 
 	def __call__(self, f):
-		"""Doc."""
+		"""
+		Workflow view decorator
+		"""
 		def wrapped_f(*argsTuple, **argsDict):
-			#logger.debug( 'WFViewstartDecorator :: %s %s' % (argsTuple, argsDict) )
 			obj = argsTuple[0]
-			#obj._wf = WorkFlowBusiness(obj._ctx)
-			obj._ctx.flowCode = self.__flowCode
+			# db instances
+			db_wf_view, dbView = obj._instances(WorkflowViewDAO, ViewDAO)
+			# get flow_code
+			if obj._ctx.viewNameTarget != '':
+				obj._ctx.viewNameSource = obj._ctx.viewNameTarget
+				obj._ctx.viewNameTarget = ''
+			logger.debug('wf_view :: viewSource: {}'.format(obj._ctx.viewNameSource))
+			logger.debug('wf_view :: viewTarget: {}'.format(obj._ctx.viewNameTarget))
+			wf_links = db_wf_view.search(viewSource__name=obj._ctx.viewNameSource).order_by('order')
+			if len(wf_links) == 0:
+				# We call service decorator since we have no flow associated with view
+				logger.debug('wf_view :: No flow, I get out of here!!!!')
+				return f(*argsTuple, **argsDict)
+			flow = wf_links[0].flow
+			isFirstView = wf_links[0].order == 10
+			self.__app = flow.application.name
+			# logic from old decorator
+			self.__flowCode = obj._ctx.flowCode = flow.code
 			obj._ctx.isFlow = True
-			logger.debug( 'wf_view :: flowCode: %s' % (self.__flowCode) )
-			flow = obj._wf.get(self.__flowCode)
+			logger.debug('wf_view :: flowCode: {}'.format(self.__flowCode))
 			viewName = obj._ctx.viewNameSource
-			logger.debug( 'wf_view :: View Current: %s' % (obj._ctx.viewNameSource) )
+			logger.debug('wf_view :: View Current: {}'.format(obj._ctx.viewNameSource))
 			# WorKflow User Id
-			"""if obj._ctx.cookies.has_key('wfUserId'):
-				obj._ctx.wfUserId = obj._ctx.cookies['wfUserId']
-				logger.debug( 'wf_view :: COOKIE :: WF User Id: %s' % (obj._ctx.wfUserId) )
-			else:
-				obj._ctx.wfUserId = obj._wf.genUserId()
-				obj._set_cookie('wfUserId', obj._ctx.wfUserId)
-				logger.debug( 'wf_view :: WF UserId: %s' % (obj._ctx.wfUserId) )"""
-			obj._ctx.wfUserId = obj._getWFUser()
-			logger.debug( 'wf_view :: WF UserId: %s' % (obj._ctx.wfUserId) )
+			obj._ctx.wfUserId = obj._get_wf_user()
+			logger.debug('wf_view :: WF UserId: {}'.format(obj._ctx.wfUserId))
 			hasFlow = True
 			try:
-				flowData = obj._wf.getFlowDataDict(obj._ctx.wfUserId, self.__flowCode)
-				logger.debug( 'wf_view :: flowData: %s' % (flowData) )
+				flowData = obj._wf.get_flow_data_dict(obj._ctx.wfUserId, self.__flowCode)
+				logger.debug('wf_view :: flowData: {}'.format(flowData))
 			except XpMsgException:
 				hasFlow = False
-			logger.debug( 'wf_view :: hasFlow: %s' % (hasFlow) )
-			if flow.jumpToView == True and hasFlow == True:
+			logger.debug('wf_view :: hasFlow: {} isFirstView: {}'.format(hasFlow, isFirstView))
+			if flow.workflowmeta_set.get(meta__name='JUMP_TO_VIEW').value == 'True' and hasFlow == True:
 				# Get flow data, display view in flow data
 				try:
-					viewName = obj._wf.getView(obj._ctx.wfUserId, self.__flowCode)
-					logger.debug( 'wf_view :: Jump to View: %s %s' % (obj._ctx.viewNameSource, viewName) )
+					viewName = obj._wf.get_view(obj._ctx.wfUserId, self.__flowCode)
+					logger.debug('wf_view :: Jump to View: {} {}'.format(obj._ctx.viewNameSource, viewName))
 				except XpMsgException:
 					pass
 			else:
-				isFirstView = obj._wf.isFirstView(self.__flowCode, obj._ctx.viewNameSource)
-				logger.debug( 'wf_view :: Flow Data: %s %s' % (hasFlow, isFirstView) )
-				# Check that this view is first in flow
-				if hasFlow == False and isFirstView == True:
-					logger.debug( 'wf_view :: reset Flow... no flow and first window' )
-					obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
-				elif isFirstView == True and flow.resetStart == True:
-					logger.debug( 'wf_view :: reset Flow... resetStart=True and first view in flow...' )
-					obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
-			obj._ctx.viewNameTarget = viewName
+				if wf_links.filter(hasEvent=False):
+					logger.debug('wf_view :: Check flow links without events...')
+					if isFirstView:
+						obj._wf.reset_flow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
+					# loop until no auto (no events) flow links resolved with timeout
+					t_1 = time.time()
+					flowViewTmp = obj._wf.resolve_view(obj._ctx.wfUserId, self.__app, self.__flowCode, 
+													obj._ctx.viewNameSource, None, flow_views=wf_links.filter(hasEvent=False))
+					counter = 0
+					flowViewTmpNext = flowViewTmp
+					logger.debug('wf_view :: flowViewTmpNext: {}'.format(flowViewTmpNext))
+					while flowViewTmpNext:
+						viewNameSrc = flowViewTmp.viewTarget
+						wf_links_auto = db_wf_view.search(viewSource__name=viewNameSrc).order_by('order')
+						if flowViewTmpNext and flowViewTmpNext.action:
+							# flowView has action associated, we must execute action
+							logger.debug('wf_view :: action associated with flow link without event, calling action...')
+							obj._ctx.action = flowViewTmpNext.action.name
+							objAction, method = util.parse_impl(flowViewTmpNext.action.implementation, obj._ctx)
+							return getattr(objAction, method)()
+						# We would have flowViewTmpNext
+						flowViewTmpNext = obj._wf.resolve_view(obj._ctx.wfUserId, self.__app, self.__flowCode, 
+													viewNameSrc, None, flow_views=wf_links_auto.filter(hasEvent=False))
+						t_2 = time.time()
+						counter += 1
+						if flowViewTmpNext:
+							flowViewTmp = flowViewTmpNext
+						if t_2-t_1 > self.FLOW_TIMEOUT or counter > self.FLOW_MAX_INTERACTIONS:
+							logger.debug('wf_view :: Got timeout!!! Get out!!!')
+							raise XpMsgException(None, _('Error in infinite loop in flow {}'.format(self.__flowCode)))
+						logger.debug('wf_view :: flowViewTmpNext: {}'.format(flowViewTmpNext))
+					if flowViewTmp:
+						viewName = flowViewTmp.viewTarget
+				else:
+					# reset flow -> When first view we reset flow
+					logger.debug('wf_view :: Flow Data:{} is First View?:{}'.format(hasFlow, isFirstView))
+					# Check that this view is first in flow
+					if hasFlow == False and isFirstView == True:
+						logger.debug('wf_view :: reset Flow... no flow and first window')
+						obj._wf.reset_flow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
+					elif isFirstView == True and flow.workflowmeta_set.get(meta__name='RESET_START').value == 'True':
+						logger.debug('wf_view :: reset Flow... resetStart=True and first view in flow...')
+						obj._wf.resetFlow(obj._ctx.wfUserId, self.__flowCode, obj._ctx.viewNameSource)
 			# Jump to View in case jumpToView = True and viewName resolved from flow is different from current view
-			#logger.debug( 'wf_view :: Jumps... %s %s' % (viewName, obj._ctx.viewNameSource) )
 			if viewName != obj._ctx.viewNameSource:
-				logger.debug( 'wf_view :: redirect to ... %s' % (viewName) )
-				dbView = ViewDAO(obj._ctx)
+				obj._ctx.viewNameTarget = viewName.name
+				logger.debug('wf_view :: redirect to ... {}'.format(viewName))
 				view = dbView.get(name=viewName)
-				viewAttrs = obj._wf.getViewParams(self.__flowCode, viewName)
 				# Show View
 				impl = view.implementation
 				implFields = impl.split('.')
@@ -477,10 +525,7 @@ class wf_view( object ):
 				cls = get_class( classPath )
 				objView = cls(obj._ctx) #@UnusedVariable
 				obj._ctx.viewNameSource = viewName
-				if (len(viewAttrs) == 0) :
-					result = eval('objView.' + method)()
-				else:
-					result = eval('objView.' + method)(**viewAttrs)
+				result = getattr(objView, method)()
 			else:
 				result = f(*argsTuple, **argsDict)
 			return result
@@ -510,80 +555,82 @@ class menu_action(object):
 			return result
 		return wrapped_f
 
+
 class wf_action(object):
 	__app = ''
 	__flowCode = ''
+
 	def __init__(self, *argsTuple, **argsDict):
-		"""
-		Options
-		=======
-		app: String : Application code
-		"""
-		# Sent by decorator
-		"""if argsDict.has_key('app'):
-			self._app = argsDict['app']"""
-		#self.__flowCode = argsTuple[0]
 		pass
+
 	def __call__(self, f):
 		"""Decorator call method"""
 		def wrapped_f(*argsTuple, **argsDict):
 			obj = argsTuple[0]
 			try:
-				#logger.debug( 'viewNameSource: %s' % (obj._ctx.viewNameSource) )
-				#logger.debug( 'viewNameTarget: %s' % (obj._ctx.viewNameTarget) )
-				#logger.debug( 'actionName: %s' % (obj._ctx.action) )
-				#obj._wf = WorkFlowBusiness()
+				logger.debug('wf_action :: viewNameSource: {}'.format(obj._ctx.viewNameSource))
+				logger.debug('wf_action :: viewNameTarget: {}'.format(obj._ctx.viewNameTarget))
+				logger.debug('wf_action :: actionName: {}'.format(obj._ctx.action))
 				actionName = obj._ctx.action
-				flow = obj._wf.getFlowViewByAction(actionName).flow
+				flow = obj._wf.get_flow_view_by_action(actionName).flow
 				self.__app = flow.application.name
-				logger.debug( 'app: %s' % (self.__app) )
+				logger.debug('wf_action :: app: {}'.format(self.__app))
 				obj._ctx.flowCode = flow.code
 				obj._ctx.isFlow = True
-				#logger.debug( 'wf_action :: flowCode: %s' % (obj._ctx.flowCode) )
-				obj._ctx.wfUserId = obj._ctx.cookies['wfUserId']
-				logger.debug( 'COOKIE :: WF User Id: %s' % (obj._ctx.wfUserId) )
+				logger.debug('wf_action :: flowCode: {}'.format(obj._ctx.flowCode))
+				obj._ctx.wfUserId = obj._get_wf_user()
+				logger.debug('wf_action :: COOKIE :: WF User Id: {}'.format(obj._ctx.wfUserId))
+				if obj._ctx.viewNameSource == '':
+					logger.debug('wf_action :: Will reset flow!!!')
+					obj._wf.reset_flow(obj._ctx.wfUserId, flow.code, obj._ctx.viewNameSource)
+				# In case first element in flow is action, reset user like wf_view
 				result = f(*argsTuple, **argsDict)
 				# Resolve View
-				#logger.debug( 'session' % (obj._ctx.session) )
-				viewTarget = obj._wf.resolveView(obj._ctx.wfUserId, self.__app, obj._ctx.flowCode,
+				logger.debug('wf_action :: session {}'.format(obj._ctx.session))
+				flowViewTarget = obj._wf.resolve_view(obj._ctx.wfUserId, self.__app, obj._ctx.flowCode,
 								obj._ctx.viewNameSource, obj._ctx.action)
+				logger.info(_('wf_action :: Resolved flow link: {}'.format(flowViewTarget or '')))
+				viewTarget = flowViewTarget.viewTarget
 				viewName = viewTarget.name
-				#logger.debug( 'viewName: %s' % (viewName) )
+				logger.debug('wf_action :: viewName: {}'.format(viewName))
 				# Insert view into workflow
-				obj._wf.setViewName(viewName)
-				viewAttrs = obj._wf.getViewParams(obj._ctx.flowCode, viewName)
-				#logger.debug( 'viewAttrs: %s' % (viewAttrs) )
+				obj._wf.set_view_name(viewName)
+				viewAttrs = {}
+				#viewAttrs = obj._wf.get_view_params(obj._ctx.flowCode, viewName)
+				#logger.debug('wf_action :: viewAttrs: {}'.format(viewAttrs))
 				# Save workflow
 				flowData = obj._wf.save(obj._ctx.wfUserId, obj._ctx.flowCode)
 				# Set Flow data dictionary into context
-				obj._ctx.flowData = obj._wf.buildFlowDataDict(flowData)
-				#logger.debug( 'flowDataDict: %s' % (obj._ctx.flowData) )
+				obj._ctx.flowData = obj._wf.build_flow_data_dict(flowData)
+				logger.debug('wf_action :: flowDataDict: {}'.format(obj._ctx.flowData))
 				# Delete user flow if deleteOnEnd = True
-				if flow.deleteOnEnd == True and obj._wf.isLastView(obj._ctx.viewNameSource, viewName, obj._ctx.action):
-					obj._wf.removeData(obj._ctx.wfUserId, obj._ctx.flowCode)
+				if flow.workflowmeta_set.get(meta__name='DELETE_ON_END').value == 'True' and\
+						obj._wf.is_last_view(obj._ctx.viewNameSource, viewName, obj._ctx.action):
+					obj._wf.remove_data(obj._ctx.wfUserId, obj._ctx.flowCode)
 				obj._ctx.viewNameTarget = viewName
 				# Show View
 				impl = viewTarget.implementation
+				logger.debug('wf_action :: impl:{}'.format(impl))
 				implFields = impl.split('.')
 				method = implFields[len(implFields)-1]
 				classPath = ".".join(implFields[:-1])
-				cls = get_class( classPath )
+				cls = get_class(classPath)
 				objView = cls(obj._ctx) #@UnusedVariable
 				if (len(viewAttrs) == 0) :
-					result = eval('objView.' + method)()
+					result = getattr(objView, method)()
 				else:
-					result = eval('objView.' + method)(**viewAttrs)
+					result = getattr(objView, method)(**viewAttrs)
 			except XpMsgException as e:
 				logger.debug( 'ERROR!!!! wf_action!!!!!' )
-				errorDict = obj._getErrors()
+				errorDict = obj._get_errors()
 				if len(errorDict) != 0:
 					result = obj._build_JSON_result(obj._getErrorResultDict(errorDict, page_error=True))
-					logger.debug( result )
+					logger.debug(result)
 				else:
 					if settings.DEBUG == True:
-						logger.debug( errorDict )
-						logger.debug( e )
-						logger.debug( e.myException )
+						logger.debug(errorDict)
+						logger.debug(e)
+						logger.debug(e.myException)
 						traceback.print_exc()
 					raise
 			return result
@@ -600,7 +647,6 @@ class view_tmpl(object):
 	def __init__(self, *argsTuple, **argsDict):
 		if len(argsTuple) != 0:
 			logger.debug('view_tmpl :: argList: %s' % (argsTuple) )
-			#self.__APP = '.'.join(argsTuple[0].split('.')[:2])
 			self.__package = argsTuple[0].split('.')[0]
 			self.__APP = argsTuple[0].split('.')[1]
 	def __call__(self, f):
@@ -699,9 +745,7 @@ class view_tmpl(object):
 
 class view ( object ):
 	"""
-
 	Decorator for ximpia views
-
 	"""
 
 	__form = None
@@ -711,6 +755,7 @@ class view ( object ):
 
 	def __call__(self, f):
 		"""Decorator call method"""
+		@wf_view()
 		@service(form=self.__form)
 		def wrapped_f(request, *argsTuple, **argsDict):
 			result = f(request, *argsTuple, **argsDict)
@@ -719,9 +764,7 @@ class view ( object ):
 
 class action ( object ):
 	"""
-
 	Decorator for ximpia actions
-
 	"""
 
 	__form = None
@@ -739,7 +782,7 @@ class action ( object ):
 			return result
 		return wrapped_f
 
-class workflow_view ( object ):
+'''class workflow_view ( object ):
 	"""
 
 	Decorator for workflow views
@@ -761,20 +804,16 @@ class workflow_view ( object ):
 			logger.debug('workflow_view :: flowCode: %s form: %s' % (self.__flowCode, self.__form))
 			result = f(request, *argsTuple, **argsDict)
 			return result
-		return wrapped_f
+		return wrapped_f'''
 
 class workflow_action ( object ):
 	"""
-
 	Decorator for workflow actions
-
 	"""
 
 	__form = None
-	__flowCode = None
 
-	def __init__(self, flowCode, form):
-		self.__flowCode = flowCode
+	def __init__(self, form):
 		self.__form = form
 
 	def __call__(self, f):
@@ -782,7 +821,7 @@ class workflow_action ( object ):
 		@validate_form(self.__form)
 		@wf_action()
 		def wrapped_f(request, *argsTuple, **argsDict):
-			logger.debug('workflow_action :: form: %s' % (self.__form) )
+			logger.debug('workflow_action :: form: %s' % (self.__form))
 			result = f(request, *argsTuple, **argsDict)
 			return result
 		return wrapped_f
@@ -894,7 +933,7 @@ class MenuService( object ):
 				if param.operator == Choices.OP_EQ:
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
-			if menuItem.menu.view.application.name == settings.XIMPIA_DEFAULT_APP:
+			if menuItem.menu.view.application.slug == settings.XIMPIA_DEFAULT_APP:
 				menuObj['isDefaultApp'] = True
 			container[menuItem.menu.name] = menuObj
 			if menuItem.menu.view != None:
@@ -1356,6 +1395,7 @@ class TemplateService ( object ):
 class CommonService( object ):
 
 	_ctx = None
+	_ctx_min = None
 	_request = None
 	_errorDict = {}
 	_resultDict = {}
@@ -1418,14 +1458,7 @@ class CommonService( object ):
 	def _put_flow_params(self, **args):
 		"""Put parameters into workflow or navigation system.
 		@param args: Arguments to insert into persistence"""
-		self._wf.putParams(**args)
-		"""if self._ctx.isFlow:
-			self._wf.putParams(**args)
-		else:
-			dd = json.loads(self._ctx.form.base_fields['entryFields'].initial)
-			for name in args:
-				dd[name] = args[name]
-			self._ctx.form.base_fields['entryFields'].initial = json.dumps(dd)"""
+		self._wf.put_params(**args)
 
 	def _add_attr(self, name, value):
 		"""
@@ -1501,7 +1534,7 @@ class CommonService( object ):
 		if self._ctx.cookies.has_key('XP_WFUID'):
 			self._ctx.wfUserId = self._ctx.cookies['XP_WFUID']
 		else:
-			self._ctx.wfUserId = self._wf.genUserId()
+			self._ctx.wfUserId = self._wf.gen_user_id()
 			self._set_cookie('XP_WFUID', self._ctx.wfUserId)
 		self._wfUserId = self._ctx.wfUserId
 		return self._wfUserId
