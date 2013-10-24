@@ -3,7 +3,7 @@
 from models import CoreParam, Application, Menu, View, Action, Workflow, XpTemplate, Setting, MetaKey, WorkflowView
 from models import ApplicationMeta, MenuParam, ViewMeta, ViewParamValue, ViewMenu, ViewTmpl, WFParamValue, Param, ViewTag, ApplicationMedia
 from models import ApplicationTag, Service, ServiceMenu, ViewAccessGroup, ActionAccessGroup, ServiceMenuCondition, ViewMenuCondition, Condition
-from models import SearchIndex, SearchIndexWord, SearchIndexParam
+from models import SearchIndex, SearchIndexWord, SearchIndexParam, WorkflowMeta, ServiceMeta
 
 from django.contrib import admin
 
@@ -42,8 +42,14 @@ class AppTagsInline(admin.StackedInline):
 class ServiceMenuInline(admin.StackedInline):
 	model = ServiceMenu
 
+class ServiceMetaInline(admin.StackedInline):
+	model = ServiceMeta
+
 class WorkflowViewParamValueInline(admin.StackedInline):
 	model = WFParamValue
+
+class WorkflowMetaInline(admin.StackedInline):
+	model = WorkflowMeta
 
 class ApplicationMediaInline(admin.StackedInline):
 	model = ApplicationMedia
@@ -129,7 +135,7 @@ class ServiceAdmin(admin.ModelAdmin):
 	        'fk': ['application'],
 	    }
 	exclude = ('implementation',)
-	inlines = [ ServiceMenuInline ]
+	inlines = [ ServiceMenuInline, ServiceMetaInline ]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
@@ -211,14 +217,14 @@ class ActionAdmin(admin.ModelAdmin):
 		obj.save()
 
 class WorkflowAdmin(admin.ModelAdmin):
-	list_display = ('id','code','application','resetStart','deleteOnEnd','jumpToView',\
-		'userCreateId', 'userModifyId','dateCreate', 'dateModify')
+	list_display = ('id','code','application', 'userCreateId', 'userModifyId','dateCreate', 'dateModify')
 	list_display_links = ('code',)
 	list_filter = ('application__title',)
 	raw_id_fields = ('application',)
 	related_lookup_fields = {
 	        'fk': ['application',],
 	    }
+	inlines = [WorkflowMetaInline]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
@@ -226,15 +232,17 @@ class WorkflowAdmin(admin.ModelAdmin):
 		obj.save()
 
 class WorkflowViewAdmin(admin.ModelAdmin):
+	# Commented because goes into infinite loop, hangs system
 	#list_display = ('id','order','flow','viewSource','viewTarget','action','userCreateId', 'userModifyId','dateCreate', 'dateModify')
-	list_display = ('id','userCreateId', 'userModifyId','dateCreate', 'dateModify')
-	#list_display_links = ('id',)
-	#list_filter = ('flow__code',)
-	#raw_id_fields = ('flow','viewSource','viewTarget','action')
-	#related_lookup_fields = {
-	#        'fk': ['flow','viewSource','viewTarget','action'],
-	#    }
-	#inlines = [ WorkflowViewParamValueInline ]
+	#list_display = ('id','flow', 'viewSource', 'action', 'viewTarget', 'userCreateId', 'userModifyId','dateCreate', 'dateModify')
+	list_display = ('id', 'userCreateId', 'userModifyId','dateCreate', 'dateModify')
+	list_display_links = ('id',)
+	list_filter = ('flow__code',)
+	raw_id_fields = ('flow','viewSource','viewTarget','action')
+	related_lookup_fields = {
+	        'fk': ['flow','viewSource','viewTarget','action'],
+	    }
+	inlines = [ WorkflowViewParamValueInline ]
 	def save_model(self, request, obj, form, change):
 		obj.userModifyId = request.user.id
 		if not obj.id:
