@@ -31,15 +31,18 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
+
 def get_blank_wf_data( dd ):
 	"""Get workflow data inside flowCode by default"""
 	dd['data'] = {}
 	dd['viewName'] = ''
 	return dd
 
+
 class DeleteManager( models.Manager ):
 	def get_query_set(self):
 		return super(DeleteManager, self).get_query_set().filter(isDeleted=False)
+
 
 class BaseModel( models.Model ):
 	"""
@@ -80,6 +83,7 @@ class BaseModel( models.Model ):
 	objects_del = models.Manager()
 	class Meta:
 		abstract = True
+
 
 class Param( BaseModel ):
 	"""
@@ -147,6 +151,7 @@ class Condition( BaseModel ):
 		verbose_name = 'Condition'
 		verbose_name_plural = "Conditions"
 
+
 class CoreParam( BaseModel ):
 	"""
 	
@@ -198,6 +203,7 @@ class CoreParam( BaseModel ):
 		verbose_name = "Parameter"
 		verbose_name_plural = "Parameters"
 
+
 class MetaKey( BaseModel ):
 
 	"""
@@ -227,6 +233,7 @@ class MetaKey( BaseModel ):
 		ordering = ['name']
 		verbose_name = _('Meta Key')
 		verbose_name_plural = _('Meta Keys')
+
 
 class Application( BaseModel ):
 	
@@ -258,6 +265,7 @@ class Application( BaseModel ):
 	* ``isSubscription``:BooleanField
 	* ``isPrivate``:BooleanField
 	* ``isAdmin``:BooleanField
+	* ``isActive``:BooleanField : Will show a maintenance view in case isActive=False for all services in app
 	
 	**Relationships**
 	
@@ -298,12 +306,15 @@ class Application( BaseModel ):
 				verbose_name = _('Tags'), help_text = _('View Tags'))
 	meta = models.ManyToManyField(MetaKey, through='xpcore.ApplicationMeta', related_name='app_meta',
 			verbose_name=_('META Keys'), help_text=_('META Keys for application') )
+	isActive = models.BooleanField(default=True, db_column='IS_ACTIVE',
+			verbose_name = _('Is Active?'), help_text = _('Application is active or not. In case not, will show a maintenance message'))
 	def __unicode__(self):
 		return self.title
 	class Meta:
 		db_table = 'CORE_APPLICATION'
 		verbose_name = _('Application')
 		verbose_name_plural = _('Applications')
+
 
 class ApplicationTag ( BaseModel ):
 	"""
@@ -334,6 +345,7 @@ class ApplicationTag ( BaseModel ):
 		db_table = 'CORE_APPLICATION_TAG'
 		verbose_name = 'Application Tag'
 		verbose_name_plural = "Application Tags"
+
 
 class ApplicationMedia( BaseModel ):
 	"""
@@ -368,6 +380,7 @@ class ApplicationMedia( BaseModel ):
 		verbose_name = _('Application Media')
 		verbose_name_plural = _('Application Media')
 
+
 class ApplicationMeta( BaseModel ):
 	"""
 	
@@ -387,7 +400,7 @@ class ApplicationMeta( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_APPLICATION_META')
 	application = models.ForeignKey(Application, db_column='ID_APPLICATION',
 				verbose_name = _('Application'), help_text = _('Application'))
-	meta = models.ForeignKey(MetaKey, limit_choices_to={'keyType__value': K.PARAM_META}, db_column='ID_META',
+	meta = models.ForeignKey(MetaKey, limit_choices_to={'keyType__value': K.PARAM_META_APP}, db_column='ID_META',
 				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	def __unicode__(self):
@@ -396,6 +409,7 @@ class ApplicationMeta( BaseModel ):
 		db_table = 'CORE_APPLICATION_META'
 		verbose_name = 'Application META'
 		verbose_name_plural = "Application META"
+
 
 class SearchIndex( BaseModel ):
 	"""
@@ -442,6 +456,7 @@ class SearchIndex( BaseModel ):
 		verbose_name_plural = "Index"
 		unique_together = ("view", "action")
 
+
 class Word( BaseModel ):
 	"""
 	
@@ -464,6 +479,7 @@ class Word( BaseModel ):
 		db_table = 'CORE_WORD'
 		verbose_name = 'Word'
 		verbose_name_plural = "Words"
+
 
 class SearchIndexWord( BaseModel ):
 	"""
@@ -526,6 +542,7 @@ class SearchIndexParam( BaseModel ):
 		verbose_name = 'Index Parameters'
 		verbose_name_plural = "Index Parameters"
 
+
 class Service( BaseModel ):
 	"""
 
@@ -534,6 +551,8 @@ class Service( BaseModel ):
 	* ``id``
 	* ``name``
 	* ``implementation``
+	* ``isActive`` :BooleanField : Service is active or not. In case not active, will display 
+		a maintenance message for all operations for service.
 	
 	**Relationships**
 	
@@ -547,6 +566,10 @@ class Service( BaseModel ):
 			verbose_name=_('Service Name'), help_text=_('Service Name'))
 	implementation = models.CharField(max_length=100, db_column='IMPLEMENTATION',
 			verbose_name=_('Implementation'), help_text=_('Service class'))
+	isActive = models.BooleanField(default=True, db_column='IS_ACTIVE',
+			verbose_name = _('Is Active?'), help_text = _('Service is active or not. In case not, will show a maintenance message'))
+	meta = models.ManyToManyField(MetaKey, through='xpcore.ServiceMeta', related_name='service_meta',
+			verbose_name=_('META Keys'), help_text=_('META Keys for Service') )
 	def __unicode__(self):
 		return self.name
 	class Meta:
@@ -554,6 +577,37 @@ class Service( BaseModel ):
 		db_table = 'CORE_SERVICE'
 		verbose_name = 'Service'
 		verbose_name_plural = "Services"
+
+
+class ServiceMeta(BaseModel):
+	"""
+	
+	Meta information for services
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``value``:TextField : Key value
+	
+	**Relationships**
+	
+	* ``service`` : Service
+	* ``meta`` : Meta Key
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_SERVICE_META')
+	service = models.ForeignKey(Service, db_column='ID_SERVICE',
+				verbose_name = _('Service'), help_text = _('Service'))
+	meta = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': K.PARAM_META_SERVICE},
+				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
+	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
+	def __unicode__(self):
+		return '%s %s' % (self.view, self.meta)
+	class Meta:
+		db_table = 'CORE_SERVICE_META'
+		verbose_name = 'Service META'
+		verbose_name_plural = "Service META"
+
 
 class View( BaseModel ):
 	"""
@@ -646,6 +700,7 @@ class View( BaseModel ):
 		verbose_name_plural = "Views"
 		unique_together = ("application", "name")
 
+
 class ViewAccessGroup ( BaseModel ):
 	"""
 	
@@ -677,6 +732,7 @@ class ViewAccessGroup ( BaseModel ):
 		verbose_name = 'View Access Group'
 		verbose_name_plural = "View Access Groups"
 
+
 class ViewTag ( BaseModel ):
 	"""
 	
@@ -706,6 +762,7 @@ class ViewTag ( BaseModel ):
 		db_table = 'CORE_VIEW_TAG'
 		verbose_name = 'View Tag'
 		verbose_name_plural = "View Tags"
+
 
 class Action( BaseModel ):
 	"""
@@ -759,6 +816,7 @@ class Action( BaseModel ):
 		verbose_name_plural = "Actions"
 		unique_together = ("application", "name")
 
+
 class ActionAccessGroup ( BaseModel ):
 	"""
 	
@@ -789,6 +847,7 @@ class ActionAccessGroup ( BaseModel ):
 		db_table = 'CORE_ACTION_ACCESS_GROUP'
 		verbose_name = 'Action Access Group'
 		verbose_name_plural = "Action Access Groups"
+
 
 class Menu( BaseModel ):
 	"""
@@ -850,6 +909,7 @@ class Menu( BaseModel ):
 		verbose_name = 'Menu'
 		verbose_name_plural = "Menus"
 
+
 class ViewMenu( BaseModel ):
 	"""
 	
@@ -894,6 +954,7 @@ class ViewMenu( BaseModel ):
 		verbose_name = 'View Menu'
 		verbose_name_plural = "Views Menus"
 
+
 class ViewMenuCondition ( BaseModel ):
 	"""
 	Conditions for service menus
@@ -928,6 +989,7 @@ class ViewMenuCondition ( BaseModel ):
 		db_table = 'CORE_VIEW_MENU_CONDITION'
 		verbose_name = 'View Menu Condition'
 		verbose_name_plural = "View Menu Conditions"
+
 
 class ServiceMenu ( BaseModel ):
 	"""
@@ -972,6 +1034,7 @@ class ServiceMenu ( BaseModel ):
 		verbose_name = 'Service Menu'
 		verbose_name_plural = "Service Menus"
 
+
 class ServiceMenuCondition ( BaseModel ):
 	"""
 	Conditions for service menus
@@ -1006,6 +1069,7 @@ class ServiceMenuCondition ( BaseModel ):
 		db_table = 'CORE_SERVICE_MENU_CONDITION'
 		verbose_name = 'Service Menu Condition'
 		verbose_name_plural = "Service Menu Conditions"
+
 
 class MenuParam( BaseModel ):
 	"""
@@ -1064,7 +1128,7 @@ class ViewMeta( BaseModel ):
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_META')
 	view = models.ForeignKey(View, db_column='ID_VIEW',
 				verbose_name = _('View'), help_text = _('View'))
-	meta = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': K.PARAM_META},
+	meta = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': K.PARAM_META_VIEW},
 				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
 	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
 	def __unicode__(self):
@@ -1073,6 +1137,43 @@ class ViewMeta( BaseModel ):
 		db_table = 'CORE_VIEW_META'
 		verbose_name = 'View META'
 		verbose_name_plural = "View META"
+
+
+class ViewParamValue( BaseModel ):
+	"""
+	
+	Parameter Values for views.
+	
+	This table holds the parameter values that trigger redirection to target views.
+	
+	**Attributes**
+	
+	* ``id``:AutoField : Primary Key
+	* ``operator``:CharField(10) : Operator comparisson : equal, not equal, greater, etc..., as Choices.OP
+	* ``value``:CharField(20)
+	
+	**Relationships**
+	
+	* ``view`` -> View
+	* ``name`` -> Param
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')
+	view = models.ForeignKey(View, related_name='viewParam', db_column='ID_VIEW',
+			verbose_name=_('View'), help_text=_('View for entry parameters'))
+	name = models.ForeignKey(Param, db_column='ID_NAME',
+			verbose_name=_('Parameter'), help_text=_('Parameter'))
+	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
+			verbose_name=_('Operator'), help_text=_('Operator'))
+	value = models.CharField(max_length=20, db_column='VALUE',
+			verbose_name=_('Value'), help_text=_('Value'))
+	def __unicode__(self):
+		return '%s %s %s' % (self.name, self.operator, self.value)
+	class Meta:
+		db_table = 'CORE_VIEW_PARAM_VALUE'
+		verbose_name = 'View Parameter Value'
+		verbose_name_plural = "View Parameter Values"
+
 
 class ViewTmpl( BaseModel ):
 	"""
@@ -1100,6 +1201,7 @@ class ViewTmpl( BaseModel ):
 		db_table = 'CORE_VIEW_TMPL'
 		verbose_name = 'View Template'
 		verbose_name_plural = "View Templates"
+
 
 class XpTemplate( BaseModel ):
 	"""
@@ -1156,6 +1258,7 @@ class XpTemplate( BaseModel ):
 		verbose_name_plural = "Templates"
 		unique_together = ("application", "name")
 
+
 class Workflow( BaseModel ):
 	"""
 	
@@ -1178,15 +1281,11 @@ class Workflow( BaseModel ):
 	
 	* ``id``:AutoField : Primary Key
 	* ``code``:CharField(15) : Flow code
-	* ``resetStart``:BooleanField : The flow data will be deleted when user displays first view of flow. The flow will be reset when
-	user visits again any page in the flow.
-	* ``deleteOnEnd``:BooleanField : Flow data is deleted when user gets to final view in the flow.
-	* ``jumpToView``:BooleanField : When user visits first view in the flow, will get redirected to last visited view in the flow. User
-	jumps to last view in the flow.
 	
 	**Relationships**
 	
 	* ``application`` -> Application
+	* ``meta`` <-> MetaKey
 	
 	"""
 	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW')
@@ -1194,12 +1293,8 @@ class Workflow( BaseModel ):
 			verbose_name = _('Application'), help_text = _('Application'))
 	code = models.CharField(max_length=15, db_index=True, unique=True, db_column='CODE',
 			verbose_name=_('Flow Code'), help_text=_('Flow Code. First window in a flow identified by a flow code will reset wf variables'))
-	resetStart = models.BooleanField(default=False, db_column='RESET_START',
-			verbose_name = _('Reset Start'), help_text = _('Reset on start: The flow will be deleted when user displays first view of flow'))
-	deleteOnEnd = models.BooleanField(default=False, db_column='DELETE_ON_END',
-			verbose_name = _('Delete on End'), help_text = _('Delete On End: Weather flow user data is deleted when user displays last view in flow'))
-	jumpToView = models.BooleanField(default=True, db_column='JUMP_TO_VIEW',
-			verbose_name = _('Jump to View'), help_text = _('Jump to View: In case user wants to display view and flow is in another view, the flow view will be shown'))
+	meta = models.ManyToManyField(MetaKey, through='xpcore.WorkflowMeta', related_name='wf_meta',
+			verbose_name=_('META Keys'), help_text=_('META Keys for Workflow') )
 	def __unicode__(self):
 		return self.code
 	class Meta:
@@ -1207,18 +1302,55 @@ class Workflow( BaseModel ):
 		verbose_name = 'Workflow'
 		verbose_name_plural = "Workflows"
 
-class WorkflowView( BaseModel ):
+
+class WorkflowMeta(BaseModel):
+	"""
+	
+	Meta information for workflow
+	
+	**Attributes**
+	
+	* ``id`` : Primary key
+	* ``value``:TextField : Key value
+	
+	**Relationships**
+	
+	* ``workflow`` : Workflow
+	* ``meta`` : Meta Key
+	
+	"""
+	id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_META')
+	workflow = models.ForeignKey(Workflow, db_column='ID_WORKFLOW',
+				verbose_name = _('Workflow'), help_text = _('Workflow'))
+	meta = models.ForeignKey(MetaKey, db_column='ID_META', limit_choices_to={'keyType__value': K.PARAM_META_WF},
+				verbose_name=_('Meta Key'), help_text=_('Meta Key') )
+	value = models.TextField(db_column='VALUE', verbose_name = _('Value'), help_text = _('Value'))
+	def __unicode__(self):
+		return '%s %s' % (self.workflow, self.meta)
+	class Meta:
+		db_table = 'CORE_WORKFLOW_META'
+		verbose_name = 'Workflow META'
+		verbose_name_plural = "Workflow META"
+
+
+class WorkflowView(BaseModel):
 	"""
 	
 	WorkFlow View. Relationship between flows and your views.
 	
-	Source view triggers action, logic is executed and target view is displayed to user.
+	Source view triggers action, logic is executed and target view is displayed to user. Exists a timeout for auto
+	navigation (no events). When reached, throws an XpMsgException. At development time, this flow problems must be spotted
+	so that no flow issues arrise.
 	
 	**Attributes**
 	
 	* ``id``:AutoField : Primary Key
 	* ``order``:IntegerField : View orderi flow. You can place order like 10, 20, 30 for views in our flow. And then later inyect views
 	between those values, like 15, for example.
+	* ``hasEvent``:BooleanField : Workflow link has event related. Default True for actions. In case no event, would
+		follow link to next view in auto mode until finds an event or param conditions not satisfied. In case an action defined
+		between to views and hasEvent is False, would end up in target view with action executed. Source view would not 
+		be displayed. If no parameters introduced (no conditions) and only one no event flow link, source view would not be shown.
 	
 	**Relationships**
 	
@@ -1237,83 +1369,21 @@ class WorkflowView( BaseModel ):
 			verbose_name=_('Source View'), help_text=_('View which starts flow'))
 	viewTarget = models.ForeignKey(View, related_name='flowViewTarget', db_column='ID_VIEW_TARGET',
 			verbose_name=_('target View'), help_text=_('View destiny for flow'))
-	action = models.ForeignKey(Action, related_name='wf_action', db_column='ID_ACTION',
+	action = models.ForeignKey(Action, null=True, blank=True, related_name='wf_action', db_column='ID_ACTION',
 			verbose_name=_('Action'), help_text=_('Action to process in the workflow navigation'))
+	hasEvent = models.BooleanField(default=True, db_column='HAS_EVENT',
+				verbose_name=_('Has Event?'), help_text=_('Flow link related to user event (like button). If not related to event, flow will follow until finds an event.'))
 	params = models.ManyToManyField(Param, through='xpcore.WFParamValue', related_name='flowView_params', null=True, blank=True,
 			verbose_name=_('Navigation Parameters'), help_text=_('Parameters neccesary to evaluate to complete navigation'))
 	order = models.IntegerField(default=10, db_column='ORDER',
 			verbose_name=_('Order'), help_text=_('Order'))
 	def __unicode__(self):
-		#return '%s - %s - %s - op - %s' % (self.flow, self.viewSource, self.viewTarget, self.action)
 		return 'id: %s' % (self.id)
 	class Meta:
 		db_table = 'CORE_WORKFLOW_VIEW'
 		verbose_name = 'Workflow View'
 		verbose_name_plural = "Workflow Views"
-		#unique_together = ('flow', 'viewSource', 'action', 'viewTarget')
 
-class ViewParamValue( BaseModel ):
-	"""
-	
-	Parameter Values for Workflow.
-	
-	This table holds the parameter values that trigger redirection to target views.
-	
-	**Attributes**
-	
-	* ``id``:AutoField : Primary Key
-	* ``operator``:CharField(10) : Operator comparisson : equal, not equal, greater, etc..., as Choices.OP
-	* ``value``:CharField(20)
-	
-	**Relationships**
-	
-	* ``view`` -> View
-	* ``name`` -> Param
-	
-	"""
-	id = models.AutoField(primary_key=True, db_column='ID_CORE_VIEW_PARAM_VALUE')
-	view = models.ForeignKey(View, related_name='viewParam', db_column='ID_VIEW',
-			verbose_name=_('View'), help_text=_('View for entry parameters'))
-	name = models.ForeignKey(Param, db_column='ID_NAME',
-			verbose_name=_('Parameter'), help_text=_('Parameter'))
-	operator = models.CharField(max_length=10, choices=Choices.OP, db_column='OPERATOR', 
-			verbose_name=_('Operator'), help_text=_('Operator'))
-	value = models.CharField(max_length=20, db_column='VALUE',
-			verbose_name=_('Value'), help_text=_('Value'))
-	def __unicode__(self):
-		return '%s %s %s' % (self.name, self.operator, self.value)
-	class Meta:
-		db_table = 'CORE_VIEW_PARAM_VALUE'
-		verbose_name = 'View Parameter Value'
-		verbose_name_plural = "View Parameter Values"
-
-
-"""class WFViewEntryParam( BaseModel ):
-	
-	
-	Relates flows with view entry parameters.
-	
-	**Attributes**
-	
-	* ``id``:AutoField : Primary Key
-	
-	**Relationships**
-	
-	* ``flowView`` -> WorkflowView
-	* ``viewParam`` -> ViewParamValue
-	
-	"""
-"""id = models.AutoField(primary_key=True, db_column='ID_CORE_WORKFLOW_VIEW_PARAM')
-	flowView = models.ForeignKey(WorkflowView, related_name='flowViewEntryParam', db_column='ID_FLOW_VIEW', 
-			verbose_name=_('Flow View'), help_text=_('Work Flow Views'))
-	viewParam= models.ForeignKey(ViewParamValue, db_column='ID_VIEW_PARAM',
-			verbose_name=_('View Param'), help_text=_('View parameter value'))
-	def __unicode__(self):
-		return '%s - %s' % (self.flowView, self.viewParam)
-	class Meta:
-		db_table = 'CORE_WORKFLOW_VIEW_PARAM'
-		verbose_name = 'Workflow View Entry Param'
-		verbose_name_plural = "Workflow View Entry Params" """
 
 class WorkflowData( BaseModel ):
 	"""
@@ -1341,7 +1411,7 @@ class WorkflowData( BaseModel ):
 			verbose_name = _('Workflow User Id'), help_text = _('User Id saved as a cookie for workflow'))
 	flow = models.ForeignKey(Workflow, related_name='flowData', db_column='ID_FLOW', 
 			verbose_name=_('Flow'), help_text=_('Work Flow'))
-	view = models.ForeignKey(View, related_name='viewFlowData', db_column='ID_VIEW',
+	view = models.ForeignKey(View, related_name='viewFlowData', db_column='ID_VIEW', blank=True, null=True, default='',
 			verbose_name=_('View'), help_text=_('View in flow. View where users is in flow'))
 	data = models.TextField(default = _jsf.encode64Dict(get_blank_wf_data({})), db_column='DATA',
 			verbose_name=_('Data'), help_text=_('Worflow data'))
@@ -1386,6 +1456,7 @@ class WFParamValue( BaseModel ):
 		db_table = 'CORE_WORKFLOW_PARAM_VALUE'
 		verbose_name = 'Workflow Parameter Value'
 		verbose_name_plural = "Workflow Parameter Values"
+
 
 class Setting ( BaseModel ):
 	"""
@@ -2100,6 +2171,7 @@ class context_view(object):
 			self.__mode = args['mode']
 		else:
 			self.__mode = 'view'
+		logger.debug('__mode: {} args: {}'.format(self.__mode, args))
 		if len(argList) != 0:
 			logger.debug('argList: {}'.format(argList))
 			if argList[0]:
@@ -2111,11 +2183,9 @@ class context_view(object):
 		"""Decorator call method"""
 		def wrapped_f(request, **args):
 			try: 
-				
-				logger.debug( 'ContextViewDecorator :: args: %s' % json.dumps(args) )
-				logger.debug( 'ContextViewDecorator :: userAgent: %s' % request.META['HTTP_USER_AGENT'] )
-				logger.debug( 'ContectViewDecorator :: mode: %s' % (self.__mode) )
-				
+				logger.debug('context_view :: args: %s' % json.dumps(args))
+				logger.debug('context_view :: userAgent: %s' % request.META['HTTP_USER_AGENT'])
+				logger.debug('context_view :: mode: %s' % (self.__mode))
 				app_default_obj = None
 				if settings.XIMPIA_DEFAULT_APP:
 					try:
@@ -2126,9 +2196,32 @@ class context_view(object):
 				if 'viewSlug' in args and args['viewSlug'] == 'home':
 					raise Http404
 				
-				if 'viewSlug' not in args:
+				if 'viewSlug' not in args and 'actionSlug' not in args:
 					args['viewSlug'] = 'home'
-								
+
+				# resolve right appSlug, viewSlug, viewAttrs
+				# We switch appSlug and viewSlug for cases /my-view where should be /my-app and viceversa, since we have same url conf
+				if 'appSlug' in args:
+					try:
+						Application.objects.get(slug=args['appSlug'])
+					except Application.DoesNotExist:
+						try:
+							View.objects.get(slug=args['appSlug'])
+							args['viewSlug'] = args['appSlug']
+							args['appSlug'] = settings.XIMPIA_DEFAULT_APP
+							logger.debug('context_view :: switched appSlug<>viewSlug ... args: {}'.format(args))
+						except View.DoesNotExist:
+							raise XpMsgException(None, _('Error in resolving view'))
+
+				# /appSlug/viewSlug
+				if 'appSlug' not in args and 'viewSlug' in args and 'viewAttrs' in args:
+					if args['viewSlug'] == settings.XIMPIA_DEFAULT_APP:
+						raise Http404
+					args['appSlug'] = args['viewSlug']
+					tmp_attr_fields = args['viewAttrs'].split('/')
+					args['viewSlug'] = tmp_attr_fields[0]
+					args['viewAttrs'] = '/'.join(tmp_attr_fields[1:])
+
 				# Include this when we support IE > 8
 				'''if request.META['HTTP_USER_AGENT'].find('MSIE 6') != -1 or \
 					request.META['HTTP_USER_AGENT'].find('MSIE 7') != -1 or \
@@ -2166,13 +2259,13 @@ class context_view(object):
 						self._app = Application.objects.get(slug=args['appSlug']).name
 					else:
 						pass
-
-				logger.debug( 'ContectViewDecorator :: app: %s' % (self._app) )
+				
+				logger.debug('context_view :: app: %s' % (self._app))
 				
 				REQ = request.REQUEST 
 				langs = ('en')
 				lang = translation.get_language()
-				logger.debug( 'ContextViewDecorator :: lang django: %s' % lang )
+				logger.debug( 'context_view :: lang django: %s' % lang )
 				if lang not in langs:
 					lang = 'en'
 				# Instantiate app Context
@@ -2210,6 +2303,11 @@ class context_view(object):
 				ctx.viewNameSource = REQ['viewNameSource'] if REQ.has_key('viewNameSource') else ''
 				ctx.viewNameTarget = REQ['viewNameTarget'] if REQ.has_key('viewNameTarget') else ''
 				ctx.action = REQ['action'] if REQ.has_key('action') else ''
+				if 'actionSlug' in args:
+					try:
+						ctx.action = Action.objects.get(slug=args['actionSlug']).name
+					except Action.DoesNotExist:
+						pass
 				# Set isView and isAction. Used by data layer, to define which database name to use
 				if request.REQUEST.has_key('view'):
 					ctx.isView = True
@@ -2241,7 +2339,7 @@ class context_view(object):
 				resp = f(request, **args)
 				if not args['ctx'].user.is_authenticated() and args['ctx'].viewAuth == True\
 						 and args['ctx'].viewNameSource != KSite.Views.LOGIN:
-					logger.debug('ContextViewDecorator :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
+					logger.debug('context_view :: Will redirect to login !!!!!!!!!!!!!!!!!!!!!!!!')
 					url = 'http://' + request.META['SERVER_NAME'] + ':' + request.META['SERVER_PORT'] + '/apps/' + \
 							KSite.Slugs.SITE + '/' + KSite.Slugs.LOGIN
 					resp = HttpResponseRedirect(url)
@@ -2250,10 +2348,10 @@ class context_view(object):
 					maxAge = 5*12*30*24*60*60
 					resp.set_cookie(cookie['key'], value=cookie['value'], domain=cookie['domain'], 
 							expires = cookie['expires'], max_age=maxAge)
-					logger.debug( 'ContextViewDecorator :: Did set cookie into resp... %s' % (cookie) )				
+					logger.debug( 'context_view :: Did set cookie into resp... %s' % (cookie) )				
 				return resp
 			except Exception as e: #@UnusedVariable
-				logger.debug( 'ContextViewDecorator :: Exception... type: %s' % (type(e)) )
+				logger.debug( 'context_view :: Exception... type: %s' % (type(e)) )
 				print e.__dict__
 				print dir(e)
 				print e
@@ -2264,7 +2362,7 @@ class context_view(object):
 					if e.__dict__.has_key('argsDict') and e.argsDict.has_key('origin') and e.argsDict['origin'] != 'data':
 						showError = False
 					if type(e) == XpMsgException and showError == True:
-						logger.debug('ContextViewDecorator :: XpMsgException msg: %s' % (e.msg) )
+						logger.debug('context_view :: XpMsgException msg: %s' % (e.msg) )
 						#result = obj._buildJSONResult(obj._getErrorResultDict(errorDict, pageError=self._pageError))
 						# Build json response with error message
 						resultDict = get_result_ERROR([('id_pageError', e.msg, True)])
