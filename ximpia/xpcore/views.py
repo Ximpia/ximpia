@@ -608,16 +608,16 @@ def jxService(request, **args):
         implFields = impl.split('.')
         method = implFields[len(implFields)-1]
         classPath = ".".join(implFields[:-1])
-        logger.debug('classPath: %s' % (classPath) )
+        logger.debug('classPath: %s' % (classPath))
         if method.find('_') == -1 or method.find('__') == -1:
             cls = get_class(classPath)
             obj = cls(args['ctx'])
             super(cls, obj).__init__(args['ctx'])
             obj.request = request
             if (len(viewAttrs) == 0):
-                result = eval('obj.' + method)()
+                result = getattr(obj, method)()
             else:
-                result = eval('obj.' + method)(**viewAttrs)
+                result = getattr(obj, method)(**viewAttrs)
         else:
             logger.debug( 'private methods...' )
             raise Http404
@@ -779,7 +779,7 @@ def jxDelete(request, **args):
 
 @context_view()
 @view_tmpl()
-def showView(request, appSlug='', viewSlug='home', viewAttrs='', **args):
+def showView(request, appSlug='front', viewSlug='home', viewAttrs='', **args):
     """
     Show url view. Application code and view name are parsed from the url.
     urls not following /appSlug/viewSlug mapped into urls???? appSlug would be default app from settings
@@ -820,7 +820,7 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
     """
     Executes an action and shows a message of result of action.
     """
-    logger.debug('appslug: %s actionslug: %s actionAttrs: %s' % (appSlug, actionSlug, actionAttrs) )
+    logger.debug('execActionMsg :: appslug: %s actionslug: %s actionAttrs: %s' % (appSlug, actionSlug, actionAttrs) )
     dbApplication = ApplicationDAO(args['ctx'])
     application = dbApplication.get(slug=appSlug)
     db = ActionDAO(args['ctx'])
@@ -848,6 +848,6 @@ def execActionMsg(request, appSlug, actionSlug, actionAttrs, **args):
         else:
             result = eval('obj.' + method)(*actionAttrTuple)
     else:
-        logger.debug( 'xpcore :: execAction :: private methods...' )
+        logger.debug('xpcore :: execAction :: private methods...')
         raise Http404
     return result
