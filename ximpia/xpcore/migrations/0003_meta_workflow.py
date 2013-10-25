@@ -13,7 +13,6 @@ class Migration(SchemaMigration):
         orm['xpcore.coreparam'].objects.get_or_create(mode='META_TYPE', name='META_APP', value='META_APP', paramType='String')
         orm['xpcore.coreparam'].objects.get_or_create(mode='META_TYPE', name='META_SERVICE', value='META_SERVICE', paramType='String')
         data = orm['xpcore.coreparam'].objects.get_or_create(mode='META_TYPE', name='META_WF', value='META_WF', paramType='String')
-        print data
         meta_wf = data[1]
         orm['xpcore.coreparam'].objects.get_or_create(mode='META_TYPE', name='META_VIEW', value='META_VIEW', paramType='String')
         # meta keys for workflow
