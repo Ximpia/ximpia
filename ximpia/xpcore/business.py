@@ -375,8 +375,7 @@ class ComponentRegisterBusiness ( object ):
 			try:
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				#logger.info( 'data: %s' % (view.name, menu.name, sep, dd[K.ZONE], counter) )
-				logger.info( 'data: %s' % (counter) )
+				logger.debug('data: %s' % (counter))
 				try:
 					viewMenu = ViewMenu.objects.get(view=view, menu=menu)
 				except ViewMenu.DoesNotExist:
@@ -408,8 +407,7 @@ class ComponentRegisterBusiness ( object ):
 					dd[K.ZONE] = K.VIEW
 				menu = Menu.objects.get(name=dd[K.MENU_NAME])
 				sep = dd[K.SEP] if dd.has_key(K.SEP) else False
-				#logger.info( 'data: %s' % (view.name, menuParent.name, menu.name, sep, dd[K.ZONE], counter) )
-				logger.info( 'data: %s' % ( counter) )
+				logger.debug('data: %s' % (counter))
 				try:
 					viewMenu = ViewMenu.objects.get(view=view, menu=menu)
 				except ViewMenu.DoesNotExist:
