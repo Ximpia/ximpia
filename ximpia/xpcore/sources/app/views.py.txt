@@ -18,5 +18,6 @@ from service import SiteService
 def home(request, **args):
 	# Instantiage SiteService.home and return result
 	site = SiteService(args['ctx'])
+	site.request = request
 	result = site.viewHome()
 	return result
