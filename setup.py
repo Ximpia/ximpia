@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Ximpia',
-    version='0.2.0',
+    version='0.2.1',
     description='Web development environment to speed up your web projects',
     long_description = codecs.open('README.rst', 'r', 'utf-8').read(),
     author='Ximpia Inc',
