@@ -52,6 +52,11 @@ And open your browser at ``http://127.0.0.1:8000/``
 
 For further details, visit project documentation.
 
+Follow Us
+---------
+https://www.facebook.com/ximpia
+https://twitter.com/ximpia
+
 License
 -------
 
