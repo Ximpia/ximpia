@@ -26,7 +26,7 @@ class CommonDAO(object):
 
 	_numberMatches = 0
 	_ctx = None
-	_model = None
+	model = None
 	_relatedFields = ()
 	_relatedDepth = None
 
@@ -39,7 +39,7 @@ class CommonDAO(object):
 		self._ctx = ctx
 		self._relatedFields = related_fields
 		self._relatedDepth = related_depth
-		self._numberMatches = number_matches
+		self._numberMatches = number_matches 
 		if related_depth != None and len(related_fields) != 0:
 			raise XpMsgException(None, _('relatedFields and relatedDepth cannot be combined. One of them must only be informed.'))
 	
@@ -47,11 +47,11 @@ class CommonDAO(object):
 		"""Process related objects using fields and depth, class attributes _relatedFields and _relatedDepth"""
 		if len(self._relatedFields) != 0 or self._relatedDepth != None:
 			if len(self._relatedFields) != 0:
-				dbObj = self._model.objects.select_related(self._relatedFields)
+				dbObj = self.model.objects.select_related(self._relatedFields)
 			elif self._relatedDepth != None:
-				dbObj = self._model.objects.select_related(depth=self._relatedDepth)
+				dbObj = self.model.objects.select_related(depth=self._relatedDepth)
 		else:
-			dbObj = self._model.objects
+			dbObj = self.model.objects
 		return dbObj
 		
 	def _cleanDict(self, dd):
@@ -159,7 +159,7 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			obj = dbObj.using(self._resolveDbName()).get(id=field_id)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object by id ') + str(field_id) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get object by id ') + str(field_id) + _(' in model ') + str(self.model), 
 								origin='data')
 		return obj
 	
@@ -168,10 +168,10 @@ class CommonDAO(object):
 		@param qs_args: query arguments
 		@return: Boolean"""
 		try:
-			dbObj = self._model.objects
+			dbObj = self.model.objects
 			exists = dbObj.using(self._resolveDbName()).filter(**qs_args).exists()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in check object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in check object. Args: ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 		return exists
 	
@@ -184,18 +184,18 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			data = dbObj.using(self._resolveDbName()).get(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get object. Args: ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 		return data	
 
 	def save(self):
 		"""Save database object, either insert or update"""
 		try:
-			self._model.save(using=self._resolveDbName())
+			self.model.save(using=self._resolveDbName())
 		except Exception as e:
-			raise XpMsgException(e, _('Error in save model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in save model ') + str(self.model), 
 								origin='data')
-		return self._model
+		return self.model
 	
 	def search(self, *qs_tuple, **qs_args):
 		"""Search model using filter. Support for related objects as FK to model"""
@@ -203,7 +203,7 @@ class CommonDAO(object):
 		dbObj = self._processRelated()
 		filterList = dbObj.using(self._resolveDbName()).filter(*qs_tuple, **qs_args)
 		"""except Exception as e:
-			raise XpMsgException(e, _('Error in search operation. qs_tuple: ') + str(qs_tuple) + ' . Args: ' + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in search operation. qs_tuple: ') + str(qs_tuple) + ' . Args: ' + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')"""
 		return filterList
 	
@@ -212,10 +212,10 @@ class CommonDAO(object):
 		@param qs_args: Query arguments
 		@return: Data Object"""
 		try:
-			dbObj = self._model.objects
+			dbObj = self.model.objects
 			data = dbObj.using(self._resolveDbName()).create(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in create object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in create object. Args: ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 		return data
 	
@@ -224,10 +224,10 @@ class CommonDAO(object):
 		@param qs_args: Query arguments
 		@return: tuple (Data Object, bCreated)"""
 		try:
-			dbObj = self._model.objects
+			dbObj = self.model.objects
 			xpTuple = dbObj.using(self._resolveDbName()).get_or_create(**qs_args)
 		except Exception as e:
-			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in get or create object. Args: ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 		return xpTuple
 	
@@ -237,11 +237,11 @@ class CommonDAO(object):
 		@return: Model object"""
 		try:
 			if is_real == False:
-				xpObject = self._model.objects.using(self._resolveDbName()).get(id=pk)
+				xpObject = self.model.objects.using(self._resolveDbName()).get(id=pk)
 				xpObject.isDeleted = True
 				xpObject.save(using=self._resolveDbName())
 			else:
-				xpObject = self._model.objects_del.using(self._resolveDbName()).get(id=pk)
+				xpObject = self.model.objects_del.using(self._resolveDbName()).get(id=pk)
 				xpObject.delete()
 		except Exception as e:
 			raise XpMsgException(e, _('Error delete object by id ') + str(pk), 
@@ -252,19 +252,19 @@ class CommonDAO(object):
 		"""Delete row in case item exists.If does not exist, catches a DoesNotExist exception
 		@param qs_args: query arguments"""
 		try:
-			dbObj = self._model.objects
+			dbObj = self.model.objects
 			try:
 				if is_real == False:
-					dbObj = self._model.objects.using(self._resolveDbName()).get(**qs_args)
+					dbObj = self.model.objects.using(self._resolveDbName()).get(**qs_args)
 					dbObj.isDeleted = True
 					dbObj.save(using=self._resolveDbName())
 				else:
-					dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qs_args)
+					dbObj = self.model.objects_del.using(self._resolveDbName()).get(**qs_args)
 					dbObj.delete()
-			except self._model.DoesNotExist:
+			except self.model.DoesNotExist:
 				pass	
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 	
 	def delete(self, is_real=False, **qs_args):
@@ -272,15 +272,15 @@ class CommonDAO(object):
 		@param qs_args: query arguments"""
 		try:						
 			if is_real == False:
-				dbObj = self._model.objects.using(self._resolveDbName()).get(**qs_args)
+				dbObj = self.model.objects.using(self._resolveDbName()).get(**qs_args)
 				dbObj.isDeleted = True
 				dbObj.save(using=self._resolveDbName())
 			else:
-				dbObj = self._model.objects_del.using(self._resolveDbName()).get(**qs_args)
+				dbObj = self.model.objects_del.using(self._resolveDbName()).get(**qs_args)
 				dbObj.delete()
 			#dbObj.using(self._resolveDbName()).get(**qs_args).delete()
 		except Exception as e:
-			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self._model), 
+			raise XpMsgException(e, _('Error delete object. Args ') + str(qs_args) + _(' in model ') + str(self.model), 
 								origin='data')
 	
 	def filter_data(self, **args_dict):
@@ -303,11 +303,11 @@ class CommonDAO(object):
 			ArgsDict = self._cleanDict(args_dict)
 			dbObj = self._processRelated()
 			if len(orderByTuple) != 0:
-				dbObj = self._model.objects.order_by(*orderByTuple)
+				dbObj = self.model.objects.order_by(*orderByTuple)
 			logger.debug( self._resolveDbName() )
 			xpList = dbObj.using(self._resolveDbName()).filter(**ArgsDict)[iStart:iEnd]
 		except Exception as e:
-			raise XpMsgException(e, _('Error in search table model ') + str(self._model), 
+			raise XpMsgException(e, _('Error in search table model ') + str(self.model), 
 								origin='data')
 		return xpList
 		
@@ -319,7 +319,7 @@ class CommonDAO(object):
 			dbObj = self._processRelated()
 			xpList = dbObj.using(self._resolveDbName()).all()
 		except Exception as e:
-			raise XpMsgException(e, _('Error in getting all fields from ') + str(self._model), 
+			raise XpMsgException(e, _('Error in getting all fields from ') + str(self.model), 
 								origin='data')
 		return xpList
 	
@@ -353,7 +353,7 @@ class CommonDAO(object):
 				logger.debug('CommonDAO.searchFields :: iStart: %s iEnd: %s' % (iStart, iEnd) )
 			dbObj = self._processRelated()
 			"""if len(orderBy) != 0:
-				dbObj = self._model.objects.order_by(*orderBy)"""
+				dbObj = self.model.objects.order_by(*orderBy)"""
 			logger.debug( self._resolveDbName() )
 			logger.debug('CommonDAO.searchFields :: args: %s' % (args) )
 			if (args.has_key('disablePaging') and not args['disablePaging']) or not args.has_key('disablePaging'):
@@ -376,72 +376,72 @@ class CommonDAO(object):
 				xpList.orderBy(*orderBy)"""
 			return xpList
 		except Exception as e:
-			raise XpMsgException(e, _('Error in searching fields in model ') + str(self._model), origin='data')
+			raise XpMsgException(e, _('Error in searching fields in model ') + str(self.model), origin='data')
 
 	ctx = property(_getCtx, None)
 
 class CoreParameterDAO(CommonDAO):
-	_model = CoreParam
+	model = CoreParam
 
 class ApplicationDAO(CommonDAO):
-	_model = Application
+	model = Application
 
 class ApplicationMediaDAO(CommonDAO):
-	_model = ApplicationMedia
+	model = ApplicationMedia
 
 class ActionDAO(CommonDAO):
-	_model = Action
+	model = Action
 
 class MenuDAO(CommonDAO):
-	_model = Menu
+	model = Menu
 
 class ViewMenuDAO(CommonDAO):
-	_model = ViewMenu
+	model = ViewMenu
 
 class ServiceMenuDAO(CommonDAO):
-	_model = ServiceMenu
+	model = ServiceMenu
 
 class MenuParamDAO(CommonDAO):
-	_model = MenuParam
+	model = MenuParam
 
 class ViewDAO(CommonDAO):
-	_model = View
+	model = View
 
 class WorkflowDAO(CommonDAO):
-	_model = Workflow
+	model = Workflow
 
 class WorkflowDataDAO(CommonDAO):
-	_model = WorkflowData
+	model = WorkflowData
 
 class ParamDAO(CommonDAO):
-	_model = Param
+	model = Param
 
 class WFParamValueDAO(CommonDAO):
-	_model = WFParamValue
+	model = WFParamValue
 
 class WorkflowViewDAO(CommonDAO):
-	_model = WorkflowView
+	model = WorkflowView
 
 class SearchIndexDAO(CommonDAO):
-	_model = SearchIndex
+	model = SearchIndex
 
 class SearchIndexParamDAO(CommonDAO):
-	_model = SearchIndexParam
+	model = SearchIndexParam
 
 class WordDAO(CommonDAO):
-	_model = Word
+	model = Word
 
 class SearchIndexWordDAO(CommonDAO):
-	_model = SearchIndexWord
+	model = SearchIndexWord
 
 class TemplateDAO(CommonDAO):
-	_model = XpTemplate
+	model = XpTemplate
 
 class ViewTmplDAO(CommonDAO):
-	_model = ViewTmpl
+	model = ViewTmpl
 
 class ServiceMenuConditionDAO(CommonDAO):
-	_model = ServiceMenuCondition
+	model = ServiceMenuCondition
 
 class ViewMenuConditionDAO(CommonDAO):
-	_model = ViewMenuCondition
+	model = ViewMenuCondition

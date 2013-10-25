@@ -11,7 +11,7 @@ from models import SocialNetworkUser, Tag, TagMode, UserAddress, UserChannel, Us
 import constants as K
 
 class UserDAO(CommonDAO):
-	_model = User
+	model = User
 	
 	def get_invitation(self, invitation_code, status=None):
 		"""
@@ -31,22 +31,22 @@ class UserDAO(CommonDAO):
 		pass
 
 class GroupSysDAO(CommonDAO):
-	_model = GroupSys	
+	model = GroupSys	
 
 class GroupDAO( CommonDAO ):
-	_model = Group
+	model = Group
 
 class GroupAccessDAO( CommonDAO ):
-	_model = GroupAccess
+	model = GroupAccess
 
 class GroupTagDAO( CommonDAO ):
-	_model = GroupTag
+	model = GroupTag
 
 class InvitationMetaDAO( CommonDAO ):
-	_model = InvitationMeta
+	model = InvitationMeta
 
 class UserMetaDAO( CommonDAO ):
-	_model = UserMeta
+	model = UserMeta
 
 	def save_meta(self, user, metas, keys):
 		"""
@@ -68,19 +68,19 @@ class UserMetaDAO( CommonDAO ):
 				self.create(user=user, meta=meta, value=keys[key])
 
 class AddressDAO( CommonDAO ):
-	_model = Address
+	model = Address
 
 class CategoryDAO( CommonDAO ):
-	_model = Category
+	model = Category
 
 class TagDAO( CommonDAO ):
-	_model = Tag
+	model = Tag
 
 class TagModeDAO(CommonDAO):
-	_model = TagMode
+	model = TagMode
 
 class MetaKeyDAO(CommonDAO):
-	_model = MetaKey
+	model = MetaKey
 
 	def metas(self, keys):
 		"""
@@ -100,13 +100,13 @@ class MetaKeyDAO(CommonDAO):
 		return metaDict
 
 class UserChannelDAO(CommonDAO):
-	_model = UserChannel
+	model = UserChannel
 
 class InvitationDAO(CommonDAO):
-	_model = Invitation
+	model = Invitation
 
 class ParamDAO(CommonDAO):
-	_model = Param
+	model = Param
 
 	def get_user_status_active(self):
 		return self.get(mode=K.PARAM_USER_STATUS, name=K.PARAM_USER_STATUS_ACTIVE)
@@ -114,13 +114,13 @@ class ParamDAO(CommonDAO):
 		return self.get(mode=K.PARAM_ADDRESS_TYPE, name=K.PARAM_ADDRESS_TYPE_PERSONAL)
 
 class SignupDataDAO(CommonDAO):
-	_model = SignupData
+	model = SignupData
 
 class SocialNetworkUserDAO(CommonDAO):
-	_model = SocialNetworkUser
+	model = SocialNetworkUser
 
 class SettingDAO(CommonDAO):
-	_model = Setting
+	model = Setting
 
 	def search_settings(self, app_name):
 		"""
@@ -135,14 +135,14 @@ class SettingDAO(CommonDAO):
 		
 		Queryset with settings
 		"""
-		settings = self._model.objects.filter( Q(application = None) | Q(application__name=app_name), mustAutoload=True)
+		settings = self.model.objects.filter( Q(application = None) | Q(application__name=app_name), mustAutoload=True)
 		return settings 
 
 class UserAddressDAO( CommonDAO ):
-	_model = UserAddress
+	model = UserAddress
 
 class UserChannelGroupDAO( CommonDAO ):
-	_model = UserChannelGroup
+	model = UserChannelGroup
 
 class UserProfileDAO( CommonDAO ):
-	_model = UserProfile
+	model = UserProfile
