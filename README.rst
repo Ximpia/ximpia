@@ -58,6 +58,8 @@ https://www.facebook.com/ximpia
 
 https://twitter.com/ximpia
 
+http://blog.ximpia.com
+
 License
 -------
 
