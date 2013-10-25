@@ -146,6 +146,7 @@ class service(object):
 				if self._form != None:
 					obj._set_main_form(self._form())
 				f(*argsTuple, **argsDict)
+				obj._ctx.user = obj.request.user
 				if not obj._ctx.doneResult:
 					# Instances
 					dbApp = ApplicationDAO(obj._ctx)
@@ -174,7 +175,7 @@ class service(object):
 						obj._ctx.jsData['response']['viewSlug'] = view.slug
 					# User authenticate and session
 					logger.debug('service :: User: %s' % (obj._ctx.user) )
-					if obj._ctx.user.is_authenticated():
+					if obj._ctx.user and obj._ctx.user.is_authenticated():
 						# login: context variable isLogin = True
 						obj._ctx.jsData.addAttr('isLogin', True)
 						#obj._ctx.jsData.addAttr('userid', self._ctx['user'].pk)
@@ -616,6 +617,7 @@ class wf_action(object):
 				classPath = ".".join(implFields[:-1])
 				cls = get_class(classPath)
 				objView = cls(obj._ctx) #@UnusedVariable
+				objView.request = obj.request
 				if (len(viewAttrs) == 0) :
 					result = getattr(objView, method)()
 				else:
@@ -933,7 +935,8 @@ class MenuService( object ):
 				if param.operator == Choices.OP_EQ:
 					paramDict[param.name] = param.value
 			menuObj['params'] = paramDict
-			if menuItem.menu.view.application.slug == settings.XIMPIA_DEFAULT_APP:
+			logger.debug('menus.__getList :: menu: {}'.format(menuItem))
+			if menuItem.menu.view and menuItem.menu.view.application.slug == settings.XIMPIA_DEFAULT_APP:
 				menuObj['isDefaultApp'] = True
 			container[menuItem.menu.name] = menuObj
 			if menuItem.menu.view != None:
@@ -1392,11 +1395,10 @@ class TemplateService ( object ):
 		return templates
 
 
-class CommonService( object ):
+class CommonService(object):
 
 	_ctx = None
 	_ctx_min = None
-	_request = None
 	_errorDict = {}
 	_resultDict = {}
 	_form = None
@@ -1408,7 +1410,6 @@ class CommonService( object ):
 	_actions = {}
 	_wf = None
 	_wfUserId = ''
-	request = None
 
 	def __init__(self, ctx):
 		self._ctx = ctx
@@ -1423,18 +1424,16 @@ class CommonService( object ):
 		self._wf = WorkFlowBusiness(self._ctx)
 		self._viewNameTarget = ''
 		self._wfUserId = ''
+		self.__request = None
 
 	def get_request(self):
 		return self.__request
 
-
 	def set_request(self, value):
 		self.__request = value
 
-
 	def del_request(self):
 		del self.__request
-
 
 	def _build_JSON_result(self, result_dict):
 		"""Builds json result
@@ -1493,6 +1492,7 @@ class CommonService( object ):
 		classPath = ".".join(implFields[:-1])
 		cls = get_class( classPath )
 		objView = cls(self._ctx) #@UnusedVariable
+		objView.request = self.request
 		if (len(view_attrs) == 0) :
 			result = eval('objView.' + method)()
 		else:
