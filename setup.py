@@ -11,7 +11,7 @@ setup(
     long_description = codecs.open('README.rst', 'r', 'utf-8').read(),
     author='Ximpia Inc',
     author_email='team@ximpia.com',
-    url = 'https://ximpia.readthedocs.org',
+    url = 'https://ximpia.com',
     download_url='',
     license='Apache Software License',
     packages=find_packages(),
