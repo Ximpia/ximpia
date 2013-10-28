@@ -26,6 +26,21 @@ This will install ximpia and required packages:
 
 Go to https://github.com/Ximpia/ximpia/ if you need to download a package or clone the repo.
 
+Upgrading
+---------
+
+Using ``pip``::
+
+    pip --upgrade install ximpia
+
+Migrate Ximpia apps::
+
+    python manage.py migrate ximpia.xpcore ximpia.xpsite
+
+Update site components::
+
+    python manage.py xpcomponents ximpia.xpsite
+
 Setup Application
 -----------------
 
@@ -48,4 +63,4 @@ And open your browser at ``http://127.0.0.1:8000/``:
 
 Customize your logo at ``myproject/myproject/myapp/static/images/logo.png``.
 
-You are set to develop your app: views, actions, etc...
+You are set to start coding!

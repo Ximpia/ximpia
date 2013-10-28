@@ -28,6 +28,14 @@ Installation & Setup
    
    quickstart
 
+Release Notes
+-------------
+
+.. toctree::
+   :maxdepth: 2
+
+   release-notes
+
 Contributing
 ------------
 
