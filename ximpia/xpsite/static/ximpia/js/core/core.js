@@ -748,7 +748,10 @@ ximpia.common.Window.showMessage = (function(messageOptions) {
 		$("div.MsgText").css('height', iHeight + 'px');
 		var iTopPosition = 80;
 	}
-	iLeft = (iScreenWidth / 2) - parseInt($("div.PopMessage").css('width')) / 2;
+	// 7 is to take affect of scrollbar, should be 15, so we take average when have scroll and when not
+	// TODO: Have a way to check scroll and width
+	//iLeft = (iScreenWidth / 2) - parseInt($("div.PopMessage").css('width')) / 2 - 7;
+	iLeft = (iScreenWidth / 2) - (parseInt($("div.PopMessage").css('width')) / 2);
 	if (!$.browser.msie) {
 		iTopOffset = window.pageYOffset;
 	} else {
@@ -1360,11 +1363,12 @@ ximpia.common.Form = function() {
 												}
 											}
 										}
-										ximpia.console.log('bindAction :: okMsg: ' + msg);
-										$("#" + obj.idMsg + "_text").text(msg);										
+										ximpia.console.log('bindAction :: okMsg: ' + msg + ' idMsg: ' + obj.idMsg);
+										$("#" + obj.idMsg + "_text").text(msg);
 										
 										var timeout = setTimeout(function() {
-											$("#" + obj.idMsg).animate({top: parseInt($('#' + obj.idMsg).css('top')) + 30});
+											//$("#" + obj.idMsg).animate({top: parseInt($('#' + obj.idMsg).css('top')) + 30});
+											$("#" + obj.idMsg).fadeOut();
 										}, ximpia.settings.pagebutton.msg.slideTimeout);
 										
 									} else {
