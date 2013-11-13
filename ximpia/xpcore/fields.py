@@ -26,6 +26,7 @@ import logging.config
 logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
+
 class Field( DjField ):
 	instance = None
 	initial = ''
@@ -127,13 +128,17 @@ class Field( DjField ):
 		"""
 		Get field from model instance
 		"""
-		modelField = eval("self.instance.__class__._meta.get_field_by_name('" + self.instanceFieldName + "')[0]")
+		if not self.instance:
+			return None
+		modelField = getattr(self.instance.__class__._meta, "get_field_by_name('" + self.instanceFieldName + "')[0]")
 		return modelField
 	def _getModelFieldType(self):
 		"""
 		Get field model type
 		"""
 		modelField = self._getModelField()
+		if modelField is None:
+			return ''
 		fieldTypeFields = str(type(modelField)).split('.')
 		return fieldTypeFields[len(fieldTypeFields)-1].split("'")[0]
 	def _getLimitChoicesTo(self, instance, instanceFieldName):
@@ -324,6 +329,7 @@ class Field( DjField ):
 		result.validators = self.validators[:]
 		return result
 
+
 class CharField( Field ):
 	"""
 	Char field.
@@ -383,6 +389,7 @@ class CharField( Field ):
 		if self.minLength != None:
 			self.attrs['minlength'] = str(self.minLength)
 
+
 class BooleanField ( Field ):	
 	"""
 	Boolean field. This field can be rendered into any visual component: checkbox, selection box, etc... The most common use is to
@@ -433,6 +440,7 @@ class BooleanField ( Field ):
 		if not value and self.required:
 			raise ValidationError(self.error_messages['required'])
 		return value
+
 
 class IPAddressField(Field):
 	"""
@@ -536,6 +544,7 @@ class GenericIPAddressField(CharField):
 				return clean_ipv6_address(value,
 					self.unpack_ipv4, self.error_messages['invalid'])
 		return value
+
 
 class DecimalField ( Field ):
 	
@@ -672,6 +681,7 @@ class DecimalField ( Field ):
 			raise ValidationError(self.error_messages['max_whole_digits'] % (self.maxDigits - self.decimalPlaces))
 		return value
 
+
 class IntegerField ( Field ):
 	
 	"""
@@ -753,6 +763,7 @@ class IntegerField ( Field ):
 			raise ValidationError(self.error_messages['invalid'])
 		return value
 
+
 class FloatField ( IntegerField ):
 	
 	"""
@@ -810,6 +821,7 @@ class FloatField ( IntegerField ):
 		except (ValueError, TypeError):
 			raise ValidationError(self.error_messages['invalid'])
 		return value
+
 
 class _BaseTemporalField ( Field ):
 	
@@ -886,6 +898,7 @@ class _BaseTemporalField ( Field ):
 	def strptime(self, value, timeFormat):
 		raise NotImplementedError('Subclasses must define this method.')
 
+
 class DateField ( _BaseTemporalField ):
 	
 	"""
@@ -940,6 +953,7 @@ class DateField ( _BaseTemporalField ):
 	
 	"""
 
+	fieldType = 'DateField'
 	inputFormats = formats.get_format_lazy('DATE_INPUT_FORMATS')
 	defaultErrorMessages = {
 		'invalid': _(u'Enter a valid date.'),
@@ -960,6 +974,7 @@ class DateField ( _BaseTemporalField ):
 
 	def strptime(self, value, timeFormat):
 		return datetime.datetime.strptime(value, timeFormat).date()
+
 
 class DateTimeField ( _BaseTemporalField ):
 	
@@ -1047,6 +1062,7 @@ class DateTimeField ( _BaseTemporalField ):
 	def strptime(self, value, timeFormat):
 		return datetime.datetime.strptime(value, timeFormat)
 
+
 class TimeField ( _BaseTemporalField ):
 	
 	"""
@@ -1108,6 +1124,7 @@ class TimeField ( _BaseTemporalField ):
 
 	def strptime(self, value, timeFormat):
 		return datetime.datetime.strptime(value, timeFormat).time()
+
 
 class HiddenField( Field ):
 	"""
@@ -1172,6 +1189,7 @@ class UserField( Field ):
 									initial=initial, helpText=helpText, jsVal=jsVal)
 		self._updateAttrs(self.attrs, 'data-xp-val', 'userid')
 
+
 class EmailField( CharField ):
 	"""
 	Email field. Validates email address	
@@ -1219,6 +1237,7 @@ class EmailField( CharField ):
 	def clean(self, value):
 		value = self.to_python(value).strip()
 		return super(EmailField, self).clean(value)	
+
 
 class PasswordField( CharField ):
 	"""
@@ -1329,6 +1348,7 @@ class FileBrowseField ( CharField ):
 		self.attrs['data-xp'] = "{	site:'" + self.site + "', directory: '" + self.directory +\
 									 "', extensions: '" + self.extensions +\
 									  "', fieldFormats: '" + self.fieldFormats + "'}"		
+
 
 class OneListField( Field ):
 	"""
@@ -1466,6 +1486,7 @@ class OneListField( Field ):
 						pass
 				valueList.append((name, value, valuesDict))
 		return valueList		
+
 
 class ManyListField( Field ):
 	"""
