@@ -68,7 +68,8 @@
         };
         var createPopupMsgBar = function(obj) {
         	$("#id_popupButton").xpButton('createPopupMsgBar');
-        	$("#id_btPopupMsg").css('top', $("#" + obj.element.id).offset().top-$("#" + obj.element.id).height()-10);
+        	var offset_vars = $(".MsgButtons").offset();
+        	$("#id_btPopupMsg").offset({top: $(".MsgButtons").position().top+53, left: offset_vars.left+3});
         	var windowWidth = $("div#PopMsgWrapper").css('width');
         	var index = windowWidth.search('px');
         	var iWindowWidth = windowWidth.substr(0, index);
@@ -878,6 +879,11 @@
  * link.view
  * link.action
  * 
+ * ** Attributes **
+ * 
+ * * ``class``
+ * * ``textSize``
+ * 
  * 
  * <!--<div id="id_passwordReminderLinkUrl_comp" data-xp-type="link.url" style="margin-top: 20px; margin-left: 20px"  
 		data-xp="{	op: 'callUrl', 
@@ -910,12 +916,12 @@
         var settings = {
         };
         var doOpenPopup = function(obj) {
-        	//ximpia.console.log('xpObjLink.doOpenPopup :: Link Open Popup!!!!');
-        	//ximpia.console.log(obj);
+        	ximpia.console.log('xpObjLink.doOpenPopup :: Link Open Popup!!!!');
+        	ximpia.console.log(obj);
         	// TODO: Call openPopup method in PageAjax
         	// This should call request view and normal popups
-        	ximpia.console.log('xpObjLink.doOpenPopup :: tmplAlias length: ' + obj.tmplAlias.length);
-        	if (obj.tmplAlias.length != 0) {
+        	//ximpia.console.log('xpObjLink.doOpenPopup :: tmplAlias length: ' + obj.tmplAlias.length);
+        	if (obj.hasOwnProperty('tmplAlias') && obj.tmplAlias.length != 0) {
         		obj.isPopupReqView = false;
         	} else {
         		obj.isPopupReqView = true;
@@ -989,6 +995,9 @@
 					if (!attrs.hasOwnProperty('app')) {
 						attrs.app = ximpia.common.Browser.getApp();
 					}
+                    if (!attrs.hasOwnProperty('class')) {
+                        attrs['class'] = '';
+                    }
 					var dataXp = ximpia.common.Object.metadata(attrs);
 					var htmlContent = "<a href=\"#\" id=\"" + idLink + "\" data-xp=\"" + dataXp + "\"";
 					if (attrs.hasOwnProperty('title')) {
@@ -1000,10 +1009,13 @@
 					if (attrs.hasOwnProperty('target')) {
 						htmlContent += " target=\"" + attrs.target + "\"";
 					}
-					htmlContent += " class=\"xpLink\">" + attrs.linkText + "</a>";
+					htmlContent += " class=\"xpLink " + attrs['class'] + "\"><span>" + attrs.linkText + "</span></a>";
 					ximpia.console.log(htmlContent);
 					$(element).html(htmlContent);
 					$(element).attr('data-xp-render', JSON.stringify(true));
+					if (attrs.hasOwnProperty('textSize')) {
+					    $(element).children('a').children('span').css('font-size', '1.6em');
+					}
 					$("#" + idLink).click(function(evt) {
 						// preventDefault in case not url operation 
 						evt.preventDefault();
