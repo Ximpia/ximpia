@@ -41,7 +41,8 @@ Using ``pip``::
 
 Migrate Ximpia apps::
 
-    python manage.py migrate ximpia.xpcore ximpia.xpsite
+    python manage.py migrate ximpia.xpcore
+    python manage.py migrate ximpia.xpsite
 
 Update site components::
 
