@@ -115,7 +115,7 @@
 					var relatedId = $(element).attr('data-xp-related');
 					var elementType = $(element).attr('data-xp-type');
 					var dataAttrs = {};
-					if (data.hasOwnProperty(nameInput)) {
+					if (data && data.hasOwnProperty(nameInput)) {
 						dataAttrs = data[nameInput];
 					} 
 					var type = 'text';
@@ -1825,7 +1825,9 @@
         	excludeList: ['info','type','left'],
         	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete'],
         	djangoAttrs: ['type','id','info','help_text','label','element','left','xptype','choices'],
-        	formData: {}
+        	formData: {},
+        	size: 10,
+        	hasBestMatch: true,
         };
 		
         var methods = {
@@ -1857,7 +1859,7 @@
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 					var dataAttrs = {};
-					if (data.hasOwnProperty(nameInput)) {
+					if (data && data.hasOwnProperty(nameInput)) {
 						dataAttrs = data[nameInput];
 					} 
 					console.log('XpObjListSelect...');
@@ -1896,7 +1898,11 @@
 					if (dataAttrs.hasOwnProperty('value')) {
 						values[0] = dataAttrs.value;
 					}
-					var controlList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
+					try {
+					    var controlList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
+					} catch(err) {
+					    var controlList = []
+					}
 					var results = {'results': []};
 					for (j in controlList) {
 						results['results'][j] = {'id': controlList[j][0], 'name': controlList[j][1]}
@@ -1909,10 +1915,15 @@
 					// ** Flexbox **
 					// *************
 					// input: maxVisibleRows, allowInput
+					if (attrs.hasOwnProperty('size')) {
+					    settings.size = attrs.size;
+					}
+                    if (attrs.hasOwnProperty('hasBestMatch')) {
+                        settings.hasBestMatch = attrs.hasBestMatch;
+                    }
 					var fb = $("#" + idField).flexbox(results,{
-						autoCompleteFirstMatch: true,
-						paging: false,
-						maxVisibleRows: 10
+						autoCompleteFirstMatch: settings.hasBestMatch,
+						maxVisibleRows: settings.size
 					});
 					if (dataAttrs.hasOwnProperty('value')) {
 						fb.setValue(values[0], values[1]);
@@ -2065,6 +2076,7 @@
 		},
 		render: function(xpForm) {
 			ximpia.console.log('input :: renderField...');
+			var formId = ximpia.common.Browser.getForm(xpForm);
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
@@ -2112,7 +2124,7 @@
 					});
 					// Choices
 					var choicesId = dataAttrs['choicesId'];
-					var choices = JSON.parse($("[name='choices']").attr('value'))[choicesId];
+					var choices = JSON.parse($("#id_" + formId + "_choices").attr('value'))[choicesId];
 					if (dataAttrs['required'] == false) {
 						$("#" + idInput).append("<option value=\"\"></option>");
 					}
@@ -2268,7 +2280,7 @@
 				var idInput = $(element).attr('id').split('_comp')[0];
 				var nameInput = idInput.split('id_')[1];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				if (doRender == true && data.hasOwnProperty(nameInput)) {
+				if (doRender == true && data && data.hasOwnProperty(nameInput)) {
 					$.metadata.setType("attr", "data-xp"); 
 					var attrs = $(element).metadata();
 					var dataAttrs = data[nameInput];
