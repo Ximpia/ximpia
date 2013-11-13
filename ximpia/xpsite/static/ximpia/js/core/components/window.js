@@ -120,8 +120,8 @@
         	// 1. Show Message, waiting icon
         	var waitingImgHtml = "<img id=\"id_btPageMsg_img\" src=\"/static/images/loading.gif\" alt=\" \" style=\"margin-top: -6px\" />";
 			waitingImgHtml += "&nbsp;&nbsp; <span id=\"id_btPageMsg_text\">Waiting...</span>";
-        	var height= 160;
-        	var width= 500;
+        	var height = 160;
+        	var width = originWidth = 500;
         	ximpia.common.Window.showMessage({
             		title: '',
             		message: '<div class="msgPopBody">' + waitingImgHtml + '</div>',
@@ -197,7 +197,8 @@
         	$("div.MsgButtons").append(elementButtons.html());
         	// Set popup width and height
         	$("div.PopMessage").css('width', width + 'px');
-        	$("div#PopMsgWrapper").css('width', width + 'px');
+        	$("div#PopMsgWrapper").css('width', width + 'px'); 
+        	$("#id_pops").css('left', parseInt($('#id_pops').css('left')) - (width-originWidth)/2 + 'px');
         	if (height > 400) height = 400;
         	$("div.MsgText").css('height', height + 'px');
         	// Render form from template
