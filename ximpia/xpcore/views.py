@@ -587,7 +587,7 @@ def jxService(request, **args):
             args['ctx'].viewAuth = viewObj.hasAuth
             impl = viewObj.implementation
             # view attributes
-            viewAttrs = json.loads(request.REQUEST['params'])
+            viewAttrs = json.loads(request.REQUEST['params']) if 'params' in request.REQUEST else {}
             args['ctx'].viewNameSource = view
             args['ctx'].path = '/apps/' + application.slug + '/' + viewObj.slug
         elif request.REQUEST.has_key('action'):
