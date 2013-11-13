@@ -1281,6 +1281,7 @@ div.listFieldDel:hover, div.listFieldDel.sfhover {
 	height: 25px;
 	border-radius: 8px;
 	position: fixed;
+	background-color: #fff;
 }
 
 .sectionButton {
