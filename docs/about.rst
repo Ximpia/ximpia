@@ -16,70 +16,6 @@ On the back-end, you define your services (=use cases) with views, actions and a
 other services like search, settings, parameters, already defined so you can speed up
 development.
 
-Context
--------
-
-Instead of request and response, this framework uses context which contains session, cookies
-and it is shared in all layers: service, business and data. We have full contexts with all
-data from front-end like forms, flow, session and cookies and minimized context with common
-data for business and data layers. Service layer uses full context and other layers interchange
-minimized context.
-
-You can extend our common context to include extended attributes needed for common parts of
-your services, useful when you need custom decorators for your applications.
-
-You can write data into context from service and business layers to interchange domain layer 
-information like user metadata, user profile information, etc...
-
-Services
---------
-
-Use cases are materialized in the framework as services. Services will hold view methods,
-action methods and validation operations.
-
-Think of Apps as collections of services, and services collections of views and operations:
-
-.. code-block:: python
-
-	import messages as _m
-
-	class SiteService(CommonService):
-
-		@validation()
-		def _validate_invitation_pending(self, invitation_code):
-			"""
-			Validates that invitation is pending
-			"""
-			setting = self._get_setting(K.SET_SITE_SIGNUP_INVITATION) 
-			(K.SET_SITE_SIGNUP_INVITATION, setting.is_checked()) )
-			if setting.is_checked():
-				self._validate_exists([
-						[self._dbInvitation, 
-						{'invitationCode': invitation_code, 
-						'status': K.PENDING}, 
-						'invitationCode', _m.ERR_invitation_not_valid] ])
-
-		@view(forms.HomeForm)
-		def viewHome(self):
-			db_setting = self._instances('ximpia.xpsite.data.SettingDAO')[0]
-			# your code...
-
-		@action(forms.HomeForm)
-		def activateGroup(self):
-			"""Activate group"""
-			groups = self._get_list_pk_values('groups')
-
-
-In case vaidation is not checked, user will see message ``ERR_invitation_not_valid``
-
-In case you have use cases with a set of operations, you can choose to materialize those
-into a service class or have n services with ``do``operation or similar.
-
-You register services to map them into database and you would write code by extending from ``CommonService`` and have methods
-for views, actions, workflow views, etc...(components.py)::
-
-	self._reg.registerService(__name__, serviceName='My Service', className=SiteService)
-
 Views
 -----
 
@@ -141,22 +77,6 @@ form data for front-end, we use field attributes from model like maxlength, labe
 in the form class as well.
 
 
-Workflow
---------
-
-It allows you to glue together your views (navigation) without writing code, just defining your flow with views and actions. You define
-views, actions associated to views and flow variables that must met in order to satisfy flow. These variables will behave like conditions
-for your application flow. 
-
-Your layers may write parameters to flow as you do with sessions. Session data starts when user starts flow and end when flow ends. 
-There is a set of parameters that control the way flows behave to adapt to your needs.
-
-You would register flow parameters through components.py file::
-
-	self._reg.registerFlow(__name__, flowCode='login')
-	self._reg.registerFlowView(__name__, flowCode='login', viewNameSource='login', 
-		viewNameTarget='homeLogin', actionName='login', order=10)
-
 Actions
 -------
 
@@ -201,16 +121,14 @@ You would register them like::
 	self._reg.registerAction(__name__, serviceName='Users', actionName='login', slug='login', 
 		className=SiteService, method='login')
 
-Templates
----------
+Templates and Visual Components
+-------------------------------
 
 Ximpia templates are plain HTML5 files. You will find them at::
 
 	myproject/myapp/templates
 
-You will find directories for templates. By default, you will find your app directory which
-would keep ``window`` and ``popup`` directories. You can define templates for other apps within
-your application extending their templates, like you would do for our ``xpsite`` app.
+You will find your app directory with ``window`` and ``popup`` directories.
 
 You will also find blank templates at your project path, built by ximpia ``ximpia-app`` script. You
 would copy those blank templates and rename them in order to start with your own templates.
@@ -273,27 +191,6 @@ Here goes an example for change password popup:
 components will be parsed by our js rendering engine, build html5 and mix server data with
 visual data.
 
-You have base template code for your application at ``myproject/myapp/templates/dir/myapp.html``:
-
-.. code-block:: html
-
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<!-- Place style sheets here ... -->	
-	</head>
-	<body>
-	<footer>
-	</footer>
-	<!-- Your javascript here ... -->
-	</body>
-	</html>
-
-You can link your visual components and apply style themes.
-
-Visual Components
------------------
-
 Visuals for your application are built using what we call visual components. They are ``jQuery``
 plugins that mix server data with parametrized data in HTML5 templates.
 
@@ -301,9 +198,9 @@ We provide a set of visual components tailored for most needs and you only need 
 them in HTML5 templates. Most of the time, you will not need to develop js code, simply configure the
 components with HTML5 ``data-`` attributes.
 
-In case this is not enough for you, you can write your own components. We also provide a js
-rendering component: you define the js function to do render logic. This is useful for
-integrating external js code into your application.
+You can link your visual components and apply style themes.
+
+In case this is not enough for you, you can write your own components. 
 
 Example for list component:
 
@@ -328,3 +225,7 @@ Example for list component:
 Will render as tabular data:
 
 .. image:: images/data-list-low.png
+
+You have many components to choose from:
+
+.. image:: images/forms-01.png
