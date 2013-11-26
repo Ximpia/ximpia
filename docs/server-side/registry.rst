@@ -1,0 +1,6 @@
+
+Registry
+========
+
+xpcomponents
+------------
