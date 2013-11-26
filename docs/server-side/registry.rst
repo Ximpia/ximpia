@@ -1,6 +1,6 @@
 
-Registry
-========
+Component Registry
+==================
 
 xpcomponents
 ------------

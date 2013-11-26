@@ -1,10 +1,10 @@
 
-============
+############
 About Ximpia
-============
+############
 
 Overview
---------
+========
 
 Ximpia allows you to model back-end and front-end in an easy way to minimize lines of code for
 your application.
@@ -17,7 +17,7 @@ other services like search, settings, parameters, already defined so you can spe
 development.
 
 Views
------
+=====
 
 Views are called from menu items, search or other action components like buttons, links, etc...
 
@@ -52,7 +52,7 @@ skip menu registering::
 
 
 Forms
------
+=====
 
 Ximpia forms are a bit different from django forms since they keep database fields inyected into fields.
 
@@ -78,7 +78,7 @@ in the form class as well.
 
 
 Actions
--------
+=======
 
 Visual components associated with actions like buttons and links will call your actions. They may be called from search and menu items
 as well.
@@ -111,7 +111,7 @@ Action operations may be mapped to your services. Each action would have an impl
 			name=user_channel_name)
 		self._ctx.session['userChannel'] = self._ctx.userChannel
 
-You need to map form associated with the action using ``action``decorator. Form is validated prior to processing action in decorator logic.
+You need to map form associated with the action using ``action`` decorator. Form is validated prior to processing action in decorator logic.
 
 You can implement validation operations that need to be checked in order to execute your actions. You call them inside your action method 
 (like ``self._authen_user()``). You can think of this as service-level validaations or business validations.
@@ -122,7 +122,7 @@ You would register them like::
 		className=SiteService, method='login')
 
 Templates and Visual Components
--------------------------------
+===============================
 
 Ximpia templates are plain HTML5 files. You will find them at::
 

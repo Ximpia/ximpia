@@ -5,10 +5,10 @@
 .. |ximpia| replace:: Ximpia
 
 Ximpia
-======
+######
 
 What is Ximpia?
----------------
+===============
 
 .. toctree::
    :maxdepth: 2
@@ -21,7 +21,7 @@ What is Ximpia?
    example
 
 Installation & Setup
---------------------
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -29,7 +29,7 @@ Installation & Setup
    quickstart
 
 Server Side
------------
+===========
 
 You start by defining your views and actions in your services using forms as way to map database fields to visual objects:
 
@@ -70,14 +70,13 @@ And you register components to allow search, menu, workflow and other components
    server-side/models
    server-side/workflow
    server-side/fields
-   server-side/menu
    server-side/registry
    server-side/commands
    server-side/xpsite
 
 
 Front-End
----------
+=========
 
 You define visual components as ``div`` elements in plain HTML5 template files:
 
@@ -105,7 +104,7 @@ html5 templates.
    front-end/search
 
 Release Notes
--------------
+=============
 
 .. toctree::
    :maxdepth: 2
@@ -113,7 +112,7 @@ Release Notes
    release-notes
 
 Contributing
-------------
+============
 
 .. toctree::
    :maxdepth: 2
@@ -129,11 +128,11 @@ To contribute send us a message
 https://ximpia.com/contact-us
 
 Code
-----
+====
 
 https://github.com/Ximpia/ximpia/
 
 Website
--------
+=======
 
 https://ximpia.com

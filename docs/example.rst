@@ -1,18 +1,19 @@
 
+#######
 Example
-=======
+#######
 
 Here goes an example for remember password popup.
 
 .. image:: images/window-popup.png
 
 Model
------
+=====
 
 We use change password operations from default django User.
 
 Visual Components
------------------
+=================
 
 Define components in template ``myproject/myapp/templates/xpsite/popup/password_reminder.html``:
 
@@ -47,7 +48,7 @@ And this for the button:
     </section> 
 
 Form
-----
+====
 
 .. code-block:: python
 
@@ -65,7 +66,7 @@ When we click change password button, ``OK_PASSWORD_REMINDER`` message would sho
 in messages.py file.
 
 View
-----
+====
 
 .. code-block:: python
 
@@ -76,7 +77,7 @@ View
 
 
 Action
-------
+======
 
 Request password reminder will validate that email exists, generate reminderId, send email and return OK or error
 message.
@@ -116,7 +117,7 @@ message.
 
 
 Registering
------------
+===========
 
 We register components so they work instantly with menu, command search, etc...
 
