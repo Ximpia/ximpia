@@ -1,27 +1,27 @@
 
 Visual Components (23)
-======================
+**********************
 
 Action
-------
+======
 
 Button
-^^^^^^
+------
 
 ContextMenu
-^^^^^^^^^^^
+-----------
 
 Icon
-^^^^
+----
 
 Link
-^^^^
+----
+
+Content
+=======
 
 Content
 -------
-
-Content
-^^^^^^^
 
 Input
 -----

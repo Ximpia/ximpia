@@ -1,9 +1,9 @@
 
-Service Layer
-=============
+Services
+========
 
-Form
-----
+Forms
+-----
 
 The way for your service layer to communicate with front-end is forms.
 
