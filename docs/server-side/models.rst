@@ -5,11 +5,8 @@ Models
 .. toctree::
    :maxdepth: 2
 
-xpcore
-------
-
 BaseModel
-^^^^^^^^^
+---------
 
     Abstract Base Model with fields for all other models. Ximpia models have this model as parent. This model provides audit
     information like date creating and updating, as well as user involved in the update or creation.
@@ -33,7 +30,7 @@ BaseModel
     **Relatinships**
 
 Action
-^^^^^^
+------
 
     Actions are mapped to service operations. Actions can be triggered by clicking on a button, a link, a menu icon or any other
     visual component that triggers actions.
@@ -56,7 +53,7 @@ Action
     * ``accessGroups`` <-> xpsite.Group through ActionAccessGroup
 
 Application
-^^^^^^^^^^^
+-----------
 
     Applications. For most sites, they will have single application for N services which relate to use cases for views and actions.
     In case your application is big or have admin backdoors, your site with have more than one application.
@@ -77,8 +74,7 @@ Application
     **Attributes**
     
     * ``id`` : Primary key
-    * ``name``:CharField(15) : Application path, like ximpia.xpsite. Must contain package name and application name. Has format similar
-    to installed apps django setting.
+    * ``name``:CharField(15) : Application path, like ximpia.xpsite. Must contain package name and application name. Has format similar to installed apps django setting.
     * ``slug``:SlugField(30)
     * ``title``:CharField(30)
     * ``isSubscription``:BooleanField
@@ -96,7 +92,7 @@ Application
 
 
 Condition
-^^^^^^^^^
+---------
 
     Conditions
     
@@ -110,7 +106,7 @@ Condition
 
 
 CoreParam
-^^^^^^^^^
+---------
 
     Parameters
     
@@ -134,8 +130,7 @@ CoreParam
     **Attributes**
     
     * ``id`` : Primary key
-    * ``mode``:CharField(20) : Parameter mode. This field allows you to group parameter to build lookup tables like the ones found
-    in combo boxes (select boxes) with name->value pairs.
+    * ``mode``:CharField(20) : Parameter mode. This field allows you to group parameter to build lookup tables like the ones found in combo boxes (select boxes) with name->value pairs.
     * ``name``:CharField(20) : Parameter name
     * ``value``:CharField(100) : Parameter value
     * ``paramType``:CharField(10) : Parameter type, as Choices.PARAM_TYPE . Choices are string, integer, date.
@@ -144,7 +139,7 @@ CoreParam
 
 
 MetaKey
-^^^^^^^
+-------
 
     Model to store the keys allowed for meta values
     
@@ -159,7 +154,7 @@ MetaKey
 
 
 Menu
-^^^^
+----
 
     **Attributes**
     
@@ -183,7 +178,7 @@ Menu
 
 
 Params
-^^^^^^
+------
 
     Parameters for WF and Views
     
@@ -202,7 +197,7 @@ Params
     
 
 Service
-^^^^^^^
+-------
 
     **Attributes**
     
@@ -216,7 +211,7 @@ Service
 
 
 Setting
-^^^^^^^
+-------
 
     Settings model
     
@@ -232,7 +227,7 @@ Setting
 
 
 View
-^^^^
+----
 
     View. Pages in ximpia are called views. Views render content obtaine from database or other APIs. They hit the slave databases. In
     case writing content is needed, could be accomplished by calling queues. Views can show lists, record detalils in forms, reports,
@@ -253,7 +248,7 @@ View
     
     Views can be grouped together using the ``parent`` field.
     
-    Params are entry parameters (dynamic or static) that view will accept. Parameters are inyected to service operations with **args 
+    Params are entry parameters (dynamic or static) that view will accept. Parameters are inyected to service operations with args 
     variable. The parameter name you include will be called by args['MY_PARAM'] in case your parameter name is 'MY_PARAM'.
     
     **Attributes**
@@ -280,7 +275,7 @@ View
 
 
 XpTemplate
-^^^^^^^^^^
+----------
 
     Ximpia Template.
     
@@ -293,8 +288,7 @@ XpTemplate
     
     * Window - Views which render whole available screen area.
     * Popup - Modal views that popup when user clicks on actions or menu items.
-    * Panel (Coming soon) - This window types is embedded within content, as a tooltip when user clicks on action or mouse goes
-    over
+    * Panel (Coming soon) - This window types is embedded within content, as a tooltip when user clicks on action or mouse goes over
     
     **Attributes**
     
@@ -311,7 +305,7 @@ XpTemplate
     * ``application`` -> Application 
 
 Workflow
-^^^^^^^^
+--------
 
     Ximpia comes with a basic application workflow to provide navigation for your views.
     
@@ -330,18 +324,16 @@ Workflow
     
     * ``id``:AutoField : Primary Key
     * ``code``:CharField(15) : Flow code
-    * ``resetStart``:BooleanField : The flow data will be deleted when user displays first view of flow. The flow will be reset when
-    user visits again any page in the flow.
+    * ``resetStart``:BooleanField : The flow data will be deleted when user displays first view of flow. The flow will be reset when user visits again any page in the flow.
     * ``deleteOnEnd``:BooleanField : Flow data is deleted when user gets to final view in the flow.
-    * ``jumpToView``:BooleanField : When user visits first view in the flow, will get redirected to last visited view in the flow. User
-    jumps to last view in the flow.
+    * ``jumpToView``:BooleanField : When user visits first view in the flow, will get redirected to last visited view in the flow. User jumps to last view in the flow.
     
     **Relationships**
     
     * ``application`` -> Application
 
 WorkflowView
-^^^^^^^^^^^^
+------------
 
     WorkFlow View. Relationship between flows and your views.
     
@@ -350,20 +342,18 @@ WorkflowView
     **Attributes**
     
     * ``id``:AutoField : Primary Key
-    * ``order``:IntegerField : View orderi flow. You can place order like 10, 20, 30 for views in our flow. And then later inyect views
-    between those values, like 15, for example.
+    * ``order``:IntegerField : View orderi flow. You can place order like 10, 20, 30 for views in our flow. And then later inyect views between those values, like 15, for example.
     
     **Relationships**
     
     * ``flow`` -> WorkFlow
     * ``viewSource`` -> View : Source view for flow
     * ``viewTarget`` -> View : Target view for flow
-    * ``action`` -> Action : Action mapped to flow. Source view triggers action, logic is executed and target view is rendered and
-    displayed.
+    * ``action`` -> Action : Action mapped to flow. Source view triggers action, logic is executed and target view is rendered and displayed.
     * ``params`` <-> Param through WFParamValue with related name 'flowView_params'
 
 WorkflowData
-^^^^^^^^^^^^
+------------
 
     User Workflow Data
     
