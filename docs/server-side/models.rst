@@ -5,8 +5,7 @@ Models
 .. toctree::
    :maxdepth: 2
 
-BaseModel
----------
+**BaseModel**
 
     Abstract Base Model with fields for all other models. Ximpia models have this model as parent. This model provides audit
     information like date creating and updating, as well as user involved in the update or creation.
@@ -29,8 +28,7 @@ BaseModel
     
     **Relatinships**
 
-Action
-------
+**Action**
 
     Actions are mapped to service operations. Actions can be triggered by clicking on a button, a link, a menu icon or any other
     visual component that triggers actions.
@@ -52,8 +50,7 @@ Action
     * ``service`` -> Service
     * ``accessGroups`` <-> xpsite.Group through ActionAccessGroup
 
-Application
------------
+**Application**
 
     Applications. For most sites, they will have single application for N services which relate to use cases for views and actions.
     In case your application is big or have admin backdoors, your site with have more than one application.
@@ -91,8 +88,7 @@ Application
     * ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
 
 
-Condition
----------
+**Condition**
 
     Conditions
     
@@ -105,8 +101,7 @@ Condition
     ** Relationships **     
 
 
-CoreParam
----------
+**CoreParam**
 
     Parameters
     
@@ -138,8 +133,7 @@ CoreParam
     **Relationships**
 
 
-MetaKey
--------
+**MetaKey**
 
     Model to store the keys allowed for meta values
     
@@ -153,8 +147,7 @@ MetaKey
     * ``keyType`` -> CoreParam : Foreign key to CoreParam having mode='META_TYPE'    
 
 
-Menu
-----
+**Menu**
 
     **Attributes**
     
@@ -177,8 +170,7 @@ Menu
     * ``params`` <-> Param through MenuParam with related name 'menu_params'
 
 
-Params
-------
+**Params**
 
     Parameters for WF and Views
     
@@ -196,8 +188,7 @@ Params
     * ``application`` -> Application
     
 
-Service
--------
+**Service**
 
     **Attributes**
     
@@ -210,8 +201,7 @@ Service
     * ``application``
 
 
-Setting
--------
+**Setting**
 
     Settings model
     
@@ -226,8 +216,7 @@ Setting
     * ``name`` -> MetaKey : Foreign key to MetaKey model.
 
 
-View
-----
+**View**
 
     View. Pages in ximpia are called views. Views render content obtaine from database or other APIs. They hit the slave databases. In
     case writing content is needed, could be accomplished by calling queues. Views can show lists, record detalils in forms, reports,
@@ -274,8 +263,7 @@ View
     * ``accessGroups`` <-> xpsite.Group through ViewAccessGroup
 
 
-XpTemplate
-----------
+**XpTemplate**
 
     Ximpia Template.
     
@@ -304,8 +292,7 @@ XpTemplate
     
     * ``application`` -> Application 
 
-Workflow
---------
+**Workflow**
 
     Ximpia comes with a basic application workflow to provide navigation for your views.
     
@@ -332,8 +319,7 @@ Workflow
     
     * ``application`` -> Application
 
-WorkflowView
-------------
+**WorkflowView**
 
     WorkFlow View. Relationship between flows and your views.
     
@@ -352,8 +338,7 @@ WorkflowView
     * ``action`` -> Action : Action mapped to flow. Source view triggers action, logic is executed and target view is rendered and displayed.
     * ``params`` <-> Param through WFParamValue with related name 'flowView_params'
 
-WorkflowData
-------------
+**WorkflowData**
 
     User Workflow Data
     

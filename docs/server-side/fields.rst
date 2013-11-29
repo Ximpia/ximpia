@@ -2,53 +2,52 @@
 Fields
 ======
 
-BooleanField
-------------
+**BooleanField**
 
-CharField
----------
 
-DateField
----------
+**CharField**
 
-DateTimeField
--------------
 
-DecimalField
-------------
+**DateField**
 
-EmailField
-----------
 
-FileBrowseField
-----------------
+**DateTimeField**
 
-FloatField
-----------
 
-GenericIPAddressField
----------------------
+**DecimalField**
 
-HiddenField
------------
 
-IPAddressField
---------------
+**EmailField**
 
-IntegerField
-------------
 
-ManyListField
--------------
+**FileBrowseField**
 
-OneListField
-------------
 
-PasswordField
--------------
+**FloatField**
 
-TimeField
----------
 
-UserField
----------
+**GenericIPAddressField**
+
+
+**HiddenField**
+
+
+**IPAddressField**
+
+
+**IntegerField**
+
+
+**ManyListField**
+
+
+**OneListField**
+
+
+**PasswordField**
+
+
+**TimeField**
+
+
+**UserField**

@@ -62,7 +62,7 @@ And you register components to allow search, menu, workflow and other components
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    server-side/service
    server-side/business
@@ -72,7 +72,6 @@ And you register components to allow search, menu, workflow and other components
    server-side/fields
    server-side/registry
    server-side/commands
-   server-side/xpsite
 
 
 Front-End
