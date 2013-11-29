@@ -130,7 +130,7 @@ class Field( DjField ):
 		"""
 		if not self.instance:
 			return None
-		modelField = getattr(self.instance.__class__._meta, "get_field_by_name('" + self.instanceFieldName + "')[0]")
+		modelField = getattr(self.instance.__class__._meta, "get_field_by_name")(self.instanceFieldName)[0]
 		return modelField
 	def _getModelFieldType(self):
 		"""
