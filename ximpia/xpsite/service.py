@@ -347,12 +347,6 @@ class SiteService ( CommonService ):
 			self._put_form_value('email', invitation.email)
 			self._f().disable_fields(['invitationCode', 'email'])
 
-	'''@menu_action('logout')
-	def logout(self):
-		"""Logout user
-		"""
-		self._logout()'''
-
 	@workflow_action(DefaultForm)
 	def logout(self):
 		"""Logout user
