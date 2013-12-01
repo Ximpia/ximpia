@@ -327,6 +327,8 @@ Decorators
 * ``@workflow_action`` (form) : Workflow action and form to use
 
 
+.. _commonservice:
+
 CommonService
 ^^^^^^^^^^^^^
 

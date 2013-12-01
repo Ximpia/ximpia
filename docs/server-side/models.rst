@@ -1,11 +1,31 @@
-
 Models
 ======
 
-.. toctree::
-   :maxdepth: 2
+* :ref:`models.basemodel`
+* :ref:`models.action`
+* :ref:`models.application`
+* :ref:`models.condition`
+* :ref:`models.coreparam`
+* :ref:`models.metakey`
+* :ref:`models.menu`
+* :ref:`models.params`
+* :ref:`models.service`
+* :ref:`models.setting`
+* :ref:`models.view`
+* :ref:`models.xptemplate`
+* :ref:`models.workflow`
+* :ref:`models.workflowview`
+* :ref:`models.workflowdata`
 
-**BaseModel**
+Introduction
+------------
+
+Models for ``xpcore`` and ``xpsite`` applications
+
+.. _models.basemodel:
+
+BaseModel
+"""""""""
 
     Abstract Base Model with fields for all other models. Ximpia models have this model as parent. This model provides audit
     information like date creating and updating, as well as user involved in the update or creation.
@@ -28,7 +48,10 @@ Models
     
     **Relatinships**
 
-**Action**
+.. _models.action:
+
+Action
+""""""
 
     Actions are mapped to service operations. Actions can be triggered by clicking on a button, a link, a menu icon or any other
     visual component that triggers actions.
@@ -50,7 +73,10 @@ Models
     * ``service`` -> Service
     * ``accessGroups`` <-> xpsite.Group through ActionAccessGroup
 
-**Application**
+.. _models.application:
+
+Application
+"""""""""""
 
     Applications. For most sites, they will have single application for N services which relate to use cases for views and actions.
     In case your application is big or have admin backdoors, your site with have more than one application.
@@ -87,8 +113,10 @@ Models
     * ``users`` <-> UserChannel through ApplicationAccess and related name 'app_access'
     * ``meta`` <-> Meta through ApplicationMeta and related name 'app_meta'
 
+.. _models.condition:
 
-**Condition**
+Condition
+"""""""""
 
     Conditions
     
@@ -101,7 +129,10 @@ Models
     ** Relationships **     
 
 
-**CoreParam**
+.. _models.coreparam:
+
+CoreParam
+"""""""""
 
     Parameters
     
@@ -133,7 +164,10 @@ Models
     **Relationships**
 
 
-**MetaKey**
+.. _models.metakey:
+
+MetaKey
+"""""""
 
     Model to store the keys allowed for meta values
     
@@ -147,7 +181,10 @@ Models
     * ``keyType`` -> CoreParam : Foreign key to CoreParam having mode='META_TYPE'    
 
 
-**Menu**
+.. _models.menu:
+
+Menu
+""""
 
     **Attributes**
     
@@ -169,8 +206,10 @@ Models
     * ``action`` -> Action
     * ``params`` <-> Param through MenuParam with related name 'menu_params'
 
+.. _models.params:
 
-**Params**
+Params
+""""""
 
     Parameters for WF and Views
     
@@ -187,8 +226,10 @@ Models
     
     * ``application`` -> Application
     
+.. _models.service:
 
-**Service**
+Service
+"""""""
 
     **Attributes**
     
@@ -200,8 +241,10 @@ Models
     
     * ``application``
 
+.. _models.setting:
 
-**Setting**
+Setting
+"""""""
 
     Settings model
     
@@ -216,7 +259,10 @@ Models
     * ``name`` -> MetaKey : Foreign key to MetaKey model.
 
 
-**View**
+.. _models.view:
+
+View
+""""
 
     View. Pages in ximpia are called views. Views render content obtaine from database or other APIs. They hit the slave databases. In
     case writing content is needed, could be accomplished by calling queues. Views can show lists, record detalils in forms, reports,
@@ -262,8 +308,10 @@ Models
     * ``tags`` <-> xpsite.Tag through ViewTag
     * ``accessGroups`` <-> xpsite.Group through ViewAccessGroup
 
+.. _models.xptemplate:
 
-**XpTemplate**
+XpTemplate
+""""""""""
 
     Ximpia Template.
     
@@ -292,7 +340,10 @@ Models
     
     * ``application`` -> Application 
 
-**Workflow**
+.. _models.workflow:
+
+Workflow
+""""""""
 
     Ximpia comes with a basic application workflow to provide navigation for your views.
     
@@ -319,7 +370,10 @@ Models
     
     * ``application`` -> Application
 
-**WorkflowView**
+.. _models.workflowview:
+
+WorkflowView
+""""""""""""
 
     WorkFlow View. Relationship between flows and your views.
     
@@ -338,7 +392,10 @@ Models
     * ``action`` -> Action : Action mapped to flow. Source view triggers action, logic is executed and target view is rendered and displayed.
     * ``params`` <-> Param through WFParamValue with related name 'flowView_params'
 
-**WorkflowData**
+.. _models.workflowdata:
+
+WorkflowData
+""""""""""""
 
     User Workflow Data
     
