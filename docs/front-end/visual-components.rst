@@ -1,5 +1,5 @@
-Visual Components (24)
-======================
+Visual Components
+=================
 
 Common Attributes
 -----------------
@@ -15,6 +15,53 @@ Common Attributes
 Button
 ------
 
+This component shows in top and bottom bars of views. The actions are mapped with ximpia actions to produce validation. Validation
+results will be shown in message that slides up from button or popup window.
+
+Html
+""""
+
+Save button:
+
+.. code-block:: html
+
+    <div id="id_save_comp" data-xp-type="button" 
+        data-xp="{  form: 'form_home', 
+                    align: 'left', 
+                    text: 'Save', 
+                    mode: 'actionMsg', 
+                    type: 'color', 
+                    action: 'save'}" > </div>
+
+Attributes
+""""""""""
+
+* ``form`` : The form id associated with the action
+* ``align`` : left | right
+* ``text`` : Button text, without multi-language. English only
+* ``mode`` : actionMsg | action | closePopup | closeView | contentInsert
+* ``action`` : Action that executes the button
+* ``type`` : color | icon | iconPopup | simple
+* ``icon`` : add | edit | delete | save | email | like | next | star | spark | play
+* ``callback`` :  The callback function to execute after button is clicked
+* ``title`` [optional] : Tooltip for button
+* ``titleDisabled`` [optional] : Title to show when state is disabled
+* ``clickStatus`` : disable : Button status when button has been clicked and action processed.
+
+Interfaces
+""""""""""
+
+* ``IAction``
+
+Methods
+"""""""
+
+* render
+* click
+* disable
+* enable
+* unrender
+
 Check
 -----
 
@@ -29,7 +76,7 @@ Check
 List of options with ``checkbox`` render. Allows horizontal or vertical render of list of entries. Checkbox can
 be placed before or after the field entry and labels can be at top or left.
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -67,12 +114,81 @@ Methods
 Container
 ---------
 
+Set of visual components.
+
+Supports conditions. You can place your visual objects inside containers to force condition for rendering.
+ 
+Conditions are defined in the view definitions with attribute ``data-xp-cond-rules``, like:
+
+.. code-block:: html
+
+    <div id="id_view" 
+          data-xp="{viewName: 'signup'}" 
+           data-xp-cond-rules="{hasUserAuth: 'settings.SIGNUP_USER_PASSWORD == true', 
+                                hasNetAuth: 'settings.SIGNUP_SOCIAL_NETWORK == true', 
+                                socialNetLogged: 'socialNetLogged == true'}" >
+    </div>
+ 
+
+Html
+""""
+
+.. code-block:: html
+
+    <div id="id_passwordAuth" data-xp-type="container" 
+                   data-xp-cond="{conditions: [
+                                        {condition: 'socialNetLogged', render: false}]}" >
+          ...your objects...
+          <div ... > </div>
+    </div>
+
+
+Attributes
+""""""""""
+
+* ``data-xp-type`` : container
+* ``data-xp-cond`` :ListType : Condition objects, like [{}, {}, ...] First matched condition will execute action
+      * ``conditions`` :ListType : List of conditions:
+         * ``condition`` : condition key from ``data-xp-cond-rules``
+         * ``action`` : Supported values: 'render'
+         * ``value`` :Boolean : true / false
+
 
 Content
 -------
 
-ContextMenu
------------
+Allows to embed server-side data into templates.
+
+Inserts into templates data from visual context. If you have ``form_mine`` and want to refer field ``name``, you would:
+
+.. code-block:: html
+
+    {{form_mine.name}}
+
+You can also add objects to your visual context from server-side in your services:
+
+.. code-block:: python
+
+    self._add_attr('customer', customer)
+
+Where customer may be any serilizable object.
+
+and you would:
+
+.. code-block:: html
+
+    {{customer.name}}
+
+To display customer name.
+
+Html
+""""
+
+.. code-block:: html
+
+    <a href="{{object.url}}" title="{{object.title}}" data-xp-type="content" >{{object.title}}</a>
+
+We would have ``object`` in our visual context.
 
 Field
 -----
@@ -82,7 +198,7 @@ Field
 Field with formatting option and tooltip with ``helpText`` attribute. Option to provide auto-complete
 from choices or server-side data.
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -141,7 +257,7 @@ Renders fields that are BooleanField, with values true / false or 1 for true and
 
 Support labels. Check control can be before label or after.
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -193,7 +309,7 @@ FieldDateTime
 
 * When field type is DateTime, a date with time tooltip will show up with calendar and time bars.
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -223,7 +339,7 @@ List of fields. Fields can be added and deleted. Can represent the many-to-many 
  
 They can be rendered as tags horizontally.
 
-HTML
+Html
 """"
 
 Input: 
@@ -278,7 +394,7 @@ FieldNumber
 
 .. image:: ../images/field.number.png
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -315,20 +431,297 @@ Methods
 Function
 --------
 
-Icon
-----
+Allows to render content based on a javascript function.
+
+Html
+""""
+
+.. code-block:: html
+
+    <div id="id_facebookSignup_comp" 
+        data-xp-type="function.render" 
+        data-xp="{functionName: 'ximpia.external.Facebook.renderSignup'}" > </div>
+
+You can add attributes to ``data-xp`` and refer to those in your javascript function.
+
+Your javascript function would be like:
+
+.. code-block:: javascript
+
+    ximpia.external.Facebook.renderSignup = (function(attrs, callable) {
+        // Code
+    }
+
+``attrs`` are the attributes from ``data-xp`` html attribute.
+
+Attributes
+""""""""""
+
+* ``functionName`` : Path to javascript function name
+
+Any additional attributes you define
 
 Link
 ----
 
+Hyperlink which would trigger a new view or call an action.
+
+Links used to:
+
+1. Launch views (new and popups) - launchView
+2. Open popups (openPopup) - openPopup
+3. Launch actions - doAction
+4. Link to url - callUrl
+ 
+Types are:
+
+* ``link.popup``
+* ``link.url``
+* ``link.view``
+* ``link.action``
+
+Html
+""""
+
+.. code-block:: html
+
+    <div id="id_passwordReminderLinkUrl_comp" data-xp-type="link.url" 
+            style="margin-top: 20px; margin-left: 20px"  
+        data-xp="{  op: 'callUrl', 
+                    url: '/',
+                    target: '_blank',
+                    width: 800,
+                    height: 600,
+                    title: 'go to home...', 
+                    linkText: 'Take me to Home'}" ></div>
+
+.. code-block:: html
+
+    <div id="id_lnkCode_comp" data-xp-type="link.view" 
+            style="margin-top: 20px; margin-left: 20px"  
+        data-xp="{  op: 'showView', 
+                    app: 'ximpia_site.web',
+                    title: 'go to home...', 
+                    linkText: 'Show Code',
+                    view: 'code'}" ></div>
+
+.. code-block:: html
+
+    <div id="id_lnkSignout_comp" data-xp-type="link.action" 
+            style="margin-top: 20px; margin-left: 20px"  
+        data-xp="{  op: 'doAction', 
+                    app: 'ximpia.site',
+                    title: 'will logout...', 
+                    linkText: 'Logout',
+                    action: 'logout'}" ></div>
+
+Attributes
+""""""""""
+
+* ``class``
+* ``textSize``
+
+Interfaces
+""""""""""
+
+* ``IAction``
+
+Methods
+"""""""
+
+* render
+* click
+* disable
+* enable
+
 ListContent
 -----------
+
+You include a div for the component definition and html inside this div can be any html element that will
+be repeated for each row in the list. You include data with {{}} notation. Response context has elements for lists
+with ``list_myList``where myList relates to ``id_myList_comp``. This way you don't have to repeat {{list_myList.data.myField}} and only
+need to include {{data.myField}}. You can include list values, header values and meta values for the list.
+
+You can include any element in three positions: jxListContentHeader, jxListContentBody and jxListContentFoot. Body position will incude
+the rows to be repeated in the list with values. Header will include content before list and foot includes any content you need at end
+of list.
+
+.. code-block:: html
+
+    <div id="id_myList_comp" type="list.content" 
+            data-xp="{dbClass: 'MyDAO', fields: ['myField']}"> 
+    <$htmlElement class="jxListContentHeader">
+    Here go the results...
+    </$htmlElement>
+    <$htmlElement class="jxListContentBody">
+    {{header.myField}}: {{data.myField}}
+    </$htmlElement>
+    <$htmlElement class="jxListContentFoot">
+    numberPages: {{meta.numberPages}}
+    </$htmlElement>
+    </div>
+
+
+Example:
+
+.. code-block:: html
+
+    <div id="id_groups2_comp" data-xp-type="list.content"
+                                data-xp="{  app: 'ximpia.xpsite',
+                                            dbClass: 'GroupDAO',
+                                            numberResults: 1,
+                                            fields: ['id', 'group__name']   }" >    
+    <div class="jxListContentHeader">
+         These are the results you will have...  
+    </div>
+    <div class="jxListContentBody" style="border: 1px solid; height: 30px; width: 600px">
+         {{headers.group__name}}: {{data.id}} - {{data.group__name}}     
+    </div>
+    <div class="jxListContentFoot" style="margin-top: 10px; margin-bottom: 10px">
+         Number pages: {{meta.numberPages}}  
+    </div>
+    <div class="jxListContentFoot" style="margin-top: 10px">
+    <div id="id_groups2_paging_comp" data-xp-type="paging.more" 
+            data-xp="{compId: 'id_groups2_comp'}" class="ui-list-content-paging">
+        More Results...
+    </div>   
+    </div>
+
+
+Attributes
+""""""""""
+
+* ``dbClass`` :string
+* ``app`` :string [optional]
+* ``method`` :string [optional] [default:searchFields] : Data method to execute
+* ``fields`` :object<string>
+* ``args`` :object [optional] : Initial arguments. Object with arguments
+* ``orderBy`` :object [optional] : Order by fields, ascending with '-' sign before field name. Supports relationships, like 'field__value' 
+* ``disablePaging`` :boolean [optional] [default: false]
+* ``pagingStyle`` :string [optional] [default:more] : Possible values: more
+
+Interfaces
+""""""""""
+
+* ``IList``
+ 
+Methods
+"""""""
+
+* ``render``
+* ``insertRows`` (xpForm:string, result:object) : Inserts rows into content list.
+
 
 ListData
 --------
 
+.. image:: ../images/list-data.png
+
+.. image:: ../images/list-data-controls.png
+
+Check out images for PagingMore and PagingBullet for ListData paging support.
+
+Html
+""""
+
+.. code-block :: html
+
+    <div id="id_myList_comp" data-xp-type="list.data" 
+            data-xp="{dbClass: 'MyDAO', fields: ['name','value']}" > </div>
+
+Attributes
+""""""""""
+* ``dbClass`` :string
+* ``app`` :string [optional]
+* ``method`` :string [optional] [default:searchFields] : Data method to execute
+* ``detailView`` :object [optional] <viewPath, winType>: View to display detail. hasLinkedRow must be true. Full path, like 'myProject.myApp.myView'. winType can be ``window``or ``popup``
+* ``detailType`` :string [optional] [default:window] : Window type: window, popup.
+* ``fields`` :object<string> [optional]
+* ``args`` :object [optional] : Initial arguments. Object with arguments
+* ``orderBy`` :object [optional] : Order by fields, ascending with '-' sign before field name. Supports relationships, like 'field__value' 
+* ``disablePaging`` :boolean [optional] [default: false]
+* ``caption`` :string [optional]
+* ``headComponents`` :object [optional] : List of header components. Possible values: search|filter
+* ``hasCheck`` :boolean [optional] : Table has operations linked to row checks. User would check rows and click button to execute actions on checked items.
+* ``activateOnCheck`` :object : List of components to activate when row check is clicked.
+* ``onCheckClick`` :string [optional] [default:enable] . Enable or render action components when user clicks on check.
+* ``hasHeader`` :boolean [optional] [default:true]
+* ``pagingStyle`` :string [optional] [default:more] : Possible values: more, bullet
+* ``pagingMoreText`` :string [optional] [default:More Results...] : More paging text
+* ``hasLinkRow`` :boolean [optional] [default:false]
+
+Build Attributes
+""""""""""""""""
+ 
+* ``pageStart``
+* ``pageEnd``
+ 
+Interfaces
+""""""""""
+ 
+ * IList 
+ 
+Methods
+"""""""
+
+* ``render``
+* ``insertRows`` (xpForm:string, result:object) : Result contains keys data, headers and meta for list result
+
 Image
 -----
+
+Renders into ``img`` html element.
+
+``src`` html attribute is generated using attributes ``file``, ``location`` and ``hostLocation``. Only required attribute is ``file``. You
+can define ``src`` attribute with full path for images. 
+
+Html
+""""
+ 
+By class:
+
+.. code-block:: html
+
+    <div id="id_myImage_comp" data-xp-type="image" data-xp="{imgClass: 'checkSmall'}" > </div>
+ 
+Using images location and default host location:
+
+.. code-block:: html
+
+    <div id="id_myImage_comp" data-xp-type="image" 
+                data-xp="{file: 'github-icon-source.jpg'}" > </div>
+
+Using S3 host location:
+
+.. code-block:: html
+
+    <div id="id_myImage_comp" data-xp-type="image" 
+            data-xp="{file: 'github-icon-source.jpg', hostLocation: 'S3'}" > </div>
+
+Using cloudfont host location:
+
+.. code-block:: html
+
+    <div id="id_myImage_comp" data-xp-type="image" 
+            data-xp="{file: 'github-icon-source.jpg', hostLocation: 'cloudfront'}" > </div>
+
+Using src:
+
+.. code-block:: html
+
+    <div id="id_myImage_comp" data-xp-type="image" 
+        data-xp="{src: 'https://ximpia.s3.amazonaws.com/images/github-icon-source.jpg'}" > </div>
+
+Attributes
+""""""""""
+
+* ``imgClass`` : Image file name is blank.png. Image has background from css class.
+* ``file`` : Phisical file name with extension, like ``myphoto.png``. In case version attribute is defined, phisical file name will be modified to include version in the url. In case src is defined, this field is not required.
+* ``location`` [optional] : Location name. Locations are mapped into settings.js file. In case no location is defined, we use ``images`` location. Locations are mapped into paths.
+* ``src`` [optional] : In case you want to define path instead of location. In case you have path, you don't need attributes file, location or hostLocation.
+* ``hostLocation`` [optional] : Host location mapping to use. You can define in settings alternate host location for your images, like ximpia.settings.hostLocations['S3'] = 'https://ximpia.s3.amazonaws.com/'. In case not defined, will use the default host location. This way for images can point to S3, local, cloudfront, etc...
+* ``title`` : Tooltip to show when mouse is placed over image.
+* ``version`` [optional] : Version to generate url for image versions. In case to include version you need no ``dimensions``attribute. Dimensions from version will be used.
 
 Option
 ------
@@ -346,7 +739,7 @@ In case you select ``type: 'check'`` you would see a list of checkboxes. But the
 This has advantage that no entries can be checked by default and you can check uncheck the last option if you wish, having feature
 to reset the option list.
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -391,18 +784,81 @@ Methods
 PagingBullet
 ------------
 
+.. image:: ../images/list-data-paging-bullet.png
+
+Bullet paging component which displays current page, next n (customized, default 5) pages with ability to jump to pages.  
+
+Current page has filled bullet. When mouse goes over, shows number of resources to fetch (1-10).
+
+ContentList
+"""""""""""
+
+Gets integrated into the ``jxListContentFoot``:
+
+.. code-block:: html
+
+    <div class="jxListContentFoot" style="margin-top: 10px">
+        <div id="id_groups2_paging_comp" data-xp-type="paging.bullet" 
+            data-xp="{  compId: 'id_groups2_comp',
+                        numberPages: 2,
+                        numberResources: 3}" class="ui-list-content-paging"> </div>   
+    </div>
+
+
+DataList
+""""""""
+
+* pagingStyle: 'bullet'
+* numberResults: 3
+* numberPages: 2
+
+
+Attributes
+""""""""""
+ 
+* ``compId`` :string : Id for list component
+* ``numberPages`` :number : Number of pages for list
+* ``numberResources`` :number : Number of resources in the list, used to display result pointers in page links (1-10, etc...)
+
+Interfaces
+""""""""""
+
+* IPage
+
+
 PagingMore
 ----------
 
-PopUp
------
+.. image:: ../images/list-data-paging-more.png
+
+Paging with ``More`` link. AJAX call will populate next page.
+
+ListContent
+"""""""""""
+
+Gets integrated into the ``jxListContentFoot``:
+
+.. code-block:: html
+
+    <div class="jxListContentFoot" style="margin-top: 10px">
+        <div id="id_groups2_paging_comp" data-xp-type="paging.more" 
+                data-xp="{compId: 'id_groups2_comp'}" class="ui-list-content-paging">
+            More Results...
+        </div>   
+    </div>
+
+ListData
+""""""""
+
+* pagingStyle: 'more'
+
 
 Select
 ------
 
 .. image:: ../images/select.png
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -442,7 +898,7 @@ SelectPlus
 
 .. image:: ../images/select.plus-open.png
 
-HTML
+Html
 """"
 
 .. code-block:: html
@@ -498,7 +954,7 @@ When you set ``isCollapsible: true``, as you type and get to end of row, a new r
 don't need to size text box and size adapts to size user needs to write. You may start with one or two lines, and as users type,
 end up with more lines.
 
-HTML
+Html
 """"
 
 .. code-block:: html
