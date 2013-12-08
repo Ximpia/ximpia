@@ -10,6 +10,7 @@ import os
 import re
 import copy
 import time
+import pprint
 
 # django
 from django.http import HttpResponse, Http404
@@ -690,7 +691,7 @@ class view_tmpl(object):
 				self.__viewName = args['ctx'].viewNameSource
 			if len(ctx.viewNameTarget) != 0:
 				self.__viewName = ctx.viewNameTarget
-			logger.debug( 'view_tmpl :: resultJs: %s' % resultJs )
+			logger.debug( 'view_tmpl :: resultJs: %s' % pprint.PrettyPrinter(indent=4).pprint(resultJs))
 			logger.debug( 'view_tmpl :: viewName: %s target: %s source: %s ' %
 				(self.__viewName, args['ctx'].viewNameTarget, args['ctx'].viewNameSource) )
 			template = TemplateService(ctx)
