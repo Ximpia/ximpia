@@ -100,6 +100,7 @@ class Command(object):
 		db_user=raw_input('Db User: ')
 		settings_local = Template(settings_local).substitute(project_name=project_name,
 															sys_project_path=self.sys_project_path,
+															app_name=app_name,
 															db_engine=db_engine,
 															db_host=db_host,
 															db_name=db_name,
