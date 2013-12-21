@@ -690,7 +690,7 @@ def jxSave(request, **args):
             obj = CommonService(args['ctx'])
             obj.request = request
             if isFormValid == True:
-            	logger.debug('jxSave :: Form is valid!!!')
+                logger.debug('jxSave :: Form is valid!!!')
                 obj._set_main_form(args['ctx'].form)
                 result = obj.save()
             else:

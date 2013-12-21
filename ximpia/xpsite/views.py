@@ -17,6 +17,6 @@ logger = logging.getLogger(__name__)
 @context_view()
 @view()
 def home(request, **args):
-	logger.debug( 'home....' )
-	result = None
-	return result
+    logger.debug( 'home....' )
+    result = None
+    return result

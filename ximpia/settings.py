@@ -68,22 +68,22 @@ LOGGING = {
         },
     },
     'loggers': {
-	'ximpia': {
-		'handlers': ['console'],
-		'level': 'DEBUG',
-	},
-	'ximpia.xpcore.data': {
-		'handlers': ['console'],
-		'level': 'DEBUG'
-	},
-	'ximpia.xpcore.views': {
-		'handlers': ['console'],
-		'level': 'DEBUG'
-	},
-	'ximpia_site': {
-		'handlers': ['console'],
-		'level': 'DEBUG',
-	},
+    'ximpia': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+    'ximpia.xpcore.data': {
+        'handlers': ['console'],
+        'level': 'DEBUG'
+    },
+    'ximpia.xpcore.views': {
+        'handlers': ['console'],
+        'level': 'DEBUG'
+    },
+    'ximpia_site': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
     }
 }
 
@@ -190,9 +190,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 INSTALLED_APPS = (
-	'grappelli.dashboard',
-	'grappelli',
-	'filebrowser',
+    'grappelli.dashboard',
+    'grappelli',
+    'filebrowser',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
