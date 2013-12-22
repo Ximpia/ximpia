@@ -106,7 +106,7 @@
         	} else if (attrs.type == 'icon') {
         		className = 'buttonIcon ' + attrs.icon;
         	} else {
-        		className = ''
+        		className = '';
         	}
         	return className;
         };
@@ -124,7 +124,7 @@
         	ximpia.console.log('viewType: ' + obj.viewType);
         	if (isValid == true) {
         		// Set form values from data-xp and action
-        		var attrs = getFormAttrs(obj.form)
+        		var attrs = getFormAttrs(obj.form);
         		var cancelAction = false;
         		if (obj.action == 'save') {
         			// process parameters sent to action through data-xp-params
@@ -151,7 +151,6 @@
 	                $("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
 	        		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
 	        		$("#" + obj.form).append('<input type="hidden" name="form" value="' + obj.form.split('_')[1] + '" />');
-	        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
 	        		console.log('form :: button action : ' + obj.action);
 	        		$("#id_" + obj.form + "_action").val(obj.action);
 	        		$("#" + obj.form).submit();        			
@@ -193,10 +192,9 @@
                 	$("#id_bt" + objMap[obj.viewType] + "Msg_img").xpLoadingSmallIcon('wait');
         		$("#id_bt" + objMap[obj.viewType] + "Msg_text").text('Waiting...');
         		// Set form values from data-xp and action
-        		var attrs = getFormAttrs(obj.form)
+        		var attrs = getFormAttrs(obj.form);
         		$("#" + obj.form).attr('action', ximpia.common.Path.getBusiness());
-        		//$("#id_" + obj.form + "_bsClass").val(attrs.className);
-        		console.log('form :: button action : ' + obj.action)
+        		console.log('form :: button action : ' + obj.action);
         		$("#id_" + obj.form + "_action").val(obj.action);
         		$("#" + obj.form).submit();
         	} else {
@@ -226,7 +224,6 @@
 			/*
 			 * Render button: Page button, popup button and inline (button anywhere inside panels)
 			 */
-			//var settings = $(this).prop('settings');
 			console.log('Button settings...');
 			console.log(settings);
 			var oForm = ximpia.common.Form();
@@ -234,10 +231,10 @@
 				var element = $(this)[i];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
-					var idButton = $(element).attr('id').split('_comp')[0];
+					var idButton = $(element).attr('id');
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					var idParent = $(element).parent().attr('id')
+					var idParent = $(element).parent().attr('id');
 					console.log('idParent: ' + idParent);
 					if (idParent == 'id_pageButton') {
 						attrs.viewType = 'page';
@@ -249,14 +246,12 @@
 					console.log('attrs.viewType : ' + attrs.viewType);
 					var sStyle = "float: left; margin-top: 3px";
 					if (attrs.hasOwnProperty('align')) {
-						//sStyle = "float: " + attrs.align + "; margin-top: 3px";
 						sStyle = "float: " + attrs.align;
 					}
 					// form, action, actionData, type, icon, method, callback, clickStatus
 					var dataXp = "{form: '" + attrs.form + "', mode: '" + attrs.mode + "', type: '" + attrs.type + "', icon: '" + attrs.icon + "', action: '" + attrs.action + "', callback: '" + attrs.callback + "', clickStatus: '" + attrs.clickStatus + "', viewType: '" + attrs.viewType + "'}";
 					console.log('form :: dataXp : ' + dataXp);
 					// buttonIcon, btPop $buttonBefore
-					//<a id="' + sButtonId + '" href="#" class="buttonIcon btPop ' + buttonBefore + '" alt=" " onclick="return false;" >' + sButtonText + '</a>
 					var className = getClassName(attrs);
 					console.log('className: ' + className);
 					var htmlContent = "<div style=\"" + sStyle + "\">"; 
@@ -391,7 +386,7 @@
 				$('#'+ myId + ' a').removeClass('buttonIcon-disabled');
 			}
 			$('#'+ myId + ' a').css('cursor', 'pointer');
-			var idButton = myId.split('_comp')[0];
+			var idButton = myId;
 			$("#" + idButton).hover(function() {
 				console.log($(this));
 				for (var classNameItem in classNameList) {
@@ -427,8 +422,7 @@
 		 * Unrender button: delete content inside component and remove attribute ``data-xp-render``
 		 */
 		unrender: function() {
-			var myId = $(this).attr('id');
-			//var isRendered = $('#' + myId).attr('data-xp-render');			
+			var myId = $(this).attr('id');			
 			var timeout = setInterval(function() {
 				isRendered = $('#' + myId).attr('data-xp-render');
 				ximpia.console.log('xpButton.unrender :: isRendered: ' + isRendered);
@@ -726,7 +720,7 @@
 			ximpia.console.log(menus['main']);
 			$('#id_mainIcons').empty();
 			for (i in menus['main']) {
-				var menuObj = menus['main'][i]
+				var menuObj = menus['main'][i];
 				menuObj.align = 'left';
 				var elemId = 'id_icon_' + menuObj.name;
 				ximpia.console.log('xpObjIcon :: elemId: ' + elemId + ' ' + !$('#' + elemId).length);
@@ -749,7 +743,7 @@
 			$('#id_serviceIcons').empty();
 			for (i in menus['service']) {
 				if (i < 7) {
-					var menuObj = menus['service'][i]
+					var menuObj = menus['service'][i];
 					menuObj.align = 'right';
 					var elemId = 'id_icon_' + menuObj.name;
 					ximpia.console.log(menuObj);
@@ -763,7 +757,7 @@
 			$('#id_viewIcons').empty();
 			for (i in menus['view']) {
 				if (i < 7) {
-					var menuObj = menus['view'][i]
+					var menuObj = menus['view'][i];
 					menuObj.align = 'right';
 					var elemId = 'id_icon_' + menuObj.name;
 					ximpia.console.log(menuObj);
@@ -798,33 +792,6 @@
 			$("[data-xp-type='icon']").click(function(evt) {
 				$(this).xpIcon('clickMenu', evt);	
 			});
-			/*for (var i=0; i<$(this).length; i++) {
-				ximpia.console.log('i: ' + i);
-				var element = $(this)[i];
-				ximpia.console.log('element: ' + element);
-				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				ximpia.console.log('doRender: ' + doRender);
-				if (doRender == true) {
-					$.metadata.setType("attr", "data-xp");
-					var attrs = $(element).metadata();
-					ximpia.console.log('attrs');
-					ximpia.console.log(attrs);
-					$(element).attr('style', 'float: left');
-					$(element).addClass('iconMenuBlock');
-					var htmlInside = "<a href=\"#\" onclick=\"return false\" data-xp=\"{action: '" + attrs.action + "', view: '" + attrs.view + "'}\">";
-					htmlInside += "<img src=\"/site_media/images/blank.png\" class=\"" + attrs.icon + " iconMenu\" />";
-					htmlInside += "<div>" + attrs.text + "</div>";
-					ximpia.console.log(htmlInside);
-					$(element).html(htmlInside);
-					$(element).attr('data-xp-render', JSON.stringify(true));
-					// Click
-					$(element).click(function() {
-						ximpia.console.log('Icon click!!!!!');
-						//
-					});
-					// Context Menu
-				}
-			}*/
 		},
 		clickMenu: function(evt) {
 			evt.preventDefault();
@@ -920,13 +887,11 @@
         	ximpia.console.log(obj);
         	// TODO: Call openPopup method in PageAjax
         	// This should call request view and normal popups
-        	//ximpia.console.log('xpObjLink.doOpenPopup :: tmplAlias length: ' + obj.tmplAlias.length);
         	if (obj.hasOwnProperty('tmplAlias') && obj.tmplAlias.length != 0) {
         		obj.isPopupReqView = false;
         	} else {
         		obj.isPopupReqView = true;
         	}
-        	//obj.isPopupReqView = false;
         	ximpia.console.log('xpObjLink.doOpenPopup :: obj.isPopupReqView: ' + obj.isPopupReqView);
         	$('body').xpPopUp(obj).xpPopUp('create');
         };
@@ -982,11 +947,10 @@
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					var idLinkSrc = $(element).attr('id');
-					var idLink = $(element).attr('id').split('_comp')[0];
+					var idLink = $(element).attr('id');
 					ximpia.console.log('xpObjLink.render :: idLink: ' + idLink);
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					//var attrs = $('#' + idLinkSrc).metadata();
 					ximpia.console.log('xpObjLink.render :: Link Attrs...');
 					ximpia.console.log(attrs);
 					// TODO: We should give these to open popup: tmplAlias
@@ -1025,7 +989,6 @@
 						var isDisabled = $(this).attr('disabled');
 						ximpia.console.log('xpObjLink.render :: isDisabled: ' + isDisabled);
 						if (!isDisabled) {
-							//alert('click!!!');
 							$(this).xpLink('click');
 						}
 					});
@@ -1055,13 +1018,13 @@
 		disable: function() {
 			var element = $(this)[0];
 			ximpia.console.log('xpObjLink.disable :: element: ' + element);
-			var idLink = $(element).attr('id').split('_comp')[0];
+			var idLink = $(element).attr('id');
 			$("#" + idLink).attr('disabled', 'true');
 		},
 		enable: function() {
 			var element = $(this)[0];
 			ximpia.console.log('xpObjLink.enable :: element: ' + element);
-			var idLink = $(element).attr('id').split('_comp')[0];
+			var idLink = $(element).attr('id');
 			$("#" + idLink).removeAttr('disabled');
 		}
         };		

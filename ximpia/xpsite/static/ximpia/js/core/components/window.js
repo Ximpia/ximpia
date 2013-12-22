@@ -106,8 +106,6 @@
 		}).error(function(jqXHR, textStatus, errorThrown) {
 			ximpia.console.log('xpObjPopUp :: get html template ERROR!!!!');
 			$("#id_sect_loading").fadeOut(300);
-			//var html = "<div class=\"loadError\"><img src=\"http://localhost:8000/site_media/images/blank.png\" class=\"warning\" style=\"float:left; padding: 5px;\" /><div>Oops, something did not work right!<br/> Sorry for the inconvenience. Please retry later!</div></div>";
-			//$("body").before(html);
 		});
         };
         /**
@@ -125,7 +123,7 @@
         	ximpia.common.Window.showMessage({
             		title: '',
             		message: '<div class="msgPopBody">' + waitingImgHtml + '</div>',
-            		buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
+            		buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
             		effectIn: {style: 'fadeIn', time: 500},
             		effectOut: {},
             		fadeBackground: true,
@@ -146,7 +144,6 @@
             		
 			var viewName = responseMap['response']['view'];
 			var tmplName = responseMap['response']['tmpl'][viewName];
-
     		// 3. Get template
     		ximpia.common.PageAjax.getTmpl( {	app: responseMap['response']['app'],
         						name: tmplName,
@@ -166,12 +163,6 @@
         	if ($(elementButtons).html().length <= 1) {
         		hasButtons = false;
         	}
-        	/*if (hasButtons == true) {
-        		$('.MsgText').css('border-bottom-left-radius', '0px');
-        		$('.MsgText').css('border-bottom-right-radius', '0px');
-        		$('.MsgButtons').css('border-top-left-radius', '0px');
-        		$('.MsgButtons').css('border-top-right-radius', '0px');
-        	}*/
         	if (hasButtons == false) {
         		$('.MsgText').css('border-bottom-left-radius', '10px');
         		$('.MsgText').css('border-bottom-right-radius', '10px');
@@ -212,55 +203,7 @@
         	var oForm = ximpia.common.Form();
         	oForm.doBindBubbles();
 			});
-		});
-        	
-        	//var viewData = ximpia.common.Window.getViewAttrs();
-        	//ximpia.console.log('viewData...');
-        	//ximpia.console.log(viewData);
-        	/*ximpia.console.log(data);
-        	var elemContent = $(data).find('#id_' + settings.name);
-        	var popupData = $(data).filter('#id_popup').metadata();
-        	var elementButtons = $(data).filter('#id_sectionButton');
-        	ximpia.console.log('popupData...');
-        	ximpia.console.log(popupData);
-        	var height = null;
-        	var width = null;
-        	if (popupData.height) height = popupData.height;
-        	if (popupData.width) width = popupData.width;*/
-        	/*var settings = $(this).prop('settings');
-        	var pageJx = ximpia.common.PageAjax();
-		var elemContent = $(data).filter('#id_content').children().filter('#id_' + settings.app + '_' + settings.name + '_' + settings.content);
-		var closeValue = ximpia.common.List.getValue('id_buttonConstants', 'close');
-		var popupData = $(data).filter('#id_' + settings.app + '_' + settings.name + '_conf').metadata();*/		
-        	
-        	/*ximpia.common.Window.showMessage({
-            		title: popupData.title,
-            		message: '<div>' + elemContent.html() + '</div>',
-            		buttons: 'id_msgClose:' + closeValue + ':delete',
-            		effectIn: 'fadeIn,1000',
-            		effectOut: '',
-            		fadeBackground: true
-            		//isHidden: true
-        	});
-            	$("#id_msgClose").click(function() {ximpia.common.Window.clickMsgOk(true)});
-            	$("#id_btX").click(function() {ximpia.common.Window.clickMsgOk(true)});
-            	ximpia.console.log('id_pops');
-            	ximpia.console.log($('#id_pops'));
-		var formList = elemContent.children().filter('form');
-		for (var i = 0; i<formList.length; i++) {
-			ximpia.console.log(formList[i].id);
-			var formData = $("#" + formList[i].id).metadata();
-			ximpia.console.log(formData);
-			var callback = eval(formData.callback)
-			pageJx.init({	path: ximpia.common.Path.getBusiness(),
-				callback: callback,
-				formId: formList[i].id,
-				verbose: true});
-			pageJx.doBusinessGetRequest({	className: formData.className, 
-				method: formData.method, mode: 'popupNoView'});
-		}
-		// Test on render on template origin, then get html
-		// Call showMessage with rendered html code*/
+		});        	
         };
         var methods = {
 		init : function( options ) { 
@@ -301,7 +244,7 @@
         		ximpia.common.Window.showMessage({
 	            		title: settings.title,
             			message: settings.message,
-            			buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose_comp" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
+            			buttons: '<div id="id_popupButton" class="btBar"><div id="id_doClose" data-xp-type="button" data-xp="{align: \'right\', text: \'Close\', type: \'iconPopup\', mode: \'closePopup\', icon: \'delete\'}" ></div></div>',
             			effectIn: {style: 'fadeIn', time: 1000},
             			effectOut: {},
             			fadeBackground: true,
@@ -318,7 +261,7 @@
 			ximpia.console.log('Will destroy popup...');
 			$("div.PopMessage").fadeOut('fast');
 			$("#Wrapper").fadeTo("fast", 1.0);
-			$("#id_pops").remove()
+			$("#id_pops").remove();
 			//alert('Closing popup...');
 		}
         };

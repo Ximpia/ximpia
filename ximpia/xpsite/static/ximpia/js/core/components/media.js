@@ -65,7 +65,6 @@
 (function($) {	
 
 	$.fn.xpImage = function( method ) {  
-
         // Settings		
         var settings = {
         	htmlAttrs: ['tabindex','readonly','maxlength','class','value','name','autocomplete','size','style'],
@@ -73,7 +72,6 @@
         var templates = {
         	main: '<img id="{{id}}" src="{{src}}" />'
         };
-        
         var methods = {
 		init : function( options ) { 
                 	return this.each(function() {        
@@ -89,14 +87,14 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idElement = $(element).attr('id').split('_comp')[0];
-				var nameElement = idElement.split('id_')[1];
+				var idElement = $(element).attr('id');
+				var nameElement = idElement;
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					ximpia.console.log('xpImage :: attrs...')
+					ximpia.console.log('xpImage :: attrs...');
 					ximpia.console.log(attrs);
 					$(element).html("<img id=\"" + idElement + "\" />");
 					// Build src
