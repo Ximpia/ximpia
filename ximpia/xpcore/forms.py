@@ -1,6 +1,5 @@
 import re
 import json
-import os
 
 from django.core import serializers as _s
 from django import forms
@@ -12,16 +11,14 @@ import messages as _m
 from ximpia.util.js import Form as _jsf
 
 # Settings
-from ximpia.xpcore.util import get_class
-settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
+from django.conf import settings
 
 import constants as K
 
 from recaptcha.client import captcha
 
 # Logging
-import logging.config
-logging.config.dictConfig(settings.LOGGING)
+import logging
 logger = logging.getLogger(__name__)
 
 class XBaseForm(forms.Form):
@@ -509,7 +506,7 @@ class XBaseForm(forms.Form):
                 else:
                     instances[instanceName].userCreateId = self._ctx.user.id
             instances[instanceName].save()
-        
+
         # TODO: Place this into method. In future, patterns for different many operations???
         for field in manyList:
             throughEndfield = self._getThroughEndField(field.instance, field.instanceFieldName)
