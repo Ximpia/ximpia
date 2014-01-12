@@ -102,8 +102,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i];
-				var idInput =  $(element).attr('id');
-				var nameInput = idInput;
+				var idInput =  $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
@@ -235,9 +235,9 @@
 								sugData[choiceIndex]['text'] = choices[choiceIndex][0];
 							}
 						}
-						ximpia.console.log('xpField.complete :: Autocomplete :: sugData...');
+						ximpia.console.log('xpField.complete :: Autocomplete :: idInput: ' + idInput + ' sugData...');
 						ximpia.console.log(sugData);
-						$("#" + idInput).jsonSuggest({	data: sugData, 
+						$("#" + idInput + '_field').jsonSuggest({	data: sugData, 
 														maxHeight: maxHeight, 
 														minCharacters: minCharacters
 														});
@@ -367,8 +367,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id');
-				var nameInput = idInput;
+				var idInput = $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
@@ -595,7 +595,7 @@
 	        			label = attrs['label'];
 	        		}
 					var controlHtml = "";
-					var ctlId = "id_" + name;
+					var ctlId = idBase + '_check';
 					if (value == true || value == '1') {
 						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
 							"\" data-xp=\"{}\" checked=\"checked\"";
@@ -750,8 +750,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id');
-				var nameInput = idInput;
+				var idInput = $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					ximpia.console.log('xpFieldDateTime.render :: id: ' + $(element).attr('id'));					
@@ -1012,8 +1012,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpCheck :: element : ' + element); 
-				var idBase = $(element).attr('id');
-				var name = idBase;
+				var idBase = $(element).attr('id') + '_check';
+				var name = $(element).attr('id');
 				ximpia.console.log('xpCheck :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
@@ -1077,7 +1077,7 @@
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
 						var controlHtml = "";
-						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						var ctlId = idBase + "_" + choiceList[j][0];
 						var hasValue = ximpia.common.ArrayUtil.hasKey(valueNewList, choiceList[j][0]);
 						if (hasValue) {
 							controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"check\" name=\"" + name + 
@@ -1205,7 +1205,7 @@
 			var sHtml = '<div class="listField" style=\"float:left\"><div class="listFieldText"' +  
 				' style=\"float:left\">' + obj.data + '</div>' + 
 				'<div class="listFieldDel" style=\"float:left\" data-xp-field-id=\"' + obj.dataId + 
-				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"' + obj.idBase + '\"';
+				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"id_' + obj.idBase + '\"';
 			sHtml += '>X</div></div>';
 			return sHtml;
         };
@@ -1228,7 +1228,8 @@
 			ximpia.console.log('xpFieldList.deleteItem :: valueList...');
 			ximpia.console.log(valueList);
 			var valueListStr = JSON.stringify(valueList).replace(/"/g, "'");
-			$('#' + idBase).val(valueListStr);
+			ximpia.console.log('valueListStr: ' + valueListStr);
+			$('#id_' + idBase).val(valueListStr);
 			$('#' + inputDataId).focus();
         };
         /**
@@ -1273,25 +1274,34 @@
         	ximpia.console.log('xpFieldList.addField :: inputField: ' + inputField + ' feedType: ' + feedType);
         	var inputDataId = inputField;
         	var globalType = getGlobalType(feedType);
+        	// field :: from inputField get idBase
+        	// select.plus :: 
         	if (globalType == 'field') {
-        		var idBase = inputField.split('Input')[0];
+        		var idBase = 'id_' + inputField.split('Input')[0];
 				var data = $("#" + inputDataId).prop('value');
 				var dataId = data;
+				var idBaseList = idBase;
+				var baseValue = $("#" + idBase).attr('value');
+				var attrs = $("#" + idBase).parent().metadata();
+				var idShow = idBase.split('id_')[1] + 'Show';
+				idBase = idBase.split('id_')[1];
         	} else if (globalType == 'select') {
-        		var idBase = $('#' + inputField).parent().attr('id');
-        		var dataId = $("#" + inputDataId).prop('value');
+        		var idBase = $('#' + ximpia.common.getParentComponent($('#' + inputField)).attr('id') + ' > input[type=hidden]').attr('id');
+        		var idShow = idBase.split('id_')[1] + 'Show';
+        		var idBaseList = idBase;
+        		var baseValue = $("#" + idBase).attr('value');
+        		var attrs = $("#" + idBase).parent().metadata();
+        		idBase = idBase.split('id_')[1];
+        		var dataId = $("#" + inputDataId + '_data').prop('value');
         		// Get from choices data
         		var data = ximpia.common.Choices.getData(vars.form, choicesId, dataId);
         	}
-			ximpia.console.log('xpFieldList.addField :: data: ' + data + ' dataId: ' + dataId);
-			var idBaseList = idBase;
-			var baseValue = $("#" + idBase).attr('value');
+			ximpia.console.log('xpFieldList.addField :: data: ' + data + ' dataId: ' + dataId + ' idBase: ' + idBase + ' idShow: ' +  idShow);
 			var baseFields = [];
 			if (typeof baseValue != 'undefined') {
 				baseFields = baseValue.split(',');
 			}
-			$.metadata.setType("attr", "data-xp");
-			var attrs = $("#" + idBase).parent().metadata();
+			$.metadata.setType("attr", "data-xp");			
 			var limit = attrs['limit'] || settings.limit;
 			ximpia.console.log('xpFieldList.addField :: idBaseList: ' + idBaseList);
 			var hasElement = false;
@@ -1323,11 +1333,12 @@
 			if (validate == true) {
 				var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data:data});
 				ximpia.console.log(sHtml);
-				$('#' + idBase + 'Show').append(sHtml);
+				$('#' + idShow).append(sHtml);
 				var baseList = eval(baseValue);
 				if (feedType == 'field') {
 					var itemObj = {};					
 					if ($('#' + inputField).attr('data-xp-complete')) {
+					    alert('yes!!');
 						$.metadata.setType("attr", "data-xp-complete");
 						var attrsComplete = $("#" + inputField).metadata();
 						if (attrsComplete.hasOwnProperty('choicesId')) {
@@ -1345,7 +1356,7 @@
 				}
 				ximpia.console.log(baseList);
 				baseListStr = JSON.stringify(baseList).replace(/"/g, "'");
-				$('#' + idBase).val(baseListStr);
+				$('#' + idBaseList).val(baseListStr);
 				if (globalType == 'field') {
 					$('#' + inputDataId).prop('value', '');
 					$('#' + inputDataId).focus();
@@ -1353,7 +1364,7 @@
 					$('#' + inputField).xpSelectPlus('setValue', '', '');
 				}
 				// Remove Field Bind
-				$('#' + idBase + 'Show').children().last().find('.listFieldDel').click(function() {
+				$('#' + idShow).children().last().find('.listFieldDel').click(function() {
 					deleteItem($(this), idBase, inputDataId);
 				});
 			} else if (size >= limit) {
@@ -1386,7 +1397,11 @@
 			for (var i=0; i<$(this).length; i++) {
 				//ximpia.console.log($(this)[i]);
 				var element = $(this)[i];
-				ximpia.console.log('element : ' + element); 
+				ximpia.console.log('element : ' + element);
+				/*
+				 * idComp : id in visual component
+				 * When we need to select inside we can refer from idBase or idComp
+				 */ 
 				var idBase = $(element).attr('id');
 				var name = idBase;
 				ximpia.console.log('xpFieldList.render :: idBase : ' + idBase);
@@ -1429,7 +1444,7 @@
 						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + "}\" style=\"float: left; margin-top: 0px\" data-xp-related=\"field.list\" ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
 						htmlContent += " data-xp-type=\"button.field\"";
-						htmlContent += " data-xp=\"{input: '" + idBase + "Input', type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
+						htmlContent += " data-xp=\"{input: '" + idBase + "Input_field', type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\"";
 						htmlContent += " style=\"width: 300px; margin-left: 15px; \" ></div><div style='clear:both'></div>";
 						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + myValue + "\" />";
@@ -1464,6 +1479,7 @@
 						ximpia.console.log('xpFieldList.render :: itemList...');
 						ximpia.console.log(itemList);
 						var inputDataId = inputField;
+						//var inputDataId = 'id_' + nameList;
 						for (var i=0; i<itemList.length; i++) {
 							var dataItemObj = itemList[i];
 							var dataValues = getDataValues(globalType, dataItemObj, attrs, dataObj);
@@ -1608,8 +1624,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpOption :: element : ' + element); 
-				var idBase = $(element).attr('id');
-				var name = idBase;
+				var idBase = $(element).attr('id') + '_option';
+				var name = $(element).attr('id');
 				ximpia.console.log('xpOption :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
@@ -1675,7 +1691,7 @@
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
 						var controlHtml = "";
-						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						var ctlId = idBase + "_" + choiceList[j][0];
 						if (choiceList[j][0] == value) {
 							if (attrs.type == 'radio') {
 								controlHtml += "<input id=\"" + ctlId + "\" type=\"radio\" data-xp-type=\"option\" name=\"" + name + 
@@ -1897,9 +1913,11 @@
                     if (attrs.hasOwnProperty('hasBestMatch')) {
                         settings.hasBestMatch = attrs.hasBestMatch;
                     }
+                    console.log('select.plus :: idField: ' + idField);
 					var fb = $("#" + idField).flexbox(results,{
 						autoCompleteFirstMatch: settings.hasBestMatch,
-						maxVisibleRows: settings.size
+						maxVisibleRows: settings.size,
+						initialValue: dataAttrs.value
 					});
 					if (dataAttrs.hasOwnProperty('value')) {
 						fb.setValue(values[0], values[1]);
@@ -1943,7 +1961,6 @@
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
 						}
 					}
-					/*console.log($("#" + idInput));*/
 					console.log($(element));
 				}
 			}
@@ -2054,8 +2071,8 @@
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id');
-				var nameInput = idInput;
+				var idInput = $(element).attr('id') + '_select';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					$.metadata.setType("attr", "data-xp");
@@ -2249,8 +2266,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				console.log($(this)[i]);
 				var element = $(this)[i];
-				var idInput = $(element).attr('id');
-				var nameInput = idInput;
+				var idInput = $(element).attr('id') + '_textarea';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data && data.hasOwnProperty(nameInput)) {
 					$.metadata.setType("attr", "data-xp"); 

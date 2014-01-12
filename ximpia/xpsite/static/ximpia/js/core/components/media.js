@@ -96,7 +96,7 @@
 					var attrs = $(element).metadata();
 					ximpia.console.log('xpImage :: attrs...');
 					ximpia.console.log(attrs);
-					$(element).html("<img id=\"" + idElement + "\" />");
+					$(element).html("<img id=\"" + idElement + "_img\" />");
 					// Build src
 					if (attrs.hasOwnProperty('src')) {
 						$('#' + idElement).attr('src', attrs.src);

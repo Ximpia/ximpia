@@ -1,4 +1,3 @@
-
 /*
  * 
  * 
@@ -231,7 +230,7 @@
 				var element = $(this)[i];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
-					var idButton = $(element).attr('id');
+					var idButton = $(element).attr('id') + '_button';
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 					var idParent = $(element).parent().attr('id');
@@ -947,7 +946,7 @@
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					var idLinkSrc = $(element).attr('id');
-					var idLink = $(element).attr('id');
+					var idLink = $(element).attr('id') + '_link';
 					ximpia.console.log('xpObjLink.render :: idLink: ' + idLink);
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();

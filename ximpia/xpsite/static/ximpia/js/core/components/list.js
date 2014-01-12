@@ -241,8 +241,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id');
-				vars.nameInput = vars.idInput;
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = $(vars.element).attr('id');
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpListContent.render :: id: ' + $(vars.element).attr('id'));
@@ -294,8 +294,8 @@ ximpia.constants.list.APPEND = 'append';
 			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
 			vars.element = $(this);
 			vars.idElement = $(vars.element).attr('id');
-			vars.idInput = $(vars.element).attr('id');
-			vars.nameInput = vars.idInput;
+			vars.idInput = $(vars.element).attr('id') + '_input';
+			vars.nameInput = vars.idElement;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $(vars.element).metadata();
 			// init vars
@@ -804,8 +804,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id');
-				vars.nameInput = vars.idInput;
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpListData.render :: id: ' + $(vars.element).attr('id'));
@@ -1045,8 +1045,8 @@ ximpia.constants.list.APPEND = 'append';
 			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
 			vars.element = $(this);
 			vars.idElement = $(vars.element).attr('id');
-			vars.idInput = $(vars.element).attr('id');
-			vars.nameInput = vars.idInput;
+			vars.idInput = $(vars.element).attr('id') + '_input';
+			vars.nameInput = vars.idElement;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $(vars.element).metadata();
 			// init vars
@@ -1189,8 +1189,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id');
-				vars.nameInput = vars.idInput;
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpPagingMore.render :: id: ' + $(vars.element).attr('id'));
@@ -1307,8 +1307,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id');
-				vars.nameInput = vars.idInput;
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					$.metadata.setType("attr", "data-xp");
