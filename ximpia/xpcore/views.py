@@ -27,8 +27,7 @@ from ximpia.xpsite.models import Setting
 settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
 
 # Logging
-import logging.config
-logging.config.dictConfig(settings.LOGGING)
+import logging
 logger = logging.getLogger(__name__)
 
 def __showView(view, viewAttrs, ctx):
@@ -420,7 +419,7 @@ def jxDataQuery(request, **args):
             if dbArgsPages.has_key('page_start'): del dbArgsPages['page_start']
             if dbArgsPages.has_key('page_end'): del dbArgsPages['page_end']
             if dbArgsPages.has_key('order_by'): del dbArgsPages['order_by']
-            meta.numberPages = int(round(float(obj._model.objects.filter(**dbArgsPages).count())/float(numberResults)))
+            meta.numberPages = int(round(float(obj.model.objects.filter(**dbArgsPages).count())/float(numberResults)))
     else:
         meta.numberPages = 1
 
@@ -449,7 +448,7 @@ def jxDataQuery(request, **args):
     # headers
     headers = []
     if hasHeader:
-        modelFields = obj._model._meta.fields
+        modelFields = obj.model._meta.fields
         logger.debug('jxDataQuery :: modelFields: %s' % (modelFields) )
         if len(fields) == 0:
             # get all model fields from table and add to headers
@@ -459,16 +458,16 @@ def jxDataQuery(request, **args):
             # Get model fields with max level 3: field__field__field
             for field in fields:
                 if field.count('__') == 0:
-                    headerField = obj._model._meta.get_field_by_name(field)[0].verbose_name
+                    headerField = obj.model._meta.get_field_by_name(field)[0].verbose_name
                     logger.debug('jxDataQuery :: headerField: %s' % (headerField) )
                     headers.append(headerField)
                 elif field.count('__') == 1:
                     fieldFrom, fieldTo = field.split('__')
                     logger.debug('jxDataQuery :: fieldFrom: %s fieldTo: %s' % (fieldFrom, fieldTo) )
-                    """relField = obj._model._meta.get_field_by_name(fieldFrom)[0]\
+                    """relField = obj.model._meta.get_field_by_name(fieldFrom)[0]\
                         .rel.to._meta.get_field_by_name(fieldTo)[0]"""
                     # 03/07/2013 : We get header name from fk verbose name and not linked to verbose name
-                    relField = obj._model._meta.get_field_by_name(fieldFrom)[0]
+                    relField = obj.model._meta.get_field_by_name(fieldFrom)[0]
                     if type(relField.verbose_name) == types.UnicodeType:
                         headerField = relField.verbose_name
                     else:
@@ -478,11 +477,11 @@ def jxDataQuery(request, **args):
                 elif field.count('__') == 2:
                     fieldFrom, fieldTo1, fieldTo2 = field.split('__')
                     logger.debug('jxDataQuery :: fieldFrom: %s fieldTo: %s' % (fieldFrom, fieldTo1, fieldTo2) )
-                    """relField = obj._model._meta.get_field_by_name(fieldFrom)[0]\
+                    """relField = obj.model._meta.get_field_by_name(fieldFrom)[0]\
                         .rel.to._meta.get_field_by_name(fieldTo1)[0]\
                         .rel.to._meta.get_field_by_name(fieldTo2)[0]"""
                     # 03/07/2013 : We get header name from fk verbose name and not linked to verbose name
-                    relField = obj._model._meta.get_field_by_name(fieldFrom)[0]
+                    relField = obj.model._meta.get_field_by_name(fieldFrom)[0]
                     if type(relField.verbose_name) == types.UnicodeType:
                         headerField = relField.verbose_name
                     else:
@@ -748,7 +747,8 @@ def jxDelete(request, **args):
             logger.debug('jxDelete :: form: %s' % (request.REQUEST['form']) )
             formId = request.REQUEST['form']
             app = request.REQUEST['app']
-            formModule = getattr(getattr(__import__(app.split('.')[0]), app.split('.')[1]), 'forms')
+            logger.debug('jxDelete :: app: {}'.format(app))
+            formModule = __import__(app, globals(), locals(), ['forms'], -1).forms
             classes = dir(formModule)
             resolvedForm = None
             for myClass in classes:
@@ -766,7 +766,7 @@ def jxDelete(request, **args):
             # instantiate form for create and update with db instances dbObjects from form
             # dbObjects : pk, model
             obj = CommonService(args['ctx'])
-            obj._setMainForm(args['ctx'].form)
+            obj._set_main_form(args['ctx'].form)
             obj.request = request
             result = obj.delete()
         else:
