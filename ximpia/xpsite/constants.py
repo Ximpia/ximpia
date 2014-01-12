@@ -1,60 +1,60 @@
 # coding: utf-8
 
 class Services:
-	USERS = 'Users'
+    USERS = 'Users'
 
 class Slugs:
-	LOGIN = 'login'
-	LOGOUT = 'logout'
-	REMINDER_NEW_PASSWORD = 'reminder-new-password'
-	CHANGE_PASSWORD = 'change-password'
-	SIGNUP = 'signup'
-	ACTIVATION_USER = 'activation-user'
-	HOME_LOGIN = 'in'
-	SITE = 'site'
-	REQUEST_REMINDER = 'request-reminder'
-	FINALIZE_REMINDER = 'finalize-reminder'
-	ACTIVATE_USER = 'activate-user'
+    LOGIN = 'login'
+    LOGOUT = 'logout'
+    REMINDER_NEW_PASSWORD = 'reminder-new-password'
+    CHANGE_PASSWORD = 'change-password'
+    SIGNUP = 'signup'
+    ACTIVATION_USER = 'activation-user'
+    HOME_LOGIN = 'in'
+    SITE = 'site'
+    REQUEST_REMINDER = 'request-reminder'
+    FINALIZE_REMINDER = 'finalize-reminder'
+    ACTIVATE_USER = 'activate-user'
 
 class Views:
-	LOGIN = 'login'
-	LOGOUT = 'logout'
-	REMINDER_NEW_PASSWORD = 'reminderNewPassword'
-	CHANGE_PASSWORD = 'changePassword'
-	SIGNUP = 'signup'
-	ACTIVATION_USER = 'activationUser'
-	HOME_LOGIN = 'homeLogin'
+    LOGIN = 'login'
+    LOGOUT = 'logout'
+    REMINDER_NEW_PASSWORD = 'reminderNewPassword'
+    CHANGE_PASSWORD = 'changePassword'
+    SIGNUP = 'signup'
+    ACTIVATION_USER = 'activationUser'
+    HOME_LOGIN = 'homeLogin'
 
 class Actions:
-	LOGIN = 'login'
-	REQUEST_REMINDER = 'requestReminder'
-	FINALIZE_REMINDER = 'finalizeReminder'
-	LOGOUT = 'logout'
-	SIGNUP = 'signup'
-	CHANGE_PASSWORD = 'changePassword'
-	ACTIVATE_USER = 'activateUser'	
+    LOGIN = 'login'
+    REQUEST_REMINDER = 'requestReminder'
+    FINALIZE_REMINDER = 'finalizeReminder'
+    LOGOUT = 'logout'
+    SIGNUP = 'signup'
+    CHANGE_PASSWORD = 'changePassword'
+    ACTIVATE_USER = 'activateUser'    
 
 class Menus:
-	SYS = 'sys'
-	SIGN_OUT = 'signOut'
-	CHANGE_PASSWORD = 'changePassword'
-	HOME_LOGIN = 'homeLogin'
-	HOME = 'home'
-	LOGIN = 'login'
-	SIGNUP = 'signup'
+    SYS = 'sys'
+    SIGN_OUT = 'signOut'
+    CHANGE_PASSWORD = 'changePassword'
+    HOME_LOGIN = 'homeLogin'
+    HOME = 'home'
+    LOGIN = 'login'
+    SIGNUP = 'signup'
 
 class Tmpls:
-	LOGIN = 'login'
-	PASSWORD_REMINDER = 'password_reminder'
-	LOGOUT = 'logout'
-	CHANGE_PASSWORD = 'change_password'
-	SIGNUP = 'signup'
-	REMINDER_NEW_PASSWORD = 'reminder_new_password'
-	ACTIVATION_USER = 'activation_user'
-	HOME_LOGIN = 'home_login'
+    LOGIN = 'login'
+    PASSWORD_REMINDER = 'password_reminder'
+    LOGOUT = 'logout'
+    CHANGE_PASSWORD = 'change_password'
+    SIGNUP = 'signup'
+    REMINDER_NEW_PASSWORD = 'reminder_new_password'
+    ACTIVATION_USER = 'activation_user'
+    HOME_LOGIN = 'home_login'
 
 class Flows:
-	pass
+    pass
 
 
 #APP = 'site'

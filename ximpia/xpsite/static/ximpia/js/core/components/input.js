@@ -101,17 +101,15 @@
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
-				var element = $(this)[i]; 
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var element = $(this)[i];
+				var idInput =  $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
 					ximpia.console.log('nameInput: ' + nameInput);
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
-					//ximpia.console.log('input attrs: ' + idInput);
-					//ximpia.console.log(attrs);
 					var relatedId = $(element).attr('data-xp-related');
 					var elementType = $(element).attr('data-xp-type');
 					var dataAttrs = {};
@@ -136,7 +134,7 @@
 					if (attrs['labelPosition'] == 'top') {
 						htmlContent = "<div class=\"input-label-top\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label></div><br/>";
 						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
-							nameInput + "\" value=\"" + myValue + "\" />"
+							nameInput + "\" value=\"" + myValue + "\" />";
 					} else {
 						htmlContent = "<div class=\"input-label-left\" style=\"width: " + labelWidth + "\"><label for=\"" + idInput + "\"></label>: </div>";
 						htmlContent += "<input id=\"" + idInput + "\" type=\"" + type + "\" name=\"" + 
@@ -163,10 +161,6 @@
 					if (typeof elementType != 'undefined') {
 						$("#" + idInput).attr('data-xp-type', elementType);
 					}
-					//ximpia.console.log($("#" + idInput));
-					// Label
-					//ximpia.console.log('dataAttrs');
-					//ximpia.console.log(dataAttrs);
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
@@ -203,7 +197,7 @@
 				ximpia.console.log('xpField.complete ::  attrs...');
 				ximpia.console.log(attrs);
 				var hasComplete = true;
-				var idInput = $(element).attr('id').split('_comp')[0];
+				var idInput = $(element).attr('id');
 				ximpia.console.log('xpField.complete :: idInput: ' + idInput);
 				if (typeof(attrs) == 'undefined') {
 					hasComplete = false;
@@ -227,13 +221,13 @@
 						var choices = JSON.parse($("input[name='choices']").attr('value'))[choicesId];
 						var sugData = {};
 						if (typeof(choices) != 'undefined') {
-							sugData = []
+							sugData = [];
 						}
 						if (!attrs.hasOwnProperty('choiceDisplay')) {
 							attrs['choiceDisplay'] = settings.choiceDisplay;
 						}
 						for (choiceIndex in choices) {
-							sugData[choiceIndex] = {}
+							sugData[choiceIndex] = {};
 							sugData[choiceIndex]['id'] = choices[choiceIndex][0];
 							if (attrs['choiceDisplay'] == 'value') {
 								sugData[choiceIndex]['text'] = choices[choiceIndex][1];
@@ -241,9 +235,9 @@
 								sugData[choiceIndex]['text'] = choices[choiceIndex][0];
 							}
 						}
-						ximpia.console.log('xpField.complete :: Autocomplete :: sugData...');
+						ximpia.console.log('xpField.complete :: Autocomplete :: idInput: ' + idInput + ' sugData...');
 						ximpia.console.log(sugData);
-						$("#" + idInput).jsonSuggest({	data: sugData, 
+						$("#" + idInput + '_field').jsonSuggest({	data: sugData, 
 														maxHeight: maxHeight, 
 														minCharacters: minCharacters
 														});
@@ -252,7 +246,7 @@
 						ximpia.console.log('xpField.complete :: Autocomplete from server...');
 						var app = ximpia.common.Browser.getApp();
 						if (attrs.hasOwnProperty('app')) {
-							app = attrs['app']
+							app = attrs['app'];
 						}
 						var params = {};
 						if (attrs.hasOwnProperty('params')) {
@@ -267,7 +261,7 @@
 							url += "&fieldValue=" + attrs['fieldValue'];
 						}
 						if (attrs.hasOwnProperty('extraFields')) {
-							url += "&extraFields=" + JSON.stringify(attrs['extraFields'])
+							url += "&extraFields=" + JSON.stringify(attrs['extraFields']);
 						}
 						$("#" + idInput).jsonSuggest({	url: url, 
 														maxHeight: maxHeight, 
@@ -278,8 +272,6 @@
 			}
 		},
 		disable: function() {
-			/*var idInput = $(this).attr('id').split('_comp')[0];
-			$("#" + idInput).attr('disable', 'disable');*/
 			for (var i=0; i<$(this).length; i++) {
 				// Get all option items and disable them
 				$(this).find("input[data-xp-type='field']").each(function() {
@@ -375,8 +367,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var idInput = $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					ximpia.console.log('renderField :: id: ' + $(element).attr('id'));
@@ -426,16 +418,9 @@
 					if (typeof elementType != 'undefined') {
 						$("#" + idInput).attr('data-xp-type', elementType);
 					}
-					//ximpia.console.log($("#" + idInput));
-					// Label
-					//ximpia.console.log('dataAttrs');
-					//ximpia.console.log(dataAttrs);
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
-						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}*/
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
@@ -485,8 +470,6 @@
 			}
 		},
 		disable: function() {
-			/*var idInput = $(this).attr('id').split('_comp')[0];
-			$("#" + idInput).attr('disable', 'disable');*/
 			for (var i=0; i<$(this).length; i++) {
 				// Get all option items and disable them
 				$(this).find("input[data-xp-type='field']").each(function() {
@@ -590,8 +573,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpFieldCheck :: element : ' + element); 
-				var idBase = $(element).attr('id').split('_comp')[0];
-				var name = idBase.split('id_')[1];
+				var idBase = $(element).attr('id');
+				var name = idBase;
 				ximpia.console.log('xpFieldCheck :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
@@ -612,7 +595,7 @@
 	        			label = attrs['label'];
 	        		}
 					var controlHtml = "";
-					var ctlId = "id_" + name;
+					var ctlId = idBase + '_check';
 					if (value == true || value == '1') {
 						controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"field.check\" name=\"" + name + 
 							"\" data-xp=\"{}\" checked=\"checked\"";
@@ -624,7 +607,7 @@
         			var helpText = "";
         			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText') && 
         						attrs['controlPosition'] == 'after') {
-        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\"";
         			}
         			var attrClass = "";
         			if (attrs.hasOwnProperty('info') && attrs.info == true) {
@@ -767,8 +750,8 @@
 			for (var i=0; i<$(this).length; i++) {
 				ximpia.console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var idInput = $(element).attr('id') + '_field';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					ximpia.console.log('xpFieldDateTime.render :: id: ' + $(element).attr('id'));					
@@ -820,9 +803,6 @@
 					if (!attrs.hasOwnProperty('hasLabel')) {
 						attrs['hasLabel'] = true;
 					}
-					/*if (attrs['labelPosition'] == 'left' && attrs['hasLabel'] == true) {
-						$("label[for=\"" + idInput + "\"]").addClass("labelSep");
-					}*/
 					if (typeof dataAttrs != 'undefined' && dataAttrs.hasOwnProperty('label') && attrs['hasLabel'] == true) {
 						if (attrs.hasOwnProperty('label')) {
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
@@ -1032,15 +1012,15 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpCheck :: element : ' + element); 
-				var idBase = $(element).attr('id').split('_comp')[0];
-				var name = idBase.split('id_')[1];
+				var idBase = $(element).attr('id') + '_check';
+				var name = $(element).attr('id');
 				ximpia.console.log('xpCheck :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
 					var value = "";
 					var choicesId = "";
 					var valueList = eval(data[name]['value']);
-					choicesId = data[name]['choicesId']
+					choicesId = data[name]['choicesId'];
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 	        		// Choices
@@ -1071,7 +1051,7 @@
 	        			htmlContent += "<div class=\"" + classLabel + "\" style=\"width: " + labelWidth + "\" >";
 	        			var helpText = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
-	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\"";
 	        			}
 	        			var attrClass = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true) {
@@ -1097,7 +1077,7 @@
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
 						var controlHtml = "";
-						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						var ctlId = idBase + "_" + choiceList[j][0];
 						var hasValue = ximpia.common.ArrayUtil.hasKey(valueNewList, choiceList[j][0]);
 						if (hasValue) {
 							controlHtml += "<input id=\"" + ctlId + "\" type=\"checkbox\" data-xp-type=\"check\" name=\"" + name + 
@@ -1225,10 +1205,7 @@
 			var sHtml = '<div class="listField" style=\"float:left\"><div class="listFieldText"' +  
 				' style=\"float:left\">' + obj.data + '</div>' + 
 				'<div class="listFieldDel" style=\"float:left\" data-xp-field-id=\"' + obj.dataId + 
-				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"' + obj.idBase + '\"';
-			/*if (obj.hasOwnProperty('attrs') && obj.attrs.hasOwnProperties('modelField')) {
-				sHtml += ' data-xp-field-model=\"' + obj.attrs.modelField + '\"';
-			}*/
+				'\" data-xp-field-input-id=\"' + obj.inputDataId + '\" data-xp-field-hidden-id=\"id_' + obj.idBase + '\"';
 			sHtml += '>X</div></div>';
 			return sHtml;
         };
@@ -1251,7 +1228,8 @@
 			ximpia.console.log('xpFieldList.deleteItem :: valueList...');
 			ximpia.console.log(valueList);
 			var valueListStr = JSON.stringify(valueList).replace(/"/g, "'");
-			$('#' + idBase).val(valueListStr);
+			ximpia.console.log('valueListStr: ' + valueListStr);
+			$('#id_' + idBase).val(valueListStr);
 			$('#' + inputDataId).focus();
         };
         /**
@@ -1294,27 +1272,36 @@
 		var addField = function(inputField, feedType, choicesId) {
         	ximpia.console.log('xpFieldList.addField...');
         	ximpia.console.log('xpFieldList.addField :: inputField: ' + inputField + ' feedType: ' + feedType);
-        	var inputDataId = inputField.split('_comp')[0];
+        	var inputDataId = inputField;
         	var globalType = getGlobalType(feedType);
+        	// field :: from inputField get idBase
+        	// select.plus :: 
         	if (globalType == 'field') {
-        		var idBase = inputField.split('Input_comp')[0];
+        		var idBase = 'id_' + inputField.split('Input')[0];
 				var data = $("#" + inputDataId).prop('value');
 				var dataId = data;
+				var idBaseList = idBase;
+				var baseValue = $("#" + idBase).attr('value');
+				var attrs = $("#" + idBase).parent().metadata();
+				var idShow = idBase.split('id_')[1] + 'Show';
+				idBase = idBase.split('id_')[1];
         	} else if (globalType == 'select') {
-        		var idBase = $('#' + inputField).parent().attr('id').split('_comp')[0];
-        		var dataId = $("#" + inputDataId).prop('value');
+        		var idBase = $('#' + ximpia.common.getParentComponent($('#' + inputField)).attr('id') + ' > input[type=hidden]').attr('id');
+        		var idShow = idBase.split('id_')[1] + 'Show';
+        		var idBaseList = idBase;
+        		var baseValue = $("#" + idBase).attr('value');
+        		var attrs = $("#" + idBase).parent().metadata();
+        		idBase = idBase.split('id_')[1];
+        		var dataId = $("#" + inputDataId + '_data').prop('value');
         		// Get from choices data
         		var data = ximpia.common.Choices.getData(vars.form, choicesId, dataId);
         	}
-			ximpia.console.log('xpFieldList.addField :: data: ' + data + ' dataId: ' + dataId);
-			var idBaseList = idBase;
-			var baseValue = $("#" + idBase).attr('value');
+			ximpia.console.log('xpFieldList.addField :: data: ' + data + ' dataId: ' + dataId + ' idBase: ' + idBase + ' idShow: ' +  idShow);
 			var baseFields = [];
 			if (typeof baseValue != 'undefined') {
 				baseFields = baseValue.split(',');
 			}
-			$.metadata.setType("attr", "data-xp");
-			var attrs = $("#" + idBase).parent().metadata();
+			$.metadata.setType("attr", "data-xp");			
 			var limit = attrs['limit'] || settings.limit;
 			ximpia.console.log('xpFieldList.addField :: idBaseList: ' + idBaseList);
 			var hasElement = false;
@@ -1325,7 +1312,7 @@
 						hasElement = true;
 					}
 				} else {
-					fieldModelName = attrs['modelField']
+					fieldModelName = attrs['modelField'];
 					if (valueList[i][fieldModelName] == data) {
 						hasElement = true;
 					}
@@ -1333,7 +1320,7 @@
 			}
 			var size = 0;
 			if (baseFields != "") {
-				size = baseFields.length
+				size = baseFields.length;
 			}			
 			var validate = false;
 			ximpia.console.log('xpFieldList.addField :: dataId: ' + dataId);
@@ -1346,11 +1333,12 @@
 			if (validate == true) {
 				var sHtml = buildItemHtml({dataId: dataId, inputDataId:inputDataId, idBase:idBase, data:data});
 				ximpia.console.log(sHtml);
-				$('#' + idBase + 'Show').append(sHtml);
+				$('#' + idShow).append(sHtml);
 				var baseList = eval(baseValue);
 				if (feedType == 'field') {
 					var itemObj = {};					
 					if ($('#' + inputField).attr('data-xp-complete')) {
+					    alert('yes!!');
 						$.metadata.setType("attr", "data-xp-complete");
 						var attrsComplete = $("#" + inputField).metadata();
 						if (attrsComplete.hasOwnProperty('choicesId')) {
@@ -1368,7 +1356,7 @@
 				}
 				ximpia.console.log(baseList);
 				baseListStr = JSON.stringify(baseList).replace(/"/g, "'");
-				$('#' + idBase).val(baseListStr);
+				$('#' + idBaseList).val(baseListStr);
 				if (globalType == 'field') {
 					$('#' + inputDataId).prop('value', '');
 					$('#' + inputDataId).focus();
@@ -1376,7 +1364,7 @@
 					$('#' + inputField).xpSelectPlus('setValue', '', '');
 				}
 				// Remove Field Bind
-				$('#' + idBase + 'Show').children().last().find('.listFieldDel').click(function() {
+				$('#' + idShow).children().last().find('.listFieldDel').click(function() {
 					deleteItem($(this), idBase, inputDataId);
 				});
 			} else if (size >= limit) {
@@ -1409,9 +1397,13 @@
 			for (var i=0; i<$(this).length; i++) {
 				//ximpia.console.log($(this)[i]);
 				var element = $(this)[i];
-				ximpia.console.log('element : ' + element); 
-				var idBase = $(element).attr('id').split('_comp')[0];
-				var name = idBase.split('id_')[1];
+				ximpia.console.log('element : ' + element);
+				/*
+				 * idComp : id in visual component
+				 * When we need to select inside we can refer from idBase or idComp
+				 */ 
+				var idBase = $(element).attr('id');
+				var name = idBase;
 				ximpia.console.log('xpFieldList.render :: idBase : ' + idBase);
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);				
 				if (doRender == true) {
@@ -1447,12 +1439,12 @@
 					var globalType = getGlobalType(type);
 					if (type == "field") {
 						var htmlContent = "";
-						inputField = idBase + 'Input_comp';
-						htmlContent += "<div id=\"" + idBase + 'Input_comp' + "\" data-xp-type=\"field\"";
+						inputField = idBase + 'Input';
+						htmlContent += "<div id=\"" + idBase + 'Input' + "\" data-xp-type=\"field\"";
 						htmlContent += " data-xp=\"{label: '" + label + "', labelWidth: '" + labelWidth + "', info:" + info + "}\" style=\"float: left; margin-top: 0px\" data-xp-related=\"field.list\" ></div>";
 						htmlContent += "<div style=\"float: left\"><a href=\"#\" class=\"buttonIcon buttonIconSmall\"";
 						htmlContent += " data-xp-type=\"button.field\"";
-						htmlContent += " data-xp=\"{input: '" + idBase + "Input_comp', type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
+						htmlContent += " data-xp=\"{input: '" + idBase + "Input_field', type: 'field'}\" style=\"font-size:97% !important; margin-top: 3px\" >Add</a></div>";
 						htmlContent += "<div id=\"" + idBase + "Show\" class=\"listContainer\"";
 						htmlContent += " style=\"width: 300px; margin-left: 15px; \" ></div><div style='clear:both'></div>";
 						htmlContent += "<input id=\"id_" + nameList + "\" type=\"hidden\" name=\"" + nameList + "\" value=\"" + myValue + "\" />";
@@ -1471,7 +1463,7 @@
 					}
 					$(element).html(htmlContent);
 					if (globalType == 'field' && $(element).attr('data-xp-complete')) {
-						$('#' + idBase + 'Input_comp').attr('data-xp-complete', $(element).attr('data-xp-complete'));
+						$('#' + idBase + 'Input').attr('data-xp-complete', $(element).attr('data-xp-complete'));
 					}
 					$(element).attr('data-xp-render', JSON.stringify(true));
 					$(element).css('clear', 'both');
@@ -1486,7 +1478,8 @@
 						var itemList = eval(myValue);
 						ximpia.console.log('xpFieldList.render :: itemList...');
 						ximpia.console.log(itemList);
-						var inputDataId = inputField.split('_comp')[0];
+						var inputDataId = inputField;
+						//var inputDataId = 'id_' + nameList;
 						for (var i=0; i<itemList.length; i++) {
 							var dataItemObj = itemList[i];
 							var dataValues = getDataValues(globalType, dataItemObj, attrs, dataObj);
@@ -1530,9 +1523,8 @@
 				$(element).keypress(function(e) {
 					if (e.which == 13) {
 						// Enter Key
-						var inputField = e.currentTarget.id + '_comp';
+						var inputField = e.currentTarget.id;
 						ximpia.console.log('xpFieldList.keyPress :: inputField: ' + inputField);
-						//ximpia.console.log($(element)[0].form.id);
 						vars.form = $(element)[0].form.id;
                 		addField(inputField, 'field');
 					}
@@ -1632,15 +1624,15 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpOption :: element : ' + element); 
-				var idBase = $(element).attr('id').split('_comp')[0];
-				var name = idBase.split('id_')[1];
+				var idBase = $(element).attr('id') + '_option';
+				var name = $(element).attr('id');
 				ximpia.console.log('xpOption :: idBase : ' + idBase);
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true && data.hasOwnProperty(name)) {					
 					var value = "";
 					var choicesId = "";
 					value = data[name]['value'];
-					choicesId = data[name]['choicesId']
+					choicesId = data[name]['choicesId'];
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 	        		// Choices
@@ -1671,7 +1663,7 @@
 	        			htmlContent += "<div class=\"" + classLabel + "\" style=\"width: " + labelWidth + "\" >";
 	        			var helpText = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true && data[name].hasOwnProperty('helpText')) {
-	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\""
+	        				helpText = "data-xp-title=\"" + data[name]['helpText'] + "\"";
 	        			}
 	        			var attrClass = "";
 	        			if (attrs.hasOwnProperty('info') && attrs.info == true) {
@@ -1699,7 +1691,7 @@
 					for (var j=0 ; j<choiceList.length; j++) {
 						htmlContent += "<li>";
 						var controlHtml = "";
-						var ctlId = "id_" + name + "_" + choiceList[j][0];
+						var ctlId = idBase + "_" + choiceList[j][0];
 						if (choiceList[j][0] == value) {
 							if (attrs.type == 'radio') {
 								controlHtml += "<input id=\"" + ctlId + "\" type=\"radio\" data-xp-type=\"option\" name=\"" + name + 
@@ -1850,12 +1842,12 @@
 				console.log($(this)[i]);
 				var element = $(this)[i];
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
-				if (doRender == true) {				 
-					var idInputSrc = $(element).attr('id').split('_comp')[0];
-					var idInput = $(element).attr('id').split('_comp')[0] + '_input';
-					var idInputValue = $(element).attr('id').split('_comp')[0];
-					var nameInput = idInputSrc.split('id_')[1];
-					var idField = $(element).attr('id').split('_comp')[0] + '_field';
+				if (doRender == true) {
+                    var idInputSrc = $(element).attr('id');
+                    var idInput = $(element).attr('id') + '_input';
+                    var idInputValue = $(element).attr('id');
+                    var nameInput = idInputSrc;
+                    var idField = $(element).attr('id') + '_field';
 					$.metadata.setType("attr", "data-xp");
 					var attrs = $(element).metadata();
 					var dataAttrs = {};
@@ -1901,11 +1893,11 @@
 					try {
 					    var controlList = JSON.parse($('#id_' + myForm + '_choices').attr('value'))[choicesId];
 					} catch(err) {
-					    var controlList = []
+					    var controlList = [];
 					}
 					var results = {'results': []};
 					for (j in controlList) {
-						results['results'][j] = {'id': controlList[j][0], 'name': controlList[j][1]}
+						results['results'][j] = {'id': controlList[j][0], 'name': controlList[j][1]};
 						if (values[0] != '' && controlList[j][0] == values[0]) {
 							values[1] = controlList[j][1];
 						}
@@ -1921,9 +1913,11 @@
                     if (attrs.hasOwnProperty('hasBestMatch')) {
                         settings.hasBestMatch = attrs.hasBestMatch;
                     }
+                    console.log('select.plus :: idField: ' + idField);
 					var fb = $("#" + idField).flexbox(results,{
 						autoCompleteFirstMatch: settings.hasBestMatch,
-						maxVisibleRows: settings.size
+						maxVisibleRows: settings.size,
+						initialValue: dataAttrs.value
 					});
 					if (dataAttrs.hasOwnProperty('value')) {
 						fb.setValue(values[0], values[1]);
@@ -1967,13 +1961,12 @@
 							$("label[for=\"" + idInput + "\"]").text(attrs['label']);
 						}
 					}
-					/*console.log($("#" + idInput));*/
 					console.log($(element));
 				}
 			}
 		},
 		disable: function() {
-			var idField = $(this).attr('id').split('_comp')[0] + '_field';
+			var idField = $(this).attr('id') + '_field';
 			var id = '#' + idField.split('_field')[0];
 			$(id + '_input').attr('disabled', 'disabled');
 			$('#' + idField + '_arrow').unbind('mouseenter mouseleave click mousedown mouseup');
@@ -1997,9 +1990,9 @@
 			ximpia.console.log('setValue :: formId: ' + formId);
 			ximpia.console.log('setValue :: xpForm: ' + xpForm);
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
-			var idField = $(this).attr('id').split('_comp')[0] + '_field';
+			var idField = $(this).attr('id') + '_field';
     		var id = '#' + idField.split('_field')[0];
-    		var nameField = idField.split('_field')[0].split('id_')[1];
+    		var nameField = idField.split('_field')[0];
     		ximpia.console.log('setValue :: nameField: ' + nameField);
     		ximpia.console.log(data);
     		if (typeof data != 'undefined' && data.hasOwnProperty(nameField)) {
@@ -2060,9 +2053,6 @@
         	reRender: false,
         	labelPosition: 'left',
         	choiceDisplay: 'value'
-        	//excudeListSelect: ['type','id','element','help_text','label','data-xp-val', 'value', 'choices','choicesId'],
-        	//excludeListLabel: ['type','id','element'],
-        	//excludeList: ['info','type']
         };		
         var methods = {
 		init : function( options ) { 
@@ -2080,10 +2070,9 @@
 			var data = ximpia.common.Browser.getFormDataFromSession(xpForm);
 			ximpia.console.log(data);
 			for (var i=0; i<$(this).length; i++) {
-				//console.log($(this)[i]);
 				var element = $(this)[i]; 
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var idInput = $(element).attr('id') + '_select';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data.hasOwnProperty(nameInput)) {
 					$.metadata.setType("attr", "data-xp");
@@ -2277,15 +2266,15 @@
 			for (var i=0; i<$(this).length; i++) {
 				console.log($(this)[i]);
 				var element = $(this)[i];
-				var idInput = $(element).attr('id').split('_comp')[0];
-				var nameInput = idInput.split('id_')[1];
+				var idInput = $(element).attr('id') + '_textarea';
+				var nameInput = $(element).attr('id');
 				var doRender = ximpia.common.Form.doRender(element, settings.reRender);
 				if (doRender == true && data && data.hasOwnProperty(nameInput)) {
 					$.metadata.setType("attr", "data-xp"); 
 					var attrs = $(element).metadata();
 					var dataAttrs = data[nameInput];
 					console.log('xpTextArea.render :: idInput: ' + idInput);
-					console.log('xpTextArea.render :: nameInput: ' + nameInput)
+					console.log('xpTextArea.render :: nameInput: ' + nameInput);
 					console.log('xpTextArea.render :: *** text area data : dataAttrs ***');
 					console.log(dataAttrs);
 					console.log('xpTextArea.render :: *** text area data : attrs ***');
@@ -2295,10 +2284,10 @@
 					}
 					var areaAttrs = "";
 					if (attrs.hasOwnProperty('cols')) {
-						areaAttrs += " cols=" + attrs['cols']
+						areaAttrs += " cols=" + attrs['cols'];
 					}
 					if (attrs.hasOwnProperty('rows')) {
-						areaAttrs += " rows=" + attrs['rows']
+						areaAttrs += " rows=" + attrs['rows'];
 					}
 					var htmlContent = "";
 					var labelWidth = attrs.labelWidth || ximpia.settings.LABEL_WIDTH;
@@ -2364,25 +2353,19 @@
 		            				'overflow':'hidden'
 	        				})
 	        				.bind('keyup',function(){
-	        					//console.log('writing...');
 	        					copyContent(textarea);
-						//}
 	        				});
 	        				// Make sure all the content in the textarea is visible
-	        				//alert(textarea.width());
 	        				setCSS(textarea);
 	        				var timeout = setInterval(function() {
 	        				     copyContent(textarea);
 							     textarea.height($("#" + id).height());
 							}, 100 );
-					//};									
 					}
 				}	
 			}
 		},
 		disable: function() {
-			/*var idInput = $(this).attr('id').split('_comp')[0];
-			$("#" + idInput).attr('disable', 'disable');*/
 			for (var i=0; i<$(this).length; i++) {
 				// Get all option items and disable them
 				$(this).find("input[data-xp-type='textarea']").each(function() {

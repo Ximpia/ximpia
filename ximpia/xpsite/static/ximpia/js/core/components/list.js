@@ -92,8 +92,7 @@ ximpia.constants.list.APPEND = 'append';
         	hasLinkedRow: false,
         	onCheckClick: 'enable'
         };
-        var vars = {
-        	
+        var vars = {        	
         };
         var constants = {
         	TMPL_LIST_HEADER: 'xpListHeader',
@@ -180,11 +179,9 @@ ximpia.constants.list.APPEND = 'append';
 			vars.resp.listObj.meta = vars.meta;
 			// Header
 			$(vars.element).append(ximpia.common.Content.replaceFields(vars.templateHeaderHtml, vars.resp.listObj));
-			// Item html
-			
+			// Item html			
 			var html = _buildItemHtml();
 			$(vars.element).append(html);			
-
 			// Include component attributes for render and order
 			$(vars.element).attr('data-xp-render', JSON.stringify(true))
 							.attr('data-xp-order-by', JSON.stringify(vars.orderBy));			
@@ -244,8 +241,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = $(vars.element).attr('id');
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpListContent.render :: id: ' + $(vars.element).attr('id'));
@@ -297,8 +294,8 @@ ximpia.constants.list.APPEND = 'append';
 			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
 			vars.element = $(this);
 			vars.idElement = $(vars.element).attr('id');
-			vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-			vars.nameInput = vars.idInput.split('id_')[1];
+			vars.idInput = $(vars.element).attr('id') + '_input';
+			vars.nameInput = vars.idElement;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $(vars.element).metadata();
 			// init vars
@@ -314,8 +311,7 @@ ximpia.constants.list.APPEND = 'append';
 			if (vars.meta.hasOwnProperty('pageEnd')) $(vars.element).attr('data-xp-page-end', vars.meta.pageEnd);
 			ximpia.console.log('xpListContent.render :: result data...');
 			ximpia.console.log(vars.data);
-			ximpia.console.log('xpListContent.render :: result headers: ' + vars.headers);
-			
+			ximpia.console.log('xpListContent.render :: result headers: ' + vars.headers);			
 			if (vars.data.length > 0) {				
 				// Get body template...
 				vars.templateBodyHtml = $(this).data(constants.TMPL_LIST_BODY);
@@ -503,8 +499,8 @@ ximpia.constants.list.APPEND = 'append';
 			vars.comp = ximpia.common.getParentComponent($(element));
 			vars.compId = vars.comp.attr('id');
 			ximpia.console.log('xpListData.deleteOrder :: compId: ' + vars.comp.attr('id'));
-			vars.idInput = vars.comp.attr('id').split('_comp')[0];
-			vars.nameInput = vars.idInput.split('id_')[1];
+			vars.idInput = vars.comp.attr('id');
+			vars.nameInput = vars.idInput;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $('#' + vars.compId).metadata();
 			vars.orderBy = JSON.parse($('#' + vars.compId).attr('data-xp-order-by'));
@@ -635,9 +631,9 @@ ximpia.constants.list.APPEND = 'append';
 			vars.index = $(element).parent().parent().index();
 			ximpia.console.log('xpListData.orderColumn :: index: ' + vars.index);
 			vars.compId = $(element).attr('data-xp-element-id');
-			vars.idInput = vars.compId.split('_comp')[0];
+			vars.idInput = vars.compId;
 			vars.idElement = vars.compId;
-			vars.nameInput = vars.idInput.split('id_')[1];
+			vars.nameInput = vars.idInput;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $('#' + vars.compId).metadata();
 			// init vars
@@ -767,9 +763,9 @@ ximpia.constants.list.APPEND = 'append';
 					var imgScope = vars.nameInput + '_' + row[0] + '_' + i;
 					// TODO: Get image to show checked box and unchecked box (as image) checkbox disabled???
 					if (renderField == true) {
-						renderField = '<div id=\"id_exists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'checkSmall\', title: \'Yes\'}\" > </div>';
+						renderField = '<div id=\"id_exists_' + imgScope + '\" data-xp-type=\"image\" data-xp=\"{imgClass: \'checkSmall\', title: \'Yes\'}\" > </div>';
 					} else {
-						renderField = '<div id=\"id_notExists_' + imgScope + '_comp\" data-xp-type=\"image\" data-xp=\"{imgClass: \'errorSmall\', title: \'No\'}\" > </div>';
+						renderField = '<div id=\"id_notExists_' + imgScope + '\" data-xp-type=\"image\" data-xp=\"{imgClass: \'errorSmall\', title: \'No\'}\" > </div>';
 						//renderField = '';
 					}
 				}
@@ -808,8 +804,8 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpListData.render :: id: ' + $(vars.element).attr('id'));
@@ -883,35 +879,31 @@ ximpia.constants.list.APPEND = 'append';
 												ximpia.common.ArrayUtil.hasKey(vars.fields, 'id'))) {
 										ximpia.console.log('xpListData.render :: header: ' + headers[i]);
 										html += '<th scope=\"col\"><div class=\"ui-list-data-grp-text\"><a href=\"#\" title=\"';
-										html += headers[i] + '\" class=\"jxColumnOrder\" data-xp-element-id=\"'
+										html += headers[i] + '\" class=\"jxColumnOrder\" data-xp-element-id=\"';
 										html += $(vars.element).attr('id') + '\" >' + headers[i] + '</a></div></th>';
 									} 
 								}
 								html += '</tr></thead>';
-							}
-							
+							}							
 							// tbody
 							html += '<tbody>';
 							for (var l=0; l<data.length; l++) {
 								html += buildRow(l, data[l]);
 							}
 							html += '</tbody>';
-							
-							
 							if (meta.numberPages > meta.pageEnd && vars.attrs.hasOwnProperty(constants.ATTR_PAGING_STYLE)) {
 								var footerColspan = headers.length;
 								if (vars.hasCheck) footerColspan = headers.length + 1;
 								var pageAttrsStr = $(vars.element).attr('data-xp');
-								 
 								if (vars.attrs[constants.ATTR_PAGING_STYLE] == constants.PAGE_MORE) {
 									html += '<tfoot class=\"paging\"><tr><td colspan=\"' + footerColspan + '\">';
-									html += '<div id=\"id_' + vars.nameInput + '_paging_comp\" data-xp-type=\"paging.' + 
+									html += '<div id=\"id_' + vars.nameInput + '_paging\" data-xp-type=\"paging.' + 
 											vars.attrs[constants.ATTR_PAGING_STYLE] + '\" data-xp=\"' + 
 											'{compId: \'' + vars.idElement + '\'}' + '\" >' + vars.attrs[constants.ATTR_PAGING_MORE_TEXT] + 
 											'</div>';
 								} else if (vars.attrs[constants.ATTR_PAGING_STYLE] == constants.PAGE_BULLET) {
 									html += '<tfoot class=\"paging-bullet\"><tr><td colspan=\"' + footerColspan + '\">';
-									html += '<div id=\"id_' + vars.nameInput + '_paging_comp\" data-xp-type=\"paging.' + 
+									html += '<div id=\"id_' + vars.nameInput + '_paging\" data-xp-type=\"paging.' + 
 											vars.attrs[constants.ATTR_PAGING_STYLE] + '\" data-xp=\"' + 
 											'{compId: \'' + vars.idElement + '\', ' + 
 											'numberPages: ' + meta.numberPages + ', ' + 
@@ -919,7 +911,6 @@ ximpia.constants.list.APPEND = 'append';
 								}
 								html += '</td></tr></tfoot>';
 							}
-							
 							html += '</table>';
 							// Insert into DOM, set render to true
 							$(vars.element).html(html);
@@ -940,19 +931,16 @@ ximpia.constants.list.APPEND = 'append';
 										addDeleteCtrl(elementLink, type);
 									}
 								}
-							}							
-							
+							}
 							// Click on column for ordering
 							$("#" + vars.idElement + " .jxColumnOrder").click(function(evt) {
 								orderColumn(evt, $(this));
 							});
-							
 							// Bind click row
 							if (vars.hasLinkRow == true) {
 								$('#' + vars.idElement + ' .ui-list-data tbody').addClass('has-link');
 								$('#' + vars.idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 							}
-							
 							// Disable buttons associated with activateOnCheck
 							if (vars.onCheckClick == 'enable') {
 								// Enable / disable buttons when user clicks on check
@@ -966,7 +954,6 @@ ximpia.constants.list.APPEND = 'append';
 									$('#' + vars.compsActivateOnClick[i]).xpButton('unrender');
 								}
 							}
-							
 							// Check all
 							$('#' + vars.idElement + ' .ui-list-data .jxListDataCheckAll').click(function() {
 								// Check all rows in table
@@ -1001,7 +988,6 @@ ximpia.constants.list.APPEND = 'append';
 									}
 								}, 100);
 							});
-														
 							// Check click bind
 							$('#' + vars.idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
 								ximpia.console.log(evt);
@@ -1059,8 +1045,8 @@ ximpia.constants.list.APPEND = 'append';
 			vars.formId = ximpia.common.Browser.getForm(vars.xpForm);
 			vars.element = $(this);
 			vars.idElement = $(vars.element).attr('id');
-			vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-			vars.nameInput = vars.idInput.split('id_')[1];
+			vars.idInput = $(vars.element).attr('id') + '_input';
+			vars.nameInput = vars.idElement;
 			$.metadata.setType("attr", "data-xp");
 			vars.attrs = $(vars.element).metadata();
 			// init vars
@@ -1074,13 +1060,11 @@ ximpia.constants.list.APPEND = 'append';
 			ximpia.console.log('xpListData.render :: result headers: ' + headers);
 			if (data.length > 0) {
 				// we got valid response
-				
 				// tbody
 				html = '';
 				for (var l=0; l<data.length; l++) {
 					html += buildRow(l, data[l]);
 				}
-				
 				// Remove paging content in case last page
 				if (meta.numberPages == meta.pageEnd && mode == ximpia.constants.list.APPEND) {
 					$('#' + vars.idElement + ' tfoot').empty();
@@ -1092,15 +1076,12 @@ ximpia.constants.list.APPEND = 'append';
 				} else if (mode == ximpia.constants.list.REPLACE) {
 					$('#' + $(vars.element).attr('id') + ' tbody').html(html);
 				}
-				
 				ximpia.common.PageAjax.doRenderListRows(vars.xpForm);
-				
 				// Bind click row
 				if (vars.hasLinkRow == true) {
 					$('#' + vars.idElement + ' .ui-list-data tbody').addClass('has-link');
 					$('#' + vars.idElement + ' .ui-list-data tbody tr td.clickable').click(clickItem);
 				}
-				
 				// Check click bind
 				// TODO: Place into a common method
 				$('#' + vars.idElement + ' .jxListDataCheck').click(function(evt, defaultInputValue) {
@@ -1136,7 +1117,6 @@ ximpia.constants.list.APPEND = 'append';
 						}									
 					}
 				});
-				
 			}
 		}
         };
@@ -1209,16 +1189,12 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
 					ximpia.console.log('xpPagingMore.render :: id: ' + $(vars.element).attr('id'));
 					ximpia.console.log('xpPagingMore.render :: nameInput: ' + vars.nameInput);
-					//$.metadata.setType("attr", "data-xp");
-					//vars.attrs = $(this).metadata();
-					//vars.listCompId = vars.attrs.compId;
-					//vars.listComp = $('#' + vars.listCompId);
 					$(vars.element).attr('data-xp-render', JSON.stringify(true));
 					$('#' + vars.idElement).click(function(evt) {
 						// Get variables from linked component: app, dbClass, attrs, etc...
@@ -1236,9 +1212,6 @@ ximpia.constants.list.APPEND = 'append';
 						vars.attrs.hasHeader = true;
 						// Send query
 						ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
-							// data and headers
-							// data: [{},{}]
-							// headers : ['','','']
 							var data = result.data;
 							var headers = result.headers;
 							var meta = result.meta;
@@ -1334,24 +1307,19 @@ ximpia.constants.list.APPEND = 'append';
 				ximpia.console.log($(this)[i]);
 				vars.element = $(this)[i];
 				vars.idElement = $(vars.element).attr('id');
-				vars.idInput = $(vars.element).attr('id').split('_comp')[0];
-				vars.nameInput = vars.idInput.split('id_')[1];
+				vars.idInput = $(vars.element).attr('id') + '_input';
+				vars.nameInput = vars.idElement;
 				vars.doRender = ximpia.common.Form.doRender(vars.element, settings.reRender);
 				if (vars.doRender == true) {
-					
 					$.metadata.setType("attr", "data-xp");
-					vars.attrs = $(vars.element).metadata();										
-					
+					vars.attrs = $(vars.element).metadata();
 					ximpia.console.log('xpPagingBullet.render :: id: ' + $(vars.element).attr('id'));
 					ximpia.console.log('xpPagingBullet.render :: nameInput: ' + vars.nameInput);					
-					
 					var html = '<nav class="ui-list-paging-bullet" ><ul>';
-					
 					var maxPages = settings.numberPagesDisplayMax;
 					if (parseInt(vars.attrs.numberPages) < maxPages) {
 						maxPages = parseInt(vars.attrs.numberPages);
 					}
-					
 					for (var i=1; i<=maxPages; i++) {
 						if (i == 1) {
 							html += '<li><a class="bubble active" href="#" title="1-' + vars.attrs.numberResources + 
@@ -1362,12 +1330,9 @@ ximpia.constants.list.APPEND = 'append';
 									'" data-xp="{page: ' + i + '}" ></a></li>';
 						}						
 					}
-					
 					html += '</ul></nav>';
-					
 					$(vars.element).html(html); 
 					$(vars.element).attr('data-xp-render', JSON.stringify(true));
-					
 					$('#' + vars.idElement + ' a').click(function(evt) {
 						evt.preventDefault();
 						// Get variables from linked component: app, dbClass, attrs, etc...
@@ -1388,9 +1353,6 @@ ximpia.constants.list.APPEND = 'append';
 						vars.element = $(this);
 						// Send query
 						ximpia.common.JxDataQuery.search(vars.app, vars.dbClass, vars.attrs, function(result) {
-							// data and headers
-							// data: [{},{}]
-							// headers : ['','','']
 							var data = result.data;
 							var headers = result.headers;
 							var meta = result.meta;
@@ -1404,8 +1366,6 @@ ximpia.constants.list.APPEND = 'append';
 														});
 							}
 							// Process removal of page depending of number pages
-							
-							
 							// Make requested page as active and remove old active
 							// Remove active link
 							ximpia.common.getParentComponent($(vars.element)).find('.active').removeClass('active');

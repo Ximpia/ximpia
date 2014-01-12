@@ -78,11 +78,10 @@
 			for (var i=0; i<$(this).length; i++) {
 				var element = $(this)[i];
 				ximpia.console.log('xpObjContainer :: Element ' + $(element).attr('id'));
-				var idInput = $(element).attr('id').split('_comp')[0];
 				var hasToRender = ximpia.common.Form.hasToRender(element, settings.reRender);
 				if (hasToRender == true) {					
 					// do element conditions
-					ximpia.common.Condition.doElements(evals, element)
+					ximpia.common.Condition.doElements(evals, element);
 				}
 			}
 		}
