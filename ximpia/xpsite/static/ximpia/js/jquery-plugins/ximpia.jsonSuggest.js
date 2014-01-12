@@ -122,9 +122,9 @@
 			*/
 			function selectResultItem(item) {
 				//obj.val(item.text);
-				ximpia.console.log('ximpia.jsonSuggest :: results...')
-				ximpia.console.log(results)
-				ximpia.console.log(results.parent())
+				ximpia.console.log('ximpia.jsonSuggest :: results...');
+				ximpia.console.log(results);
+				ximpia.console.log(results.parent());
 				/*$(results).html('').hide();
 				$(results).html('').css('display', 'none');*/
 				$(results).remove();
@@ -242,6 +242,8 @@
 					
 					buildResults(resultObjects, filterTxt);
 				};
+				
+				//ximpia.console.log('value: ' + this.value + ' ' + this);
 				
 				if (this.value.length < settings.minCharacters) {
 					$(results).html('').hide();
