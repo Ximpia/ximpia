@@ -1,34 +1,27 @@
 # coding: utf-8
 
-import httplib2
-import urlparse
-import oauth2
 import json
 import types
 import traceback
-import os
 import datetime
 import copy
+import logging
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from django.http import Http404 
+from django.http import Http404
+from django.conf import settings
 
-from ximpia.xpcore.util import get_class, AttrDict, get_app_full_path, get_app_path
+from ximpia.xpcore.util import get_class, AttrDict, get_app_full_path
 from models import context, context_view, ctx, JsResultDict
-from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService
+from service import XpMsgException, view_tmpl, SearchService, TemplateService, CommonService, ModelService
 from data import ViewDAO, ActionDAO, ApplicationDAO
 
 from ximpia.xpsite import constants as KSite
 from ximpia.xpsite.models import Setting
 
-settings = get_class(os.getenv("DJANGO_SETTINGS_MODULE"))
-
 # Logging
-import logging.config
-logging.config.dictConfig(settings.LOGGING)
 logger = logging.getLogger(__name__)
 
 def __showView(view, viewAttrs, ctx):
@@ -59,107 +52,6 @@ def __showView(view, viewAttrs, ctx):
         else:
             viewAttrTuple = [viewAttrs]
     return (classPath, method, viewAttrTuple)
-
-def oauth20(request, service):
-    """Doc."""
-    logger.debug( 'GET : %s' % (json.dumps(request.GET)) )
-    ContextDict = {
-                'service': service,
-                'status': '',
-                'token': '',
-                'tokenSecret': '',
-                'errorMessage': ''
-                }
-    oauthVersion = settings.XIMPIA_CONSUMER_DICT[service][2]
-    if oauthVersion == '2.0':
-        if request.GET.has_key('code'):
-            code = request.GET['code']
-            # Exchange code for access token
-            logger.debug( settings.XIMPIA_CONSUMER_DICT[service][0] + '  ' + settings.XIMPIA_CONSUMER_DICT[service][1] )
-            url = settings.XIMPIA_OAUTH_URL_DICT[service]['access'][0] + '?' + \
-                'client_id=' + settings.XIMPIA_CONSUMER_DICT[service][0] + \
-                '&redirect_uri=' + settings.XIMPIA_OAUTH2_REDIRECT + service + \
-                '&client_secret=' + settings.XIMPIA_CONSUMER_DICT[service][1] + \
-                '&code=' + code
-            http = httplib2.Http()
-            resp, content = http.request(url)
-            if resp['status'] == '200':
-                responseDict = dict(urlparse.parse_qsl(content))
-                accessToken = responseDict['access_token']
-                logger.debug( accessToken )
-                ContextDict['status'] = 'OK'
-                ContextDict['token'] = accessToken
-                ContextDict['tokenSecret'] = ''
-            else:
-                # Show error
-                ContextDict['status'] = 'ERROR'
-        else:
-            ContextDict['status'] = 'ERROR'
-    else:
-        ContextDict['status'] = 'ERROR'
-    template = 'social_network/tags/networks/iconResponse.html'
-    Result = render_to_response(template, ContextDict)
-    return Result
-
-def oauth(request, service):
-    """Oauth logic with all providers registered in settings"""
-    logger.debug( 'GET : %s' % (json.dumps(request.GET)) )
-    # Think about methods in login: LinkedIn, parameters, etc...
-    ContextDict = {
-                'service': service,
-                'status': '',
-                'token': '',
-                'tokenSecret': '',
-                'errorMessage': ''
-                }
-    logger.debug( settings.XIMPIA_CONSUMER_DICT )
-    oauthVersion = settings.XIMPIA_CONSUMER_DICT[service][2]
-    if oauthVersion == '1.0':
-        if len(request.GET.keys()) == 0:
-            consumerTuple =  settings.XIMPIA_CONSUMER_DICT[service]
-            consumer = oauth2.Consumer(consumerTuple[0], consumerTuple[1])
-            client = oauth2.Client(consumer)
-            resp, content = client.request(settings.XIMPIA_OAUTH_URL_DICT[service]['request'][0], settings.XIMPIA_OAUTH_URL_DICT[service]['request'][1])
-            #logger.debug( json.dumps(resp) )
-            if resp['status'] == '200':
-                #logger.debug( json.dumps(content) )
-                request_token = dict(urlparse.parse_qsl(content))
-                logger.debug( request_token )
-                request.session['request_token'] = request_token
-                # Redirect to linkedin Url
-                url = settings.XIMPIA_OAUTH_URL_DICT[service]['authorized'][0] + '?oauth_token=' + request_token['oauth_token']
-                return HttpResponseRedirect(url)
-            else:
-                # should show message of error in connecting with network
-                ContextDict['status'] = 'ERROR'
-        else:
-            # Callback : oauth_token and oauth_verifier
-            logger.debug( 'callback...' )
-            if request.GET.has_key('oauth_token') and request.GET.has_key('oauth_verifier'):
-                #oauth_token = request.GET['oauth_token']
-                oauth_verifier = request.GET['oauth_verifier']
-                request_token = request.session['request_token']
-                token = oauth2.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
-                token.set_verifier(oauth_verifier)
-                consumerTuple =  settings.XIMPIA_CONSUMER_DICT[service]
-                consumer = oauth2.Consumer(consumerTuple[0], consumerTuple[1])
-                client = oauth2.Client(consumer, token)
-                resp, content = client.request(settings.XIMPIA_OAUTH_URL_DICT[service]['access'][0], "POST")
-                access_token = dict(urlparse.parse_qsl(content))
-                logger.debug( 'access_token: %s' % (access_token) )
-                # Show web page... javascript logic and close window
-                ContextDict['status'] = 'OK'
-                ContextDict['token'] = access_token['oauth_token']
-                ContextDict['tokenSecret'] = access_token['oauth_token_secret']
-            else:
-                # Show error message
-                ContextDict['status'] = 'ERROR'
-    else:
-        # Show error
-        ContextDict['status'] = 'ERROR'
-    template = 'social_network/tags/networks/iconResponse.html'
-    Result = render_to_response(template, ContextDict)
-    return Result
 
 @context
 def jxJSON(request, **ArgsDict):
@@ -628,6 +520,70 @@ def jxService(request, **args):
 
 @ctx()
 @transaction.commit_on_success
+def jx_model(request, app_slug=None, model=None, **kwargs):
+    pass
+
+@ctx()
+@transaction.commit_on_success
+def jx_api(request, app_slug=None, slug=None, **kwargs):
+    '''
+    Visual backbone model management for views and actions: create, update, delete and get form. Actions call.
+
+    **Attributes**
+
+    * ``request`` : Request
+    * ``kwargs``:
+        * ``ctx``: Context
+
+    **Returns**
+    JSON response
+    ''' 
+    logger.debug('jx_service...')
+    # make a metod for pprint as util to dump data
+    if request.is_ajax() is False:
+        raise Http404
+    data = json.loads(request.body)
+    # TODO: Collections??? Are views which return a list of forms. If we check view is a collection, call CollectionService instead
+    logger.debug(json.dumps(request.REQUEST.items()))
+    request.session.set_test_cookie()
+    request.session.delete_test_cookie()
+    result = ''
+    http_method = request.method
+    if http_method == 'GET':
+        # Call service view
+        result = ModelService.view(request, kwargs['ctx'], data)
+    elif http_method == 'POST':
+        # Save form or call service action, check on actionName
+        result = ModelService.action(request, kwargs['ctx'], data, action='create')
+    elif http_method == 'PUT':
+        # Save form or call service action, check on actionName
+        result = ModelService.action(request, kwargs['ctx'], data, action='update')
+    elif http_method == 'DELETE':
+        # Delete form
+        result = ModelService.action(request, kwargs['ctx'], data, action='delete')
+    else:
+        # raise error
+        raise Http404
+    return result
+
+@ctx()
+@transaction.commit_on_success
+def jx_collection(request, **kwargs):
+    '''
+    Collection handling for get, create, update and delete.
+
+    **Attributes**
+
+    * ``request``
+    * ``kwargs``
+
+    **Returns**
+    JSON response for get, create, update and delete model calls. In all cases returns the form associated.
+    '''
+    pass
+
+@ctx()
+@transaction.commit_on_success
 def jxSave(request, **args):
     """
     Save register. Operation executed when clicking on "Save" button on forms. Saves all instances related to forms, included
@@ -690,7 +646,7 @@ def jxSave(request, **args):
             obj = CommonService(args['ctx'])
             obj.request = request
             if isFormValid == True:
-            	logger.debug('jxSave :: Form is valid!!!')
+                logger.debug('jxSave :: Form is valid!!!')
                 obj._set_main_form(args['ctx'].form)
                 result = obj.save()
             else:
@@ -745,7 +701,7 @@ def jxDelete(request, **args):
         logger.debug( 'action: %s' % (action) )
         if action == 'delete':
             # resolve form, set to args['ctx'].form
-            logger.debug('jxDelete :: form: %s' % (request.REQUEST['form']) )
+            logger.debug('jxDelete :: form: %s' % (request.REQUEST['form']))
             formId = request.REQUEST['form']
             app = request.REQUEST['app']
             formModule = getattr(getattr(__import__(app.split('.')[0]), app.split('.')[1]), 'forms')
@@ -758,11 +714,11 @@ def jxDelete(request, **args):
                         resolvedForm = eval('formModule.' + myClass)
                 except AttributeError:
                     pass
-            logger.debug('jxDelete :: resolvedForm: %s' % (resolvedForm) )
+            logger.debug('jxDelete :: resolvedForm: %s' % (resolvedForm))
             args['ctx'].form = resolvedForm(args['ctx'].post, ctx=args['ctx'])
             args['ctx'].jsData = JsResultDict()
             # Instantiate form, validate form
-            logger.debug('jxDelete :: post: %s' % (args['ctx'].post) )
+            logger.debug('jxDelete :: post: %s' % (args['ctx'].post))
             # instantiate form for create and update with db instances dbObjects from form
             # dbObjects : pk, model
             obj = CommonService(args['ctx'])
@@ -800,14 +756,14 @@ def showView(request, appSlug='front', viewSlug='home', viewAttrs='', **args):
     classPath, method, viewAttrTuple = __showView(view, viewAttrs, args['ctx'])
     if method.find('_') == -1 or method.find('__') == -1:
         logger.debug('showView :: classPath: %s method: %s viewAttrTuple: %s' % (classPath, method, viewAttrTuple))
-        cls = get_class( classPath ) 
+        cls = get_class(classPath) 
         obj = cls(args['ctx'])
         super(cls, obj).__init__(args['ctx'])
         obj.request = request
         if (len(viewAttrTuple) == 0):
-            result = eval('obj.' + method)()
+            result = getattr(obj, method)()
         else:
-            result = eval('obj.' + method)(*viewAttrTuple)
+            result = getattr(obj, method)(*viewAttrTuple)
     else:
         logger.debug( 'xpcore :: showView :: private methods...' )
         raise Http404
